@@ -1,4 +1,4 @@
-﻿@inject IViewTransactionsByName ViewTransactionsByName
+﻿@inject TransactionService TransactionService
 
 @code {
     private List<Transaction>? transactions;
@@ -6,7 +6,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        transactions = (await ViewTransactionsByName.ExecuteAsync()).ToList();
+        transactions = (await TransactionService.GetTransactionsByNameAsync()).ToList();
     }
 }
 
