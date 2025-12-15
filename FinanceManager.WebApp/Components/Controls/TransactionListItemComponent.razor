@@ -1,0 +1,10 @@
+﻿@code {
+    [Parameter]
+    public required Transaction Transaction { get; set; }
+}
+
+<tr>
+    <td>@Transaction.Date.ToShortDateString()</td>
+    <td>@Transaction.Description</td>
+    <td>@Transaction.Amount.ToString("C")</td>
+</tr>
