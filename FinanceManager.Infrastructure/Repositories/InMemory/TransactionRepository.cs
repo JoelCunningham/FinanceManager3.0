@@ -10,11 +10,11 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 
         public TransactionRepository()
         {
-            _transactions = new List<Transaction> {
+            _transactions = [
                 new() { Id = "1", Amount = 1.00M, Date = DateTime.Now, Description = "Parking", Type = TransactionType.Debit },
                 new() { Id = "2", Amount = 2.00M, Date = DateTime.Now, Description = "Wage", Type = TransactionType.Credit },
                 new() { Id = "3", Amount = 3.00M, Date = DateTime.Now, Description = "Drinks", Type = TransactionType.Reimbursement },
-            };
+            ];
         }
 
         public async Task<IEnumerable<Transaction>> GetTransactionsByNameAsync(string name)

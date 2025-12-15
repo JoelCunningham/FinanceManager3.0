@@ -1,3 +1,4 @@
+using FinanceManager.Application.Helper;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Services;
 using FinanceManager.Infrastructure.Parsers;
@@ -7,20 +8,20 @@ using FinanceManager.WebApp.Components;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 // Repositories
 builder.Services.AddSingleton<ITransactionRepository, TransactionRepository>();
 builder.Services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
 
 // Parsers
+builder.Services.AddSingleton<TransactionFileParserFactory>();
 builder.Services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();
 builder.Services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
 
 // Services
-builder.Services.AddTransient<TransactionService>();
 builder.Services.AddTransient<ImportService>();
-builder.Services.AddTransient<TransactionFileParserFactory>();
+builder.Services.AddTransient<TransactionService>();
 
 var app = builder.Build();
 
@@ -37,6 +38,6 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
 app.Run();
