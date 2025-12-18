@@ -4,12 +4,12 @@ using FinanceManager.Infrastructure.Parsers.Base;
 
 namespace FinanceManager.Infrastructure.Parsers
 {
-    public class VanguardTransactionFileParser : BaseTransactionFileParser
+    public class VanguardTransactionFileParser : CsvTransactionFileParser
     {
-        public override string GetDisplayName() => "Vanguard";
-        public override IEnumerable<string> GetSupportedFileExtensions() => [".csv"];
+        public override string GetCompanyName() => "Vanguard";
+        public override IEnumerable<string> GetFileExtensions() => [".csv"];
+       
         protected override ClassMap<BankRecord> GetClassMap() => new VanguardBankRecordMap();
-
         private sealed class VanguardBankRecordMap : ClassMap<BankRecord>
         {
             public VanguardBankRecordMap()

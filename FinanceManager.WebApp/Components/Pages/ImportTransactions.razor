@@ -2,30 +2,33 @@
 
 @rendermode InteractiveServer
 
-@inject ImportService ImportService
+@inject TransactionImportService ImportService
+@inject TransactionParserService ParserService
 
 @code {
-    private string? selectedParser;
-    private IReadOnlyList<ParserDescription>? availableParsers;
+    private string? selectedParserName;
+    private IReadOnlyDictionary<string, IEnumerable<string>>? availableParsers;
     private IReadOnlyList<BankRecord>? importedTransactions;
 
     protected override void OnInitialized()
     {
-        availableParsers = ImportService.GetAvailableParsers().ToList();
+        availableParsers = ParserService.GetParserDetails().ToDictionary();
     }
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
-        if (selectedParser is null)
-            return;
+        if (selectedParserName is null) return;
 
+        var fileExtension = Path.GetExtension(e.File.Name);
         await using var stream = e.File.OpenReadStream();
-        importedTransactions = (await ImportService.ImportBankRecordsAsync(stream, selectedParser)).ToList();
+
+        importedTransactions = (await ImportService.ImportBankRecordsAsync(stream, selectedParserName, fileExtension)).ToList();
     }
 
     protected string GetSupportedFileExtentions()
     {
-        return availableParsers?.FirstOrDefault(p => p.Name == selectedParser)?.FileTypes ?? string.Empty;
+        var selectedParser = availableParsers?.FirstOrDefault(p => p.Key == selectedParserName);
+        return string.Join(',', selectedParser?.Value ?? Enumerable.Empty<string>());
     }
 }
 
@@ -33,18 +36,18 @@
 
 @if (availableParsers is not null && availableParsers.Any())
 {
-    <InputRadioGroup @bind-Value="selectedParser">
+    <InputRadioGroup @bind-Value="selectedParserName">
         @foreach (var parser in availableParsers)
         {
             <div class="form-check">
-                <InputRadio Value="@parser.Name" class="form-check-input" />
-                <label class="form-check-label">@parser.Name</label>
+                <InputRadio Value="@parser.Key" class="form-check-input" />
+                <label class="form-check-label">@parser.Key</label>
             </div>
         }
     </InputRadioGroup>
 }
 
-@if (selectedParser is not null)
+@if (selectedParserName is not null)
 {
     <InputFile OnChange="OnFileSelected" accept="@GetSupportedFileExtentions()" class="form-control" />
 }

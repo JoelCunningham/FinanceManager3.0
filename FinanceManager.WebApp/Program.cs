@@ -1,4 +1,3 @@
-using FinanceManager.Application.Helper;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Services;
 using FinanceManager.Infrastructure.Parsers;
@@ -15,12 +14,12 @@ builder.Services.AddSingleton<ITransactionRepository, TransactionRepository>();
 builder.Services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
 
 // Parsers
-builder.Services.AddSingleton<TransactionFileParserFactory>();
 builder.Services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();
 builder.Services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
 
 // Services
-builder.Services.AddTransient<ImportService>();
+builder.Services.AddTransient<TransactionImportService>();
+builder.Services.AddSingleton<TransactionParserService>();
 builder.Services.AddTransient<TransactionService>();
 
 var app = builder.Build();

@@ -4,12 +4,12 @@ using FinanceManager.Infrastructure.Parsers.Base;
 
 namespace FinanceManager.Infrastructure.Parsers
 {
-    public class WestpacTransactionFileParser : BaseTransactionFileParser
+    public class WestpacTransactionFileParser : CsvTransactionFileParser
     {
-        public override string GetDisplayName() => "Westpac";
-        public override IEnumerable<string> GetSupportedFileExtensions() => [".csv"];
+        public override string GetCompanyName() => "Westpac";
+        public override IEnumerable<string> GetFileExtensions() => [".csv"];
+      
         protected override ClassMap<BankRecord> GetClassMap() => new WestpacBankRecordMap();
-
         private sealed class WestpacBankRecordMap : ClassMap<BankRecord>
         {
             public WestpacBankRecordMap()
