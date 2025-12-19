@@ -1,0 +1,36 @@
+@code {
+    [Parameter]
+    public ParserInfo? SelectedParser { get; set; }
+    [Parameter]
+    public string? ImportErrorMessage { get; set; }
+    [Parameter]
+    public EventCallback<IBrowserFile> OnFileImport { get; set; }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        await OnFileImport.InvokeAsync(e.File);
+    }
+
+    private string FormatExtensionsList(IReadOnlyList<string> extensions)
+    {
+        if (extensions.Count <= 1)
+        {
+            return extensions.FirstOrDefault() ?? string.Empty;
+        }
+        else
+        {
+            return string.Join(", ", extensions.Take(extensions.Count - 1)) + ", and " + extensions.Last();
+        }
+    }
+}
+
+@if (SelectedParser?.SupportedExtensions.Count > 0)
+{
+    <InputFile OnChange="OnFileSelected" accept="@string.Join(',', SelectedParser.SupportedExtensions)" class="form-control" />
+    <label class="form-label fst-italic">Supports: @FormatExtensionsList(SelectedParser.SupportedExtensions) files</label>
+}
+
+@if (ImportErrorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@ImportErrorMessage</div>
+}

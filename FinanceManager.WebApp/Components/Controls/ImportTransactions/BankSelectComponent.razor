@@ -1,0 +1,40 @@
+﻿@inject TransactionParserService ParserService
+
+@code {
+    [Parameter]
+    public ParserInfo? SelectedParser { get; set; }
+    [Parameter]
+    public EventCallback<ParserInfo?> SelectedParserChanged { get; set; }
+
+    private string? selectedBankName;
+    private IReadOnlyList<ParserInfo>? availableParsers;
+
+    protected override void OnInitialized()
+    {
+        availableParsers = ParserService.GetAvailableParsers();
+    }
+
+    private async Task OnSelectedBankNameChanged(string? value)
+    {
+        selectedBankName = value;
+        SelectedParser = availableParsers?.FirstOrDefault(p => p.BankName == value);
+        await SelectedParserChanged.InvokeAsync(SelectedParser);
+    }
+}
+
+@if (availableParsers is not null && availableParsers.Any())
+{
+    <InputRadioGroup @bind-Value:get="selectedBankName" @bind-Value:set="OnSelectedBankNameChanged">
+        @foreach (var parser in availableParsers)
+        {
+            <div class="form-check">
+                <InputRadio Value="@parser.BankName" class="form-check-input" />
+                <label class="form-check-label">@parser.BankName</label>
+            </div>
+        }
+    </InputRadioGroup>
+}
+else
+{
+    <div class="alert alert-info" role="alert">No parsers are currently available.</div>
+}
