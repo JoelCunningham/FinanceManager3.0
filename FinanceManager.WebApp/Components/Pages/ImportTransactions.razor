@@ -6,29 +6,48 @@
 @inject TransactionParserService ParserService
 
 @code {
-    private string? selectedParserName;
-    private IReadOnlyDictionary<string, IEnumerable<string>>? availableParsers;
+    private string? selectedParser;
+    private IReadOnlyList<ParserInfo>? availableParsers;
     private IReadOnlyList<BankRecord>? importedTransactions;
 
     protected override void OnInitialized()
     {
-        availableParsers = ParserService.GetParserDetails().ToDictionary();
+        availableParsers = ParserService.GetAvailableParsers();
     }
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
-        if (selectedParserName is null) return;
+        if (selectedParser is null) return;
 
         var fileExtension = Path.GetExtension(e.File.Name);
         await using var stream = e.File.OpenReadStream();
 
-        importedTransactions = (await ImportService.ImportBankRecordsAsync(stream, selectedParserName, fileExtension)).ToList();
+        try
+        {
+            importedTransactions = (await ImportService.ImportBankRecordsAsync(stream, selectedParser, fileExtension)).ToList();
+        }
+        catch (Exception)
+        {
+            importedTransactions = Array.Empty<BankRecord>();
+        }
     }
 
-    protected string GetSupportedFileExtentions()
+    private bool SelectedParserHasExtensions(out IReadOnlyList<string>? extensions)
     {
-        var selectedParser = availableParsers?.FirstOrDefault(p => p.Key == selectedParserName);
-        return string.Join(',', selectedParser?.Value ?? Enumerable.Empty<string>());
+        extensions = availableParsers?.FirstOrDefault(p => p.BankName == selectedParser)?.SupportedExtensions;
+        return extensions is not null;
+    }
+
+    private string FormatExtensionsList(IReadOnlyList<string> extensions)
+    {
+        if (extensions.Count <= 1)
+        {
+            return extensions.FirstOrDefault() ?? string.Empty;
+        }
+        else
+        {
+            return string.Join(", ", extensions.Take(extensions.Count - 1)) + ", and " + extensions.Last();
+        }
     }
 }
 
@@ -36,20 +55,21 @@
 
 @if (availableParsers is not null && availableParsers.Any())
 {
-    <InputRadioGroup @bind-Value="selectedParserName">
+    <InputRadioGroup @bind-Value="selectedParser">
         @foreach (var parser in availableParsers)
         {
             <div class="form-check">
-                <InputRadio Value="@parser.Key" class="form-check-input" />
-                <label class="form-check-label">@parser.Key</label>
+                <InputRadio Value="@parser.BankName" class="form-check-input" />
+                <label class="form-check-label">@parser.BankName</label>
             </div>
         }
     </InputRadioGroup>
 }
 
-@if (selectedParserName is not null)
+@if (SelectedParserHasExtensions(out var availableExtensions) && availableExtensions is not null)
 {
-    <InputFile OnChange="OnFileSelected" accept="@GetSupportedFileExtentions()" class="form-control" />
+    <InputFile OnChange="OnFileSelected" accept="@string.Join(',', availableExtensions)" class="form-control" />
+    <label class="form-label fst-italic">Supports: @FormatExtensionsList(availableExtensions) files</label>
 }
 
 @if (importedTransactions is not null && importedTransactions.Any())
@@ -63,7 +83,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(var transaction in importedTransactions)
+            @foreach (var transaction in importedTransactions)
             {
                 <tr>
                     <td>@transaction.Date.ToShortDateString()</td>

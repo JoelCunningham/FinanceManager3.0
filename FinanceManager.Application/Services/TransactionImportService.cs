@@ -10,7 +10,15 @@ namespace FinanceManager.Application.Services
 
         public async Task<IEnumerable<BankRecord>> ImportBankRecordsAsync(Stream bankRecordsFile, string parserName, string fileExtension)
         {
-            var parser = _parserService.GetParser(parserName, fileExtension);
+            ITransactionFileParser parser;
+            try
+            {
+                parser = _parserService.GetParser(parserName, fileExtension);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new InvalidOperationException($"No parser found for '{parserName}' with file extension '{fileExtension}'.");
+            }
             return await parser.ParseBankRecordsAsync(bankRecordsFile);
         }
 

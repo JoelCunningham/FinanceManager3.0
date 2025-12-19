@@ -1,4 +1,5 @@
 ﻿using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.DTOs;
 
 namespace FinanceManager.Application.Services
 {
@@ -6,27 +7,28 @@ namespace FinanceManager.Application.Services
     {
         private readonly IEnumerable<ITransactionFileParser> _parsers = parsers;
 
-        public IDictionary<string, IEnumerable<string>> GetParserDetails()
+        public IReadOnlyList<ParserInfo> GetAvailableParsers()
         {
-            Dictionary<string, IEnumerable<string>> parserDescriptions = [];
-
-            foreach (var parser in _parsers)
-            {
-                parserDescriptions[parser.GetCompanyName()] = parserDescriptions.TryGetValue(parser.GetCompanyName(), out var existing)
-                    ? existing.Concat(parser.GetFileExtensions())
-                    : parser.GetFileExtensions();
-            }
-
-            return parserDescriptions;
+            return _parsers
+                .GroupBy(parser => parser.GetBankName(), StringComparer.OrdinalIgnoreCase)
+                .Select(group => new ParserInfo(
+                    group.Key,
+                    group
+                        .SelectMany(p => p.GetFileExtensions())
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList()
+                ))
+                .OrderBy(p => p.BankName)
+                .ToList();
         }
 
         public ITransactionFileParser GetParser(string companyName, string fileExtension)
         {
             var parser = _parsers.FirstOrDefault(p =>
-                p.GetCompanyName().Equals(companyName, StringComparison.OrdinalIgnoreCase) &&
+                p.GetBankName().Equals(companyName, StringComparison.OrdinalIgnoreCase) &&
                 p.GetFileExtensions().Contains(fileExtension, StringComparer.OrdinalIgnoreCase)
             );
-            return parser ?? throw new NotSupportedException($"No parser available for: {companyName} {fileExtension}");
+            return parser ?? throw new KeyNotFoundException($"No parser available for: {companyName} {fileExtension}");
         }
     }
 }

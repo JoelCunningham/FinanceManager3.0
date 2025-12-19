@@ -6,7 +6,7 @@ namespace FinanceManager.Infrastructure.Parsers
 {
     public class WestpacTransactionFileParser : CsvTransactionFileParser
     {
-        public override string GetCompanyName() => "Westpac";
+        public override string GetBankName() => "Westpac";
         public override IEnumerable<string> GetFileExtensions() => [".csv"];
       
         protected override ClassMap<BankRecord> GetClassMap() => new WestpacBankRecordMap();

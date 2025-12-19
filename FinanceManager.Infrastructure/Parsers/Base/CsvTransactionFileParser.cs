@@ -8,7 +8,7 @@ namespace FinanceManager.Infrastructure.Parsers.Base
 {
     public abstract class CsvTransactionFileParser : ITransactionFileParser
     {
-        public abstract string GetCompanyName();
+        public abstract string GetBankName();
         public abstract IEnumerable<string> GetFileExtensions();
         protected abstract ClassMap<BankRecord> GetClassMap();
 
@@ -28,7 +28,7 @@ namespace FinanceManager.Infrastructure.Parsers.Base
             }
             catch (CsvHelperException ex)
             {
-                throw new InvalidOperationException($"Failed to parse CSV file using {GetCompanyName()} parser: {ex.Message}", ex);
+                throw new InvalidOperationException($"Failed to parse CSV file using {GetBankName()} parser: {ex.Message}", ex);
             }
             catch (Exception ex)
             {
