@@ -16,7 +16,7 @@ namespace FinanceManager.Infrastructure.Parsers
             {
                 Map(m => m.Date).Name("Date");
                 Map(m => m.Narrative).Name("Product Name");
-                Map(m => m.CreditAmount).Name("Total");
+                Map(m => m.CreditAmount!).Name("Total").Optional();
                 Map(m => m.Category).Name("Type");
             }
         }

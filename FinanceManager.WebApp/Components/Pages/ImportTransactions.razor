@@ -9,6 +9,7 @@
     private string? selectedParser;
     private IReadOnlyList<ParserInfo>? availableParsers;
     private IReadOnlyList<BankRecord>? importedTransactions;
+    private string? importErrorMessage;
 
     protected override void OnInitialized()
     {
@@ -17,6 +18,9 @@
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
     {
+        importErrorMessage = null;
+        importedTransactions = null;
+
         if (selectedParser is null) return;
 
         var fileExtension = Path.GetExtension(e.File.Name);
@@ -28,7 +32,7 @@
         }
         catch (Exception)
         {
-            importedTransactions = Array.Empty<BankRecord>();
+            importErrorMessage = "Unable to import transactions from this file. Please check it is correct.";
         }
     }
 
@@ -72,6 +76,11 @@
     <label class="form-label fst-italic">Supports: @FormatExtensionsList(availableExtensions) files</label>
 }
 
+@if (importErrorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@importErrorMessage</div>
+}
+
 @if (importedTransactions is not null && importedTransactions.Any())
 {
     <table class="table">
@@ -88,7 +97,7 @@
                 <tr>
                     <td>@transaction.Date.ToShortDateString()</td>
                     <td>@transaction.Narrative</td>
-                    <td>@(transaction.CreditAmount + transaction.DebitAmount * -1)</td>
+                    <td>@transaction.TotalAmount</td>
                 </tr>
             }
         </tbody>

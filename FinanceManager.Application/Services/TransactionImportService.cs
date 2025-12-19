@@ -19,7 +19,15 @@ namespace FinanceManager.Application.Services
             {
                 throw new InvalidOperationException($"No parser found for '{parserName}' with file extension '{fileExtension}'.");
             }
-            return await parser.ParseBankRecordsAsync(bankRecordsFile);
+
+            try
+            {
+                return await parser.ParseBankRecordsAsync(bankRecordsFile);
+            }
+            catch (InvalidOperationException)
+            {
+                throw new InvalidOperationException("Failed to parse bank records from the provided file.");
+            }
         }
 
         public async Task<bool> SaveBankRecordsAsync(IEnumerable<BankRecord> bankRecords)
