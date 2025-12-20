@@ -17,7 +17,7 @@
             var bankName = Model.SelectedBank.BankName;
             var fileExtension = Path.GetExtension(file.Name);
 
-            var results = await ImportService.ImportBankRecordsAsync(stream, bankName, fileExtension);
+            var results = await ImportService.ImportTransactionsAsync(stream, bankName, fileExtension);
             Model.Success(results);
         }
         catch (Exception exception)

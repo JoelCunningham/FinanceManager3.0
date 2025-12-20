@@ -9,5 +9,10 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
         {
             return true;
         }
+
+        public async Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords)
+        {
+            return bankRecords.Take(2);
+        }
     }
 }

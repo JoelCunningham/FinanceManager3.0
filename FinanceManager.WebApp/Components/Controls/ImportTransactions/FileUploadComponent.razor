@@ -27,7 +27,7 @@
     <InputFile OnChange="OnFileSelected" accept="@string.Join(',', SelectedBank.SupportedExtensions)" class="@($"form-control {ValidationCssClass}")" />
     @if (ValidationState == FileValidationState.Valid)
     {
-        <div class="valid-feedback">File imported successfully.</div>
+        <div class="valid-feedback">File uploaded successfully.</div>
     }
     @if (ValidationState == FileValidationState.Invalid)
     {
