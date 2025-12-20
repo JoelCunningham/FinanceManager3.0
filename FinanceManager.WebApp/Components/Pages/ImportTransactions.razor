@@ -5,34 +5,40 @@
 @inject TransactionImportService ImportService
 
 @code {
-    private ParserInfo? selectedParser;
-    private IReadOnlyList<BankRecord>? importedTransactions;
-    private string? importErrorMessage;
+    private ImportPageModel Model = new();
 
     private async Task ImportFileTransactions(IBrowserFile file)
     {
-        importErrorMessage = null;
-        importedTransactions = null;
-        
-        if (selectedParser is null) return;
+        if (Model.SelectedBank is null) return;
 
-        var fileExtension = Path.GetExtension(file.Name);
-        await using var stream = file.OpenReadStream();
         try
         {
-            importedTransactions = (await ImportService.ImportBankRecordsAsync(stream, selectedParser.BankName, fileExtension)).ToList();
+            await using var stream = file.OpenReadStream();
+            var bankName = Model.SelectedBank.BankName;
+            var fileExtension = Path.GetExtension(file.Name);
+
+            var results = await ImportService.ImportBankRecordsAsync(stream, bankName, fileExtension);
+            Model.Success(results);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            importErrorMessage = "Unable to import transactions from this file. Please check it is correct.";
+            Model.Error(exception);
         }
+    }
+
+    private void OnBankChanged(ParserInfo? parser)
+    {
+        Model.Reset();
+        Model.SelectedBank = parser;
     }
 }
 
 <PageTitle>Import Transactions</PageTitle>
 
-<BankSelectComponent @bind-SelectedParser="selectedParser" />
+<h1 class="page-heading">Import Transactions</h1>
 
-<FileUploadComponent SelectedParser="@selectedParser" ImportErrorMessage="@importErrorMessage" OnFileImport="ImportFileTransactions" />
+<BankSelectComponent SelectedBank="Model.SelectedBank" OnBankChange="OnBankChanged" />
 
-<TableComponent Transactions="@importedTransactions" />
+<FileUploadComponent SelectedBank="@Model.SelectedBank" ValidationState="@Model.FileValidation" ImportErrorMessage="@Model.ImportErrorMessage" OnFileImport="ImportFileTransactions" @key="Model.SelectedBank?.BankName" />
+
+<TableComponent Transactions="@Model.ImportedTransactions" />

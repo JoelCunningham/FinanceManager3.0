@@ -1,6 +1,8 @@
 @code {
     [Parameter]
-    public ParserInfo? SelectedParser { get; set; }
+    public ParserInfo? SelectedBank { get; set; }
+    [Parameter]
+    public FileValidationState ValidationState { get; set; }
     [Parameter]
     public string? ImportErrorMessage { get; set; }
     [Parameter]
@@ -11,26 +13,24 @@
         await OnFileImport.InvokeAsync(e.File);
     }
 
-    private string FormatExtensionsList(IReadOnlyList<string> extensions)
+    private string ValidationCssClass => ValidationState switch
     {
-        if (extensions.Count <= 1)
-        {
-            return extensions.FirstOrDefault() ?? string.Empty;
-        }
-        else
-        {
-            return string.Join(", ", extensions.Take(extensions.Count - 1)) + ", and " + extensions.Last();
-        }
+        FileValidationState.Valid => "is-valid",
+        FileValidationState.Invalid => "is-invalid",
+        _ => string.Empty
+    };
+}
+
+@if (SelectedBank?.SupportedExtensions.Count > 0)
+{
+    <h2 class="section-heading">Upload your transactions:</h2>
+    <InputFile OnChange="OnFileSelected" accept="@string.Join(',', SelectedBank.SupportedExtensions)" class="@($"form-control {ValidationCssClass}")" />
+    @if (ValidationState == FileValidationState.Valid)
+    {
+        <div class="valid-feedback">File imported successfully.</div>
     }
-}
-
-@if (SelectedParser?.SupportedExtensions.Count > 0)
-{
-    <InputFile OnChange="OnFileSelected" accept="@string.Join(',', SelectedParser.SupportedExtensions)" class="form-control" />
-    <label class="form-label fst-italic">Supports: @FormatExtensionsList(SelectedParser.SupportedExtensions) files</label>
-}
-
-@if (ImportErrorMessage is not null)
-{
-    <div class="alert alert-danger" role="alert">@ImportErrorMessage</div>
+    @if (ValidationState == FileValidationState.Invalid)
+    {
+        <div class="invalid-feedback">@ImportErrorMessage</div>
+    }
 }

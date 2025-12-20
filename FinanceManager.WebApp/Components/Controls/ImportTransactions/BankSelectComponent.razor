@@ -2,11 +2,10 @@
 
 @code {
     [Parameter]
-    public ParserInfo? SelectedParser { get; set; }
+    public ParserInfo? SelectedBank { get; set; }
     [Parameter]
-    public EventCallback<ParserInfo?> SelectedParserChanged { get; set; }
+    public EventCallback<ParserInfo?> OnBankChange { get; set; }
 
-    private string? selectedBankName;
     private IReadOnlyList<ParserInfo>? availableParsers;
 
     protected override void OnInitialized()
@@ -14,25 +13,23 @@
         availableParsers = ParserService.GetAvailableParsers();
     }
 
-    private async Task OnSelectedBankNameChanged(string? value)
+    private async Task OnBankSelected(string bankName)
     {
-        selectedBankName = value;
-        SelectedParser = availableParsers?.FirstOrDefault(p => p.BankName == value);
-        await SelectedParserChanged.InvokeAsync(SelectedParser);
+        SelectedBank = availableParsers?.FirstOrDefault(p => p.BankName == bankName);
+        await OnBankChange.InvokeAsync(SelectedBank);
     }
 }
 
 @if (availableParsers is not null && availableParsers.Any())
 {
-    <InputRadioGroup @bind-Value:get="selectedBankName" @bind-Value:set="OnSelectedBankNameChanged">
-        @foreach (var parser in availableParsers)
+    <h2 class="section-heading">Select your bank:</h2>
+    <div class="bank-cards-container">
+        @foreach (var bank in availableParsers)
         {
-            <div class="form-check">
-                <InputRadio Value="@parser.BankName" class="form-check-input" />
-                <label class="form-check-label">@parser.BankName</label>
-            </div>
+            var isSelected = SelectedBank?.BankName == bank.BankName;
+            <BankCardComponent BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
         }
-    </InputRadioGroup>
+    </div>
 }
 else
 {
