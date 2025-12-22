@@ -1,4 +1,4 @@
-﻿using FinanceManager.Domain.Entities;
+﻿using FinanceManager.Application.DTOs;
 
 namespace FinanceManager.Application.Interfaces
 {
@@ -6,6 +6,6 @@ namespace FinanceManager.Application.Interfaces
     {
         string GetBankName();
         IEnumerable<string> GetFileExtensions();
-        Task<IEnumerable<BankRecord>> ParseBankRecordsAsync(Stream fileStream);
+        Task<IEnumerable<ParsedTransaction>> ParseTransactionsFileAsync(Stream fileStream);
     }
 }

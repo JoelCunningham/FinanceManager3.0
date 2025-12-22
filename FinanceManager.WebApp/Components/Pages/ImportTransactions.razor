@@ -17,7 +17,7 @@
             var bankName = Model.SelectedBank.BankName;
             var fileExtension = Path.GetExtension(file.Name);
 
-            var results = await ImportService.ImportTransactionsAsync(stream, bankName, fileExtension);
+            var results = await ImportService.ImportAsync(stream, bankName, fileExtension);
             Model.Success(results);
         }
         catch (Exception exception)
@@ -31,14 +31,29 @@
         Model.Reset();
         Model.SelectedBank = parser;
     }
+
+    private void OnContinue()
+    {
+        Model.FileValidation = FileValidationState.Accepted;
+    }
 }
 
 <PageTitle>Import Transactions</PageTitle>
 
-<h1 class="page-heading">Import Transactions</h1>
+<h1 class="page-heading">Import transactions</h1>
 
-<BankSelectComponent SelectedBank="Model.SelectedBank" OnBankChange="OnBankChanged" />
+@if (Model.FileValidation != FileValidationState.Accepted)
+{
+    <BankSelectComponent SelectedBank="Model.SelectedBank" OnBankChange="OnBankChanged" />
 
-<FileUploadComponent SelectedBank="@Model.SelectedBank" ValidationState="@Model.FileValidation" ImportErrorMessage="@Model.ImportErrorMessage" OnFileImport="ImportFileTransactions" @key="Model.SelectedBank?.BankName" />
+    <FileUploadComponent SelectedBank="@Model.SelectedBank" ValidationState="@Model.FileValidation" ImportErrorMessage="@Model.ImportErrorMessage" OnFileImport="ImportFileTransactions" @key="Model.SelectedBank?.BankName" />
 
-<TableComponent Transactions="@Model.ImportedTransactions" />
+    @if (Model.FileValidation == FileValidationState.Valid)
+    {
+        <button type="button" class="btn btn-primary my-3" @onclick="OnContinue">Continue</button>
+    }
+}
+else
+{
+    <TableComponent Transactions="@Model.ImportedTransactions" />
+}

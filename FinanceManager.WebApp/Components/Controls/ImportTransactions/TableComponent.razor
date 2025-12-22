@@ -1,6 +1,6 @@
 @code {
     [Parameter]
-    public IReadOnlyList<BankRecord>? Transactions { get; set; }
+    public IReadOnlyList<ImportedTransaction>? Transactions { get; set; }
 }
 
 @if (Transactions is not null && Transactions.Any())
@@ -17,9 +17,9 @@
             @foreach (var transaction in Transactions)
             {
                 <tr>
-                    <td>@transaction.Date.ToShortDateString()</td>
-                    <td>@transaction.Narrative</td>
-                    <td>@transaction.TotalAmount</td>
+                    <td>@transaction.Date</td>
+                    <td>@transaction.Description</td>
+                    <td>@transaction.Amount</td>
                 </tr>
             }
         </tbody>

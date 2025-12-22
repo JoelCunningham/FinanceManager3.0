@@ -1,24 +1,38 @@
-﻿using CsvHelper.Configuration;
-using FinanceManager.Domain.Entities;
+﻿using FinanceManager.Application.DTOs;
 using FinanceManager.Infrastructure.Parsers.Base;
 
 namespace FinanceManager.Infrastructure.Parsers
 {
-    public class VanguardTransactionFileParser : CsvTransactionFileParser
+    public class VanguardTransactionFileParser : CsvTransactionFileParser<VanguardTransactionFile>
     {
         public override string GetBankName() => "Vanguard";
         public override IEnumerable<string> GetFileExtensions() => [".csv"];
-       
-        protected override ClassMap<BankRecord> GetClassMap() => new VanguardBankRecordMap();
-        private sealed class VanguardBankRecordMap : ClassMap<BankRecord>
+        public override IEnumerable<ParsedTransaction> StandardiseRecords(IEnumerable<VanguardTransactionFile> file)
         {
-            public VanguardBankRecordMap()
+            foreach (var record in file)
             {
-                Map(m => m.Date).Name("Date");
-                Map(m => m.Narrative).Name("Product Name");
-                Map(m => m.CreditAmount!).Name("Total").Optional();
-                Map(m => m.Category).Name("Type");
+                var parsedTransaction = new ParsedTransaction
+                {
+                    Date = record.Date,
+                    Amount = record.Total,
+                    Description = $"{record.ProductName} ({record.ProductId}) - {record.ProductType} - {record.Units} units",
+                    Type = record.Type,
+                    Reference = null,
+                    IsInternalTransfer = false
+                };
+                yield return parsedTransaction;
             }
         }
+    }
+
+    public sealed class VanguardTransactionFile
+    {
+        public DateTime Date { get; set; }
+        public required string Type { get; set; }
+        public required string ProductType { get; set; }
+        public required string ProductName { get; set; }
+        public required string ProductId { get; set; }
+        public int Units { get; set; }
+        public decimal Total { get; set; }
     }
 }

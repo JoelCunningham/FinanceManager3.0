@@ -1,26 +1,40 @@
-﻿using CsvHelper.Configuration;
-using FinanceManager.Domain.Entities;
+﻿using FinanceManager.Application.DTOs;
 using FinanceManager.Infrastructure.Parsers.Base;
 
 namespace FinanceManager.Infrastructure.Parsers
 {
-    public class WestpacTransactionFileParser : CsvTransactionFileParser
+    public class WestpacTransactionFileParser : CsvTransactionFileParser<WestpacTransactionFile>
     {
         public override string GetBankName() => "Westpac";
         public override IEnumerable<string> GetFileExtensions() => [".csv"];
-      
-        protected override ClassMap<BankRecord> GetClassMap() => new WestpacBankRecordMap();  
-        private sealed class WestpacBankRecordMap : ClassMap<BankRecord>
+        public override IEnumerable<ParsedTransaction> StandardiseRecords(IEnumerable<WestpacTransactionFile> file)
         {
-            public WestpacBankRecordMap()
+            foreach (var record in file)
             {
-                Map(m => m.AccountNumber).Name("Bank Account");
-                Map(m => m.Date).Name("Date").TypeConverterOption.Format("dd/MM/yyyy");
-                Map(m => m.Narrative).Name("Narrative");
-                Map(m => m.DebitAmount!).Name("Debit Amount").Optional();
-                Map(m => m.CreditAmount!).Name("Credit Amount").Optional();
-                Map(m => m.Category).Name("Categories");
+                var parsedTransaction = new ParsedTransaction
+                {
+                    AccountNumber = record.BankAccount,
+                    Date = record.Date,
+                    Amount = (record.CreditAmount ?? 0) - (record.DebitAmount ?? 0),
+                    Description = record.Narrative,
+                    Type = record.Categories,
+                    Reference = record.Serial,
+                    IsInternalTransfer = record.Narrative.Contains(" TFR ")
+                };
+                yield return parsedTransaction;
             }
         }
+    }
+
+    public sealed class WestpacTransactionFile
+    {
+        public required string BankAccount { get; set; }
+        public DateTime Date { get; set; }
+        public required string Narrative { get; set; }
+        public decimal? DebitAmount { get; set; }
+        public decimal? CreditAmount { get; set; }
+        public decimal Balance { get; set; }
+        public required string Categories { get; set; }
+        public string? Serial { get; set; }
     }
 }

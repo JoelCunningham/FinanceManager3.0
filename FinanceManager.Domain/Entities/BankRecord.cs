@@ -1,15 +1,18 @@
-﻿namespace FinanceManager.Domain.Entities
-{
-    public class BankRecord
-    {
-        public int Id { get; set; }
-        public string AccountNumber { get; set; } = string.Empty;
-        public decimal? CreditAmount { get; set; }
-        public decimal? DebitAmount { get; set; }
-        public DateTime Date { get; set; }
-        public string Narrative { get; set; } = string.Empty;
-        public string Category { get; set; } = string.Empty;
+﻿using FinanceManager.Domain.Entities.Base;
 
-        public decimal TotalAmount => (CreditAmount ?? 0) + (DebitAmount ?? 0) * -1;
+namespace FinanceManager.Domain.Entities
+{
+    public class BankRecord : IEntity
+    {
+        public Guid Id { get; set; }
+        public Guid ImportId { get; set; }
+        public required string Bank { get; set; }
+        public string? AccountNumber { get; set; }
+        public decimal Amount { get; set; }
+        public DateTime Date { get; set; }
+        public required string Description { get; set; }
+        public string? Type { get; set; }
+        public string? Reference { get; set; }
+        public bool IsInternalTransfer { get; set; }
     }
 }

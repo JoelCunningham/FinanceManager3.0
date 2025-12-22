@@ -1,14 +1,13 @@
 ﻿using FinanceManager.Application.DTOs;
-using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.WebApp.Models
 {
     public sealed class ImportPageModel
     {
         public ParserInfo? SelectedBank { get; set; }
-        public IReadOnlyList<BankRecord>? ImportedTransactions { get; set; }
+        public IReadOnlyList<ImportedTransaction>? ImportedTransactions { get; set; }
         public string? ImportErrorMessage { get; set; }
-        public FileValidationState FileValidation { get; private set; } = FileValidationState.None;
+        public FileValidationState FileValidation { get; set; } = FileValidationState.None;
 
         public void Reset()
         {
@@ -17,7 +16,7 @@ namespace FinanceManager.WebApp.Models
             FileValidation = FileValidationState.None;
         }
 
-        public void Success(IEnumerable<BankRecord> records)
+        public void Success(IEnumerable<ImportedTransaction> records)
         {
             ImportedTransactions = records.ToList();
             ImportErrorMessage = null;
@@ -50,6 +49,7 @@ namespace FinanceManager.WebApp.Models
     {
         None,
         Valid,
-        Invalid
+        Invalid,
+        Accepted,
     }
 }

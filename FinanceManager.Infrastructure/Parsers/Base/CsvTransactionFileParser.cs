@@ -1,18 +1,18 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
-using FinanceManager.Domain.Entities;
 using System.Globalization;
 
 namespace FinanceManager.Infrastructure.Parsers.Base
 {
-    public abstract class CsvTransactionFileParser : ITransactionFileParser
+    public abstract class CsvTransactionFileParser<T> : ITransactionFileParser
     {
         public abstract string GetBankName();
         public abstract IEnumerable<string> GetFileExtensions();
-        protected abstract ClassMap<BankRecord> GetClassMap();
+        public abstract IEnumerable<ParsedTransaction> StandardiseRecords(IEnumerable<T> file);
 
-        public async Task<IEnumerable<BankRecord>> ParseBankRecordsAsync(Stream fileStream)
+        public async Task<IEnumerable<ParsedTransaction>> ParseTransactionsFileAsync(Stream fileStream)
         {
             ArgumentNullException.ThrowIfNull(fileStream);
 
@@ -21,10 +21,10 @@ namespace FinanceManager.Infrastructure.Parsers.Base
                 using var streamReader = new StreamReader(fileStream, leaveOpen: true);
                 using var csvReader = new CsvReader(streamReader, GetCsvConfiguration());
 
-                csvReader.Context.RegisterClassMap(GetClassMap());
+                csvReader.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = ["dd/MM/yyyy"];
 
-                var records = new List<BankRecord>();
-                return await csvReader.GetRecordsAsync<BankRecord>().ToListAsync();
+                var fileRecords = await csvReader.GetRecordsAsync<T>().ToListAsync();
+                return StandardiseRecords(fileRecords);
             }
             catch (CsvHelperException ex)
             {
@@ -42,8 +42,9 @@ namespace FinanceManager.Infrastructure.Parsers.Base
             {
                 HasHeaderRecord = true,
                 MissingFieldFound = null,
-                TrimOptions = TrimOptions.Trim
-            };
+                TrimOptions = TrimOptions.Trim,
+                PrepareHeaderForMatch = args => args.Header.ToLower().Replace(" ", string.Empty),
+            };  
         }
     }
 }

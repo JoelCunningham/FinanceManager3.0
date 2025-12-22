@@ -5,7 +5,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 {
     public class BankRecordRepository : IBankRecordRepository
     {
-        public async Task<bool> SaveBankRecordsAsync(IEnumerable<BankRecord> bankRecords)
+        public async Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords)
         {
             return true;
         }
@@ -14,5 +14,11 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
         {
             return bankRecords.Take(2);
         }
+
+        public async Task<IEnumerable<BankRecord>> FindSimilarAsync(IEnumerable<BankRecord> bankRecords)
+        {
+            return bankRecords.Take(2);
+        }
+
     }
 }

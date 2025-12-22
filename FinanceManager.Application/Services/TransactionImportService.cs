@@ -1,37 +1,120 @@
-﻿using FinanceManager.Application.Interfaces;
+﻿using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.Application.Services
 {
-    public class TransactionImportService(IBankRecordRepository bankRecordRepository, TransactionParserService parserService)
+    public class TransactionImportService
+    (
+        TransactionParserService parserService,
+        IBankRecordRepository bankRecordRepository,
+        ITransactionRepository transactionRepository
+    )
     {
-        private readonly TransactionParserService _parserService = parserService;
-        private readonly IBankRecordRepository _bankRecordRepository = bankRecordRepository;
-
-        public async Task<IEnumerable<BankRecord>> ImportTransactionsAsync(Stream bankRecordsFile, string bankName, string fileExtension)
+        public async Task<IEnumerable<ImportedTransaction>> ImportAsync(Stream file, string bank, string extension)
         {
-            ITransactionFileParser parser = _parserService.GetParser(bankName, fileExtension);
+            var importId = Guid.NewGuid();
 
-            try
+            var parser = parserService.GetParser(bank, extension);
+            var parsed = await parser.ParseTransactionsFileAsync(file);
+
+            var records = parsed.Select(t => ParsedTransactionToBankRecord(t, bank, importId));
+
+            var duplicates = await bankRecordRepository.FindDuplicatesAsync(records);
+            var validRecords = records.Except(duplicates);
+
+            await bankRecordRepository.SaveAsync(validRecords);
+
+            var transactions = validRecords.Select(BankRecordToImportedTransaction);
+            var transfers = transactions.Where(t => t.BankRecord.IsInternalTransfer);
+            var reimbursements = await bankRecordRepository.FindSimilarAsync(transactions.Select(t => t.BankRecord));
+
+            MatchTransfers(transfers);
+            SuggestReimbursements(transactions, reimbursements);
+
+            return transactions;
+        }
+
+        public async Task<bool> SaveAsync(IEnumerable<ImportedTransaction> importedTransactions)
+        {
+            var transactions = new List<Transaction>();
+            var relationships = new List<TransactionLink>();
+
+            await transactionRepository.SaveTransactions(transactions, relationships);
+
+            return true;
+        }
+
+        private static BankRecord ParsedTransactionToBankRecord(ParsedTransaction transaction, string bank, Guid importId)
+        {
+            return new BankRecord
             {
-                var parsedRecords = await parser.ParseBankRecordsAsync(bankRecordsFile);
-                var duplciateRecords = await FindDuplicates(parsedRecords);
-                return parsedRecords.Except(duplciateRecords);
-            }
-            catch (InvalidOperationException)
+                Id = Guid.NewGuid(),
+                ImportId = importId,
+                Bank = bank,
+                AccountNumber = transaction.AccountNumber,
+                Amount = transaction.Amount,
+                Date = transaction.Date,
+                Description = transaction.Description,
+                Type = transaction.Type,
+                Reference = transaction.Reference,
+                IsInternalTransfer = transaction.IsInternalTransfer,
+            };
+        }
+
+        private static ImportedTransaction BankRecordToImportedTransaction(BankRecord record)
+        {
+            return new ImportedTransaction
             {
-                throw new InvalidOperationException("Failed to parse bank records from the provided file.");
+                BankRecord = record,
+                Amount = record.Amount,
+                Date = record.Date,
+                Description = record.Description,
+                Category = null,
+            };
+        }
+
+        private static void MatchTransfers(IEnumerable<ImportedTransaction> transfers)
+        {
+            foreach (var transaction in transfers)
+            {
+                if (transaction.Transfers != null) continue;
+
+                var match = transfers.FirstOrDefault(p =>
+                    p != transaction &&
+                    p.Transfers == null &&
+                    p.Amount == -transaction.Amount &&
+                    p.Date == transaction.Date);
+
+                if (match != null)
+                {
+                    transaction.Transfers = match;
+                    match.Transfers = transaction;
+                }
             }
         }
 
-        public async Task<IEnumerable<BankRecord>> FindDuplicates(IEnumerable<BankRecord> bankRecords)
+        private static void SuggestReimbursements(IEnumerable<ImportedTransaction> transactions, IEnumerable<BankRecord> reimbursements)
         {
-            return await _bankRecordRepository.FindDuplicatesAsync(bankRecords);
-        }
+            foreach (var reimbursement in reimbursements)
+            {
+                var transaction = transactions.Where(t => t.BankRecord.Id == reimbursement.Id).FirstOrDefault();
+                if (transaction == null || transaction.Reimburses != null) continue;
 
-        public async Task<bool> SaveBankRecordsAsync(IEnumerable<BankRecord> bankRecords)
-        {
-            return await _bankRecordRepository.SaveBankRecordsAsync(bankRecords);
+                var match = reimbursements.FirstOrDefault(p =>
+                    p != reimbursement &&
+                    transactions.Where(t => t.BankRecord.Id == p.Id).FirstOrDefault()?.Reimburses == null &&
+                    p.Amount == -reimbursement.Amount &&
+                    p.Date == reimbursement.Date);
+
+                var matchTransaction = transactions.Where(t => t.BankRecord.Id == match?.Id).FirstOrDefault();
+
+                if (matchTransaction != null)
+                {
+                    transaction.Reimburses = matchTransaction;
+                    matchTransaction.Reimburses = transaction;
+                }
+            }
         }
     }
 }

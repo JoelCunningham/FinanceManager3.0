@@ -1,9 +1,7 @@
 ﻿namespace FinanceManager.Domain.Enums
 {
-    public enum TransactionType
+    public enum TransactionLinkType
     {
-        Credit,
-        Debit,
         Transfer,
         Reimbursement,
     }

@@ -12,11 +12,10 @@ namespace FinanceManager.Application.Services
             return _parsers
                 .GroupBy(parser => parser.GetBankName(), StringComparer.OrdinalIgnoreCase)
                 .Select(group => new ParserInfo(
-                    group.Key,
-                    group
-                        .SelectMany(p => p.GetFileExtensions())
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList()
+                    group.Key, group
+                    .SelectMany(p => p.GetFileExtensions())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList()
                 ))
                 .OrderBy(p => p.BankName)
                 .ToList();

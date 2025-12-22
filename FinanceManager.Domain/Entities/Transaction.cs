@@ -1,13 +1,14 @@
 ﻿using FinanceManager.Domain.Entities.Base;
-using FinanceManager.Domain.Enums;
 
 namespace FinanceManager.Domain.Entities
 {
-    public class Transaction : BaseEntity
+    public sealed class Transaction : IEntity
     {
-        public decimal Amount { get; set; }
+        public Guid Id { get; set; }
+        public Guid RecordId { get; set; }
         public DateTime Date { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public TransactionType Type { get; set; }
+        public decimal Amount { get; set; }
+        public required string Description { get; set; }
+        public Guid? CategoryId { get; set; }
     }
 }
