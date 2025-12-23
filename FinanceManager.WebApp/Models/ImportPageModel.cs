@@ -5,9 +5,11 @@ namespace FinanceManager.WebApp.Models
     public sealed class ImportPageModel
     {
         public ParserInfo? SelectedBank { get; set; }
-        public IReadOnlyList<ImportedTransaction>? ImportedTransactions { get; set; }
         public string? ImportErrorMessage { get; set; }
         public FileValidationState FileValidation { get; set; } = FileValidationState.None;
+
+        public IReadOnlyList<ImportedTransaction>? ImportedTransactions { get; set; }
+        public List<ImportedTransaction> CustomisedTransactions { get; set; } = [];
 
         public void Reset()
         {

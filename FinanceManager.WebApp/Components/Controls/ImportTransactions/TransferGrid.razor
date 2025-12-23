@@ -1,0 +1,114 @@
+@code {
+    [Parameter]
+    public IReadOnlyList<ImportedTransaction>? Transactions { get; set; }
+    [Parameter]
+    public EventCallback<ImportedTransaction> AcceptTransfer { get; set; }
+
+    private HashSet<ImportedTransaction> _submittedTransfers = [];
+    private List<ImportedTransaction> _transfers = [];
+
+    protected override void OnParametersSet()
+    {
+        _transfers = GroupTransfers();
+    }
+
+    private async Task Accept(ImportedTransaction transfer)
+    {
+        _submittedTransfers.Add(transfer);
+        if (transfer.Transfers is not null)
+        {
+            _submittedTransfers.Add(transfer.Transfers);
+        }
+        _transfers.Remove(transfer);
+
+        await AcceptTransfer.InvokeAsync(transfer);
+    }
+
+    private void Reject(ImportedTransaction transfer)
+    {
+        _submittedTransfers.Add(transfer);
+        if (transfer.Transfers is not null)
+        {
+            _submittedTransfers.Add(transfer.Transfers);
+        }
+        _transfers.Remove(transfer);
+
+        transfer.UnsetTransfer();
+    }
+
+    private async Task AcceptAll()
+    {
+        foreach (var trasfer in _transfers.ToList())
+        {
+            await Accept(trasfer);
+            StateHasChanged();
+        }
+    }
+
+    private void RejectAll()
+    {
+        foreach (var trasfer in _transfers.ToList())
+        {
+            Reject(trasfer);
+        }
+        StateHasChanged();
+    }
+
+    private List<ImportedTransaction> GroupTransfers()
+    {
+        var transfers = Transactions?
+        .Where(t => t.Transfers is not null && !_submittedTransfers.Contains(t))
+        .OrderBy(t => t.Date)
+        .ThenBy(t => Math.Abs(t.Amount))
+        .ThenByDescending(t => t.Amount)
+        .ToList();
+
+        if (transfers is null) return [];
+
+        var seenTransfers = new HashSet<ImportedTransaction>();
+        var result = new List<ImportedTransaction>();
+
+        foreach (var transfer in transfers)
+        {
+            if (!seenTransfers.Contains(transfer))
+                result.Add(transfer);
+
+            if (transfer.Transfers != null)
+                seenTransfers.Add(transfer.Transfers);
+        }
+
+        return result;
+    }
+}
+
+@if (_transfers is not null && _transfers.Any())
+{
+    <div class="transaction-grid">
+        <div class="transaction-grid-buttons">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <button type="button" class="btn btn-danger" onclick="@RejectAll">Reject All</button>
+            <button type="button" class="btn btn-success" onclick="@AcceptAll">Accept All</button>
+        </div>
+        <div class="transaction-grid-header">
+            <div>Date</div>
+            <div>Account</div>
+            <div>Description</div>
+            <div>Amount</div>
+            <div></div>
+            <div></div>
+        </div>
+        @foreach (var transfer in _transfers)
+        {
+            <TransferRow Transfer="transfer" AcceptTransfer="Accept" RejectTransfer="Reject" />
+        }
+    </div>
+} else
+{
+    <div class="alert alert-success" role="alert">
+        All detected transfers have been resolved  
+    </div>
+    <button type="button" class="btn btn-primary my-3">Continue</button>
+}

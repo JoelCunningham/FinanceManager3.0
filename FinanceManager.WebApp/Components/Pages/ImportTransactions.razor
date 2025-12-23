@@ -36,6 +36,11 @@
     {
         Model.FileValidation = FileValidationState.Accepted;
     }
+
+    private void StageTransaction(ImportedTransaction transaction)
+    {
+        Model.CustomisedTransactions.Add(transaction);
+    }
 }
 
 <PageTitle>Import Transactions</PageTitle>
@@ -55,5 +60,14 @@
 }
 else
 {
-    <TableComponent Transactions="@Model.ImportedTransactions" />
+    <h2 class="section-heading">We decteced some transfers:</h2>
+
+    <TransferGrid Transactions="Model.ImportedTransactions" AcceptTransfer="StageTransaction" />
+
+  @*   <h2 class="section-heading">These look like reimbursements:</h2>
+
+    <TableComponent Transactions="@Model.ImportedTransactions?.Where(t => t.Reimburses is not null).ToList()" />
+
+ *@
+    @* Model.ImportedTransactions.Except(Model.CustomisedTransactions) *@
 }

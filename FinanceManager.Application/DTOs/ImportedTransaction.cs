@@ -14,6 +14,18 @@ namespace FinanceManager.Application.DTOs
         public ImportedTransaction? Reimburses { get; set; }
         public ICollection<ImportedTransaction> Splits { get; set; } = [];
 
+        public void SetTransfers(ImportedTransaction transfer)
+        {
+            Transfers = transfer;
+            transfer.Transfers = this;
+        }
+
+        public void UnsetTransfer()
+        {
+            Transfers?.Transfers = null;
+            Transfers = null;
+        }
+
         public void Backdate(DateTime date)
         {
             if (date > BankRecord.Date)

@@ -16,18 +16,18 @@ namespace FinanceManager.Application.Services
             var importId = Guid.NewGuid();
 
             var parser = parserService.GetParser(bank, extension);
-            var parsed = await parser.ParseTransactionsFileAsync(file);
+            var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();
 
-            var records = parsed.Select(t => ParsedTransactionToBankRecord(t, bank, importId));
+            var records = parsed.Select(t => ParsedTransactionToBankRecord(t, bank, importId)).ToList();
 
-            var duplicates = await bankRecordRepository.FindDuplicatesAsync(records);
-            var validRecords = records.Except(duplicates);
+            var duplicates = (await bankRecordRepository.FindDuplicatesAsync(records)).ToList();
+            var validRecords = records.Except(duplicates).ToList();
 
             await bankRecordRepository.SaveAsync(validRecords);
 
-            var transactions = validRecords.Select(BankRecordToImportedTransaction);
-            var transfers = transactions.Where(t => t.BankRecord.IsInternalTransfer);
-            var reimbursements = await bankRecordRepository.FindSimilarAsync(transactions.Select(t => t.BankRecord));
+            var transactions = validRecords.Select(BankRecordToImportedTransaction).ToList();
+            var transfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
+            var reimbursements = (await bankRecordRepository.FindSimilarAsync(transactions.Select(t => t.BankRecord))).ToList();
 
             MatchTransfers(transfers);
             SuggestReimbursements(transactions, reimbursements);
@@ -74,7 +74,7 @@ namespace FinanceManager.Application.Services
             };
         }
 
-        private static void MatchTransfers(IEnumerable<ImportedTransaction> transfers)
+        private static void MatchTransfers(List<ImportedTransaction> transfers)
         {
             foreach (var transaction in transfers)
             {
@@ -88,26 +88,25 @@ namespace FinanceManager.Application.Services
 
                 if (match != null)
                 {
-                    transaction.Transfers = match;
-                    match.Transfers = transaction;
+                    transaction.SetTransfers(match);
                 }
             }
         }
 
-        private static void SuggestReimbursements(IEnumerable<ImportedTransaction> transactions, IEnumerable<BankRecord> reimbursements)
+        private static void SuggestReimbursements(List<ImportedTransaction> transactions, List<BankRecord> reimbursements)
         {
             foreach (var reimbursement in reimbursements)
             {
-                var transaction = transactions.Where(t => t.BankRecord.Id == reimbursement.Id).FirstOrDefault();
+                var transaction = transactions.FirstOrDefault(t => t.BankRecord.Id == reimbursement.Id);
                 if (transaction == null || transaction.Reimburses != null) continue;
 
                 var match = reimbursements.FirstOrDefault(p =>
                     p != reimbursement &&
-                    transactions.Where(t => t.BankRecord.Id == p.Id).FirstOrDefault()?.Reimburses == null &&
+                    transactions.FirstOrDefault(t => t.BankRecord.Id == p.Id)?.Reimburses == null &&
                     p.Amount == -reimbursement.Amount &&
                     p.Date == reimbursement.Date);
 
-                var matchTransaction = transactions.Where(t => t.BankRecord.Id == match?.Id).FirstOrDefault();
+                var matchTransaction = transactions.FirstOrDefault(t => t.BankRecord.Id == match?.Id);
 
                 if (matchTransaction != null)
                 {
