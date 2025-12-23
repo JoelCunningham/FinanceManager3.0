@@ -1,31 +1,45 @@
 ﻿using FinanceManager.Application.DTOs;
+using FinanceManager.WebApp.Enums;
+using FinanceManager.WebApp.Models.Base;
 
 namespace FinanceManager.WebApp.Models
 {
-    public sealed class ImportPageModel
+    public class ImportPageModel : NavigatableModel<ImportStage>
     {
         public ParserInfo? SelectedBank { get; set; }
+
         public string? ImportErrorMessage { get; set; }
         public FileValidationState FileValidation { get; set; } = FileValidationState.None;
 
         public IReadOnlyList<ImportedTransaction>? ImportedTransactions { get; set; }
         public List<ImportedTransaction> CustomisedTransactions { get; set; } = [];
 
+        public override ImportStage MaxStageReached { get; set; } = ImportStage.FileUpload;
+        protected override ImportStage[] Stages { get; } =
+        [
+            ImportStage.FileUpload,
+            ImportStage.ConfigureTransactions,
+            ImportStage.ConfigureReimbursements,
+            ImportStage.CategorizeTransactions,
+            ImportStage.Complete
+        ];
+
         public void Reset()
         {
             ImportErrorMessage = null;
             ImportedTransactions = null;
             FileValidation = FileValidationState.None;
+            MaxStageReached = ImportStage.FileUpload;
         }
 
-        public void Success(IEnumerable<ImportedTransaction> records)
+        public void ImportSuccess(IEnumerable<ImportedTransaction> records)
         {
             ImportedTransactions = records.ToList();
             ImportErrorMessage = null;
             FileValidation = FileValidationState.Valid;
         }
 
-        public void Error(Exception exception)
+        public void ImportError(Exception exception)
         {
             ImportedTransactions = null;
             ImportErrorMessage = GetErrorMessage(exception);
@@ -45,13 +59,15 @@ namespace FinanceManager.WebApp.Models
                 _ => "Unable to import transactions from this file. Please check it is correct."
             };
         }
-    }
 
-    public enum FileValidationState
-    {
-        None,
-        Valid,
-        Invalid,
-        Accepted,
+        public override bool CanIncrementStage => CurrentStage switch
+        {
+            ImportStage.FileUpload => FileValidation == FileValidationState.Valid,
+            ImportStage.ConfigureTransactions => true,
+            ImportStage.ConfigureReimbursements => true,
+            ImportStage.CategorizeTransactions => true,
+            ImportStage.Complete => false,
+            _ => false
+        };
     }
 }

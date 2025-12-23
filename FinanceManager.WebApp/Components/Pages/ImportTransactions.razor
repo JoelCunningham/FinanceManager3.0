@@ -6,6 +6,7 @@
 
 @code {
     private ImportPageModel Model = new();
+    private bool HasProgress => Model.MaxStageReached != ImportStage.FileUpload;
 
     private async Task ImportFileTransactions(IBrowserFile file)
     {
@@ -18,11 +19,11 @@
             var fileExtension = Path.GetExtension(file.Name);
 
             var results = await ImportService.ImportAsync(stream, bankName, fileExtension);
-            Model.Success(results);
+            Model.ImportSuccess(results);
         }
         catch (Exception exception)
         {
-            Model.Error(exception);
+            Model.ImportError(exception);
         }
     }
 
@@ -32,9 +33,9 @@
         Model.SelectedBank = parser;
     }
 
-    private void OnContinue()
+    private void OnStageChange(ImportStage stage)
     {
-        Model.FileValidation = FileValidationState.Accepted;
+        Model.GoToStage(stage);
     }
 
     private void StageTransaction(ImportedTransaction transaction)
@@ -47,27 +48,38 @@
 
 <h1 class="page-heading">Import transactions</h1>
 
-@if (Model.FileValidation != FileValidationState.Accepted)
-{
-    <BankSelectComponent SelectedBank="Model.SelectedBank" OnBankChange="OnBankChanged" />
+<BreadcrumbComponent CurrentStage="Model.CurrentStage" MaxStageReached="Model.MaxStageReached" OnStageChange="OnStageChange" />
 
-    <FileUploadComponent SelectedBank="@Model.SelectedBank" ValidationState="@Model.FileValidation" ImportErrorMessage="@Model.ImportErrorMessage" OnFileImport="ImportFileTransactions" @key="Model.SelectedBank?.BankName" />
+<div class="@(Model.CurrentStage == ImportStage.FileUpload ? "" : "d-none")">
+    <BankSelectComponent SelectedBank="Model.SelectedBank" OnBankChange="OnBankChanged" HasProgress="HasProgress" />
+    <FileUploadComponent SelectedBank="@Model.SelectedBank" ValidationState="@Model.FileValidation" ImportErrorMessage="@Model.ImportErrorMessage" OnFileImport="ImportFileTransactions" />
+</div>
 
-    @if (Model.FileValidation == FileValidationState.Valid)
-    {
-        <button type="button" class="btn btn-primary my-3" @onclick="OnContinue">Continue</button>
-    }
-}
-else
-{
-    <h2 class="section-heading">We decteced some transfers:</h2>
-
+<div class="@(Model.CurrentStage == ImportStage.ConfigureTransactions ? "" : "d-none")">
+    <h2 class="section-heading">We detected some transfers:</h2>
     <TransferGrid Transactions="Model.ImportedTransactions" AcceptTransfer="StageTransaction" />
+</div>
 
-  @*   <h2 class="section-heading">These look like reimbursements:</h2>
+<div class="@(Model.CurrentStage == ImportStage.ConfigureReimbursements ? "" : "d-none")">
+    <h2 class="section-heading">These look like reimbursements:</h2>
+    @* Add *@
+</div>
 
-    <TableComponent Transactions="@Model.ImportedTransactions?.Where(t => t.Reimburses is not null).ToList()" />
+<div class="@(Model.CurrentStage == ImportStage.CategorizeTransactions ? "" : "d-none")">
+    <h2 class="section-heading">Categorize your transactions:</h2>
+    @* Add categorization component here *@
+</div>
 
- *@
-    @* Model.ImportedTransactions.Except(Model.CustomisedTransactions) *@
-}
+<div class="wizard-navigation">
+    @if (Model.CanDecrementStage)
+    {
+        <button type="button" class="btn btn-secondary my-3" @onclick="Model.PreviousStage">Back</button>
+    }
+    
+    @if (Model.CanIncrementStage)
+    {
+        <button type="button" class="btn btn-primary my-3" @onclick="Model.NextStage">
+            @(Model.CurrentStage == ImportStage.CategorizeTransactions ? "Finish" : "Continue")
+        </button>
+    }
+</div>

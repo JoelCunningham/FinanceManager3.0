@@ -20,8 +20,8 @@
 }
 
 <div class="bank-card" @onclick="HandleClick">
-    <input type="radio" class="bank-card-input" name="bankSelect" id="@BankName" checked="@IsSelected" @onchange="HandleClick" />
-    <label class="bank-card-label" for="@BankName">
+    <input type="radio" class="bank-card-input" name="bankSelect" id="@BankName" checked="@IsSelected" />
+    <label class="bank-card-label">
         <div class="bank-card-content">
             <img class="bank-logo" src="@GetBankLogoPath(BankName)" alt="@BankName logo" />
             <div class="bank-name">@BankName</div>

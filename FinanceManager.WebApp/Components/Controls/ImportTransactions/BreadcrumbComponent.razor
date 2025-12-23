@@ -1,0 +1,55 @@
+﻿@code {
+    [Parameter, EditorRequired]
+    public ImportStage CurrentStage { get; set; }
+
+    [Parameter, EditorRequired]
+    public ImportStage MaxStageReached { get; set; }
+
+    [Parameter]
+    public EventCallback<ImportStage> OnStageChange { get; set; }
+
+    private string GetBreadcrumbClass(ImportStage stage)
+    {
+        var classes = new List<string> { "navigation-item btn" };
+
+        if (stage == CurrentStage)
+            classes.Add("btn-primary");
+        else if ((int)stage < (int)CurrentStage)
+            classes.Add("btn-success");
+        else if ((int)stage <= (int)MaxStageReached)
+            classes.Add("btn-info");
+        else
+            classes.Add("btn-secondary disabled");
+
+        return string.Join(" ", classes);
+    }
+
+    private async Task OnStageClick(ImportStage stage)
+    {
+        if ((int)stage <= (int)MaxStageReached)
+        {
+            await OnStageChange.InvokeAsync(stage);
+        }
+    }
+}
+
+<nav aria-label="Import wizard progress">
+    <ol class="breadcrumb-wizard">
+        <li class="@GetBreadcrumbClass(ImportStage.FileUpload)" @onclick="() => OnStageClick(ImportStage.FileUpload)">
+            <span class="step-number">1</span>
+            <span class="step-label">Upload File</span>
+        </li>
+        <li class="@GetBreadcrumbClass(ImportStage.ConfigureTransactions)" @onclick="() => OnStageClick(ImportStage.ConfigureTransactions)">
+            <span class="step-number">2</span>
+            <span class="step-label">Configure Transactions</span>
+        </li>
+        <li class="@GetBreadcrumbClass(ImportStage.ConfigureReimbursements)" @onclick="() => OnStageClick(ImportStage.ConfigureReimbursements)">
+            <span class="step-number">3</span>
+            <span class="step-label">Reimbursements</span>
+        </li>
+        <li class="@GetBreadcrumbClass(ImportStage.CategorizeTransactions)" @onclick="() => OnStageClick(ImportStage.CategorizeTransactions)">
+            <span class="step-number">4</span>
+            <span class="step-label">Categorize</span>
+        </li>
+    </ol>
+</nav>
