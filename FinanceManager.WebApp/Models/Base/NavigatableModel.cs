@@ -39,7 +39,7 @@
 
         public void NextStage()
         {
-            if (CanIncrementStage)
+            while (CanIncrementStage)
             {
                 _currentStageIndex++;
                 MaxStageReached = Stages[_currentStageIndex];
