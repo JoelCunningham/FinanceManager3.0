@@ -1,10 +1,12 @@
 @code {
     [Parameter, EditorRequired]
-    public ImportedTransaction Transfer { get; set; }
+    public required ImportedTransaction Transfer { get; set; }
+
     [Parameter, EditorRequired]
-    public EventCallback<ImportedTransaction> AcceptTransfer { get; set; }
+    public required EventCallback<ImportedTransaction> AcceptTransfer { get; set; }
+
     [Parameter, EditorRequired]
-    public EventCallback<ImportedTransaction> RejectTransfer { get; set; }
+    public required EventCallback<ImportedTransaction> RejectTransfer { get; set; }
 
     private string? _animationClass;
     private bool _isAnimating => _animationClass is not null;
@@ -42,8 +44,8 @@
             <div>@Transfer.Transfers.BankRecord.AccountNumber</div>
             <div>@Transfer.Transfers.Description</div>
             <div>@Transfer.Transfers.Amount.ToString("C")</div>
-            <div><button type="button" class="btn btn-danger" onclick="@Reject" disabled="@_isAnimating">Reject</button></div>
-            <div><button type="button" class="btn btn-success" onclick="@Accept" disabled="@_isAnimating">Accept</button></div>
+            <div><button type="button" class="btn btn-danger" @onclick="@Reject" disabled="@_isAnimating">Reject</button></div>
+            <div><button type="button" class="btn btn-success" @onclick="@Accept" disabled="@_isAnimating">Accept</button></div>
         </div>
     }
 </div>

@@ -2,14 +2,16 @@
 @inject TransactionParserService ParserService
 
 @code {
-    [Parameter]
-    public ParserInfo? SelectedBank { get; set; }
+    [Parameter, EditorRequired]
+    public required ImportPageBankModel Model { get; set; }
+
     [Parameter]
     public bool HasProgress { get; set; }
-    [Parameter]
-    public EventCallback<ParserInfo?> OnBankChange { get; set; }
 
-    private IReadOnlyList<ParserInfo>? availableParsers;
+    [Parameter]
+    public EventCallback<ParserInfo> OnBankChange { get; set; }
+
+    private IReadOnlyList<ParserInfo> availableParsers = [];
 
     protected override void OnInitialized()
     {
@@ -21,19 +23,19 @@
         bool confirmed = !HasProgress || await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to change the selected bank? This will reset any progress made in the import process.");
         if (confirmed)
         {
-            SelectedBank = availableParsers?.FirstOrDefault(p => p.BankName == bankName);
-            await OnBankChange.InvokeAsync(SelectedBank);
+            Model.SelectedBank = availableParsers?.FirstOrDefault(p => p.BankName == bankName);
+            await OnBankChange.InvokeAsync(Model.SelectedBank);
         }
     }
 }
 
-@if (availableParsers is not null && availableParsers.Any())
+@if (availableParsers.Count > 0)
 {
     <h2 class="section-heading">Select your bank:</h2>
     <div class="bank-cards-container">
         @foreach (var bank in availableParsers)
         {
-            var isSelected = SelectedBank?.BankName == bank.BankName;
+            var isSelected = Model.SelectedBank?.BankName == bank.BankName;
             <BankCardComponent BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
         }
     </div>

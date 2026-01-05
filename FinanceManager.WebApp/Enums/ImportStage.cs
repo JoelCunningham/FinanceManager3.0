@@ -3,7 +3,7 @@
     public enum ImportStage
     {
         FileUpload,
-        ConfigureTransactions,
+        ConfigureTransfers,
         ConfigureReimbursements,
         CategorizeTransactions,
         Complete

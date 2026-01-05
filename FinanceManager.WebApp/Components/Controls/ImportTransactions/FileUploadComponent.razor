@@ -1,10 +1,7 @@
 @code {
-    [Parameter]
-    public ParserInfo? SelectedBank { get; set; }
-    [Parameter]
-    public FileValidationState ValidationState { get; set; }
-    [Parameter]
-    public string? ImportErrorMessage { get; set; }
+    [Parameter, EditorRequired]
+    public required ImportPageBankModel Model { get; set; }
+
     [Parameter]
     public EventCallback<IBrowserFile> OnFileImport { get; set; }
 
@@ -13,7 +10,7 @@
         await OnFileImport.InvokeAsync(e.File);
     }
 
-    private string ValidationCssClass => ValidationState switch
+    private string ValidationCssClass => Model.FileValidationState switch
     {
         FileValidationState.Valid => "is-valid",
         FileValidationState.Invalid => "is-invalid",
@@ -21,16 +18,16 @@
     };
 }
 
-@if (SelectedBank?.SupportedExtensions.Count > 0)
+@if (Model.SelectedBank?.SupportedExtensions.Count > 0)
 {
     <h2 class="section-heading">Upload your transactions:</h2>
-    <InputFile OnChange="OnFileSelected" accept="@string.Join(',', SelectedBank.SupportedExtensions)" class="@($"form-control {ValidationCssClass}")" />
-    @if (ValidationState == FileValidationState.Valid)
+    <InputFile OnChange="OnFileSelected" accept="@string.Join(',', Model.SelectedBank.SupportedExtensions)" class="@($"form-control {ValidationCssClass}")" />
+    @if (Model.FileValidationState == FileValidationState.Valid)
     {
         <div class="valid-feedback">File uploaded successfully.</div>
     }
-    @if (ValidationState == FileValidationState.Invalid)
+    @if (Model.FileValidationState == FileValidationState.Invalid)
     {
-        <div class="invalid-feedback">@ImportErrorMessage</div>
+        <div class="invalid-feedback">@Model.FileErrorMessage</div>
     }
 }

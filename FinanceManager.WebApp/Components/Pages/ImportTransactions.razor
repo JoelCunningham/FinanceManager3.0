@@ -10,12 +10,12 @@
 
     private async Task ImportFileTransactions(IBrowserFile file)
     {
-        if (Model.SelectedBank is null) return;
+        if (Model.BankModel.SelectedBank is null) return;
 
         try
         {
             await using var stream = file.OpenReadStream();
-            var bankName = Model.SelectedBank.BankName;
+            var bankName = Model.BankModel.SelectedBank.BankName;
             var fileExtension = Path.GetExtension(file.Name);
 
             var results = await ImportService.ImportAsync(stream, bankName, fileExtension);
@@ -30,17 +30,12 @@
     private void OnBankChanged(ParserInfo? parser)
     {
         Model.Reset();
-        Model.SelectedBank = parser;
+        Model.BankModel.SelectedBank = parser;
     }
 
     private void OnStageChange(ImportStage stage)
     {
         Model.GoToStage(stage);
-    }
-
-    private void StageTransaction(ImportedTransaction transaction)
-    {
-        Model.CustomisedTransactions.Add(transaction);
     }
 }
 
@@ -51,13 +46,13 @@
 <BreadcrumbComponent CurrentStage="Model.CurrentStage" MaxStageReached="Model.MaxStageReached" OnStageChange="OnStageChange" />
 
 <div class="@(Model.CurrentStage == ImportStage.FileUpload ? "" : "d-none")">
-    <BankSelectComponent SelectedBank="Model.SelectedBank" OnBankChange="OnBankChanged" HasProgress="HasProgress" />
-    <FileUploadComponent SelectedBank="@Model.SelectedBank" ValidationState="@Model.FileValidation" ImportErrorMessage="@Model.ImportErrorMessage" OnFileImport="ImportFileTransactions" />
+    <BankSelectComponent Model="Model.BankModel" OnBankChange="OnBankChanged" HasProgress="HasProgress" />
+    <FileUploadComponent Model="Model.BankModel" OnFileImport="ImportFileTransactions" />
 </div>
 
-<div class="@(Model.CurrentStage == ImportStage.ConfigureTransactions ? "" : "d-none")">
+<div class="@(Model.CurrentStage == ImportStage.ConfigureTransfers ? "" : "d-none")">
     <h2 class="section-heading">We detected some transfers:</h2>
-    <TransferGrid Transactions="Model.ImportedTransactions" AcceptTransfer="StageTransaction" />
+    <TransferGrid Model="Model.TransfersModel" />
 </div>
 
 <div class="@(Model.CurrentStage == ImportStage.ConfigureReimbursements ? "" : "d-none")">

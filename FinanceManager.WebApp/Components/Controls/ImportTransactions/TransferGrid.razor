@@ -1,96 +1,33 @@
+@using FinanceManager.WebApp.Models.ImportPage
+
 @code {
-    [Parameter]
-    public IReadOnlyList<ImportedTransaction>? Transactions { get; set; }
-    [Parameter]
-    public EventCallback<ImportedTransaction> AcceptTransfer { get; set; }
+    [Parameter, EditorRequired]
+    public required ImportPageTransfersModel Model { get; set; }
 
-    private HashSet<ImportedTransaction> _submittedTransfers = [];
-    private List<ImportedTransaction> _transfers = [];
+    public string _resetClass => GetResetClass();
 
-    protected override void OnParametersSet()
+    private string GetResetClass()
     {
-        _transfers = GroupTransfers();
-    }
-
-    private async Task Accept(ImportedTransaction transfer)
-    {
-        _submittedTransfers.Add(transfer);
-        if (transfer.Transfers is not null)
+        if (Model.AcceptedTransfers.Count > 0 || Model.RejectedTransfers.Count > 0)
         {
-            _submittedTransfers.Add(transfer.Transfers);
-        }
-        _transfers.Remove(transfer);
-
-        await AcceptTransfer.InvokeAsync(transfer);
-    }
-
-    private void Reject(ImportedTransaction transfer)
-    {
-        _submittedTransfers.Add(transfer);
-        if (transfer.Transfers is not null)
+            return "btn btn-info";
+        } else
         {
-            _submittedTransfers.Add(transfer.Transfers);
+            return "btn btn-secondary disabled";
         }
-        _transfers.Remove(transfer);
-
-        transfer.UnsetTransfer();
-    }
-
-    private async Task AcceptAll()
-    {
-        foreach (var trasfer in _transfers.ToList())
-        {
-            await Accept(trasfer);
-            StateHasChanged();
-        }
-    }
-
-    private void RejectAll()
-    {
-        foreach (var trasfer in _transfers.ToList())
-        {
-            Reject(trasfer);
-        }
-        StateHasChanged();
-    }
-
-    private List<ImportedTransaction> GroupTransfers()
-    {
-        var transfers = Transactions?
-        .Where(t => t.Transfers is not null && !_submittedTransfers.Contains(t))
-        .OrderBy(t => t.Date)
-        .ThenBy(t => Math.Abs(t.Amount))
-        .ThenByDescending(t => t.Amount)
-        .ToList();
-
-        if (transfers is null) return [];
-
-        var seenTransfers = new HashSet<ImportedTransaction>();
-        var result = new List<ImportedTransaction>();
-
-        foreach (var transfer in transfers)
-        {
-            if (!seenTransfers.Contains(transfer))
-                result.Add(transfer);
-
-            if (transfer.Transfers != null)
-                seenTransfers.Add(transfer.Transfers);
-        }
-
-        return result;
     }
 }
 
-@if (_transfers is not null && _transfers.Any())
+@if (Model.DetectedTransfers.Count > 0)
 {
     <div class="transaction-grid">
         <div class="transaction-grid-buttons">
             <div></div>
             <div></div>
             <div></div>
-            <div></div>
-            <button type="button" class="btn btn-danger" onclick="@RejectAll">Reject All</button>
-            <button type="button" class="btn btn-success" onclick="@AcceptAll">Accept All</button>
+            <button type="button" class="@_resetClass" @onclick="@Model.Reset">Reset</button>
+            <button type="button" class="btn btn-danger" @onclick="@Model.RejectRemainingTransfers">Reject All</button>
+            <button type="button" class="btn btn-success" @onclick="@Model.AcceptRemainingTransfers">Accept All</button>
         </div>
         <div class="transaction-grid-header">
             <div>Date</div>
@@ -100,15 +37,25 @@
             <div></div>
             <div></div>
         </div>
-        @foreach (var transfer in _transfers)
+        @foreach (var transfer in Model.GroupedTransfers)
         {
-            <TransferRow Transfer="transfer" AcceptTransfer="Accept" RejectTransfer="Reject" />
+            <TransferRow Transfer="transfer" AcceptTransfer="Model.AcceptTransfer" RejectTransfer="Model.RejectTransfer" />
         }
     </div>
-} else
+}
+else
 {
-    <div class="alert alert-success" role="alert">
-        All detected transfers have been resolved  
+    <div class="transaction-grid">
+        <div class="transaction-grid-buttons">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <button type="button" class="btn btn-info" @onclick="@Model.Reset">Reset</button>
+        </div>
     </div>
-    <button type="button" class="btn btn-primary my-3">Continue</button>
+    <div class="alert alert-success" role="alert">
+        All detected transfers have been resolved
+    </div>
 }

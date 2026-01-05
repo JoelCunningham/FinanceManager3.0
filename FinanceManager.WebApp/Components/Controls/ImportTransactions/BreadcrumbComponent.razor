@@ -1,9 +1,9 @@
 ﻿@code {
     [Parameter, EditorRequired]
-    public ImportStage CurrentStage { get; set; }
+    public required ImportStage CurrentStage { get; set; }
 
     [Parameter, EditorRequired]
-    public ImportStage MaxStageReached { get; set; }
+    public required ImportStage MaxStageReached { get; set; }
 
     [Parameter]
     public EventCallback<ImportStage> OnStageChange { get; set; }
@@ -39,9 +39,9 @@
             <span class="step-number">1</span>
             <span class="step-label">Upload File</span>
         </li>
-        <li class="@GetBreadcrumbClass(ImportStage.ConfigureTransactions)" @onclick="() => OnStageClick(ImportStage.ConfigureTransactions)">
+        <li class="@GetBreadcrumbClass(ImportStage.ConfigureTransfers)" @onclick="() => OnStageClick(ImportStage.ConfigureTransfers)">
             <span class="step-number">2</span>
-            <span class="step-label">Configure Transactions</span>
+            <span class="step-label">Transfers</span>
         </li>
         <li class="@GetBreadcrumbClass(ImportStage.ConfigureReimbursements)" @onclick="() => OnStageClick(ImportStage.ConfigureReimbursements)">
             <span class="step-number">3</span>

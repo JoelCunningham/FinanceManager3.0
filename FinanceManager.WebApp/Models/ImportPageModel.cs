@@ -1,24 +1,22 @@
 ﻿using FinanceManager.Application.DTOs;
 using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models.Base;
+using FinanceManager.WebApp.Models.ImportPage;
 
 namespace FinanceManager.WebApp.Models
 {
     public class ImportPageModel : NavigatableModel<ImportStage>
     {
-        public ParserInfo? SelectedBank { get; set; }
-
-        public string? ImportErrorMessage { get; set; }
-        public FileValidationState FileValidation { get; set; } = FileValidationState.None;
-
         public IReadOnlyList<ImportedTransaction>? ImportedTransactions { get; set; }
-        public List<ImportedTransaction> CustomisedTransactions { get; set; } = [];
+
+        public ImportPageBankModel BankModel { get; set; } = new ImportPageBankModel();
+        public ImportPageTransfersModel TransfersModel { get; set; } = new ImportPageTransfersModel([]);
 
         public override ImportStage MaxStageReached { get; set; } = ImportStage.FileUpload;
         protected override ImportStage[] Stages { get; } =
         [
             ImportStage.FileUpload,
-            ImportStage.ConfigureTransactions,
+            ImportStage.ConfigureTransfers,
             ImportStage.ConfigureReimbursements,
             ImportStage.CategorizeTransactions,
             ImportStage.Complete
@@ -26,44 +24,32 @@ namespace FinanceManager.WebApp.Models
 
         public void Reset()
         {
-            ImportErrorMessage = null;
             ImportedTransactions = null;
-            FileValidation = FileValidationState.None;
+            
+            BankModel = new ImportPageBankModel();
+            TransfersModel = new ImportPageTransfersModel([]);
+
             MaxStageReached = ImportStage.FileUpload;
         }
 
         public void ImportSuccess(IEnumerable<ImportedTransaction> records)
         {
             ImportedTransactions = records.ToList();
-            ImportErrorMessage = null;
-            FileValidation = FileValidationState.Valid;
+            TransfersModel = new ImportPageTransfersModel(ImportedTransactions);
+            BankModel.SetSuccess();
         }
 
         public void ImportError(Exception exception)
         {
             ImportedTransactions = null;
-            ImportErrorMessage = GetErrorMessage(exception);
-            FileValidation = FileValidationState.Invalid;
-        }
-
-        private string GetErrorMessage(Exception exception)
-        {
-            if (SelectedBank is null)
-            {
-                return "Please select a bank first.";
-            }
-            return exception switch
-            {
-                IOException => "The file you uploaded is too large. Please upload a file below 512KB.",
-                KeyNotFoundException => "The type of the file you uploaded is not supported. Please upload a file of type: " + string.Join(", ", SelectedBank.SupportedExtensions),
-                _ => "Unable to import transactions from this file. Please check it is correct."
-            };
+            TransfersModel = new ImportPageTransfersModel([]);
+            BankModel.SetError(exception);
         }
 
         public override bool CanIncrementStage => CurrentStage switch
         {
-            ImportStage.FileUpload => FileValidation == FileValidationState.Valid,
-            ImportStage.ConfigureTransactions => true,
+            ImportStage.FileUpload => BankModel.FileValidationState == FileValidationState.Valid,
+            ImportStage.ConfigureTransfers => TransfersModel.DetectedTransfers.Count == 0,
             ImportStage.ConfigureReimbursements => true,
             ImportStage.CategorizeTransactions => true,
             ImportStage.Complete => false,
