@@ -12,11 +12,14 @@ namespace FinanceManager.WebApp.Models.ImportPage
 
         public List<ImportedTransaction> GroupedTransfers => GroupTransfers();
 
+        public Action? OnTransfersChanged { get; set; }
+
         public void Reset()
         {
             DetectedTransfers = GetTransfersFromTransactions(AllTransactions);
             AcceptedTransfers = [];
             RejectedTransfers = [];
+            OnTransfersChanged?.Invoke();
         }
 
         public void AcceptTransfer(ImportedTransaction transfer)
@@ -25,6 +28,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
             DetectedTransfers.Remove(transfer.Transfers!);
             AcceptedTransfers.Add(transfer);
             AcceptedTransfers.Add(transfer.Transfers!);
+            OnTransfersChanged?.Invoke();
         }
 
         public void RejectTransfer(ImportedTransaction transfer)
@@ -33,22 +37,31 @@ namespace FinanceManager.WebApp.Models.ImportPage
             DetectedTransfers.Remove(transfer.Transfers!);
             RejectedTransfers.Add(transfer);
             RejectedTransfers.Add(transfer.Transfers!);
+            OnTransfersChanged?.Invoke();
         }
 
         public void AcceptRemainingTransfers()
         {
             foreach (var transfer in DetectedTransfers.ToList())
             {
-                AcceptTransfer(transfer);
+                DetectedTransfers.Remove(transfer);
+                DetectedTransfers.Remove(transfer.Transfers!);
+                AcceptedTransfers.Add(transfer);
+                AcceptedTransfers.Add(transfer.Transfers!);
             }
+            OnTransfersChanged?.Invoke();
         }
 
         public void RejectRemainingTransfers()
         {
             foreach (var transfer in DetectedTransfers.ToList())
             {
-                RejectTransfer(transfer);
+                DetectedTransfers.Remove(transfer);
+                DetectedTransfers.Remove(transfer.Transfers!);
+                RejectedTransfers.Add(transfer);
+                RejectedTransfers.Add(transfer.Transfers!);
             }
+            OnTransfersChanged?.Invoke();
         }
 
         private static List<ImportedTransaction> GetTransfersFromTransactions(IEnumerable<ImportedTransaction> transactions)

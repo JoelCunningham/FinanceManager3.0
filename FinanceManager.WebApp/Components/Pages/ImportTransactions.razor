@@ -8,6 +8,11 @@
     private ImportPageModel Model = new();
     private bool HasProgress => Model.MaxStageReached != ImportStage.FileUpload;
 
+    protected override void OnInitialized()
+    {
+        Model.TransfersModel.OnTransfersChanged = StateHasChanged;
+    }
+
     private async Task ImportFileTransactions(IBrowserFile file)
     {
         if (Model.BankModel.SelectedBank is null) return;
@@ -20,6 +25,7 @@
 
             var results = await ImportService.ImportAsync(stream, bankName, fileExtension);
             Model.ImportSuccess(results);
+            Model.TransfersModel.OnTransfersChanged = StateHasChanged;
         }
         catch (Exception exception)
         {
@@ -70,7 +76,7 @@
     {
         <button type="button" class="btn btn-secondary my-3" @onclick="Model.PreviousStage">Back</button>
     }
-    
+
     @if (Model.CanIncrementStage)
     {
         <button type="button" class="btn btn-primary my-3" @onclick="Model.NextStage">

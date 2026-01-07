@@ -1,9 +1,8 @@
 ﻿using FinanceManager.Application.DTOs;
 using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models.Base;
-using FinanceManager.WebApp.Models.ImportPage;
 
-namespace FinanceManager.WebApp.Models
+namespace FinanceManager.WebApp.Models.ImportPage
 {
     public class ImportPageModel : NavigatableModel<ImportStage>
     {
@@ -50,8 +49,8 @@ namespace FinanceManager.WebApp.Models
         {
             ImportStage.FileUpload => BankModel.FileValidationState == FileValidationState.Valid,
             ImportStage.ConfigureTransfers => TransfersModel.DetectedTransfers.Count == 0,
-            ImportStage.ConfigureReimbursements => true,
-            ImportStage.CategorizeTransactions => true,
+            ImportStage.ConfigureReimbursements => false,
+            ImportStage.CategorizeTransactions => false,
             ImportStage.Complete => false,
             _ => false
         };
