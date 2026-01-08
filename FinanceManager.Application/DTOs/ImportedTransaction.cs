@@ -26,6 +26,16 @@ namespace FinanceManager.Application.DTOs
             Transfers = null;
         }
 
+        public void SetReimburses(ImportedTransaction reimbursement)
+        {
+            Reimburses = reimbursement;
+        }
+
+        public void UnsetReimburses()
+        {
+            Reimburses = null;
+        }
+
         public void Backdate(DateTime date)
         {
             if (date > BankRecord.Date)

@@ -10,15 +10,20 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             return true;
         }
 
+        public async Task<bool> DeleteByImportIdAsync(Guid importId)
+        {
+            return true;
+        }
+
+        public async Task<BankRecord?> FindSimilarAsync(BankRecord bankRecord)
+        {
+            if (bankRecord.Amount == 796.8m) return bankRecord;
+            return null; //TODO: Must be oppersite sign, within 10% or 1 dollar, within 30days
+        }
+
         public async Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords)
         {
             return bankRecords.Take(2);
         }
-
-        public async Task<IEnumerable<BankRecord>> FindSimilarAsync(IEnumerable<BankRecord> bankRecords)
-        {
-            return bankRecords.Take(2);
-        }
-
     }
 }

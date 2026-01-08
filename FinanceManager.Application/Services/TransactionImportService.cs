@@ -26,13 +26,16 @@ namespace FinanceManager.Application.Services
             await bankRecordRepository.SaveAsync(validRecords);
 
             var transactions = validRecords.Select(BankRecordToImportedTransaction).ToList();
-            var transfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
-            var reimbursements = (await bankRecordRepository.FindSimilarAsync(transactions.Select(t => t.BankRecord))).ToList();
-
-            MatchTransfers(transfers);
-            SuggestReimbursements(transactions, reimbursements);
+            await MatchTransfersAsync(transactions);
+            await MatchReimbursementsAsync(transactions);
 
             return transactions;
+        }
+
+        public async Task<bool> CancelAsync(Guid importId)
+        {
+            await bankRecordRepository.DeleteByImportIdAsync(importId);
+            return true;
         }
 
         public async Task<bool> SaveAsync(IEnumerable<ImportedTransaction> importedTransactions)
@@ -41,8 +44,49 @@ namespace FinanceManager.Application.Services
             var relationships = new List<TransactionLink>();
 
             await transactionRepository.SaveTransactions(transactions, relationships);
-
             return true;
+        }
+
+        private static async Task MatchTransfersAsync(List<ImportedTransaction> transactions)
+        {
+            var transfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
+
+            foreach (var transaction in transfers)
+            {
+                if (transaction.Transfers != null) continue;
+
+                var match = transfers.FirstOrDefault(p =>
+                    p != transaction &&
+                    p.Transfers == null &&
+                    p.Amount == -transaction.Amount &&
+                    p.Date == transaction.Date);
+
+                if (match != null)
+                {
+                    transaction.SetTransfers(match);
+                }
+            }
+        }
+
+        private async Task MatchReimbursementsAsync(List<ImportedTransaction> transactions)
+        {
+            foreach (var transaction in transactions)
+            {
+                if (transaction.Amount < 0) continue;
+
+                var similar = await bankRecordRepository.FindSimilarAsync(transaction.BankRecord);
+                if (similar == null) continue;
+
+                var foundInCurrent = transactions.Where(t => t.BankRecord.Id == similar.Id).FirstOrDefault();
+                if (foundInCurrent != null)
+                {
+                    transaction.SetReimburses(foundInCurrent);
+                }
+                else
+                {
+                    transaction.SetReimburses(BankRecordToImportedTransaction(similar));
+                }
+            }
         }
 
         private static BankRecord ParsedTransactionToBankRecord(ParsedTransaction transaction, string bank, Guid importId)
@@ -72,48 +116,6 @@ namespace FinanceManager.Application.Services
                 Description = record.Description,
                 Category = null,
             };
-        }
-
-        private static void MatchTransfers(List<ImportedTransaction> transfers)
-        {
-            foreach (var transaction in transfers)
-            {
-                if (transaction.Transfers != null) continue;
-
-                var match = transfers.FirstOrDefault(p =>
-                    p != transaction &&
-                    p.Transfers == null &&
-                    p.Amount == -transaction.Amount &&
-                    p.Date == transaction.Date);
-
-                if (match != null)
-                {
-                    transaction.SetTransfers(match);
-                }
-            }
-        }
-
-        private static void SuggestReimbursements(List<ImportedTransaction> transactions, List<BankRecord> reimbursements)
-        {
-            foreach (var reimbursement in reimbursements)
-            {
-                var transaction = transactions.FirstOrDefault(t => t.BankRecord.Id == reimbursement.Id);
-                if (transaction == null || transaction.Reimburses != null) continue;
-
-                var match = reimbursements.FirstOrDefault(p =>
-                    p != reimbursement &&
-                    transactions.FirstOrDefault(t => t.BankRecord.Id == p.Id)?.Reimburses == null &&
-                    p.Amount == -reimbursement.Amount &&
-                    p.Date == reimbursement.Date);
-
-                var matchTransaction = transactions.FirstOrDefault(t => t.BankRecord.Id == match?.Id);
-
-                if (matchTransaction != null)
-                {
-                    transaction.Reimburses = matchTransaction;
-                    matchTransaction.Reimburses = transaction;
-                }
-            }
         }
     }
 }
