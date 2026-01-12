@@ -1,0 +1,43 @@
+@code {
+    [Parameter, EditorRequired]
+    public required ImportedTransaction Transfer { get; set; }
+
+    [Parameter]
+    public bool ShowActions { get; set; } = false;
+
+    [Parameter]
+    public bool DisableActions { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<ImportedTransaction> OnAccept { get; set; }
+
+    [Parameter]
+    public EventCallback<ImportedTransaction> OnReject { get; set; }
+
+    private void Accept()
+    {
+        OnAccept.InvokeAsync(Transfer);
+    }
+
+    private void Reject()
+    {
+        OnReject.InvokeAsync(Transfer);
+    }
+}
+
+<div class="general-row @(ShowActions ? "transfer-row" : "transaction-row")">
+    <div>@Transfer.Date.ToShortDateString()</div>
+    <div>@Transfer.BankRecord.AccountNumber</div>
+    <div>@Transfer.Description</div>
+    <div>@Transfer.Amount.ToString("C")</div>
+    @if (ShowActions)
+    {
+        <div><button type="button" class="btn btn-danger" @onclick="@Reject" disabled="@DisableActions">Reject</button></div>
+        <div><button type="button" class="btn btn-success" @onclick="@Accept" disabled="@DisableActions">Accept</button></div>
+    }
+    else
+    {
+        <div></div>
+        <div></div>
+    }
+</div>

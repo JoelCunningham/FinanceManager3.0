@@ -1,0 +1,44 @@
+.general-row {
+    display: grid;
+    grid-template-columns: 150px 150px 1fr 150px 100px 100px;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    transition: inherit;
+
+    & > div {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.transaction-row {
+    background-color: #ffffff;
+
+    &:has(+ .transfer-row) {
+        border-radius: 8px 8px 0 0;
+    }
+}
+
+.transfer-row {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+
+    & > div:nth-child(5),
+    & > div:nth-child(6) {
+        justify-content: center;
+    }
+}
+
+.btn-danger,
+.btn-success {
+    padding: 6px 30%;
+    transition: opacity 0.3s ease;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}

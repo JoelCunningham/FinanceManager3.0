@@ -1,0 +1,48 @@
+@code {
+    [Parameter, EditorRequired]
+    public required int StepNumber { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Label { get; set; }
+
+    [Parameter]
+    public bool IsCurrent { get; set; }
+
+    [Parameter]
+    public bool IsCompleted { get; set; }
+
+    [Parameter]
+    public bool IsAccessible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private string GetStepClass()
+    {
+        var classes = new List<string> { "navigation-item btn" };
+
+        if (IsCurrent)
+            classes.Add("btn-primary");
+        else if (IsCompleted)
+            classes.Add("btn-success");
+        else if (IsAccessible)
+            classes.Add("btn-info");
+        else
+            classes.Add("btn-secondary disabled");
+
+        return string.Join(" ", classes);
+    }
+
+    private async Task HandleClick()
+    {
+        if (IsAccessible || IsCompleted || IsCurrent)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+}
+
+<li class="@GetStepClass()" @onclick="HandleClick">
+    <span class="step-number">@StepNumber</span>
+    <span class="step-label">@Label</span>
+</li>

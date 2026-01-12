@@ -7,18 +7,18 @@ namespace FinanceManager.WebApp.Models.ImportPage
     {
         public ParserInfo? SelectedBank { get; set; }
         public string? FileErrorMessage { get; set; }
-        public FileValidationState FileValidationState { get; set; } = FileValidationState.None;
+        public UploadValidationState FileValidationState { get; set; } = UploadValidationState.None;
 
         public void SetSuccess()
         {
             FileErrorMessage = null;
-            FileValidationState = FileValidationState.Valid;
+            FileValidationState = UploadValidationState.Valid;
         }
 
         public void SetError(Exception exception)
         {
             FileErrorMessage = GetErrorMessage(exception);
-            FileValidationState = FileValidationState.Invalid;
+            FileValidationState = UploadValidationState.Invalid;
         }
 
         private string GetErrorMessage(Exception exception)

@@ -47,7 +47,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
 
         public override bool CanIncrementStage => CurrentStage switch
         {
-            ImportStage.FileUpload => BankModel.FileValidationState == FileValidationState.Valid,
+            ImportStage.FileUpload => BankModel.FileValidationState == UploadValidationState.Valid,
             ImportStage.ConfigureTransfers => TransfersModel.DetectedTransfers.Count == 0,
             ImportStage.ConfigureReimbursements => false,
             ImportStage.CategorizeTransactions => false,

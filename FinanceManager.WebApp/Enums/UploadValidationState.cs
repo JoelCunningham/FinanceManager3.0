@@ -1,6 +1,6 @@
 ﻿namespace FinanceManager.WebApp.Enums
 {
-    public enum FileValidationState
+    public enum UploadValidationState
     {
         None,
         Valid,

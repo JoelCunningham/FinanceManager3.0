@@ -36,7 +36,7 @@
         @foreach (var bank in availableParsers)
         {
             var isSelected = Model.SelectedBank?.BankName == bank.BankName;
-            <BankCardComponent BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
+            <BankSelectCard BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
         }
     </div>
 }

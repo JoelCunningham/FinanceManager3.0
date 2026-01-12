@@ -1,0 +1,7 @@
+﻿.import-navigation {
+    display: flex;
+    padding: 0;
+    margin: 2rem 0;
+    list-style: none;
+    gap: 1rem;
+}

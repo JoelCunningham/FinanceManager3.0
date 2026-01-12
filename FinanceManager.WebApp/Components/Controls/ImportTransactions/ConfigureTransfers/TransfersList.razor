@@ -1,0 +1,31 @@
+@using FinanceManager.WebApp.Models.ImportPage
+
+@code {
+    [Parameter, EditorRequired]
+    public required ImportPageTransfersModel Model { get; set; }
+
+    private bool HasPendingTransfers => Model.DetectedTransfers.Count > 0;
+    private bool HasResolvedTransfers => Model.AcceptedTransfers.Count > 0 || Model.RejectedTransfers.Count > 0;
+}
+
+<TransferListActions HasPendingTransfers="@HasPendingTransfers"
+                     HasResolvedTransfers="@HasResolvedTransfers"
+                     OnReset="@Model.Reset"
+                     OnRejectAll="@Model.RejectRemainingTransfers"
+                     OnAcceptAll="@Model.AcceptRemainingTransfers" />
+
+@if (HasPendingTransfers)
+{
+    <TransfersHeader>
+        @foreach (var transfer in Model.GroupedTransfers)
+        {
+            <TransferPairRow Transfer="transfer" AcceptTransfer="Model.AcceptTransfer" RejectTransfer="Model.RejectTransfer" />
+        }
+    </TransfersHeader>
+}
+else
+{
+    <div class="alert alert-success" role="alert">
+        All detected transfers have been resolved
+    </div>
+}

@@ -1,0 +1,54 @@
+﻿@code {
+    [Parameter, EditorRequired]
+    public required ImportStage CurrentStage { get; set; }
+
+    [Parameter, EditorRequired]
+    public required ImportStage MaxStageReached { get; set; }
+
+    [Parameter]
+    public EventCallback<ImportStage> OnStageChange { get; set; }
+
+    private bool IsStageCompleted(ImportStage stage) => (int)stage < (int)CurrentStage;
+    private bool IsStageAccessible(ImportStage stage) => (int)stage <= (int)MaxStageReached;
+    private bool IsStageCurrent(ImportStage stage) => stage == CurrentStage;
+
+    private async Task OnStageClick(ImportStage stage)
+    {
+        if (IsStageAccessible(stage))
+        {
+            await OnStageChange.InvokeAsync(stage);
+        }
+    }
+}
+
+<nav aria-label="Import progress">
+    <ol class="import-navigation">
+        <NavigationStep StepNumber="1"
+                        Label="Upload File"
+                        IsCurrent="@IsStageCurrent(ImportStage.FileUpload)"
+                        IsCompleted="@IsStageCompleted(ImportStage.FileUpload)"
+                        IsAccessible="@IsStageAccessible(ImportStage.FileUpload)"
+                        OnClick="() => OnStageClick(ImportStage.FileUpload)" />
+
+        <NavigationStep StepNumber="2"
+                        Label="Transfers"
+                        IsCurrent="@IsStageCurrent(ImportStage.ConfigureTransfers)"
+                        IsCompleted="@IsStageCompleted(ImportStage.ConfigureTransfers)"
+                        IsAccessible="@IsStageAccessible(ImportStage.ConfigureTransfers)"
+                        OnClick="() => OnStageClick(ImportStage.ConfigureTransfers)" />
+
+        <NavigationStep StepNumber="3"
+                        Label="Reimbursements"
+                        IsCurrent="@IsStageCurrent(ImportStage.ConfigureReimbursements)"
+                        IsCompleted="@IsStageCompleted(ImportStage.ConfigureReimbursements)"
+                        IsAccessible="@IsStageAccessible(ImportStage.ConfigureReimbursements)"
+                        OnClick="() => OnStageClick(ImportStage.ConfigureReimbursements)" />
+
+        <NavigationStep StepNumber="4"
+                        Label="Categorize"
+                        IsCurrent="@IsStageCurrent(ImportStage.CategorizeTransactions)"
+                        IsCompleted="@IsStageCompleted(ImportStage.CategorizeTransactions)"
+                        IsAccessible="@IsStageAccessible(ImportStage.CategorizeTransactions)"
+                        OnClick="() => OnStageClick(ImportStage.CategorizeTransactions)" />
+    </ol>
+</nav>

@@ -1,0 +1,47 @@
+@code {
+    [Parameter, EditorRequired]
+    public required string AcceptedExtensions { get; set; }
+
+    [Parameter, EditorRequired]
+    public required FormValidationState ValidationState { get; set; }
+
+    [Parameter]
+    public string? ValidationMessage { get; set; }
+
+    [Parameter]
+    public EventCallback<IBrowserFile> OnFileSelected { get; set; }
+
+    [Parameter]
+    public string? Heading { get; set; }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        await OnFileSelected.InvokeAsync(e.File);
+    }
+
+    private string InputValidationClass => ValidationState switch
+    {
+        FormValidationState.Valid => "is-valid",
+        FormValidationState.Invalid => "is-invalid",
+        _ => string.Empty
+    };
+
+    private string MessageValidationClass => ValidationState switch
+    {
+        FormValidationState.Valid => "valid-feedback",
+        FormValidationState.Invalid => "invalid-feedback",
+        _ => string.Empty
+    };
+}
+
+@if (!string.IsNullOrEmpty(Heading))
+{
+    <h2 class="section-heading">@Heading</h2>
+}
+
+<InputFile OnChange="HandleFileSelected" accept="@AcceptedExtensions" class="@($"form-control {InputValidationClass}")" />
+
+@if (!string.IsNullOrEmpty(ValidationMessage))
+{
+    <div class="@MessageValidationClass">@ValidationMessage</div>
+}

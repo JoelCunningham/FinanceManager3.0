@@ -49,16 +49,16 @@
 
 <h1 class="page-heading">Import transactions</h1>
 
-<BreadcrumbComponent CurrentStage="Model.CurrentStage" MaxStageReached="Model.MaxStageReached" OnStageChange="OnStageChange" />
+<ImportTransactionsNavigation CurrentStage="Model.CurrentStage" MaxStageReached="Model.MaxStageReached" OnStageChange="OnStageChange" />
 
 <div class="@(Model.CurrentStage == ImportStage.FileUpload ? "" : "d-none")">
-    <BankSelectComponent Model="Model.BankModel" OnBankChange="OnBankChanged" HasProgress="HasProgress" />
-    <FileUploadComponent Model="Model.BankModel" OnFileImport="ImportFileTransactions" />
+    <BankSelectList Model="Model.BankModel" OnBankChange="OnBankChanged" HasProgress="HasProgress" />
+    <TransactionFileUpload Model="Model.BankModel" OnFileUploaded="ImportFileTransactions" />
 </div>
 
 <div class="@(Model.CurrentStage == ImportStage.ConfigureTransfers ? "" : "d-none")">
     <h2 class="section-heading">We detected some transfers:</h2>
-    <TransferGrid Model="Model.TransfersModel" />
+    <TransfersList Model="Model.TransfersModel" />
 </div>
 
 <div class="@(Model.CurrentStage == ImportStage.ConfigureReimbursements ? "" : "d-none")">
