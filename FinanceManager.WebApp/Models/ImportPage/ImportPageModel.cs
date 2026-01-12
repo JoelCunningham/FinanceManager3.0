@@ -10,6 +10,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
 
         public ImportPageUploadModel BankModel { get; set; } = new ImportPageUploadModel();
         public ImportPageTransfersModel TransfersModel { get; set; } = new ImportPageTransfersModel([]);
+        public ImportPageReimbursementsModel ReimbursementsModel { get; set; } = new ImportPageReimbursementsModel([]);
 
         public override ImportStage MaxStageReached { get; set; } = ImportStage.FileUpload;
         protected override ImportStage[] Stages { get; } =
@@ -27,6 +28,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
             
             BankModel = new ImportPageUploadModel();
             TransfersModel = new ImportPageTransfersModel([]);
+            ReimbursementsModel = new ImportPageReimbursementsModel([]);
 
             MaxStageReached = ImportStage.FileUpload;
         }
@@ -35,6 +37,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
         {
             ImportedTransactions = records.ToList();
             TransfersModel = new ImportPageTransfersModel(ImportedTransactions);
+            ReimbursementsModel = new ImportPageReimbursementsModel(ImportedTransactions);
             BankModel.SetSuccess();
         }
 
@@ -42,6 +45,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
         {
             ImportedTransactions = null;
             TransfersModel = new ImportPageTransfersModel([]);
+            ReimbursementsModel = new ImportPageReimbursementsModel([]);
             BankModel.SetError(exception);
         }
 

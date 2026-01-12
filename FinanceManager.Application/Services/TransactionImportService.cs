@@ -47,19 +47,19 @@ namespace FinanceManager.Application.Services
             return true;
         }
 
-        private static async Task MatchTransfersAsync(List<ImportedTransaction> transactions)
+        private async Task MatchTransfersAsync(List<ImportedTransaction> transactions)
         {
-            var transfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
+            var internalTransfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
 
-            foreach (var transaction in transfers)
+            foreach (var transaction in internalTransfers)
             {
                 if (transaction.Transfers != null) continue;
 
-                var match = transfers.FirstOrDefault(p =>
+                var match = internalTransfers.FirstOrDefault(p =>
                     p != transaction &&
                     p.Transfers == null &&
                     p.Amount == -transaction.Amount &&
-                    p.Date == transaction.Date);
+                    p.Date.Date == transaction.Date.Date);
 
                 if (match != null)
                 {
@@ -74,6 +74,7 @@ namespace FinanceManager.Application.Services
             {
                 if (transaction.Amount < 0) continue;
 
+                // This may also find external transfers, but those are impossible to distinguish
                 var similar = await bankRecordRepository.FindSimilarAsync(transaction.BankRecord);
                 if (similar == null) continue;
 

@@ -63,7 +63,7 @@
 
 <div class="@(Model.CurrentStage == ImportStage.ConfigureReimbursements ? "" : "d-none")">
     <h2 class="section-heading">These look like reimbursements:</h2>
-    @* Add *@
+    <ReimbursementsList Model="Model.ReimbursementsModel" />
 </div>
 
 <div class="@(Model.CurrentStage == ImportStage.CategorizeTransactions ? "" : "d-none")">
