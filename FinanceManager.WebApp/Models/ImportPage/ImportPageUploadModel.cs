@@ -3,7 +3,7 @@ using FinanceManager.WebApp.Enums;
 
 namespace FinanceManager.WebApp.Models.ImportPage
 {
-    public class ImportPageBankModel()
+    public class ImportPageUploadModel()
     {
         public ParserInfo? SelectedBank { get; set; }
         public string? FileErrorMessage { get; set; }

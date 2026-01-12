@@ -8,7 +8,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
     {
         public IReadOnlyList<ImportedTransaction>? ImportedTransactions { get; set; }
 
-        public ImportPageBankModel BankModel { get; set; } = new ImportPageBankModel();
+        public ImportPageUploadModel BankModel { get; set; } = new ImportPageUploadModel();
         public ImportPageTransfersModel TransfersModel { get; set; } = new ImportPageTransfersModel([]);
 
         public override ImportStage MaxStageReached { get; set; } = ImportStage.FileUpload;
@@ -25,7 +25,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
         {
             ImportedTransactions = null;
             
-            BankModel = new ImportPageBankModel();
+            BankModel = new ImportPageUploadModel();
             TransfersModel = new ImportPageTransfersModel([]);
 
             MaxStageReached = ImportStage.FileUpload;
