@@ -1,0 +1,23 @@
+.transaction-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.transaction-grid-header {
+    display: grid;
+    grid-template-columns: 150px 150px 1fr 150px 100px 100px;
+    gap: 1rem;
+    padding: 0.75rem 1rem 0;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.transaction-grid-buttons {
+    display: grid;
+    grid-template-columns: 150px 150px 1fr 150px 100px 100px;
+    gap: 1rem;
+}

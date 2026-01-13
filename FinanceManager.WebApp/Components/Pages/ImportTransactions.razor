@@ -6,7 +6,6 @@
 
 @code {
     private ImportPageModel Model = new();
-    private bool HasProgress => Model.MaxStageReached != ImportStage.FileUpload;
 
     protected override void OnInitialized()
     {
@@ -33,15 +32,19 @@
         }
     }
 
-    private void OnBankChanged(ParserInfo? parser)
-    {
-        Model.Reset();
-        Model.BankModel.SelectedBank = parser;
+    private void OnStageChanged(ImportStage stage)
+    {         
+        Model.GoToStage(stage);
     }
 
-    private void OnStageChange(ImportStage stage)
+    private void OnContinueClick()
     {
-        Model.GoToStage(stage);
+        if (Model.CurrentStage == ImportStage.ConfigureTransfers)
+        {
+            Model.TransfersSubmitted();
+        }
+        
+        Model.NextStage();
     }
 }
 
@@ -49,10 +52,10 @@
 
 <h1 class="page-heading">Import transactions</h1>
 
-<ImportTransactionsNavigation CurrentStage="Model.CurrentStage" MaxStageReached="Model.MaxStageReached" OnStageChange="OnStageChange" />
+<ImportTransactionsNavigation CurrentStage="Model.CurrentStage" MaxStageReached="Model.MaxStageReached" OnStageChange="OnStageChanged" />
 
 <div class="@(Model.CurrentStage == ImportStage.FileUpload ? "" : "d-none")">
-    <BankSelectList Model="Model.BankModel" OnBankChange="OnBankChanged" HasProgress="HasProgress" />
+    <BankSelectList Model="Model.BankModel" OnBankChange="Model.BankChanged" HasProgress="Model.HasProgress" />
     <TransactionFileUpload Model="Model.BankModel" OnFileUploaded="ImportFileTransactions" />
 </div>
 
@@ -60,13 +63,8 @@
     <TransfersList Model="Model.TransfersModel" />
 </div>
 
-<div class="@(Model.CurrentStage == ImportStage.ConfigureReimbursements ? "" : "d-none")">
-    <ReimbursementsList Model="Model.ReimbursementsModel" />
-</div>
-
 <div class="@(Model.CurrentStage == ImportStage.CategorizeTransactions ? "" : "d-none")">
-    <h2 class="section-heading">Categorize your transactions:</h2>
-    @* Add categorization component here *@
+    <TransactionsList Model="Model.CategoriseModel" />
 </div>
 
 <div class="wizard-navigation">
@@ -77,7 +75,7 @@
 
     @if (Model.CanIncrementStage)
     {
-        <button type="button" class="btn btn-primary my-3" @onclick="Model.NextStage">
+        <button type="button" class="btn btn-primary my-3" @onclick="OnContinueClick">
             @(Model.CurrentStage == ImportStage.CategorizeTransactions ? "Finish" : "Continue")
         </button>
     }

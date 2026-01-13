@@ -1,0 +1,24 @@
+@using FinanceManager.WebApp.Models.ImportPage
+
+@code {
+    [Parameter, EditorRequired]
+    public required ImportPageCategoriseModel Model { get; set; }
+}
+
+@if (Model.GroupedTransactions.Count > 0)
+{
+    <h2 class="section-heading">Categorize your transactions:</h2>
+
+    <TransfersHeader>
+        @foreach (var transaction in Model.GroupedTransactions)
+        {
+            <TransferPairRow Transfer="transaction" />
+        }
+    </TransfersHeader>
+}
+else
+{
+<div class="alert alert-info" role="alert">
+    No other transactions were detcted in your upload
+</div>
+}
