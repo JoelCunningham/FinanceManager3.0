@@ -23,9 +23,14 @@
         }
     </TransfersHeader>
 }
-else
+else if (HasResolvedTransfers)
 {
     <div class="alert alert-success" role="alert">
         All detected transfers have been resolved
+    </div>
+} else
+{
+    <div class="alert alert-info" role="alert">
+        No transfers were detcted in your upload 
     </div>
 }

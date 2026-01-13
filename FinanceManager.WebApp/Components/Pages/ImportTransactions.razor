@@ -57,12 +57,10 @@
 </div>
 
 <div class="@(Model.CurrentStage == ImportStage.ConfigureTransfers ? "" : "d-none")">
-    <h2 class="section-heading">We detected some transfers:</h2>
     <TransfersList Model="Model.TransfersModel" />
 </div>
 
 <div class="@(Model.CurrentStage == ImportStage.ConfigureReimbursements ? "" : "d-none")">
-    <h2 class="section-heading">These look like reimbursements:</h2>
     <ReimbursementsList Model="Model.ReimbursementsModel" />
 </div>
 
