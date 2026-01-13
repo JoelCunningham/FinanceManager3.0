@@ -4,7 +4,6 @@
     {
         FileUpload,
         ConfigureTransfers,
-        ConfigureReimbursements,
         CategorizeTransactions,
         Complete
     }

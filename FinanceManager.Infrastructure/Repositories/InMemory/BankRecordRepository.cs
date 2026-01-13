@@ -39,36 +39,6 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
                 Reference = "",
                 IsInternalTransfer = false
             });
-
-            // Similar 1
-            _bankRecords.Add(new BankRecord
-            {
-                Id = Guid.NewGuid(),
-                ImportId = Guid.NewGuid(),
-                Bank = "Westpac",
-                AccountNumber = "033092585544",
-                Amount = -52m,
-                Date = DateTime.Parse("05/02/2023", new CultureInfo("en-AU")),
-                Description = "Psycologist",
-                Type = "CREDIT",
-                Reference = "",
-                IsInternalTransfer = false
-            });
-
-            // Similar 2
-            _bankRecords.Add(new BankRecord
-            {
-                Id = Guid.NewGuid(),
-                ImportId = Guid.NewGuid(),
-                Bank = "Westpac",
-                AccountNumber = "033092585544",
-                Amount = -68.9m,
-                Date = DateTime.Parse("06/02/2023", new CultureInfo("en-AU")),
-                Description = "Medical One",
-                Type = "CREDIT",
-                Reference = "",
-                IsInternalTransfer = false
-            });
         }
 
         public async Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords)
@@ -79,25 +49,6 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
         public async Task<bool> DeleteByImportIdAsync(Guid importId)
         {
             return true;
-        }
-
-        public async Task<BankRecord?> FindSimilarAsync(BankRecord bankRecord)
-        {
-
-
-            var similar = _bankRecords.FirstOrDefault(br =>
-                Math.Abs((br.Date - bankRecord.Date).TotalDays) <= 7 &&
-                Math.Abs(br.Amount + bankRecord.Amount) <= Math.Max(1m, Math.Abs(bankRecord.Amount) * 0.1m) &&
-                br.Id != bankRecord.Id
-            );
-
-
-            if (similar is not null)
-            {
-                Console.WriteLine("'hiii'");
-            }
-
-            return similar;
         }
 
         public async Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords)

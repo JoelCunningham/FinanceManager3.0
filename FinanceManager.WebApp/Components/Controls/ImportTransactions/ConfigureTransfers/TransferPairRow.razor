@@ -11,7 +11,7 @@
     private string? _animationClass;
     private bool _isAnimating => _animationClass is not null;
 
-    private async Task Accept(ImportedTransaction _)
+    private async Task Accept()
     {
         _animationClass = "accepting";
         await Task.Delay(700);
@@ -19,7 +19,7 @@
         _animationClass = null;
     }
 
-    private async Task Reject(ImportedTransaction _)
+    private async Task Reject()
     {
         _animationClass = "rejecting";
         await Task.Delay(700);

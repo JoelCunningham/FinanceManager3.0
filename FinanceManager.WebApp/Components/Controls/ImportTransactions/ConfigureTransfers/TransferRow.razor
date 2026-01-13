@@ -9,19 +9,19 @@
     public bool DisableActions { get; set; } = false;
 
     [Parameter]
-    public EventCallback<ImportedTransaction> OnAccept { get; set; }
+    public EventCallback OnAccept { get; set; }
 
     [Parameter]
-    public EventCallback<ImportedTransaction> OnReject { get; set; }
+    public EventCallback OnReject { get; set; }
 
     private void Accept()
     {
-        OnAccept.InvokeAsync(Transfer);
+        OnAccept.InvokeAsync();
     }
 
     private void Reject()
     {
-        OnReject.InvokeAsync(Transfer);
+        OnReject.InvokeAsync();
     }
 }
 

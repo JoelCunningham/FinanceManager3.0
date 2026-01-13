@@ -7,7 +7,6 @@ namespace FinanceManager.Application.Interfaces
     {
         Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords);
         Task<bool> DeleteByImportIdAsync(Guid importId);
-        Task<BankRecord?> FindSimilarAsync(BankRecord bankRecord);
         Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords);
     }
 }

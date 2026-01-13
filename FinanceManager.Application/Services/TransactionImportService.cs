@@ -26,8 +26,8 @@ namespace FinanceManager.Application.Services
             await bankRecordRepository.SaveAsync(validRecords);
 
             var transactions = validRecords.Select(BankRecordToImportedTransaction).ToList();
+           
             await MatchTransfersAsync(transactions);
-            await MatchReimbursementsAsync(transactions);
 
             return transactions;
         }
@@ -47,7 +47,7 @@ namespace FinanceManager.Application.Services
             return true;
         }
 
-        private async Task MatchTransfersAsync(List<ImportedTransaction> transactions)
+        private static async Task MatchTransfersAsync(List<ImportedTransaction> transactions)
         {
             var internalTransfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
 
@@ -64,28 +64,6 @@ namespace FinanceManager.Application.Services
                 if (match != null)
                 {
                     transaction.SetTransfers(match);
-                }
-            }
-        }
-
-        private async Task MatchReimbursementsAsync(List<ImportedTransaction> transactions)
-        {
-            foreach (var transaction in transactions)
-            {
-                if (transaction.Amount < 0) continue;
-
-                // This may also find external transfers, but those are impossible to distinguish
-                var similar = await bankRecordRepository.FindSimilarAsync(transaction.BankRecord);
-                if (similar == null) continue;
-
-                var foundInCurrent = transactions.Where(t => t.BankRecord.Id == similar.Id).FirstOrDefault();
-                if (foundInCurrent != null)
-                {
-                    transaction.SetReimburses(foundInCurrent);
-                }
-                else
-                {
-                    transaction.SetReimburses(BankRecordToImportedTransaction(similar));
                 }
             }
         }
