@@ -21,6 +21,7 @@ builder.Services.AddSingleton<ITransactionFileParser, VanguardTransactionFilePar
 builder.Services.AddTransient<TransactionImportService>();
 builder.Services.AddSingleton<TransactionParserService>();
 builder.Services.AddTransient<TransactionService>();
+builder.Services.AddSingleton<CategoryService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,13 @@
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
+
+<div class="transfers-header">
+    <div>Allocation</div>
+    <div>Amount</div>
+    <div>Date</div>
+    <div>Description</div>
+    <div>Actions</div>
+</div>
+@ChildContent

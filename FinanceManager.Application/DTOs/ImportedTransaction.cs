@@ -12,6 +12,7 @@ namespace FinanceManager.Application.DTOs
 
         public ImportedTransaction? Transfers { get; set; }
         public ImportedTransaction? Reimburses { get; set; }
+        public Guid? ReimbursesExistingTransactionId { get; set; }
         public ICollection<ImportedTransaction> Splits { get; set; } = [];
 
         public void SetTransfers(ImportedTransaction transfer)
@@ -29,11 +30,19 @@ namespace FinanceManager.Application.DTOs
         public void SetReimburses(ImportedTransaction reimbursement)
         {
             Reimburses = reimbursement;
+            ReimbursesExistingTransactionId = null;
+        }
+
+        public void SetReimbursesExisting(Guid existingTransactionId)
+        {
+            ReimbursesExistingTransactionId = existingTransactionId;
+            Reimburses = null;
         }
 
         public void UnsetReimburses()
         {
             Reimburses = null;
+            ReimbursesExistingTransactionId = null;
         }
 
         public void Backdate(DateTime date)
@@ -43,6 +52,11 @@ namespace FinanceManager.Application.DTOs
                 throw new InvalidOperationException("Backdate must be before or equal to the bank record date");
             }
             Date = date;
+        }
+
+        public void ResetDate()
+        {
+            Date = BankRecord.Date;
         }
 
         public ImportedTransaction Split()

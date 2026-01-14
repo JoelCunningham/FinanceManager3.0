@@ -4,7 +4,7 @@
     {
         FileUpload,
         ConfigureTransfers,
-        CategorizeTransactions,
+        CategoriseTransactions,
         Complete
     }
 }

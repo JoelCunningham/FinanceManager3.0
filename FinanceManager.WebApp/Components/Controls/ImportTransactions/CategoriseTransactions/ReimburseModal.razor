@@ -1,0 +1,399 @@
+@inject CategoryService CategoryService;
+@inject TransactionService TransactionService;
+
+@code {
+    [Parameter, EditorRequired]
+    public required bool IsOpen { get; set; }
+
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<ImportedTransaction> CurrentTransactions { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<ImportedTransaction> OnSelectImported { get; set; }
+
+    [Parameter]
+    public EventCallback<Transaction> OnSelectExisting { get; set; }
+
+    private IReadOnlyList<string> categories = [];
+
+    private IEnumerable<Transaction> existingTransactions = [];
+
+    private string searchTerm = string.Empty;
+    private TransactionViewMode viewMode = TransactionViewMode.Current;
+    private bool showFilters = false;
+    private SortOption sortBy = SortOption.DateDesc;
+
+    private string? selectedCategory = null;
+    private DateTime? dateFrom = null;
+    private DateTime? dateTo = null;
+    private decimal? amountMin = null;
+    private decimal? amountMax = null;
+
+    private List<ImportedTransaction> FilteredCurrentTransactions => GetFilteredCurrentTransactions();
+    private List<Transaction> FilteredExistingTransactions => GetFilteredExistingTransactions();
+
+    protected override void OnInitialized()
+    {
+        categories = CategoryService.GetCategories().ToList();
+        existingTransactions = TransactionService.SearchTransactions(string.Empty);
+    }
+
+    private List<ImportedTransaction> GetFilteredCurrentTransactions()
+    {
+        var filtered = CurrentTransactions.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            filtered = filtered.Where(t =>
+                t.Description.ToLower().Contains(search) ||
+                t.Amount.ToString().Contains(search) ||
+                t.Date.ToString("dd/MM/yyyy").Contains(search) ||
+                t.BankRecord.AccountNumber.ToLower().Contains(search));
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedCategory))
+        {
+            filtered = filtered.Where(t => t.Category?.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        if (dateFrom.HasValue)
+        {
+            filtered = filtered.Where(t => t.Date >= dateFrom.Value);
+        }
+
+        if (dateTo.HasValue)
+        {
+            filtered = filtered.Where(t => t.Date <= dateTo.Value);
+        }
+
+        if (amountMin.HasValue)
+        {
+            filtered = filtered.Where(t => Math.Abs(t.Amount) >= amountMin.Value);
+        }
+
+        if (amountMax.HasValue)
+        {
+            filtered = filtered.Where(t => Math.Abs(t.Amount) <= amountMax.Value);
+        }
+
+        filtered = sortBy switch
+        {
+            SortOption.DateAsc => filtered.OrderBy(t => t.Date),
+            SortOption.DateDesc => filtered.OrderByDescending(t => t.Date),
+            SortOption.AmountAsc => filtered.OrderBy(t => Math.Abs(t.Amount)),
+            SortOption.AmountDesc => filtered.OrderByDescending(t => Math.Abs(t.Amount)),
+            _ => filtered.OrderByDescending(t => t.Date)
+        };
+
+        return filtered.ToList();
+    }
+
+    private List<Transaction> GetFilteredExistingTransactions()
+    {
+        var filtered = existingTransactions.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            filtered = filtered.Where(t =>
+                t.Description.ToLower().Contains(search) ||
+                t.Amount.ToString().Contains(search) ||
+                t.Date.ToString("dd/MM/yyyy").Contains(search));
+        }
+
+        if (dateFrom.HasValue)
+        {
+            filtered = filtered.Where(t => t.Date >= dateFrom.Value);
+        }
+
+        if (dateTo.HasValue)
+        {
+            filtered = filtered.Where(t => t.Date <= dateTo.Value);
+        }
+
+        if (amountMin.HasValue)
+        {
+            filtered = filtered.Where(t => Math.Abs(t.Amount) >= amountMin.Value);
+        }
+
+        if (amountMax.HasValue)
+        {
+            filtered = filtered.Where(t => Math.Abs(t.Amount) <= amountMax.Value);
+        }
+
+        filtered = sortBy switch
+        {
+            SortOption.DateAsc => filtered.OrderBy(t => t.Date),
+            SortOption.DateDesc => filtered.OrderByDescending(t => t.Date),
+            SortOption.AmountAsc => filtered.OrderBy(t => Math.Abs(t.Amount)),
+            SortOption.AmountDesc => filtered.OrderByDescending(t => Math.Abs(t.Amount)),
+            _ => filtered.OrderByDescending(t => t.Date)
+        };
+
+        return filtered.ToList();
+    }
+
+    private async Task SelectImportedTransaction(ImportedTransaction transaction)
+    {
+        await OnSelectImported.InvokeAsync(transaction);
+        await Close();
+    }
+
+    private async Task SelectExistingTransaction(Transaction transaction)
+    {
+        await OnSelectExisting.InvokeAsync(transaction);
+        await Close();
+    }
+
+    private void SwitchToCurrentView()
+    {
+        viewMode = TransactionViewMode.Current;
+    }
+
+    private void SwitchToExistingView()
+    {
+        viewMode = TransactionViewMode.Existing;
+    }
+
+    private void ToggleFilters()
+    {
+        showFilters = !showFilters;
+    }
+
+    private void ClearFilters()
+    {
+        selectedCategory = null;
+        dateFrom = null;
+        dateTo = null;
+        amountMin = null;
+        amountMax = null;
+    }
+
+    private bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(selectedCategory) ||
+        dateFrom.HasValue ||
+        dateTo.HasValue ||
+        amountMin.HasValue ||
+        amountMax.HasValue;
+
+    private async Task Close()
+    {
+        searchTerm = string.Empty;
+        viewMode = TransactionViewMode.Current;
+        showFilters = false;
+        sortBy = SortOption.DateDesc;
+        ClearFilters();
+        await OnClose.InvokeAsync();
+    }
+
+    private enum TransactionViewMode
+    {
+        Current,
+        Existing
+    }
+
+    private enum SortOption
+    {
+        DateAsc,
+        DateDesc,
+        AmountAsc,
+        AmountDesc
+    }
+}
+
+@if (IsOpen)
+{
+    <div class="modal-backdrop" @onclick="Close"></div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Transaction to Reimburse</h5>
+                <button type="button" class="btn-close" @onclick="Close" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="view-selector mb-3">
+                    <button type="button"
+                            class="btn @(viewMode == TransactionViewMode.Current ? "btn-primary" : "btn-outline-primary")"
+                            @onclick="SwitchToCurrentView">
+                        Current Import (@CurrentTransactions.Count)
+                    </button>
+                    <button type="button"
+                            class="btn @(viewMode == TransactionViewMode.Existing ? "btn-primary" : "btn-outline-primary")"
+                            @onclick="SwitchToExistingView">
+                        Existing Transactions (@existingTransactions.Count())
+                    </button>
+                </div>
+
+                <div class="search-container mb-3">
+                    <div class="search-with-filter">
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Search transactions..."
+                               @bind="searchTerm"
+                               @bind:event="oninput" />
+                        <select class="form-select sort-select" @bind="sortBy">
+                            <option value="@SortOption.DateDesc">Date (Newest First)</option>
+                            <option value="@SortOption.DateAsc">Date (Oldest First)</option>
+                            <option value="@SortOption.AmountDesc">Amount (High to Low)</option>
+                            <option value="@SortOption.AmountAsc">Amount (Low to High)</option>
+                        </select>
+                        <button type="button"
+                                class="btn btn-outline-secondary filter-toggle @(HasActiveFilters ? "active" : "")"
+                                @onclick="ToggleFilters">
+                            Filters
+                            @if (HasActiveFilters)
+                            {
+                                <span class="badge bg-primary ms-1">•</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+
+                @if (showFilters)
+                {
+                    <div class="filters-panel mb-3">
+                        <div class="filters-grid">
+                            @if (viewMode == TransactionViewMode.Current && categories.Count > 0)
+                            {
+                                <div class="filter-item">
+                                    <label class="form-label">Category</label>
+                                    <select class="form-select" @bind="selectedCategory">
+                                        <option value="">All Categories</option>
+                                        @foreach (var category in categories)
+                                        {
+                                            <option value="@category">@category</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+
+                            <div class="filter-item">
+                                <label class="form-label">Date From</label>
+                                <input type="date" class="form-control" @bind="dateFrom" />
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="form-label">Date To</label>
+                                <input type="date" class="form-control" @bind="dateTo" />
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="form-label">Amount Min</label>
+                                <input type="number" class="form-control" step="0.01" min="0" @bind="amountMin" placeholder="0.00" />
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="form-label">Amount Max</label>
+                                <input type="number" class="form-control" step="0.01" min="0" @bind="amountMax" placeholder="0.00" />
+                            </div>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="button" class="btn btn-sm btn-secondary" @onclick="ClearFilters">
+                                Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                @if (viewMode == TransactionViewMode.Current)
+                {
+                    @if (FilteredCurrentTransactions.Count > 0)
+                    {
+                        <div class="transaction-list">
+                            <div class="transaction-header">
+                                <div>Date</div>
+                                <div>Description</div>
+                                <div>Amount</div>
+                                <div>Account</div>
+                                <div></div>
+                            </div>
+                            @foreach (var transaction in FilteredCurrentTransactions)
+                            {
+                                <div class="transaction-item">
+                                    <div>@transaction.Date.ToString("dd/MM/yyyy")</div>
+                                    <div>@transaction.Description</div>
+                                    <div>@transaction.Amount.ToString("C")</div>
+                                    <div>@transaction.BankRecord.AccountNumber</div>
+                                    <div>
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary"
+                                                @onclick="() => SelectImportedTransaction(transaction)">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="transaction-list">
+                            <div class="text-muted text-center p-4">
+                                @if (string.IsNullOrWhiteSpace(searchTerm) && !HasActiveFilters)
+                                {
+                                    <text>No transactions in current import</text>
+                                }
+                                else
+                                {
+                                    <text>No current transactions match your search or filters</text>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    @if (FilteredExistingTransactions.Count > 0)
+                    {
+                        <div class="transaction-list">
+                            <div class="transaction-header existing-header">
+                                <div>Date</div>
+                                <div>Description</div>
+                                <div>Amount</div>
+                                <div></div>
+                            </div>
+                            @foreach (var transaction in FilteredExistingTransactions)
+                            {
+                                <div class="transaction-item existing-item">
+                                    <div>@transaction.Date.ToString("dd/MM/yyyy")</div>
+                                    <div>@transaction.Description</div>
+                                    <div>@transaction.Amount.ToString("C")</div>
+                                    <div>
+                                        <button type="button"
+                                                class="btn btn-sm btn-primary"
+                                                @onclick="() => SelectExistingTransaction(transaction)">
+                                            Select
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="transaction-list">
+                            <div class="text-muted text-center p-4">
+                                @if (string.IsNullOrWhiteSpace(searchTerm) && !HasActiveFilters)
+                                {
+                                    <text>No existing transactions available</text>
+                                }
+                                else
+                                {
+                                    <text>No existing transactions match your search or filters</text>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Close">Cancel</button>
+            </div>
+        </div>
+    </div>
+}

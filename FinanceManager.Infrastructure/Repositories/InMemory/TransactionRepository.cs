@@ -1,6 +1,5 @@
 ﻿using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
-using FinanceManager.Domain.Enums;
 
 namespace FinanceManager.Infrastructure.Repositories.InMemory
 {
@@ -10,5 +9,11 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
         {
             return Task.CompletedTask;
         }
+
+        public Task SearchTransactions(string searchTerm)
+        {
+            return Task.CompletedTask;
+        }
+
     }
 }

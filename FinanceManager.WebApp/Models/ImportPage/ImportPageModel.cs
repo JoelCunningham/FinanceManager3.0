@@ -18,7 +18,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
         [
             ImportStage.FileUpload,
             ImportStage.ConfigureTransfers,
-            ImportStage.CategorizeTransactions,
+            ImportStage.CategoriseTransactions,
             ImportStage.Complete
         ];
 
@@ -74,7 +74,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
         {
             ImportStage.FileUpload => BankModel.FileValidationState == UploadValidationState.Valid,
             ImportStage.ConfigureTransfers => TransfersModel.DetectedTransfers.Count == 0,
-            ImportStage.CategorizeTransactions => false,
+            ImportStage.CategoriseTransactions => false,
             ImportStage.Complete => false,
             _ => false
         };

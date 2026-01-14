@@ -63,7 +63,7 @@
     <TransfersList Model="Model.TransfersModel" />
 </div>
 
-<div class="@(Model.CurrentStage == ImportStage.CategorizeTransactions ? "" : "d-none")">
+<div class="@(Model.CurrentStage == ImportStage.CategoriseTransactions ? "" : "d-none")">
     <TransactionsList Model="Model.CategoriseModel" />
 </div>
 
@@ -76,7 +76,7 @@
     @if (Model.CanIncrementStage)
     {
         <button type="button" class="btn btn-primary my-3" @onclick="OnContinueClick">
-            @(Model.CurrentStage == ImportStage.CategorizeTransactions ? "Finish" : "Continue")
+            @(Model.CurrentStage == ImportStage.CategoriseTransactions ? "Finish" : "Continue")
         </button>
     }
 </div>

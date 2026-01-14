@@ -7,18 +7,18 @@
 
 @if (Model.GroupedTransactions.Count > 0)
 {
-    <h2 class="section-heading">Categorize your transactions:</h2>
+    <h2 class="section-heading">Categorise your transactions:</h2>
 
-    <TransfersHeader>
+    <TransactionsHeader>
         @foreach (var transaction in Model.GroupedTransactions)
         {
-            <TransferPairRow Transfer="transaction" />
+            <TransactionGroupRow Transaction="transaction" CurrentTransactions="Model.AllTransactions" />
         }
-    </TransfersHeader>
+    </TransactionsHeader>
 }
 else
 {
-<div class="alert alert-info" role="alert">
-    No other transactions were detcted in your upload
-</div>
+    <div class="alert alert-info" role="alert">
+        No other transactions were detcted in your upload
+    </div>
 }
