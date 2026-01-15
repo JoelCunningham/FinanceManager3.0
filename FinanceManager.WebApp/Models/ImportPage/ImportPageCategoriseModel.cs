@@ -2,13 +2,13 @@
 
 namespace FinanceManager.WebApp.Models.ImportPage
 {
-    public class ImportPageCategoriseModel(IReadOnlyList<ImportedTransaction> transactions)
+    public class ImportPageCategoriseModel(IReadOnlyList<TransactionInfo> transactions)
     {
-        public IReadOnlyList<ImportedTransaction> AllTransactions { get; set; } = transactions;
+        public IReadOnlyList<TransactionInfo> AllTransactions { get; set; } = transactions;
 
-        public List<ImportedTransaction> GroupedTransactions => GroupTransfers();
+        public List<TransactionInfo> GroupedTransactions => GroupTransfers();
 
-        private List<ImportedTransaction> GroupTransfers()
+        private List<TransactionInfo> GroupTransfers()
         {
             return AllTransactions
                 .OrderBy(t =>t.Date)

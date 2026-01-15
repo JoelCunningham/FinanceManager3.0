@@ -1,0 +1,24 @@
+@code {
+    [Parameter, EditorRequired]
+    public required string SupportedExtensions { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter, EditorRequired]
+    public required FormValidationState ValidationState { get; set; }
+
+    [Parameter]
+    public EventCallback<IBrowserFile> OnFileUploaded { get; set; }
+
+    private async Task OnFileSelected(IBrowserFile file)
+    {
+        await OnFileUploaded.InvokeAsync(file);
+    }
+}
+
+<FileUploadInput Heading="Upload your transactions:"
+                 AcceptedExtensions="@SupportedExtensions"
+                 ValidationState="@ValidationState"
+                 ValidationMessage="@ErrorMessage"
+                 OnFileSelected="@OnFileSelected" />

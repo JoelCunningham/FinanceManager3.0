@@ -1,4 +1,4 @@
-﻿@page "/import"
+﻿@page "/Import"
 
 @rendermode InteractiveServer
 
@@ -7,44 +7,31 @@
 @code {
     private ImportPageModel Model = new();
 
-    protected override void OnInitialized()
-    {
-        Model.TransfersModel.OnTransfersChanged = StateHasChanged;
-    }
 
     private async Task ImportFileTransactions(IBrowserFile file)
     {
-        if (Model.BankModel.SelectedBank is null) return;
+        if (Model.SelectedBank is null) return;
 
         try
         {
             await using var stream = file.OpenReadStream();
-            var bankName = Model.BankModel.SelectedBank.BankName;
+            var bankName = Model.SelectedBank.BankName;
             var fileExtension = Path.GetExtension(file.Name);
 
             var results = await ImportService.ImportAsync(stream, bankName, fileExtension);
-            Model.ImportSuccess(results);
-            Model.TransfersModel.OnTransfersChanged = StateHasChanged;
+
+            if (results.ToList().Count == 0)
+            {
+                Model.NoTransactionsFound();
+                return;
+            }
+
+            Model.Success(results);
         }
         catch (Exception exception)
         {
-            Model.ImportError(exception);
+            Model.Error(exception);
         }
-    }
-
-    private void OnStageChanged(ImportStage stage)
-    {         
-        Model.GoToStage(stage);
-    }
-
-    private void OnContinueClick()
-    {
-        if (Model.CurrentStage == ImportStage.ConfigureTransfers)
-        {
-            Model.TransfersSubmitted();
-        }
-        
-        Model.NextStage();
     }
 }
 
@@ -52,31 +39,19 @@
 
 <h1 class="page-heading">Import transactions</h1>
 
-<ImportTransactionsNavigation CurrentStage="Model.CurrentStage" MaxStageReached="Model.MaxStageReached" OnStageChange="OnStageChanged" />
+<BankSelectList SelectedBank="Model.SelectedBank" HasProgress="Model.ImportedTransactions is not null" OnBankChange="Model.BankChanged" />
 
-<div class="@(Model.CurrentStage == ImportStage.FileUpload ? "" : "d-none")">
-    <BankSelectList Model="Model.BankModel" OnBankChange="Model.BankChanged" HasProgress="Model.HasProgress" />
-    <TransactionFileUpload Model="Model.BankModel" OnFileUploaded="ImportFileTransactions" />
-</div>
-
-<div class="@(Model.CurrentStage == ImportStage.ConfigureTransfers ? "" : "d-none")">
-    <TransfersList Model="Model.TransfersModel" />
-</div>
-
-<div class="@(Model.CurrentStage == ImportStage.CategoriseTransactions ? "" : "d-none")">
-    <TransactionsList Model="Model.CategoriseModel" />
-</div>
-
-<div class="wizard-navigation">
-    @if (Model.CanDecrementStage)
-    {
-        <button type="button" class="btn btn-secondary my-3" @onclick="Model.PreviousStage">Back</button>
-    }
-
-    @if (Model.CanIncrementStage)
-    {
-        <button type="button" class="btn btn-primary my-3" @onclick="OnContinueClick">
-            @(Model.CurrentStage == ImportStage.CategoriseTransactions ? "Finish" : "Continue")
-        </button>
-    }
-</div>
+@if (Model.SelectedBank is not null)
+{
+    <TransactionFileUpload SupportedExtensions="@Model.SupportedExtensions" ErrorMessage="@Model.UploadErrorMessage" ValidationState="Model.UploadValidationState" OnFileUploaded="ImportFileTransactions" />
+}
+@if (Model.ImportedTransactions is not null)
+{
+    <ImportActions TransactionCount="Model.ImportedTransactions.Count" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
+}
+@if (Model.IsPreviewOpen && Model.ImportedTransactions is not null)
+{
+    <Modal Title="Preview transactions" OnClose="Model.ClosePreview">
+        <TransactionsPreview Transactions="Model.ImportedTransactions" />
+    </Modal>
+}

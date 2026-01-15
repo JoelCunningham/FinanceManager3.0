@@ -1,4 +1,7 @@
-﻿namespace FinanceManager.Application.DTOs
+﻿using FinanceManager.Domain.Entities;
+using System.Transactions;
+
+namespace FinanceManager.Application.DTOs
 {
     public class ParsedTransaction
     {
@@ -9,5 +12,22 @@
         public required string Type { get; set; }
         public string? Reference { get; set; }
         public bool IsInternalTransfer { get; set; }
+
+        public BankRecord ToBankRecord(string bank, Guid importId)
+        {
+            return new BankRecord
+            {
+                Id = Guid.NewGuid(),
+                ImportId = importId,
+                Bank = bank,
+                AccountNumber = AccountNumber,
+                Amount = Amount,
+                Date = Date,
+                Description = Description,
+                Type = Type,
+                Reference = Reference,
+                IsInternalTransfer = IsInternalTransfer,
+            };
+        }
     }
 }

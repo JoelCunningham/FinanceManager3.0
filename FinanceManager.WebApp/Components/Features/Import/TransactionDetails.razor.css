@@ -1,0 +1,42 @@
+.transaction-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .details-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .details-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+
+        & label {
+            font-weight: 500;
+        }
+
+        & span {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: var(--radius-small);
+            background-color: #f9fafb;
+            min-height: 2.4rem;
+            display: flex;
+        }
+    }
+}
+
+@media (max-width: 640.98px) {
+    .details-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+@media (min-width: 641px) {
+    .details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

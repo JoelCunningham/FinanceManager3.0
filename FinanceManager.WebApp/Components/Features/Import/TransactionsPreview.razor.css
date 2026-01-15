@@ -1,0 +1,22 @@
+.transactions-header {
+    display: grid;
+    grid-template-columns: 150px 150px 150px 1fr;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+.transactions-row {
+    display: grid;
+    grid-template-columns: 150px 150px 150px 1fr;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #d4d7d9;
+    border-radius: 8px;
+    transition: inherit;
+
+    &:hover {
+        cursor: pointer;
+        background-color: #f7f9fa;
+    }
+}

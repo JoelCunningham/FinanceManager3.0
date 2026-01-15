@@ -2,15 +2,15 @@
 
 namespace FinanceManager.WebApp.Models.ImportPage
 {
-    public class ImportPageTransfersModel(IReadOnlyList<ImportedTransaction> transactions)
+    public class ImportPageTransfersModel(IReadOnlyList<TransactionInfo> transactions)
     {
-        public IReadOnlyList<ImportedTransaction> AllTransactions { get; set; } = transactions;
+        public IReadOnlyList<TransactionInfo> AllTransactions { get; set; } = transactions;
 
-        public List<ImportedTransaction> DetectedTransfers { get; set; } = GetTransfersFromTransactions(transactions);
-        public List<ImportedTransaction> AcceptedTransfers { get; set; } = [];
-        public List<ImportedTransaction> RejectedTransfers { get; set; } = [];
+        public List<TransactionInfo> DetectedTransfers { get; set; } = GetTransfersFromTransactions(transactions);
+        public List<TransactionInfo> AcceptedTransfers { get; set; } = [];
+        public List<TransactionInfo> RejectedTransfers { get; set; } = [];
 
-        public List<ImportedTransaction> GroupedTransfers => GroupTransfers();
+        public List<TransactionInfo> GroupedTransfers => GroupTransfers();
 
         public Action? OnTransfersChanged { get; set; }
 
@@ -22,7 +22,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
             OnTransfersChanged?.Invoke();
         }
 
-        public void AcceptTransfer(ImportedTransaction transfer)
+        public void AcceptTransfer(TransactionInfo transfer)
         {
             DetectedTransfers.Remove(transfer);
             DetectedTransfers.Remove(transfer.Transfers!);
@@ -31,7 +31,7 @@ namespace FinanceManager.WebApp.Models.ImportPage
             OnTransfersChanged?.Invoke();
         }
 
-        public void RejectTransfer(ImportedTransaction transfer)
+        public void RejectTransfer(TransactionInfo transfer)
         {
             DetectedTransfers.Remove(transfer);
             DetectedTransfers.Remove(transfer.Transfers!);
@@ -64,12 +64,12 @@ namespace FinanceManager.WebApp.Models.ImportPage
             OnTransfersChanged?.Invoke();
         }
 
-        private static List<ImportedTransaction> GetTransfersFromTransactions(IEnumerable<ImportedTransaction> transactions)
+        private static List<TransactionInfo> GetTransfersFromTransactions(IEnumerable<TransactionInfo> transactions)
         {
             return transactions.Where(t => t.Transfers is not null).ToList();
         }
 
-        private List<ImportedTransaction> GroupTransfers()
+        private List<TransactionInfo> GroupTransfers()
         {
             var transfers = DetectedTransfers?
             .OrderBy(t => t.Date)
@@ -79,8 +79,8 @@ namespace FinanceManager.WebApp.Models.ImportPage
 
             if (transfers is null) return [];
 
-            var seenTransfers = new HashSet<ImportedTransaction>();
-            var result = new List<ImportedTransaction>();
+            var seenTransfers = new HashSet<TransactionInfo>();
+            var result = new List<TransactionInfo>();
 
             foreach (var transfer in transfers)
             {

@@ -1,0 +1,43 @@
+@using FinanceManager.WebApp.Models.ImportPage
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<BankRecord> Transactions { get; set; }
+
+    private BankRecord? CurrentTransaction = null;
+
+    private bool IsDetailsOpen = false;
+
+    private void ShowDetails(BankRecord transaction)
+    {
+        CurrentTransaction = transaction;
+        IsDetailsOpen = true;
+    }
+}
+
+<div class="alert alert-info" role="alert">
+    After importing, you will be able to edit and assign these transactions
+</div>
+
+<div class="transactions-header">
+    <div>Account</div>
+    <div>Date</div>
+    <div>Amount</div>
+    <div>Description</div>
+</div>
+@foreach (var transaction in Transactions)
+{
+    <div class="transactions-row" @onclick="() => ShowDetails(transaction)">
+        <div>@transaction.AccountNumber</div>
+        <div>@transaction.Date.ToShortDateString()</div>
+        <div>@transaction.Amount.ToString("C")</div>
+        <div>@transaction.Description</div>
+    </div>
+}
+
+@if (IsDetailsOpen)
+{
+    <Modal Title="Transaction details" OnClose="() => IsDetailsOpen = false">
+        <TransactionDetails Transaction="CurrentTransaction" />
+    </Modal>
+}

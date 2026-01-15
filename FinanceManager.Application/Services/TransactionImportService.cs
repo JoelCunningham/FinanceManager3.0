@@ -7,47 +7,31 @@ namespace FinanceManager.Application.Services
     public class TransactionImportService
     (
         TransactionParserService parserService,
-        IBankRecordRepository bankRecordRepository,
-        ITransactionRepository transactionRepository
+        IBankRecordRepository bankRecordRepository
     )
     {
-        public async Task<IEnumerable<ImportedTransaction>> ImportAsync(Stream file, string bank, string extension)
+        public async Task<IEnumerable<BankRecord>> ImportAsync(Stream file, string bank, string extension)
         {
             var importId = Guid.NewGuid();
 
             var parser = parserService.GetParser(bank, extension);
             var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();
 
-            var records = parsed.Select(t => ParsedTransactionToBankRecord(t, bank, importId)).ToList();
+            var records = parsed.Select(t => t.ToBankRecord(bank, importId)).ToList();
 
             var duplicates = (await bankRecordRepository.FindDuplicatesAsync(records)).ToList();
-            var validRecords = records.Except(duplicates).ToList();
-
-            await bankRecordRepository.SaveAsync(validRecords);
-
-            var transactions = validRecords.Select(BankRecordToImportedTransaction).ToList();
-           
-            await MatchTransfersAsync(transactions);
-
-            return transactions;
+            
+            return records.Except(duplicates);
         }
 
-        public async Task<bool> CancelAsync(Guid importId)
+
+        public async Task<bool> SaveAsync(IEnumerable<BankRecord> importedTransactions)
         {
-            await bankRecordRepository.DeleteByImportIdAsync(importId);
-            return true;
+            var success = await bankRecordRepository.SaveAsync(importedTransactions);
+            return success;
         }
 
-        public async Task<bool> SaveAsync(IEnumerable<ImportedTransaction> importedTransactions)
-        {
-            var transactions = new List<Transaction>();
-            var relationships = new List<TransactionLink>();
-
-            await transactionRepository.SaveTransactions(transactions, relationships);
-            return true;
-        }
-
-        private static async Task MatchTransfersAsync(List<ImportedTransaction> transactions)
+        private static async Task MatchTransfersAsync(List<TransactionInfo> transactions)
         {
             var internalTransfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
 
@@ -68,26 +52,9 @@ namespace FinanceManager.Application.Services
             }
         }
 
-        private static BankRecord ParsedTransactionToBankRecord(ParsedTransaction transaction, string bank, Guid importId)
+        private static TransactionInfo BankRecordToImportedTransaction(BankRecord record)
         {
-            return new BankRecord
-            {
-                Id = Guid.NewGuid(),
-                ImportId = importId,
-                Bank = bank,
-                AccountNumber = transaction.AccountNumber,
-                Amount = transaction.Amount,
-                Date = transaction.Date,
-                Description = transaction.Description,
-                Type = transaction.Type,
-                Reference = transaction.Reference,
-                IsInternalTransfer = transaction.IsInternalTransfer,
-            };
-        }
-
-        private static ImportedTransaction BankRecordToImportedTransaction(BankRecord record)
-        {
-            return new ImportedTransaction
+            return new TransactionInfo
             {
                 BankRecord = record,
                 Amount = record.Amount,

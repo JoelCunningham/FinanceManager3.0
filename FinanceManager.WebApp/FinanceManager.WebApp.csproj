@@ -6,11 +6,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <ProjectReference Include="..\FinanceManager.Application\FinanceManager.Application.csproj" />
     <ProjectReference Include="..\FinanceManager.Domain\FinanceManager.Domain.csproj" />
     <ProjectReference Include="..\FinanceManager.Infrastructure\FinanceManager.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\Features\Transactions\" />
   </ItemGroup>
 
 </Project>

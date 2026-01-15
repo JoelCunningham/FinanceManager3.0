@@ -1,12 +1,12 @@
 @code {
     [Parameter, EditorRequired]
-    public required ImportedTransaction Transfer { get; set; }
+    public required TransactionInfo Transfer { get; set; }
 
     [Parameter, EditorRequired]
-    public required EventCallback<ImportedTransaction> AcceptTransfer { get; set; }
+    public required EventCallback<TransactionInfo> AcceptTransfer { get; set; }
 
     [Parameter, EditorRequired]
-    public required EventCallback<ImportedTransaction> RejectTransfer { get; set; }
+    public required EventCallback<TransactionInfo> RejectTransfer { get; set; }
 
     private string? _animationClass;
     private bool _isAnimating => _animationClass is not null;

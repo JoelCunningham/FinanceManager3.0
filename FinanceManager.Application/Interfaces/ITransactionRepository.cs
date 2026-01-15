@@ -4,7 +4,7 @@ namespace FinanceManager.Application.Interfaces
 {
     public interface ITransactionRepository
     {
-        Task SaveTransactions(IEnumerable<Transaction> transactions, IEnumerable<TransactionLink> links);
+        Task SaveTransactions(IEnumerable<Transaction> transactions);
 
         Task SearchTransactions(string searchTerm);
     }

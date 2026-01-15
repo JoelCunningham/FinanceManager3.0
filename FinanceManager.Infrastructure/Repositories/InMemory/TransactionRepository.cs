@@ -5,7 +5,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 {
     public class TransactionRepository : ITransactionRepository
     {
-        public Task SaveTransactions(IEnumerable<Transaction> transactions, IEnumerable<TransactionLink> links)
+        public Task SaveTransactions(IEnumerable<Transaction> transactions)
         {
             return Task.CompletedTask;
         }

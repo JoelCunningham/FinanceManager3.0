@@ -2,8 +2,8 @@
 @inject TransactionParserService ParserService
 
 @code {
-    [Parameter, EditorRequired]
-    public required ImportPageUploadModel Model { get; set; }
+    [Parameter]
+    public ParserInfo? SelectedBank { get; set; }
 
     [Parameter]
     public bool HasProgress { get; set; }
@@ -34,7 +34,7 @@
     <div class="bank-cards-container">
         @foreach (var bank in availableParsers)
         {
-            var isSelected = Model.SelectedBank?.BankName == bank.BankName;
+            var isSelected = SelectedBank?.BankName == bank.BankName;
             <BankSelectCard BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
         }
     </div>

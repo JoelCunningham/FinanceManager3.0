@@ -2,7 +2,7 @@
 
 namespace FinanceManager.Application.DTOs
 {
-    public class ImportedTransaction
+    public class TransactionInfo
     {
         public required BankRecord BankRecord { get; set; }
         public required decimal Amount { get; set; }
@@ -10,12 +10,12 @@ namespace FinanceManager.Application.DTOs
         public required string Description { get; set; }
         public string? Category { get; set; }
 
-        public ImportedTransaction? Transfers { get; set; }
-        public ImportedTransaction? Reimburses { get; set; }
+        public TransactionInfo? Transfers { get; set; }
+        public TransactionInfo? Reimburses { get; set; }
         public Guid? ReimbursesExistingTransactionId { get; set; }
-        public ICollection<ImportedTransaction> Splits { get; set; } = [];
+        public ICollection<TransactionInfo> Splits { get; set; } = [];
 
-        public void SetTransfers(ImportedTransaction transfer)
+        public void SetTransfers(TransactionInfo transfer)
         {
             Transfers = transfer;
             transfer.Transfers = this;
@@ -27,7 +27,7 @@ namespace FinanceManager.Application.DTOs
             Transfers = null;
         }
 
-        public void SetReimburses(ImportedTransaction reimbursement)
+        public void SetReimburses(TransactionInfo reimbursement)
         {
             Reimburses = reimbursement;
             ReimbursesExistingTransactionId = null;
@@ -59,9 +59,9 @@ namespace FinanceManager.Application.DTOs
             Date = BankRecord.Date;
         }
 
-        public ImportedTransaction Split()
+        public TransactionInfo Split()
         {
-            var newSplit = new ImportedTransaction
+            var newSplit = new TransactionInfo
             {
                 BankRecord = BankRecord,
                 Amount = 0,
