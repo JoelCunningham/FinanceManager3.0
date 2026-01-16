@@ -1,48 +1,10 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Header with Search</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
+﻿<header>
+    <div class="search-container">
+        <input type="search" placeholder="Search Finanace Manager..." />
+    </div>
 
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 1.5rem 1rem 2rem;
-            color: white;
-        }
-
-        .search-container input {
-            padding: 6px 10px;
-            border-radius: var(--radius-small);
-            border: none;
-            background: var(--colour-light-grey);
-            width: 350px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 8px;
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <div class="search-container">
-            <input type="search" placeholder="Search Finanace Manager..." />
-        </div>
-
-        <div class="actions">
-            <button type="button" class="btn btn-secondary">Account</button>        
-            <button type="button" class="btn btn-secondary">Settings</button>
-        </div>
-    </header>
-
-</body>
-</html>
+    <div class="actions">
+        <button type="button" class="btn btn-secondary">Account</button>
+        <button type="button" class="btn btn-secondary">Settings</button>
+    </div>
+</header>
