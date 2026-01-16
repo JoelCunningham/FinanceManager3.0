@@ -5,14 +5,24 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 {
     public class TransactionRepository : ITransactionRepository
     {
-        public Task SaveTransactions(IEnumerable<Transaction> transactions)
+        private readonly List<Transaction> _transactions = [];
+
+        public async Task<bool> SaveAsync(IEnumerable<Transaction> transactions)
         {
-            return Task.CompletedTask;
+            _transactions.AddRange(transactions);
+            return true;
         }
 
-        public Task SearchTransactions(string searchTerm)
+        public async Task<IEnumerable<Transaction>> GetUncategorised()
         {
-            return Task.CompletedTask;
+            return _transactions.Where(t => t.CategoryId == null);
+            // TODO, change this to discard transfers
+        }
+
+        public async Task<IEnumerable<Transaction>> GetTransfers()
+        {
+            return _transactions.Where(t => t.Description.Contains(" TFR "));
+            //TODO, change this to use relationships 
         }
 
     }

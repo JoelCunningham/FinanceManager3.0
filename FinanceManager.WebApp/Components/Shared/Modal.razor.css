@@ -49,7 +49,11 @@
 @media (min-width: 641px) {
     .modal-dialog {
         transform: translate(calc(-50% + var(--width-sidebar) / 2), -50%);
-        width: calc(0.9 * (100% - var(--width-sidebar)));
+        width: fit-content;
+
+        &.full-width {
+            width: calc(0.9 * (100% - var(--width-sidebar)));
+        }
     }
 
     .modal-dialog .modal-dialog {

@@ -1,6 +1,7 @@
 ﻿using FinanceManager.Application.DTOs;
 using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Enums;
+using Microsoft.AspNetCore.Components;
 
 namespace FinanceManager.WebApp.Models.ImportPage
 {
@@ -8,12 +9,16 @@ namespace FinanceManager.WebApp.Models.ImportPage
     {
         public ParserInfo? SelectedBank { get; set; }
         public IReadOnlyList<BankRecord>? ImportedTransactions { get; set; }
-
-        public string? UploadErrorMessage { get; set; }
-        public FormValidationState UploadValidationState { get; set; } = FormValidationState.None;
         public string SupportedExtensions => GetSupportedExtensions();
 
+        public string? UploadErrorMessage { get; set; }
+        public string? ImportErrorMessage { get; set; }
+        public FormValidationState UploadValidationState { get; set; } = FormValidationState.None;
+
+
         public bool IsPreviewOpen = false;
+
+        public bool IsSuccessOpen = false;
 
         public void Reset()
         {
@@ -22,9 +27,10 @@ namespace FinanceManager.WebApp.Models.ImportPage
             UploadErrorMessage = null;
             UploadValidationState = FormValidationState.None;
             IsPreviewOpen = false;
+            IsSuccessOpen = false;
         }
 
-        public void Success(IEnumerable<BankRecord> records)
+        public void UploadSuccess(IEnumerable<BankRecord> records)
         {
             ImportedTransactions = [.. records];
             UploadErrorMessage = null;
@@ -32,12 +38,24 @@ namespace FinanceManager.WebApp.Models.ImportPage
             IsPreviewOpen = false;
         }
 
-        public void Error(Exception exception)
+        public void UploadError(Exception exception)
         {
             ImportedTransactions = null;
-            UploadErrorMessage = GetErrorMessage(exception);
+            UploadErrorMessage = GetUploadErrorMessage(exception);
             UploadValidationState = FormValidationState.Invalid;
             IsPreviewOpen = false;
+        }
+
+        public void ImportSuccess()
+        {
+            ImportErrorMessage = null;
+            IsSuccessOpen = true;
+        }
+
+        public void ImportError()
+        {
+            ImportErrorMessage = "An unexpected error occurred. Please try again.";
+            IsSuccessOpen = false;
         }
 
         public void NoTransactionsFound()
@@ -64,7 +82,12 @@ namespace FinanceManager.WebApp.Models.ImportPage
             IsPreviewOpen = false;
         }
 
-        private string GetErrorMessage(Exception exception)
+        public void CloseSuccess()
+        {
+            Reset();
+        }
+
+        private string GetUploadErrorMessage(Exception exception)
         {
             if (SelectedBank is null) return "Please select a bank first.";
 

@@ -5,9 +5,14 @@ namespace FinanceManager.Application.Services
 {
     public class TransactionService(ITransactionRepository transactionRepository)
     {
-        public IEnumerable<Transaction> SearchTransactions(string searchTerm)
+        public async Task<IEnumerable<Transaction>> GetUncategorisedAsync()
         {
-            return [];
+            return await transactionRepository.GetUncategorised();
+        }
+
+        public async Task<IEnumerable<Transaction>> GetTransfersAsync()
+        {
+            return await transactionRepository.GetTransfers();
         }
     }
 }

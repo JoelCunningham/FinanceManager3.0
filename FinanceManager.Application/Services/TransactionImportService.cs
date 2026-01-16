@@ -7,7 +7,8 @@ namespace FinanceManager.Application.Services
     public class TransactionImportService
     (
         TransactionParserService parserService,
-        IBankRecordRepository bankRecordRepository
+        IBankRecordRepository bankRecordRepository,
+        ITransactionRepository transactionRepository
     )
     {
         public async Task<IEnumerable<BankRecord>> ImportAsync(Stream file, string bank, string extension)
@@ -28,6 +29,14 @@ namespace FinanceManager.Application.Services
         public async Task<bool> SaveAsync(IEnumerable<BankRecord> importedTransactions)
         {
             var success = await bankRecordRepository.SaveAsync(importedTransactions);
+
+            if (success)
+            {
+                success = await transactionRepository.SaveAsync(
+                    importedTransactions.Select(BankRecordToTransaction)
+                );
+            }
+
             return success;
         }
 
@@ -52,15 +61,16 @@ namespace FinanceManager.Application.Services
             }
         }
 
-        private static TransactionInfo BankRecordToImportedTransaction(BankRecord record)
+        private static Transaction BankRecordToTransaction(BankRecord record)
         {
-            return new TransactionInfo
+            return new Transaction
             {
-                BankRecord = record,
-                Amount = record.Amount,
+                Id = Guid.NewGuid(),
+                RecordId = record.Id,
                 Date = record.Date,
+                Amount = record.Amount,
                 Description = record.Description,
-                Category = null,
+                CategoryId = null
             };
         }
     }

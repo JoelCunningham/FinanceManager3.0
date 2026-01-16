@@ -26,11 +26,11 @@
                 return;
             }
 
-            Model.Success(results);
+            Model.UploadSuccess(results);
         }
         catch (Exception exception)
         {
-            Model.Error(exception);
+            Model.UploadError(exception);
         }
     }
 
@@ -38,7 +38,16 @@
     {
         if (Model.ImportedTransactions is null) return;
 
-        await ImportService.SaveAsync(Model.ImportedTransactions);
+        var success = await ImportService.SaveAsync(Model.ImportedTransactions);
+
+        if (success)
+        {
+            Model.ImportSuccess();
+        }
+        else
+        {
+            Model.ImportError();
+        }
     }
 }
 
@@ -54,11 +63,17 @@
 }
 @if (Model.ImportedTransactions is not null)
 {
-    <ImportActions TransactionCount="Model.ImportedTransactions.Count" OnSubmit="SaveImportedTransactions" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
+    <ImportActions TransactionCount="Model.ImportedTransactions.Count" ErrorMessage="@Model.ImportErrorMessage" OnSubmit="SaveImportedTransactions" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
 }
 @if (Model.IsPreviewOpen && Model.ImportedTransactions is not null)
 {
     <Modal Title="Preview transactions" OnClose="Model.ClosePreview">
         <TransactionsPreview Transactions="Model.ImportedTransactions" />
+    </Modal>
+}
+@if (Model.IsSuccessOpen)
+{
+    <Modal ShowHeader="false" ShowFooter="false" FullWidth="false" OnClose="Model.CloseSuccess">
+        <ImportSuccess Transactions="Model.ImportedTransactions"/>
     </Modal>
 }

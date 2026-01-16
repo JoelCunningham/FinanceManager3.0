@@ -38,7 +38,7 @@
     protected override void OnInitialized()
     {
         categories = CategoryService.GetCategories().ToList();
-        existingTransactions = TransactionService.SearchTransactions(string.Empty);
+        existingTransactions = []; //TransactionService.SearchTransactions(string.Empty);
     }
 
     private List<TransactionInfo> GetFilteredCurrentTransactions()

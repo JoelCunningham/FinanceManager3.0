@@ -6,8 +6,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 {
     public class BankRecordRepository : IBankRecordRepository
     {
-
-        private readonly List<BankRecord> _bankRecords = new();
+        private readonly List<BankRecord> _bankRecords = [];
 
         public BankRecordRepository() { 
             // Duplicate 1
@@ -43,11 +42,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 
         public async Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords)
         {
-            return true;
-        }
-
-        public async Task<bool> DeleteByImportIdAsync(Guid importId)
-        {
+            _bankRecords.AddRange(bankRecords);
             return true;
         }
 

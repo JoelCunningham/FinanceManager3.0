@@ -18,10 +18,10 @@ builder.Services.AddSingleton<ITransactionFileParser, WestpacTransactionFilePars
 builder.Services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
 
 // Services
+builder.Services.AddSingleton<CategoryService>();
+builder.Services.AddTransient<TransactionService>();
 builder.Services.AddTransient<TransactionImportService>();
 builder.Services.AddSingleton<TransactionParserService>();
-builder.Services.AddTransient<TransactionService>();
-builder.Services.AddSingleton<CategoryService>();
 
 var app = builder.Build();
 

@@ -1,5 +1,25 @@
 ﻿@page "/Transactions/Uncategorised"
 
+@inject TransactionService TransactionService;
+
+@code {
+    private IEnumerable<Transaction> uncategorised = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        uncategorised = await TransactionService.GetUncategorisedAsync();
+    }
+}
+
 <PageTitle>Uncategorised Transactions</PageTitle>
 
 <h1 class="page-heading">Categorise transactions</h1>
+
+@foreach (var transaction in uncategorised)
+{
+    <div class="transfer-row">
+        <div>@transaction.Date.ToShortDateString()</div>
+        <div>@transaction.Amount.ToString("C")</div>
+        <div>@transaction.Description</div>
+    </div>
+}

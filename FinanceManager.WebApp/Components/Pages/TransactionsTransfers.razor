@@ -1,5 +1,25 @@
 ﻿@page "/Transactions/Transfers"
 
+@inject TransactionService TransactionService;
+
+@code {
+    private IEnumerable<Transaction> transfers = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        transfers = await TransactionService.GetTransfersAsync();
+    }
+}
+
 <PageTitle>Transfers</PageTitle>
 
 <h1 class="page-heading">Manage transfers</h1>
+
+@foreach (var transfer in transfers)
+{
+    <div class="transfer-row">
+        <div>@transfer.Date.ToShortDateString()</div>
+        <div>@transfer.Amount.ToString("C")</div>
+        <div>@transfer.Description</div>
+    </div>
+}

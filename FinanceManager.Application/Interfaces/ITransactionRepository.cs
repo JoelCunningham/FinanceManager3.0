@@ -4,8 +4,9 @@ namespace FinanceManager.Application.Interfaces
 {
     public interface ITransactionRepository
     {
-        Task SaveTransactions(IEnumerable<Transaction> transactions);
+        Task<bool> SaveAsync(IEnumerable<Transaction> transactions);
+        Task<IEnumerable<Transaction>> GetUncategorised();
 
-        Task SearchTransactions(string searchTerm);
+        Task<IEnumerable<Transaction>> GetTransfers();
     }
 }
