@@ -33,13 +33,20 @@
             Model.Error(exception);
         }
     }
+
+    private async Task SaveImportedTransactions()
+    {
+        if (Model.ImportedTransactions is null) return;
+
+        await ImportService.SaveAsync(Model.ImportedTransactions);
+    }
 }
 
 <PageTitle>Import Transactions</PageTitle>
 
 <h1 class="page-heading">Import transactions</h1>
 
-<BankSelectList SelectedBank="Model.SelectedBank" HasProgress="Model.ImportedTransactions is not null" OnBankChange="Model.BankChanged" />
+<BankSelectList SelectedBank="Model.SelectedBank" OnBankChange="Model.BankChanged" />
 
 @if (Model.SelectedBank is not null)
 {
@@ -47,7 +54,7 @@
 }
 @if (Model.ImportedTransactions is not null)
 {
-    <ImportActions TransactionCount="Model.ImportedTransactions.Count" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
+    <ImportActions TransactionCount="Model.ImportedTransactions.Count" OnSubmit="SaveImportedTransactions" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
 }
 @if (Model.IsPreviewOpen && Model.ImportedTransactions is not null)
 {

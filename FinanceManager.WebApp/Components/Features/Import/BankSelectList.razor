@@ -6,9 +6,6 @@
     public ParserInfo? SelectedBank { get; set; }
 
     [Parameter]
-    public bool HasProgress { get; set; }
-
-    [Parameter]
     public EventCallback<ParserInfo> OnBankChange { get; set; }
 
     private IReadOnlyList<ParserInfo> availableParsers = [];
@@ -20,11 +17,7 @@
 
     private async Task OnBankSelected(string bankName)
     {
-        bool confirmed = !HasProgress || await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to change the selected bank? This will reset any progress made in the import process.");
-        if (confirmed)
-        {
-            await OnBankChange.InvokeAsync(availableParsers?.FirstOrDefault(p => p.BankName == bankName));
-        }
+        await OnBankChange.InvokeAsync(availableParsers?.FirstOrDefault(p => p.BankName == bankName));
     }
 }
 
