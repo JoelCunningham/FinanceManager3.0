@@ -7,7 +7,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Model.Transfers = (await TransferService.GetAllAsync()).ToList();
+        Model.Transfers = [.. await TransferService.GetAllAsync()];
     }
 }
 

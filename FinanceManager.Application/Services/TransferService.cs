@@ -1,5 +1,6 @@
 ﻿using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.Utilities;
 
 namespace FinanceManager.Application.Services
 {
@@ -13,37 +14,18 @@ namespace FinanceManager.Application.Services
             var result = new List<TransferViewData>();
             var transfers = await _transferRepository.GetAllAsync();
 
-            var transferRecordIds = transfers
-                .SelectMany(t => new[] { t.ToRecordId, t.FromRecordId })
-                .Distinct()
-                .ToList();
+            var transferRecordIds = transfers.SelectMany(t => new[] { t.ToRecordId, t.FromRecordId });
 
             var records = await _bankRecordRepository.GetByIdsAsync(transferRecordIds);
-            var recordLookup = records.ToDictionary(r => r.Id);
+            var recordsLookup = records.ToDictionary(r => r.Id);
 
             foreach (var transfer in transfers)
             {
-                if (!recordLookup.TryGetValue(transfer.ToRecordId, out var toRecord) ||
-                    !recordLookup.TryGetValue(transfer.FromRecordId, out var fromRecord))
+                if (!recordsLookup.TryGetValue(transfer.ToRecordId, out var toRecord) ||
+                    !recordsLookup.TryGetValue(transfer.FromRecordId, out var fromRecord))
                     continue;
 
-                result.Add(new TransferViewData
-                {
-                    Amount = transfer.Amount,
-                    Date = transfer.Date,
-                    Description = transfer.Description,
-                    IsUserCreated = transfer.IsUserCreated,
-                    From = new Transferable
-                    {
-                        Bank = fromRecord.Bank,
-                        Account = fromRecord.AccountNumber,
-                    },
-                    To = new Transferable
-                    {
-                        Bank = toRecord.Bank,
-                        Account = toRecord.AccountNumber,
-                    }
-                });
+                result.Add(TypeConverter.TransferToViewData(transfer, fromRecord, toRecord));
             }
 
             return result;

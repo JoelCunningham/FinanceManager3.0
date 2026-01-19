@@ -18,9 +18,9 @@
             var bankName = Model.SelectedBank.BankName;
             var fileExtension = Path.GetExtension(file.Name);
 
-            var results = await ImportService.ImportAsync(stream, bankName, fileExtension);
+            var results = (await ImportService.ImportAsync(stream, bankName, fileExtension)).ToList();
 
-            if (results.ToList().Count == 0)
+            if (results.Count == 0)
             {
                 Model.NoTransactionsFound();
                 return;

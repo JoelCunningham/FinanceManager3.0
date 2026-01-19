@@ -6,7 +6,7 @@ namespace FinanceManager.WebApp.Models
 {
     public class ImportPageModel
     {
-        public ParserInfo? SelectedBank { get; set; }
+        public ParserViewData? SelectedBank { get; set; }
         public IReadOnlyList<BankRecord>? ImportedTransactions { get; set; }
         public string SupportedExtensions => GetSupportedExtensions();
 
@@ -65,7 +65,7 @@ namespace FinanceManager.WebApp.Models
             IsPreviewOpen = false;
         }
 
-        public void BankChanged(ParserInfo bank)
+        public void BankChanged(ParserViewData bank)
         {
             Reset();
             SelectedBank = bank;

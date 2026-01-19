@@ -1,5 +1,6 @@
 ﻿using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Utilities;
 
 namespace FinanceManager.Application.Services
 {
@@ -7,18 +8,9 @@ namespace FinanceManager.Application.Services
     {
         private readonly IEnumerable<ITransactionFileParser> _parsers = parsers;
 
-        public IReadOnlyList<ParserInfo> GetAvailableParsers()
+        public IReadOnlyList<ParserViewData> GetAvailableParsers()
         {
-            return _parsers
-                .GroupBy(parser => parser.GetBankName(), StringComparer.OrdinalIgnoreCase)
-                .Select(group => new ParserInfo(
-                    group.Key, group
-                    .SelectMany(p => p.GetFileExtensions())
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList()
-                ))
-                .OrderBy(p => p.BankName)
-                .ToList();
+            return [.. TypeConverter.ParsersToViewData(_parsers)];
         }
 
         public ITransactionFileParser GetParser(string companyName, string fileExtension)

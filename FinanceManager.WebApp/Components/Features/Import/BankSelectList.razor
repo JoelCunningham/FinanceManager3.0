@@ -3,12 +3,12 @@
 
 @code {
     [Parameter]
-    public ParserInfo? SelectedBank { get; set; }
+    public ParserViewData? SelectedBank { get; set; }
 
     [Parameter]
-    public EventCallback<ParserInfo> OnBankChange { get; set; }
+    public EventCallback<ParserViewData> OnBankChange { get; set; }
 
-    private IReadOnlyList<ParserInfo> availableParsers = [];
+    private IReadOnlyList<ParserViewData> availableParsers = [];
 
     protected override void OnInitialized()
     {

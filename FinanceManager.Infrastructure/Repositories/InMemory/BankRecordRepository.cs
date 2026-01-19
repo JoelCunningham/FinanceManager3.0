@@ -38,7 +38,8 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 
         public async Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> ids)
         {
-            return [.. _bankRecords.Where(br => ids.Contains(br.Id))];
+            var idSet = ids as HashSet<Guid> ?? [.. ids];
+            return [.. _bankRecords.Where(br => idSet.Contains(br.Id))];
         }
     }
 }
