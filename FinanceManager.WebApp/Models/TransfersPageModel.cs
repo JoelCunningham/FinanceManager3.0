@@ -1,8 +1,8 @@
 ﻿using FinanceManager.Application.DTOs;
 
-namespace FinanceManager.WebApp.Models.ImportPage
+namespace FinanceManager.WebApp.Models
 {
-    public class ImportPageTransfersModel(IReadOnlyList<TransactionInfo> transactions)
+    public class TransfersPageModel(IReadOnlyList<TransactionInfo> transactions)
     {
         public IReadOnlyList<TransactionInfo> AllTransactions { get; set; } = transactions;
 

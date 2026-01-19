@@ -1,9 +1,8 @@
 ﻿using FinanceManager.Application.DTOs;
 using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Enums;
-using Microsoft.AspNetCore.Components;
 
-namespace FinanceManager.WebApp.Models.ImportPage
+namespace FinanceManager.WebApp.Models
 {
     public class ImportPageModel
     {

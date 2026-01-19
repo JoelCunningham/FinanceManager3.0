@@ -1,8 +1,8 @@
-@using FinanceManager.WebApp.Models.ImportPage
+@using FinanceManager.WebApp.Models
 
 @code {
     [Parameter, EditorRequired]
-    public required ImportPageCategoriseModel Model { get; set; }
+    public required UncategorisedPageModel Model { get; set; }
 }
 
 @if (Model.GroupedTransactions.Count > 0)

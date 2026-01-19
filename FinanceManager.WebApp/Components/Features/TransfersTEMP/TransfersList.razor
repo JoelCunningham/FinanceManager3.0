@@ -1,8 +1,8 @@
-@using FinanceManager.WebApp.Models.ImportPage
+@using FinanceManager.WebApp.Models
 
 @code {
     [Parameter, EditorRequired]
-    public required ImportPageTransfersModel Model { get; set; }
+    public required TransfersPageModel Model { get; set; }
 
     private bool HasPendingTransfers => Model.DetectedTransfers.Count > 0;
     private bool HasResolvedTransfers => Model.AcceptedTransfers.Count > 0 || Model.RejectedTransfers.Count > 0;
