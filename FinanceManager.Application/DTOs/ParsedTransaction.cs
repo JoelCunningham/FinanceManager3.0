@@ -1,5 +1,4 @@
 ﻿using FinanceManager.Domain.Entities;
-using System.Transactions;
 
 namespace FinanceManager.Application.DTOs
 {

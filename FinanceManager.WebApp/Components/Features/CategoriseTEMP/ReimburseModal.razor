@@ -6,13 +6,13 @@
     public required bool IsOpen { get; set; }
 
     [Parameter, EditorRequired]
-    public required IReadOnlyList<TransactionInfo> CurrentTransactions { get; set; }
+    public required IReadOnlyList<TransactionViewData> CurrentTransactions { get; set; }
 
     [Parameter]
     public EventCallback OnClose { get; set; }
 
     [Parameter]
-    public EventCallback<TransactionInfo> OnSelectImported { get; set; }
+    public EventCallback<TransactionViewData> OnSelectImported { get; set; }
 
     [Parameter]
     public EventCallback<Transaction> OnSelectExisting { get; set; }
@@ -32,7 +32,7 @@
     private decimal? amountMin = null;
     private decimal? amountMax = null;
 
-    private List<TransactionInfo> FilteredCurrentTransactions => GetFilteredCurrentTransactions();
+    private List<TransactionViewData> FilteredCurrentTransactions => GetFilteredCurrentTransactions();
     private List<Transaction> FilteredExistingTransactions => GetFilteredExistingTransactions();
 
     protected override void OnInitialized()
@@ -41,7 +41,7 @@
         existingTransactions = []; //TransactionService.SearchTransactions(string.Empty);
     }
 
-    private List<TransactionInfo> GetFilteredCurrentTransactions()
+    private List<TransactionViewData> GetFilteredCurrentTransactions()
     {
         var filtered = CurrentTransactions.AsEnumerable();
 
@@ -137,7 +137,7 @@
         return filtered.ToList();
     }
 
-    private async Task SelectImportedTransaction(TransactionInfo transaction)
+    private async Task SelectImportedTransaction(TransactionViewData transaction)
     {
         await OnSelectImported.InvokeAsync(transaction);
         await Close();

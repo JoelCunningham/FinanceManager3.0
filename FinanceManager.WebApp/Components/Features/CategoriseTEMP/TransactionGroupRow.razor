@@ -1,9 +1,9 @@
 @code {
     [Parameter, EditorRequired]
-    public required TransactionInfo Transaction { get; set; }
+    public required TransactionViewData Transaction { get; set; }
 
     [Parameter, EditorRequired]
-    public required IReadOnlyList<TransactionInfo> CurrentTransactions { get; set; }
+    public required IReadOnlyList<TransactionViewData> CurrentTransactions { get; set; }
 }
 
 <div class="transaction-group">

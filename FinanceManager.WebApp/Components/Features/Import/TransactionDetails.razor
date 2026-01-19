@@ -1,9 +1,9 @@
+@using FinanceManager.WebApp.Models
+
 @code {
     [Parameter, EditorRequired]
     public required BankRecord Transaction { get; set; }
 }
-
-@using FinanceManager.WebApp.Models.ImportPage
 
 <div class="transaction-details">
     <div class="details-grid">
