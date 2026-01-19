@@ -5,8 +5,11 @@ namespace FinanceManager.Domain.Entities
     public sealed class Transfer : IEntity
     {
         public Guid Id { get; set; }
-        public required Transaction To { get; set; }
-        public required Transaction From { get; set; }
+        public required Guid ToRecordId { get; set; }
+        public required Guid FromRecordId { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Amount { get; set; }
+        public required string Description { get; set; }
         public bool IsUserCreated { get; set; }
     }
 }

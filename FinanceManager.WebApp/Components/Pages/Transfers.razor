@@ -1,13 +1,13 @@
 ﻿@page "/Transactions/Transfers"
 
-@inject TransactionService TransactionService;
+@inject TransferService TransferService;
 
 @code {
-    private IEnumerable<Transaction> transfers = [];
+    private TransfersPageModel Model = new();
 
     protected override async Task OnInitializedAsync()
     {
-        transfers = await TransactionService.GetTransfersAsync();
+        Model.Transfers = (await TransferService.GetAllAsync()).ToList();
     }
 }
 
@@ -15,11 +15,16 @@
 
 <h1 class="page-heading">Manage transfers</h1>
 
-@foreach (var transfer in transfers)
+@foreach (var transfer in Model.Transfers)
 {
     <div class="transfer-row">
+        <div>@transfer.From.Bank</div>
+        <div>@transfer.From.Account</div>
+        <div>@transfer.To.Bank</div>
+        <div>@transfer.To.Account</div>
         <div>@transfer.Date.ToShortDateString()</div>
         <div>@transfer.Amount.ToString("C")</div>
         <div>@transfer.Description</div>
+        <InputCheckbox @bind-Value="transfer.IsUserCreated" />
     </div>
 }

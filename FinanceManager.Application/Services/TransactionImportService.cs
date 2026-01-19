@@ -1,5 +1,4 @@
-﻿using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Interfaces;
+﻿using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.Application.Services
@@ -8,7 +7,8 @@ namespace FinanceManager.Application.Services
     (
         TransactionParserService parserService,
         IBankRecordRepository bankRecordRepository,
-        ITransactionRepository transactionRepository
+        ITransactionRepository transactionRepository,
+        ITransferRepository transferRepository
     )
     {
         public async Task<IEnumerable<BankRecord>> ImportAsync(Stream file, string bank, string extension)
@@ -21,10 +21,9 @@ namespace FinanceManager.Application.Services
             var records = parsed.Select(t => t.ToBankRecord(bank, importId)).ToList();
 
             var duplicates = (await bankRecordRepository.FindDuplicatesAsync(records)).ToList();
-            
+
             return records.Except(duplicates);
         }
-
 
         public async Task<bool> SaveAsync(IEnumerable<BankRecord> importedTransactions)
         {
@@ -32,33 +31,49 @@ namespace FinanceManager.Application.Services
 
             if (success)
             {
-                success = await transactionRepository.SaveAsync(
-                    importedTransactions.Select(BankRecordToTransaction)
-                );
+                var transactions = importedTransactions.Select(BankRecordToTransaction).ToList();
+                var transfers = BankRecordsToTransfers(importedTransactions).ToList();
+
+                success = await transferRepository.SaveAsync(transfers);
+                success &= await transactionRepository.SaveAsync(transactions);
+                //TODO add rollbacks
             }
 
             return success;
         }
 
-        private static async Task MatchTransfersAsync(List<TransactionInfo> transactions)
+        private static IEnumerable<Transfer> BankRecordsToTransfers(IEnumerable<BankRecord> records)
         {
-            var internalTransfers = transactions.Where(t => t.BankRecord.IsInternalTransfer).ToList();
+            List<Transfer> transfers = [];
+            var transferTransactions = records.Where(t => t.IsInternalTransfer).ToList();
 
-            foreach (var transaction in internalTransfers)
+            foreach (var transfer in transferTransactions)
             {
-                if (transaction.Transfers != null) continue;
+                if (transfer.Amount < 0) continue;
 
-                var match = internalTransfers.FirstOrDefault(p =>
-                    p != transaction &&
-                    p.Transfers == null &&
-                    p.Amount == -transaction.Amount &&
-                    p.Date.Date == transaction.Date.Date);
+                var match = FindTransferMatch(transfer, transferTransactions);
 
                 if (match != null)
                 {
-                    transaction.SetTransfers(match);
+                    transfers.Add(BankRecordsToTransfer(transfer, match));
                 }
             }
+
+            return transfers;
+        }
+
+        private static Transfer BankRecordsToTransfer(BankRecord from, BankRecord to)
+        {
+            return new Transfer
+            {
+                Id = Guid.NewGuid(),
+                FromRecordId = from.Id,
+                ToRecordId = to.Id,
+                Amount = from.Amount,
+                Date = from.Date,
+                Description = from.Description + " / " + to.Description,
+                IsUserCreated = false
+            };
         }
 
         private static Transaction BankRecordToTransaction(BankRecord record)
@@ -72,6 +87,14 @@ namespace FinanceManager.Application.Services
                 Description = record.Description,
                 CategoryId = null
             };
+        }
+
+        private static BankRecord? FindTransferMatch(BankRecord transfer, List<BankRecord> candidates)
+        {
+            return candidates.FirstOrDefault(t =>
+                t != transfer &&
+                t.Amount == -transfer.Amount &&
+                t.Date.Date == transfer.Date.Date);
         }
     }
 }

@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 // Repositories
+builder.Services.AddSingleton<ITransferRepository, TransferRepository>();
 builder.Services.AddSingleton<ITransactionRepository, TransactionRepository>();
 builder.Services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
 
@@ -19,6 +20,7 @@ builder.Services.AddSingleton<ITransactionFileParser, VanguardTransactionFilePar
 
 // Services
 builder.Services.AddSingleton<CategoryService>();
+builder.Services.AddSingleton<TransferService>();
 builder.Services.AddTransient<TransactionService>();
 builder.Services.AddTransient<TransactionImportService>();
 builder.Services.AddSingleton<TransactionParserService>();

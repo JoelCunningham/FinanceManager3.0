@@ -18,12 +18,5 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             return _transactions.Where(t => t.CategoryId == null);
             // TODO, change this to discard transfers
         }
-
-        public async Task<IEnumerable<Transaction>> GetTransfers()
-        {
-            return _transactions.Where(t => t.Description.Contains(" TFR "));
-            //TODO, change this to use relationships 
-        }
-
     }
 }

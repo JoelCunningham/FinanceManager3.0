@@ -6,5 +6,6 @@ namespace FinanceManager.Application.Interfaces
     {
         Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords);
         Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords);
+        Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> ids);
     }
 }

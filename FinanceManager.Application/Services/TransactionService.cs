@@ -9,10 +9,5 @@ namespace FinanceManager.Application.Services
         {
             return await transactionRepository.GetUncategorised();
         }
-
-        public async Task<IEnumerable<Transaction>> GetTransfersAsync()
-        {
-            return await transactionRepository.GetTransfers();
-        }
     }
 }

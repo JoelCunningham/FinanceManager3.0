@@ -1,44 +1,11 @@
 ﻿using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
-using System.Globalization;
 
 namespace FinanceManager.Infrastructure.Repositories.InMemory
 {
     public class BankRecordRepository : IBankRecordRepository
     {
         private readonly List<BankRecord> _bankRecords = [];
-
-        public BankRecordRepository() { 
-            // Duplicate 1
-            _bankRecords.Add(new BankRecord
-            {
-                Id = Guid.NewGuid(),
-                ImportId = Guid.NewGuid(),
-                Bank = "Westpac",
-                AccountNumber = "033092585544",
-                Amount = 68.11m,
-                Date = DateTime.Parse("28/11/2025", new CultureInfo("en-AU")),
-                Description = "INTEREST PAID  (INCLUDES BONUS OF        $64.11)",
-                Type = "INT",
-                Reference = "",
-                IsInternalTransfer = false
-            });
-
-            // Duplicate 2
-            _bankRecords.Add(new BankRecord
-            {
-                Id = Guid.NewGuid(),
-                ImportId = Guid.NewGuid(),
-                Bank = "Westpac",
-                AccountNumber = "033092585544",
-                Amount = 1m,
-                Date = DateTime.Parse("18/11/2025", new CultureInfo("en-AU")),
-                Description = "DEPOSIT ONLINE 2400796 TFR Westpac Cho Interest payment",
-                Type = "CREDIT",
-                Reference = "",
-                IsInternalTransfer = false
-            });
-        }
 
         public async Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords)
         {
@@ -67,6 +34,11 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             }
 
             return duplicates;
+        }
+
+        public async Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> ids)
+        {
+            return [.. _bankRecords.Where(br => ids.Contains(br.Id))];
         }
     }
 }

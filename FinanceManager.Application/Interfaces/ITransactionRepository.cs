@@ -6,7 +6,5 @@ namespace FinanceManager.Application.Interfaces
     {
         Task<bool> SaveAsync(IEnumerable<Transaction> transactions);
         Task<IEnumerable<Transaction>> GetUncategorised();
-
-        Task<IEnumerable<Transaction>> GetTransfers();
     }
 }
