@@ -2,6 +2,7 @@
 {
     public class TransferViewData
     {
+        public Guid EntityId { get; set; }
         public decimal Amount { get; set; }
         public required Transferable From { get; set; }
         public required Transferable To { get; set; }

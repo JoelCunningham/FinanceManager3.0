@@ -1,5 +1,7 @@
 ﻿@page "/Transactions/Transfers"
 
+@rendermode InteractiveServer
+
 @inject TransferService TransferService;
 
 @code {
@@ -9,6 +11,20 @@
     {
         Model.Transfers = [.. await TransferService.GetAllAsync()];
     }
+
+    private async Task RemoveTransfer(TransferViewData transfer)
+    {
+        var success = await TransferService.RemoveTransfer(transfer);
+
+        if (success)
+        {
+            Model.Transfers.Remove(transfer);
+        }
+        else
+        {
+            Model.RemoveError(transfer);
+        }
+    }
 }
 
 <PageTitle>Transfers</PageTitle>
@@ -17,14 +33,5 @@
 
 @foreach (var transfer in Model.Transfers)
 {
-    <div class="transfer-row">
-        <div>@transfer.From.Bank</div>
-        <div>@transfer.From.Account</div>
-        <div>@transfer.To.Bank</div>
-        <div>@transfer.To.Account</div>
-        <div>@transfer.Date.ToShortDateString()</div>
-        <div>@transfer.Amount.ToString("C")</div>
-        <div>@transfer.Description</div>
-        <InputCheckbox @bind-Value="transfer.IsUserCreated" />
-    </div>
+    <TransferRow Transfer="transfer" OnRemove="RemoveTransfer" />
 }

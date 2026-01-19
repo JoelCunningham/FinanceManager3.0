@@ -6,7 +6,8 @@ namespace FinanceManager.Application.Services
 {
     public class TransferService(
         ITransferRepository _transferRepository,
-        IBankRecordRepository _bankRecordRepository
+        IBankRecordRepository _bankRecordRepository,
+        ITransactionRepository _transactionRepository
     )
     {
         public async Task<IEnumerable<TransferViewData>> GetAllAsync()
@@ -29,6 +30,27 @@ namespace FinanceManager.Application.Services
             }
 
             return result;
+        }
+
+        public async Task<bool> RemoveTransfer(TransferViewData transferViewData)
+        {
+            var success = false;
+            
+            var transfer = await _transferRepository.GetByIdAsync(transferViewData.EntityId);
+           
+            if (transfer == null) return success;
+
+            success = await _transferRepository.RemoveAsync(transfer.Id);
+
+            if (success)
+            {
+                var fromTransaction = TypeConverter.TransferToTransaction(transfer, true);
+                var toTransaction = TypeConverter.TransferToTransaction(transfer, false);
+
+                success = await _transactionRepository.SaveAsync([fromTransaction, toTransaction]);
+            }
+
+            return success;
         }
     }
 }

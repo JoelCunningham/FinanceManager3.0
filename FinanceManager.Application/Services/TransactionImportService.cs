@@ -32,8 +32,8 @@ namespace FinanceManager.Application.Services
 
             if (success)
             {
-                var transfers = TypeConverter.BankRecordsToTransfers(importedTransactions);
-                var transactions = importedTransactions.Select(TypeConverter.BankRecordToTransaction);
+                var transfers = TypeConverter.BankRecordsToTransfers(importedTransactions.Where(t => t.IsInternalTransfer));
+                var transactions = importedTransactions.Where(t => !t.IsInternalTransfer).Select(TypeConverter.BankRecordToTransaction);
 
                 success = await transferRepository.SaveAsync(transfers);
                 success &= await transactionRepository.SaveAsync(transactions);

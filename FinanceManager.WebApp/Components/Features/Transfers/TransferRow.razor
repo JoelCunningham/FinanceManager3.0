@@ -1,0 +1,41 @@
+@code {
+    [Parameter, EditorRequired]
+    public required TransferViewData Transfer { get; set; }
+
+    [Parameter]
+    public EventCallback<TransferViewData> OnRemove { get; set; }
+
+    private void Remove()
+    {
+        //TODO confrimation dialogue here
+        OnRemove.InvokeAsync(Transfer);
+    }
+}
+
+<div class="transfer-row">
+    <div class="account-group">
+        <div class="bank-name">@Transfer.From.Bank</div>
+        <div class="account-name">@Transfer.From.Account</div>
+    </div>
+
+    <div class="transfer-arrow">-></div>
+
+    <div class="account-group">
+        <div class="bank-name">@Transfer.To.Bank</div>
+        <div class="account-name">@Transfer.To.Account</div>
+    </div>
+
+    <div class="transfer-info">
+        <div>@Transfer.Date.ToShortDateString()</div>
+        <div class="amount">@Transfer.Amount.ToString("C")</div>
+        <div class="description">@Transfer.Description</div>
+    </div>
+
+    <div class="transfer-status">
+        <span class="user-created-icon">@(Transfer.IsUserCreated ? "X" : "")</span>
+    </div>
+
+    <div class="transfer-actions">
+        <button type="button" class="btn btn-danger btn-sm" @onclick="Remove">Not a transfer</button>
+    </div>
+</div>
