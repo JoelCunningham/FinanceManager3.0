@@ -13,12 +13,22 @@
 }
 
 <div class="transfer-row">
+
+    @if (Transfer.IsUserCreated)
+    {
+        <Icon Name="hand-index" AriaLabel="user created" title="User created transfer" />
+    }
+    else
+    {
+        <Icon Name="gear" AriaLabel="automatically created" title="Automatically created transfer" />
+    }
+
     <div class="account-group">
         <div class="bank-name">@Transfer.From.Bank</div>
         <div class="account-name">@Transfer.From.Account</div>
     </div>
 
-    <div class="transfer-arrow">-></div>
+    <Icon Name="arrow-right" AriaLabel="transferd to" />
 
     <div class="account-group">
         <div class="bank-name">@Transfer.To.Bank</div>
@@ -29,10 +39,6 @@
         <div>@Transfer.Date.ToShortDateString()</div>
         <div class="amount">@Transfer.Amount.ToString("C")</div>
         <div class="description">@Transfer.Description</div>
-    </div>
-
-    <div class="transfer-status">
-        <span class="user-created-icon">@(Transfer.IsUserCreated ? "X" : "")</span>
     </div>
 
     <div class="transfer-actions">

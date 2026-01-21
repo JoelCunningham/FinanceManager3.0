@@ -3,7 +3,8 @@ h2 {
     justify-content: center;
 }
 
-.bi {
+::deep .bi {
+    color: green;
     display: flex;
     width: 6rem;
     height: 6rem;

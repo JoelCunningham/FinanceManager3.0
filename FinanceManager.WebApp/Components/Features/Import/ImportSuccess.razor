@@ -15,12 +15,13 @@
 
 <h2>Import Successful</h2>
 
-<span class="bi bi-success" aria-hidden="true"></span>
-
-<h5 class="import-success-message">
-    Successfully imported @Transactions.Count transaction@(Transactions.Count == 1 ? "" : "s"); 
-    including @TransfersCount transfer@(TransfersCount == 1 ? "" : "s").
-</h5>
+<div class="body">
+    <Icon Name="check-circle" AriaLabel="Import Successful" />
+    <h5 class="import-success-message">
+        Successfully imported @Transactions.Count transaction@(Transactions.Count == 1 ? "" : "s");
+        including @TransfersCount transfer@(TransfersCount == 1 ? "" : "s").
+    </h5>
+</div>
 
 <div class="buttons">
     @if (TransfersCount > 0)
