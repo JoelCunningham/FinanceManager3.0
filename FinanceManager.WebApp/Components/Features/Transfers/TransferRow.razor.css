@@ -1,19 +1,38 @@
 .transfer-row {
     display: grid;
-    grid-template-columns: 30px 100px 40px 120px 1fr 130px;
+    grid-template-columns: 1.25rem 40px 1.5rem 40px 90px 90px 1fr 80px;
     gap: 1rem;
     align-items: center;
     padding: 0.75rem 1rem;
     margin-bottom: 1rem;
     border: 1px solid #d4d7d9;
     border-radius: 8px;
-    transition: inherit;
+    cursor: pointer;
+
+    .bank-logo {
+        width: 40px;
+        max-height: 16px;
+    }
+
+    .amount {
+        text-align: center;
+        font-weight: 600;
+        color: #0969da;
+    }
+
+    .description {
+        font-size: 0.85rem;
+        color: #57606a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
     &:hover {
         background-color: #f7f9fa;
     }
 
-    & ::deep .bi-gear, 
+    & ::deep .bi-gear,
     & ::deep .bi-hand-index {
         width: 1.25rem;
         height: 1.25rem;
@@ -22,55 +41,9 @@
     }
 
     & ::deep .bi-arrow-right {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 1.5rem;
+        height: 1.5rem;
         text-align: center;
         font-weight: bold;
     }
-}
-
-.account-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.bank-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #24292f;
-}
-
-.account-name {
-    font-size: 0.85rem;
-    color: #57606a;
-}
-
-.transfer-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.amount {
-    font-weight: 600;
-    color: #0969da;
-}
-
-.description {
-    font-size: 0.85rem;
-    color: #57606a;
-}
-
-.transfer-status {
-    text-align: center;
-}
-
-.user-created-icon {
-    font-size: 1.25rem;
-    display: inline-block;
-}
-
-.transfer-actions {
-    text-align: right;
 }

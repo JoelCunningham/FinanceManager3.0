@@ -1,0 +1,50 @@
+@using FinanceManager.Application.DTOs
+
+@code {
+    [Parameter, EditorRequired]
+    public required TransferViewData Transfer { get; set; }
+}
+
+<div class="transaction-details">
+    <div class="details-grid">
+        <div class="details-field">
+            <label>From Bank</label>
+            <span>@Transfer.From.Bank</span>
+        </div>
+                
+        <div class="details-field">
+            <label>To Bank</label>
+            <span>@Transfer.To.Bank</span>
+        </div>
+
+        <div class="details-field">
+            <label>From Account</label>
+            <span>@Transfer.From.Account</span>
+        </div>
+        
+        <div class="details-field">
+            <label>To Account</label>
+            <span>@Transfer.To.Account</span>
+        </div>
+        
+        <div class="details-field">
+            <label>Date</label>
+            <span>@Transfer.Date.ToString("dd/MM/yyyy")</span>
+        </div>
+
+        <div class="details-field">
+            <label>Amount</label>
+            <span>@Transfer.Amount.ToString("C")</span>
+        </div>
+        
+        <div class="details-field">
+            <label>Source</label>
+            <span>@(Transfer.IsUserCreated ? "User created" : "Automatically created")</span>
+        </div>
+    </div>
+    
+    <div class="details-field full-width">
+        <label>Description</label>
+        <span>@Transfer.Description</span>
+    </div>
+</div>
