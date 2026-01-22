@@ -15,7 +15,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 
         public async Task<IEnumerable<Transfer>> GetAllAsync()
         {
-            return _transfers;
+            return [.. _transfers];
             //throw here on failure
         }
 
@@ -36,7 +36,10 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             {
                 _transfers.Remove(transfer);
             }
-            throw new KeyNotFoundException($"Transfer with id {id} not found.");
+            else
+            {
+                throw new KeyNotFoundException($"Transfer with id {id} not found.");
+            }
         }
     }
 }

@@ -22,15 +22,14 @@ namespace FinanceManager.Application.Utilities
         public static List<Transfer> BankRecordsToTransfers(IEnumerable<BankRecord> records)
         {
             List<Transfer> transfers = [];
-            var transferTransactions = records.Where(t => t.IsInternalTransfer).ToList();
 
-            foreach (var transfer in transferTransactions)
+            foreach (var transfer in records)
             {
                 if (transfer.Amount < 0) continue;
 
-                var match = TransferUtilities.FindTransferMatch(transfer, transferTransactions);
+                var match = TransferUtilities.FindTransferMatch(transfer, records);
 
-                if (match != null)
+                if (match is not null)
                 {
                     transfers.Add(BankRecordPairToTransfer(transfer, match));
                 }

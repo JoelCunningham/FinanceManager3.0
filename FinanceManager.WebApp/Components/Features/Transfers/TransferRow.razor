@@ -29,24 +29,25 @@
         <Icon Name="gear" AriaLabel="automatically created" title="Automatically created transfer" />
     }
 
-    <img class="bank-logo" src="@GetBankLogoPath(Transfer.From.Bank)" alt="@Transfer.From.Bank logo" title="@Transfer.From.Account" />
-
-    <Icon Name="arrow-right" AriaLabel="transferd to" />
-
-    <img class="bank-logo" src="@GetBankLogoPath(Transfer.To.Bank)" alt="@Transfer.To.Bank logo" title="@Transfer.To.Account" />
+    <div class="accounts">
+        <img class="bank-logo" src="@GetBankLogoPath(Transfer.From.Bank)" alt="@Transfer.From.Bank logo" title="@Transfer.From.Account" />
+        <Icon Name="arrow-right" AriaLabel="transferd to" />
+        <img class="bank-logo" src="@GetBankLogoPath(Transfer.To.Bank)" alt="@Transfer.To.Bank logo" title="@Transfer.To.Account" />
+    </div>
 
     <div>@Transfer.Date.ToShortDateString()</div>
 
-    <div class="amount">@Transfer.Amount.ToString("C")</div>
-
     <div class="description">@Transfer.Description</div>
 
-    <button type="button" class="btn btn-primary btn-sm" @onclick="Remove">Seperate</button>
+    <div class="amount">@Transfer.Amount.ToString("C")</div>
+
+    <button type="button" class="btn btn-primary btn-sm" @onclick="Remove" @onclick:stopPropagation="true">Seperate</button>
 </div>
 
 @if (IsDetailsOpen)
 {
     <Modal Title="Transaction details" OnClose="() => IsDetailsOpen = false">
-        <TransferDetails Transfer="Transfer" /> 
-    </Modal> // TODO add Seperate button to modal
+        <TransferDetails Transfer="Transfer" />
+    </Modal>
+    // TODO add Seperate button to modal
 }

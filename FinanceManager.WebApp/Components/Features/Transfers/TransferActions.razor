@@ -2,23 +2,23 @@
 @using System.Linq
 
 @code {
-[Parameter, EditorRequired]
-public required TransfersPageModelFilters Filters { get; set; }
+    [Parameter, EditorRequired]
+    public required TransfersPageModelFilters Filters { get; set; }
 
-[Parameter]
-public List<string> Accounts { get; set; } = [];
+    [Parameter]
+    public List<string> Accounts { get; set; } = [];
 
-[Parameter]
-public decimal MaxAmount { get; set; }
+    [Parameter]
+    public decimal MaxAmount { get; set; }
 
-[Parameter]
-public EventCallback OnFiltersChanged { get; set; }
+    [Parameter]
+    public EventCallback OnFiltersChanged { get; set; }
 
-private async Task OnSearchInput(ChangeEventArgs e)
-{
-    Filters.SearchTerm = e.Value?.ToString() ?? string.Empty;
-    await OnFiltersChanged.InvokeAsync();
-}
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        Filters.SearchTerm = e.Value?.ToString() ?? string.Empty;
+        await OnFiltersChanged.InvokeAsync();
+    }
 
     private async Task OnSortByChange(ChangeEventArgs e)
     {
@@ -106,78 +106,74 @@ private async Task OnSearchInput(ChangeEventArgs e)
 
     <div class="filter-sort-container">
         <div class="filter-group">
-            <label for="source-filter">Source:</label>
-            <select id="source-filter" class="form-select" value="@Filters.FilterBySource" @onchange="OnFilterChange">
-                <option value="@TransferSource.All">All</option>
-                <option value="@TransferSource.User">User Created</option>
-                <option value="@TransferSource.Auto">Auto Created</option>
-            </select>
-        </div>
+            <label class="group-label">Filter by:</label>
 
-        <div class="filter-group">
-            <label for="account-filter">Account:</label>
-            <select id="account-filter" class="form-select" value="@(Filters.FilterByAccount ?? "All")" @onchange="OnAccountFilterChange">
-                <option value="All">All Accounts</option>
-                @foreach (var account in Accounts)
-                {
-                    <option value="@account">@account</option>
-                }
-            </select>
+            <div class="filter-pair">
+                <select id="source-filter" class="form-select" value="@Filters.FilterBySource" @onchange="OnFilterChange">
+                    <option value="@TransferSource.All">All sources</option>
+                    <option value="@TransferSource.User">User Created</option>
+                    <option value="@TransferSource.Auto">Auto Created</option>
+                </select>
+                <select id="account-filter" class="form-select" value="@(Filters.FilterByAccount ?? "All")" @onchange="OnAccountFilterChange">
+                    <option value="All">All Accounts</option>
+                    @foreach (var account in Accounts)
+                    {
+                        <option value="@account">@account</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-pair">
+                <input type="date"
+                       id="date-from"
+                       class="form-control"
+                       value="@(Filters.FilterDateFrom?.ToString("yyyy-MM-dd"))"
+                       @onchange="OnDateFromChange" />
+                <Icon Name="arrow-right" />
+                <input type="date"
+                       id="date-to"
+                       class="form-control"
+                       value="@(Filters.FilterDateTo?.ToString("yyyy-MM-dd"))"
+                       @onchange="OnDateToChange" />
+            </div>
+
+            <div class="filter-pair">
+                <input type="number"
+                       id="amount-min"
+                       class="form-control"
+                       placeholder="0.00"
+                       min="0"
+                       max="@MaxAmount"
+                       step="0.01"
+                       value="@Filters.FilterAmountMin"
+                       @onchange="OnAmountMinChange" />
+                <Icon Name="arrow-right" AriaLabel="transferd to" />
+                <input type="number"
+                       id="amount-max"
+                       class="form-control"
+                       placeholder="@MaxAmount"
+                       min="0"
+                       max="@MaxAmount"
+                       step="0.01"
+                       value="@Filters.FilterAmountMax"
+                       @onchange="OnAmountMaxChange" />
+            </div>
+
         </div>
 
         <div class="sort-group">
-            <label for="sort-by">Sort by:</label>
-            <select id="sort-by" class="form-select" value="@Filters.SortBy" @onchange="OnSortByChange">
-                <option value="@TransferSort.Date">Date</option>
-                <option value="@TransferSort.Amount">Amount</option>
-                <option value="@TransferSort.FromAccount">From Account</option>
-                <option value="@TransferSort.ToAccount">To Account</option>
-            </select>
-            <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortDirection" title="Toggle sort direction">
-                <Icon Name="@(Filters.SortDescending ? "sort-down" : "sort-up")" />
-            </button>
-        </div>
-    </div>
-
-    <div class="filter-sort-container">
-        <div class="filter-group">
-            <input type="date"
-                   id="date-from"
-                   class="form-control"
-                   value="@(Filters.FilterDateFrom?.ToString("yyyy-MM-dd"))"
-                   @onchange="OnDateFromChange" />
-        </div>
-        <Icon Name="arrow-right" AriaLabel="transferd to" />
-        <div class="filter-group">
-            <input type="date"
-                   id="date-to"
-                   class="form-control"
-                   value="@(Filters.FilterDateTo?.ToString("yyyy-MM-dd"))"
-                   @onchange="OnDateToChange" />
-        </div>
-
-        <div class="sort-group">
-            <input type="number"
-                   id="amount-min"
-                   class="form-control"
-                   placeholder="0.00"
-                   min="0"
-                   max="@MaxAmount"
-                   step="0.01"
-                   value="@Filters.FilterAmountMin"
-                   @onchange="OnAmountMinChange" />
-        </div>
-        <Icon Name="arrow-right" AriaLabel="transferd to" />
-        <div class="filter-group">
-            <input type="number"
-                   id="amount-max"
-                   class="form-control"
-                   placeholder="@MaxAmount"
-                   min="0"
-                   max="@MaxAmount"
-                   step="0.01"
-                   value="@Filters.FilterAmountMax"
-                   @onchange="OnAmountMaxChange" />
+            <label class="group-label" for="sort-by">Sort by:</label>
+            <div class="filter-pair">
+                <select id="sort-by" class="form-select" value="@Filters.SortBy" @onchange="OnSortByChange">
+                    <option value="@TransferSort.Date">Date</option>
+                    <option value="@TransferSort.Amount">Amount</option>
+                    <option value="@TransferSort.FromAccount">From Account</option>
+                    <option value="@TransferSort.ToAccount">To Account</option>
+                </select>
+                <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortDirection" title="Toggle sort direction">
+                    <Icon Name="@(Filters.SortDescending ? "sort-down" : "sort-up")" />
+                </button>
+            </div>
         </div>
     </div>
 </div>
