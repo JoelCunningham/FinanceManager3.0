@@ -2,19 +2,23 @@
 @using System.Linq
 
 @code {
-    [Parameter, EditorRequired]
-    public required TransfersPageModelFilters Filters { get; set; }
+[Parameter, EditorRequired]
+public required TransfersPageModelFilters Filters { get; set; }
 
-    [Parameter]
-    public List<string> Accounts { get; set; } = [];
+[Parameter]
+public List<string> Accounts { get; set; } = [];
 
-    [Parameter]
-    public decimal MaxAmount { get; set; }
+[Parameter]
+public decimal MaxAmount { get; set; }
 
-    private async Task OnSearchInput(ChangeEventArgs e)
-    {
-        Filters.SearchTerm = e.Value?.ToString() ?? string.Empty;
-    }
+[Parameter]
+public EventCallback OnFiltersChanged { get; set; }
+
+private async Task OnSearchInput(ChangeEventArgs e)
+{
+    Filters.SearchTerm = e.Value?.ToString() ?? string.Empty;
+    await OnFiltersChanged.InvokeAsync();
+}
 
     private async Task OnSortByChange(ChangeEventArgs e)
     {
@@ -26,11 +30,13 @@
         {
             Filters.SortBy = TransferSort.Date;
         }
+        await OnFiltersChanged.InvokeAsync();
     }
 
     private async Task ToggleSortDirection()
     {
         Filters.SortDescending = !Filters.SortDescending;
+        await OnFiltersChanged.InvokeAsync();
     }
 
     private async Task OnFilterChange(ChangeEventArgs e)
@@ -43,32 +49,44 @@
         {
             Filters.FilterBySource = TransferSource.All;
         }
+        await OnFiltersChanged.InvokeAsync();
     }
 
     private async Task OnAccountFilterChange(ChangeEventArgs e)
     {
         var value = e.Value?.ToString();
         Filters.FilterByAccount = string.IsNullOrWhiteSpace(value) || value == "All" ? null : value;
+        await OnFiltersChanged.InvokeAsync();
     }
 
     private async Task OnDateFromChange(ChangeEventArgs e)
     {
         Filters.FilterDateFrom = DateTime.TryParse(e.Value?.ToString(), out var date) ? date : null;
+        await OnFiltersChanged.InvokeAsync();
     }
 
     private async Task OnDateToChange(ChangeEventArgs e)
     {
         Filters.FilterDateTo = DateTime.TryParse(e.Value?.ToString(), out var date) ? date : null;
+        await OnFiltersChanged.InvokeAsync();
     }
 
     private async Task OnAmountMinChange(ChangeEventArgs e)
     {
         Filters.FilterAmountMin = decimal.TryParse(e.Value?.ToString(), out var amount) ? amount : null;
+        await OnFiltersChanged.InvokeAsync();
     }
 
     private async Task OnAmountMaxChange(ChangeEventArgs e)
     {
         Filters.FilterAmountMax = decimal.TryParse(e.Value?.ToString(), out var amount) ? amount : null;
+        await OnFiltersChanged.InvokeAsync();
+    }
+
+    private async Task ClearFilters()
+    {
+        Filters.Clear();
+        await OnFiltersChanged.InvokeAsync();
     }
 }
 
@@ -81,7 +99,7 @@
                value="@Filters.SearchTerm"
                @oninput="OnSearchInput" />
 
-        <button type="button" class="btn btn-outline-secondary" @onclick="Filters.Clear">
+        <button type="button" class="btn btn-outline-secondary" @onclick="ClearFilters">
             Clear all
         </button>
     </div>
