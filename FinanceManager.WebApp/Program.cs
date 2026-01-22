@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-// Repositories
+// Repositories (TODO change to scoped when using a database) 
+builder.Services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();
 builder.Services.AddSingleton<ITransferRepository, TransferRepository>();
 builder.Services.AddSingleton<ITransactionRepository, TransactionRepository>();
 builder.Services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
@@ -19,10 +20,10 @@ builder.Services.AddSingleton<ITransactionFileParser, WestpacTransactionFilePars
 builder.Services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
 
 // Services
-builder.Services.AddSingleton<CategoryService>();
-builder.Services.AddSingleton<TransferService>();
-builder.Services.AddTransient<TransactionService>();
-builder.Services.AddTransient<TransactionImportService>();
+builder.Services.AddScoped<CategoryService>();
+builder.Services.AddScoped<TransferService>();
+builder.Services.AddScoped<TransactionService>();
+builder.Services.AddScoped<TransactionImportService>();
 builder.Services.AddSingleton<TransactionParserService>();
 
 var app = builder.Build();

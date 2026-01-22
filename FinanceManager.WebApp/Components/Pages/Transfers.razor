@@ -14,13 +14,12 @@
 
     private async Task RemoveTransfer(TransferViewData transfer)
     {
-        var success = await TransferService.RemoveTransfer(transfer);
-
-        if (success)
+        try
         {
+            await TransferService.RemoveTransfer(transfer);
             Model.Transfers.Remove(transfer);
         }
-        else
+        catch (Exception)
         {
             Model.RemoveError(transfer);
         }

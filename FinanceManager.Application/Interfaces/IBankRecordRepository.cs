@@ -4,8 +4,9 @@ namespace FinanceManager.Application.Interfaces
 {
     public interface IBankRecordRepository
     {
-        Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords);
+        Task SaveAsync(IEnumerable<BankRecord> bankRecords);
+        Task<BankRecord> GetByIdAsync(Guid id);
+        Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> importId);
         Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords);
-        Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> ids);
     }
 }

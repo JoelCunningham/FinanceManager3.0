@@ -90,21 +90,5 @@ namespace FinanceManager.Application.Utilities
                 }
             };
         }
-
-        public static Transaction TransferToTransaction(Transfer transfer, bool useFromRecord)
-        {
-            var descriptionParts = transfer.Description.Split(" / ", 2);
-            var description = useFromRecord ? descriptionParts[0] : descriptionParts[1];
-
-            return new Transaction
-            {
-                Id = Guid.NewGuid(),
-                RecordId = useFromRecord ? transfer.FromRecordId : transfer.ToRecordId,
-                Date = transfer.Date,
-                Amount = transfer.Amount,
-                Description = description,
-                CategoryId = null
-            };
-        }
     }
 }

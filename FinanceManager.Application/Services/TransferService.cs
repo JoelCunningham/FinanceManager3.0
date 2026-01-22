@@ -7,7 +7,8 @@ namespace FinanceManager.Application.Services
     public class TransferService(
         ITransferRepository _transferRepository,
         IBankRecordRepository _bankRecordRepository,
-        ITransactionRepository _transactionRepository
+        ITransactionRepository _transactionRepository,
+        IUnitOfWork _unitOfWork
     )
     {
         public async Task<IEnumerable<TransferViewData>> GetAllAsync()
@@ -32,25 +33,31 @@ namespace FinanceManager.Application.Services
             return result;
         }
 
-        public async Task<bool> RemoveTransfer(TransferViewData transferViewData)
+        public async Task RemoveTransfer(TransferViewData transferViewData)
         {
-            var success = false;
-            
-            var transfer = await _transferRepository.GetByIdAsync(transferViewData.EntityId);
-           
-            if (transfer == null) return success;
+            await using var transaction = _unitOfWork.BeginTransaction();
 
-            success = await _transferRepository.RemoveAsync(transfer.Id);
-
-            if (success)
+            try
             {
-                var fromTransaction = TypeConverter.TransferToTransaction(transfer, true);
-                var toTransaction = TypeConverter.TransferToTransaction(transfer, false);
+                var transfer = await _transferRepository.GetByIdAsync(transferViewData.EntityId);
 
-                success = await _transactionRepository.SaveAsync([fromTransaction, toTransaction]);
+                var fromRecord = await _bankRecordRepository.GetByIdAsync(transfer.FromRecordId);
+                var toRecord = await _bankRecordRepository.GetByIdAsync(transfer.ToRecordId);
+
+                await _transferRepository.RemoveAsync(transfer.Id);
+
+                var fromTransaction = TypeConverter.BankRecordToTransaction(fromRecord);
+                var toTransaction = TypeConverter.BankRecordToTransaction(toRecord);
+
+                await _transactionRepository.SaveAsync([fromTransaction, toTransaction]);
+
+                await transaction.CommitAsync();
             }
-
-            return success;
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }

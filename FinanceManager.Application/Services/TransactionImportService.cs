@@ -9,7 +9,8 @@ namespace FinanceManager.Application.Services
         TransactionParserService parserService,
         IBankRecordRepository bankRecordRepository,
         ITransactionRepository transactionRepository,
-        ITransferRepository transferRepository
+        ITransferRepository transferRepository,
+        IUnitOfWork _unitOfWork
     )
     {
         public async Task<IEnumerable<BankRecord>> ImportAsync(Stream file, string bank, string extension)
@@ -26,21 +27,27 @@ namespace FinanceManager.Application.Services
             return records.Except(duplicates);
         }
 
-        public async Task<bool> SaveAsync(IEnumerable<BankRecord> importedTransactions)
+        public async Task SaveAsync(IEnumerable<BankRecord> importedTransactions)
         {
-            var success = await bankRecordRepository.SaveAsync(importedTransactions);
+            await using var transaction = _unitOfWork.BeginTransaction();
 
-            if (success)
+            try
             {
+                await bankRecordRepository.SaveAsync(importedTransactions);
+
                 var transfers = TypeConverter.BankRecordsToTransfers(importedTransactions.Where(t => t.IsInternalTransfer));
                 var transactions = importedTransactions.Where(t => !t.IsInternalTransfer).Select(TypeConverter.BankRecordToTransaction);
 
-                success = await transferRepository.SaveAsync(transfers);
-                success &= await transactionRepository.SaveAsync(transactions);
-                //TODO add rollbacks
-            }
+                await transferRepository.SaveAsync(transfers);
+                await transactionRepository.SaveAsync(transactions);
 
-            return success;
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }

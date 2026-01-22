@@ -7,10 +7,10 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
     {
         private readonly List<Transaction> _transactions = [];
 
-        public async Task<bool> SaveAsync(IEnumerable<Transaction> transactions)
+        public async Task SaveAsync(IEnumerable<Transaction> transactions)
         {
             _transactions.AddRange(transactions);
-            return true;
+            //throw here on failure
         }
 
         public async Task<IEnumerable<Transaction>> GetUncategorised()

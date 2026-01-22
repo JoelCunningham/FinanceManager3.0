@@ -7,10 +7,32 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
     {
         private readonly List<BankRecord> _bankRecords = [];
 
-        public async Task<bool> SaveAsync(IEnumerable<BankRecord> bankRecords)
+        public async Task SaveAsync(IEnumerable<BankRecord> bankRecords)
         {
             _bankRecords.AddRange(bankRecords);
-            return true;
+            //throw here on failure
+        }
+
+        public async Task<BankRecord> GetByIdAsync(Guid id)
+        {
+            var bankRecord = _bankRecords.FirstOrDefault(br => br.Id == id);
+            if (bankRecord is not null)
+            {
+                return bankRecord;
+            }
+            throw new KeyNotFoundException($"BankRecord with Id {id} not found.");
+        }
+
+        public async Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> ids)
+        {
+            var idSet = ids as HashSet<Guid> ?? [.. ids];
+            var bankRecords = _bankRecords.Where(br => idSet.Contains(br.Id));
+
+            if (bankRecords.ToList().Count == idSet.Count)
+            {
+                return bankRecords;
+            }
+            throw new KeyNotFoundException("One or more BankRecords not found for the provided Ids.");
         }
 
         public async Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords)
@@ -34,12 +56,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             }
 
             return duplicates;
-        }
-
-        public async Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> ids)
-        {
-            var idSet = ids as HashSet<Guid> ?? [.. ids];
-            return [.. _bankRecords.Where(br => idSet.Contains(br.Id))];
+            //throw here on failure
         }
     }
 }

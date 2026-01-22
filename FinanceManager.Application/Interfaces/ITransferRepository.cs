@@ -4,9 +4,9 @@ namespace FinanceManager.Application.Interfaces
 {
     public interface ITransferRepository
     {
-        Task<bool> SaveAsync(IEnumerable<Transfer> transfers);
+        Task SaveAsync(IEnumerable<Transfer> transfers);
         Task<IEnumerable<Transfer>> GetAllAsync();
-        Task<Transfer?> GetByIdAsync(Guid id);
-        Task<bool> RemoveAsync(Guid id);
+        Task<Transfer> GetByIdAsync(Guid id);
+        Task RemoveAsync(Guid id);
     }
 }

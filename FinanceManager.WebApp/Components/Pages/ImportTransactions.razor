@@ -38,13 +38,12 @@
     {
         if (Model.ImportedTransactions is null) return;
 
-        var success = await ImportService.SaveAsync(Model.ImportedTransactions);
-
-        if (success)
+        try
         {
+            await ImportService.SaveAsync(Model.ImportedTransactions);
             Model.ImportSuccess();
         }
-        else
+        catch
         {
             Model.ImportError();
         }
@@ -74,6 +73,6 @@
 @if (Model.IsSuccessOpen)
 {
     <Modal ShowHeader="false" ShowFooter="false" FullWidth="false" OnClose="Model.CloseSuccess">
-        <ImportSuccess Transactions="Model.ImportedTransactions"/>
+        <ImportSuccess Transactions="Model.ImportedTransactions" />
     </Modal>
 }
