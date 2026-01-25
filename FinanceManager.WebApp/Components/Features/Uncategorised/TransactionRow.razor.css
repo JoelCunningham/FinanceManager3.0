@@ -1,0 +1,53 @@
+.transfer-row {
+    display: grid;
+    grid-template-columns: 1.25rem 7.5rem 5rem 1fr 6rem 80px;
+    gap: 2rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #d4d7d9;
+    border-radius: 8px;
+    cursor: pointer;
+
+    .bank-logo {
+        width: 40px;
+        max-height: 16px;
+    }
+
+    .accounts {
+        display: flex;
+    }
+
+    .amount {
+        text-align: right;
+        font-weight: 600;
+        color: #0969da;
+    }
+
+    .description {
+        color: #57606a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &:hover {
+        background-color: #f7f9fa;
+    }
+
+    & ::deep .bi-gear,
+    & ::deep .bi-hand-index {
+        width: 1.25rem;
+        height: 1.25rem;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    & ::deep .bi-arrow-right {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0 0.6rem 0 0.5rem;
+        text-align: center;
+        font-weight: bold;
+    }
+}

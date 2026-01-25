@@ -3,11 +3,11 @@
 @inject TransactionService TransactionService;
 
 @code {
-    private IEnumerable<Transaction> uncategorised = [];
+    private IEnumerable<UncategorisedViewData> uncategorised = [];
 
     protected override async Task OnInitializedAsync()
     {
-        uncategorised = await TransactionService.GetUncategorisedAsync();
+        //  uncategorised = await TransactionService.GetUncategorisedAsync();
     }
 }
 
@@ -15,11 +15,14 @@
 
 <h1 class="page-heading">Categorise transactions</h1>
 
-@foreach (var transaction in uncategorised)
+@foreach (var group in uncategorised)
 {
-    <div class="transfer-row">
-        <div>@transaction.Date.ToShortDateString()</div>
-        <div>@transaction.Amount.ToString("C")</div>
-        <div>@transaction.Description</div>
-    </div>
+    @foreach (var transaction in group.Transactions)
+    {
+        <div class="transfer-row">
+            <div>@transaction.Date.ToShortDateString()</div>
+            <div>@transaction.Amount.ToString("C")</div>
+            <div>@transaction.Description</div>
+        </div>
+    }
 }

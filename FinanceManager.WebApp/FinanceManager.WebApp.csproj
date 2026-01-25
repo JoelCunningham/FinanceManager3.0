@@ -13,8 +13,4 @@
     <ProjectReference Include="..\FinanceManager.Infrastructure\FinanceManager.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Components\Features\Transactions\" />
-  </ItemGroup>
-
 </Project>

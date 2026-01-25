@@ -6,13 +6,13 @@
     public required bool IsOpen { get; set; }
 
     [Parameter, EditorRequired]
-    public required IReadOnlyList<TransactionViewData> CurrentTransactions { get; set; }
+    public required IReadOnlyList<TransactionSummaryViewData> CurrentTransactions { get; set; }
 
     [Parameter]
     public EventCallback OnClose { get; set; }
 
     [Parameter]
-    public EventCallback<TransactionViewData> OnSelectImported { get; set; }
+    public EventCallback<TransactionSummaryViewData> OnSelectImported { get; set; }
 
     [Parameter]
     public EventCallback<Transaction> OnSelectExisting { get; set; }
@@ -32,7 +32,7 @@
     private decimal? amountMin = null;
     private decimal? amountMax = null;
 
-    private List<TransactionViewData> FilteredCurrentTransactions => GetFilteredCurrentTransactions();
+    private List<TransactionSummaryViewData> FilteredCurrentTransactions => GetFilteredCurrentTransactions();
     private List<Transaction> FilteredExistingTransactions => GetFilteredExistingTransactions();
 
     protected override void OnInitialized()
@@ -41,7 +41,7 @@
         existingTransactions = []; //TransactionService.SearchTransactions(string.Empty);
     }
 
-    private List<TransactionViewData> GetFilteredCurrentTransactions()
+    private List<TransactionSummaryViewData> GetFilteredCurrentTransactions()
     {
         var filtered = CurrentTransactions.AsEnumerable();
 
@@ -51,13 +51,12 @@
             filtered = filtered.Where(t =>
                 t.Description.ToLower().Contains(search) ||
                 t.Amount.ToString().Contains(search) ||
-                t.Date.ToString("dd/MM/yyyy").Contains(search) ||
-                t.BankRecord.AccountNumber.ToLower().Contains(search));
+                t.Date.ToString("dd/MM/yyyy").Contains(search));
         }
 
         if (!string.IsNullOrWhiteSpace(selectedCategory))
         {
-            filtered = filtered.Where(t => t.Category?.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase) ?? false);
+            filtered = filtered.Where(t => t.CategoryName?.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase) ?? false);
         }
 
         if (dateFrom.HasValue)
@@ -137,7 +136,7 @@
         return filtered.ToList();
     }
 
-    private async Task SelectImportedTransaction(TransactionViewData transaction)
+    private async Task SelectImportedTransaction(TransactionSummaryViewData transaction)
     {
         await OnSelectImported.InvokeAsync(transaction);
         await Close();
@@ -318,7 +317,6 @@
                                     <div>@transaction.Date.ToString("dd/MM/yyyy")</div>
                                     <div>@transaction.Description</div>
                                     <div>@transaction.Amount.ToString("C")</div>
-                                    <div>@transaction.BankRecord.AccountNumber</div>
                                     <div>
                                         <button type="button"
                                                 class="btn btn-sm btn-primary"

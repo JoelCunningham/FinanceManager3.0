@@ -2,17 +2,8 @@
 
 namespace FinanceManager.WebApp.Models
 {
-    public class UncategorisedPageModel(IReadOnlyList<TransactionViewData> transactions)
+    public class UncategorisedPageModel()
     {
-        public IReadOnlyList<TransactionViewData> AllTransactions { get; set; } = transactions;
-
-        public List<TransactionViewData> GroupedTransactions => GroupTransfers();
-
-        private List<TransactionViewData> GroupTransfers()
-        {
-            return AllTransactions
-                .OrderBy(t =>t.Date)
-                .ToList();
-        }
+        public List<UncategorisedViewData> Transactions { get; set; } = [];
     }
 }

@@ -1,6 +1,0 @@
-.transfers-header {
-    display: grid;
-    grid-template-columns: 150px 150px 150px 1fr 150px;
-    gap: 1rem;
-    padding: 1rem 1rem 0.5rem;
-}
