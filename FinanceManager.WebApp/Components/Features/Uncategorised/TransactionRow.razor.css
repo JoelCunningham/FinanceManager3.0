@@ -1,6 +1,6 @@
 .transaction-group {
     display: grid;
-    grid-template-columns: 1fr 16.5rem;
+    grid-template-columns: 1fr 23rem;
     border: 1px solid #d4d7d9;
     border-radius: 8px;
     margin-bottom: 1rem;
