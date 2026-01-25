@@ -52,6 +52,20 @@ namespace FinanceManager.Application.Utilities
             };
         }
 
+        public static UncategorisedViewData BankRecordToUncategorisedViewData(BankRecord record)
+        {
+            return new UncategorisedViewData
+            {
+                Record = record,
+                Transactions = [new()
+                {
+                    Description = record.Description,
+                    Amount = record.Amount,
+                    Date = record.Date,
+                }]
+            };
+        }
+
         public static IEnumerable<ParserViewData> ParsersToViewData(IEnumerable<ITransactionFileParser> parsers)
         {
             return [..parsers

@@ -72,7 +72,9 @@
 }
 @if (Model.IsSuccessOpen)
 {
-    <Modal ShowHeader="false" ShowFooter="false" FullWidth="false" OnClose="Model.CloseSuccess">
-        <ImportSuccess Transactions="Model.ImportedTransactions" />
+    <Modal FullWidth="false" OnClose="Model.CloseSuccess">
+        <BodyContent>
+            <ImportSuccess Transactions="Model.ImportedTransactions" />
+        </BodyContent>
     </Modal>
 }
