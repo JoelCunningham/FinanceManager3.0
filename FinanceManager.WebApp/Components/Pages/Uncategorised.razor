@@ -1,5 +1,7 @@
 ﻿@page "/Transactions/Uncategorised"
 
+@rendermode InteractiveServer
+
 @inject TransactionService TransactionService;
 
 @code {
@@ -17,12 +19,5 @@
 
 @foreach (var group in uncategorised)
 {
-    @foreach (var transaction in group.Transactions)
-    {
-        <div class="transfer-row">
-            <div>@transaction.Date.ToShortDateString()</div>
-            <div>@transaction.Amount.ToString("C")</div>
-            <div>@transaction.Description</div>
-        </div>
-    }
+    <TransactionRow TransactionGroup="group" />
 }

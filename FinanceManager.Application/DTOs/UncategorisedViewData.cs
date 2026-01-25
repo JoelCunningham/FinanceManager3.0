@@ -1,12 +1,19 @@
 ﻿using FinanceManager.Domain.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 namespace FinanceManager.Application.DTOs
 {
     public class UncategorisedViewData
     {
         public required BankRecord Record { get; set; }
         public required IEnumerable<UncategorisedTransaction> Transactions { get; set; }
+
+        public void Reset()
+        {
+            Transactions = [new() {
+                Amount = Record.Amount,
+                Description = Record.Description,
+                Date = Record.Date,
+            }];
+        }
 
         public void Backdate(UncategorisedTransaction transaction, DateTime date)
         {
