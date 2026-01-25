@@ -2,6 +2,9 @@
     [Parameter, EditorRequired]
     public required UncategorisedViewData TransactionGroup { get; set; }
 
+    [Parameter]
+    public IEnumerable<Category> Categories { get; set; } = [];
+
     private void SetAmount(decimal value, UncategorisedTransaction transaction)
     {
         try
@@ -10,7 +13,16 @@
         }
         catch
         {
-            // TODO Maybe a warning? 
+            // TODO Maybe a warning?
+        }
+    }
+
+    private void SetCategory(ChangeEventArgs e, UncategorisedTransaction transaction)
+    {
+        if (e.Value is null) return;
+        if (Guid.TryParse(e.Value.ToString(), out var categoryId))
+        {
+            transaction.Category = Categories.FirstOrDefault(c => c.Id == categoryId);
         }
     }
 
@@ -22,6 +34,13 @@
         @foreach (var (transaction, index) in TransactionGroup.Transactions.Select((t, i) => (t, i)))
         {
             <div class="transactions-row">
+                <select class="form-control form-select" value="@transaction.Category?.Id" @onchange="e => SetCategory(e, transaction)">
+                    <option selected disabled value="">Select category</option>
+                    @foreach (var category in Categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </select>
                 <input type="date" class="form-control" value="@transaction.Date.ToString("yyyy-MM-dd")" max="@TransactionGroup.Record.Date.ToString("yyyy-MM-dd")" />
                 <input type="text" class="form-control" value="@transaction.Description" />
                 <input type="number" class="form-control" step='0.01' @bind:get="transaction.Amount" @bind:set="v => SetAmount(v, transaction)" min="0" max="@TransactionGroup.Record.Amount" />
@@ -40,7 +59,7 @@
     <div class="action-buttons">
         <button class="btn btn-secondary @(IsTransferDisabled ? "disabled" : "")"
                 disabled="@IsTransferDisabled"
-                title="@(IsTransferDisabled ? "Cannot transfer split records" : "" )">
+                title="@(IsTransferDisabled ? "Cannot transfer split records" : "")">
             Change to transfer
         </button>
         <button class="btn btn-secondary" @onclick="TransactionGroup.Reset">Reset</button>

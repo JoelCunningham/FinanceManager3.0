@@ -3,13 +3,17 @@
 @rendermode InteractiveServer
 
 @inject TransactionService TransactionService;
+@inject CategoryService CategoryService;
 
 @code {
     private IEnumerable<UncategorisedViewData> uncategorised = [];
 
+    private IEnumerable<Category> categories = [];
+
     protected override async Task OnInitializedAsync()
     {
         uncategorised = await TransactionService.GetUncategorisedAsync();
+        categories = CategoryService.GetCategories();
     }
 }
 
@@ -19,5 +23,5 @@
 
 @foreach (var group in uncategorised)
 {
-    <TransactionRow TransactionGroup="group" />
+    <TransactionRow TransactionGroup="group" Categories="categories" />
 }

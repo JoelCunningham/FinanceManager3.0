@@ -37,7 +37,7 @@
 
     protected override void OnInitialized()
     {
-        categories = CategoryService.GetCategories().ToList();
+        categories = []; //CategoryService.GetCategories().ToList();
         existingTransactions = []; //TransactionService.SearchTransactions(string.Empty);
     }
 
