@@ -17,13 +17,10 @@
         }
     }
 
-    private void SetCategory(ChangeEventArgs e, UncategorisedTransaction transaction)
+    private void SetCategory(Guid? categoryId, UncategorisedTransaction transaction)
     {
-        if (e.Value is null) return;
-        if (Guid.TryParse(e.Value.ToString(), out var categoryId))
-        {
-            transaction.Category = Categories.FirstOrDefault(c => c.Id == categoryId);
-        }
+        if (categoryId is null) return;
+        transaction.Category = Categories.FirstOrDefault(c => c.Id == categoryId);
     }
 
     private bool IsTransferDisabled => TransactionGroup.Transactions.Count() != 1;
@@ -34,16 +31,16 @@
         @foreach (var (transaction, index) in TransactionGroup.Transactions.Select((t, i) => (t, i)))
         {
             <div class="transactions-row">
-                <select class="form-control form-select" value="@transaction.Category?.Id" @onchange="e => SetCategory(e, transaction)">
-                    <option selected disabled value="">Select category</option>
+                <select class="form-control form-select" @bind:get="transaction.Category?.Id" @bind:set="v => SetCategory(v, transaction)">
+                    <option disabled value="">Select category</option>
                     @foreach (var category in Categories)
                     {
                         <option value="@category.Id">@category.Name</option>
                     }
                 </select>
-                <input type="date" class="form-control" value="@transaction.Date.ToString("yyyy-MM-dd")" max="@TransactionGroup.Record.Date.ToString("yyyy-MM-dd")" />
-                <input type="text" class="form-control" value="@transaction.Description" />
-                <input type="number" class="form-control" step='0.01' @bind:get="transaction.Amount" @bind:set="v => SetAmount(v, transaction)" min="0" max="@TransactionGroup.Record.Amount" />
+                <input type="date" class="form-control" @bind="transaction.Date" @bind:format="yyyy-MM-dd" max="@TransactionGroup.Record.Date.ToString("yyyy-MM-dd")" />
+                <input type="text" class="form-control" @bind="transaction.Description" @bind:event="oninput" />
+                <input type="number" class="form-control" @bind:get="transaction.Amount" @bind:set="v => SetAmount(v, transaction)" min="0" max="@TransactionGroup.Record.Amount" />
                 @if (index == 0)
                 {
                     <button class="btn btn-secondary" @onclick="() => TransactionGroup.Split()">Split</button>
