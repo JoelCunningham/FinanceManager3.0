@@ -3,39 +3,38 @@
     public string? Title { get; set; }
 
     [Parameter]
-    public bool ShowHeader { get; set; } = true;
+    public RenderFragment? BodyContent { get; set; }
 
     [Parameter]
-    public bool ShowFooter { get; set; } = true;
+    public RenderFragment? FooterContent { get; set; }
 
     [Parameter]
     public bool FullWidth { get; set; } = true;
 
     [Parameter]
-    public RenderFragment? ChildContent { get; set; }
-
-    [Parameter]
     public EventCallback OnClose { get; set; }
 }
-
 
 <div class="modal-backdrop" @onclick="OnClose"></div>
 <div class="@($"modal-dialog {(FullWidth ? "full-width" : "")}")">
     <div class="modal-content">
-        @if (Title is not null && ShowHeader)
+        @if (Title is not null)
         {
             <div class="modal-header">
                 <h5 class="modal-title">@Title</h5>
                 <button type="button" class="btn-close" @onclick="OnClose" aria-label="Close" />
             </div>
         }
-        <div class="modal-body">
-            @ChildContent
-        </div>
-        @if (ShowFooter)
+        @if (BodyContent is not null)
+        {
+            <div class="modal-body">
+                @BodyContent
+            </div>
+        }
+        @if (FooterContent is not null)
         {
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="OnClose">Return</button>
+                @FooterContent
             </div>
         }
     </div>

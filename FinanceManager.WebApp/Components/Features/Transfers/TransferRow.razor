@@ -9,8 +9,8 @@
 
     private void Remove()
     {
-        //TODO confrimation dialogue here
         OnRemove.InvokeAsync(Transfer);
+        IsDetailsOpen = false;
     }
 
     private string GetBankLogoPath(string bankName)
@@ -47,7 +47,12 @@
 @if (IsDetailsOpen)
 {
     <Modal Title="Transaction details" OnClose="() => IsDetailsOpen = false">
-        <TransferDetails Transfer="Transfer" />
+        <BodyContent>
+            <TransferDetails Transfer="Transfer" />
+        </BodyContent>
+        <FooterContent>
+            <button type="button" class="btn btn-primary" @onclick="Remove">Seperate</button>
+            <button type="button" class="btn btn-secondary" @onclick="() => IsDetailsOpen = false">Return</button>
+        </FooterContent>
     </Modal>
-    // TODO add Seperate button to modal
 }

@@ -38,6 +38,11 @@
 @if (IsDetailsOpen)
 {
     <Modal Title="Transaction details" OnClose="() => IsDetailsOpen = false">
-        <TransactionDetails Transaction="CurrentTransaction" />
+        <BodyContent>
+            <TransactionDetails Transaction="CurrentTransaction" />
+        </BodyContent>
+        <FooterContent>
+            <button type="button" class="btn btn-secondary" @onclick="() => IsDetailsOpen = false">Return</button>
+        </FooterContent>
     </Modal>
 }
