@@ -1,17 +1,17 @@
 ﻿using FinanceManager.Application.DTOs;
+using FinanceManager.WebApp.Models.Base;
 
 namespace FinanceManager.WebApp.Models
 {
-    public class TransfersPageModel()
+    public class TransfersPageModel() : FilterableModel
     {
         public List<TransferSummary> Transfers { get; set; } = [];
         public TransferSummary? ErrorTransfer { get; set; }
         public string? RemoveErrorMessage { get; set; }
 
-        public TransfersPageModelFilters Filters { get; set; } = new();
-        public List<TransferSummary> FilteredAndSortedTransfers => FilterAndSortedTransfers();
         public List<string> UniqueAccounts => GetUniqueAccounts();
         public decimal MaxAmount => Transfers.Count != 0 ? Transfers.Max(t => t.Amount) : 0;
+        public List<TransferSummary> FilteredAndSortedTransfers => FilterAndSortedTransfers();
 
 
         public void Reset()
@@ -94,16 +94,16 @@ namespace FinanceManager.WebApp.Models
             // Apply sorting
             transfers = Filters.SortBy switch
             {
-                TransferSort.Amount => Filters.SortDescending
+                TransactionSort.Amount => Filters.SortDescending
                     ? transfers.OrderByDescending(t => t.Amount)
                     : transfers.OrderBy(t => t.Amount),
-                TransferSort.Date => Filters.SortDescending
+                TransactionSort.Date => Filters.SortDescending
                     ? transfers.OrderByDescending(t => t.Date)
                     : transfers.OrderBy(t => t.Date),
-                TransferSort.FromAccount => Filters.SortDescending
+                TransactionSort.FromAccount => Filters.SortDescending
                     ? transfers.OrderByDescending(t => t.From.Bank).OrderByDescending(t => t.From.Account)
                     : transfers.OrderBy(t => t.From.Bank).OrderBy(t => t.From.Account),
-                TransferSort.ToAccount => Filters.SortDescending
+                TransactionSort.ToAccount => Filters.SortDescending
                     ? transfers.OrderByDescending(t => t.To.Bank).OrderByDescending(t => t.To.Account)
                     : transfers.OrderBy(t => t.To.Bank).OrderBy(t => t.To.Account),
                 _ => transfers
@@ -111,47 +111,5 @@ namespace FinanceManager.WebApp.Models
 
             return [.. transfers];
         }
-    }
-
-    public class TransfersPageModelFilters()
-    {
-        public string SearchTerm { get; set; } = string.Empty;
-        public TransferSort SortBy { get; set; } = TransferSort.Date;
-        public bool SortDescending { get; set; } = true;
-        public TransferSource FilterBySource { get; set; } = TransferSource.All;
-        public string? FilterByAccount { get; set; }
-        public DateTime? FilterDateFrom { get; set; } = DateTime.Today.AddYears(-1);
-        public DateTime? FilterDateTo { get; set; } = DateTime.Today;
-        public decimal? FilterAmountMin { get; set; }
-        public decimal? FilterAmountMax { get; set; }
-
-        public void Clear()
-        {
-            SearchTerm = string.Empty;
-            SortBy = TransferSort.Date;
-            SortDescending = true;
-            FilterBySource = TransferSource.All;
-            FilterByAccount = null;
-            FilterDateFrom = DateTime.Today.AddYears(-1);
-            FilterDateTo = DateTime.Today;
-            FilterAmountMin = null;
-            FilterAmountMax = null;
-        }
-    }
-
-
-    public enum TransferSort
-    {
-        Date,
-        Amount,
-        FromAccount,
-        ToAccount,
-    }
-
-    public enum TransferSource
-    {
-        All,
-        User,
-        Auto,
     }
 }

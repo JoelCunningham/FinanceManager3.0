@@ -1,9 +1,10 @@
-﻿@using FinanceManager.Application.DTOs
-@using System.Linq
+﻿@using System.Linq
+@using FinanceManager.Application.DTOs
+@using FinanceManager.WebApp.Models.Base
 
 @code {
     [Parameter, EditorRequired]
-    public required TransfersPageModelFilters Filters { get; set; }
+    public required TransactionFilters Filters { get; set; }
 
     [Parameter]
     public List<string> Accounts { get; set; } = [];
@@ -22,13 +23,13 @@
 
     private async Task OnSortByChange(ChangeEventArgs e)
     {
-        if (Enum.TryParse<TransferSort>(e.Value?.ToString(), out var sortValue))
+        if (Enum.TryParse<TransactionSort>(e.Value?.ToString(), out var sortValue))
         {
             Filters.SortBy = sortValue;
         }
         else
         {
-            Filters.SortBy = TransferSort.Date;
+            Filters.SortBy = TransactionSort.Date;
         }
         await OnFiltersChanged.InvokeAsync();
     }
@@ -85,7 +86,7 @@
 
     private async Task ClearFilters()
     {
-        Filters.Clear();
+        Filters.ClearFilters();
         await OnFiltersChanged.InvokeAsync();
     }
 }
@@ -165,10 +166,10 @@
             <label class="group-label" for="sort-by">Sort by:</label>
             <div class="filter-pair">
                 <select id="sort-by" class="form-select" value="@Filters.SortBy" @onchange="OnSortByChange">
-                    <option value="@TransferSort.Date">Date</option>
-                    <option value="@TransferSort.Amount">Amount</option>
-                    <option value="@TransferSort.FromAccount">From Account</option>
-                    <option value="@TransferSort.ToAccount">To Account</option>
+                    <option value="@TransactionSort.Date">Date</option>
+                    <option value="@TransactionSort.Amount">Amount</option>
+                    <option value="@TransactionSort.FromAccount">From Account</option>
+                    <option value="@TransactionSort.ToAccount">To Account</option>
                 </select>
                 <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortDirection" title="Toggle sort direction">
                     <Icon Name="@(Filters.SortDescending ? "sort-down" : "sort-up")" />
