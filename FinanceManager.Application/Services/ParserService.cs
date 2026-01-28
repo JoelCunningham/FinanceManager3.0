@@ -4,7 +4,7 @@ using FinanceManager.Application.Utilities;
 
 namespace FinanceManager.Application.Services
 {
-    public class TransactionParserService(IEnumerable<ITransactionFileParser> parsers)
+    public class ParserService(IEnumerable<ITransactionFileParser> parsers)
     {
         private readonly IEnumerable<ITransactionFileParser> _parsers = parsers;
 

@@ -4,6 +4,6 @@ namespace FinanceManager.WebApp.Models
 {
     public class UncategorisedPageModel()
     {
-        public List<UncategorisedViewData> Transactions { get; set; } = [];
+        public List<UnreviewedTransactions> Transactions { get; set; } = [];
     }
 }

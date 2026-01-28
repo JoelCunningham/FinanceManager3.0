@@ -4,12 +4,12 @@ namespace FinanceManager.WebApp.Models
 {
     public class TransfersPageModel()
     {
-        public List<TransferViewData> Transfers { get; set; } = [];
-        public TransferViewData? ErrorTransfer { get; set; }
+        public List<TransferSummary> Transfers { get; set; } = [];
+        public TransferSummary? ErrorTransfer { get; set; }
         public string? RemoveErrorMessage { get; set; }
 
         public TransfersPageModelFilters Filters { get; set; } = new();
-        public List<TransferViewData> FilteredAndSortedTransfers => FilterAndSortedTransfers();
+        public List<TransferSummary> FilteredAndSortedTransfers => FilterAndSortedTransfers();
         public List<string> UniqueAccounts => GetUniqueAccounts();
         public decimal MaxAmount => Transfers.Count != 0 ? Transfers.Max(t => t.Amount) : 0;
 
@@ -20,7 +20,7 @@ namespace FinanceManager.WebApp.Models
             RemoveErrorMessage = null;
         }
 
-        public void RemoveError(TransferViewData transfer)
+        public void RemoveError(TransferSummary transfer)
         {
             ErrorTransfer = transfer;
             RemoveErrorMessage = "Could not remove transfer. Please try again.";
@@ -37,7 +37,7 @@ namespace FinanceManager.WebApp.Models
             return [.. accounts.OrderBy(a => a)];
         }
 
-        private List<TransferViewData> FilterAndSortedTransfers()
+        private List<TransferSummary> FilterAndSortedTransfers()
         {
             var transfers = Transfers.AsEnumerable();
 

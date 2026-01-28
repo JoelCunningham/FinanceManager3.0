@@ -12,7 +12,7 @@
         Model.Transfers = [.. await TransferService.GetAllAsync()];
     }
 
-    private async Task RemoveTransfer(TransferViewData transfer)
+    private async Task RemoveTransfer(TransferSummary transfer)
     {
         try
         {

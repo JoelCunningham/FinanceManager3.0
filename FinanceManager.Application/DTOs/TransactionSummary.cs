@@ -1,6 +1,6 @@
 ﻿namespace FinanceManager.Application.DTOs
 {
-    public class TransactionSummaryViewData
+    public class TransactionSummary
     {
         public string? CategoryName { get; set; }
         public required string Description { get; set; }

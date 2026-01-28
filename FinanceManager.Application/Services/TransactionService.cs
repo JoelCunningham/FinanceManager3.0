@@ -9,7 +9,7 @@ namespace FinanceManager.Application.Services
         IBankRecordRepository bankRecordRepository
     )
     {
-        public async Task<IEnumerable<UncategorisedViewData>> GetUncategorisedAsync()
+        public async Task<IEnumerable<UnreviewedTransactions>> GetUncategorisedAsync()
         {
             var recordIds = (await transactionRepository.GetUncategorised()).Select(t => t.RecordId);
             var records = await bankRecordRepository.GetByIdsAsync(recordIds);

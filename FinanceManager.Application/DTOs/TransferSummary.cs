@@ -1,6 +1,6 @@
 ﻿namespace FinanceManager.Application.DTOs
 {
-    public class TransferViewData
+    public class TransferSummary
     {
         public Guid EntityId { get; set; }
         public decimal Amount { get; set; }

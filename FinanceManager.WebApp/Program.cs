@@ -23,8 +23,8 @@ builder.Services.AddSingleton<ITransactionFileParser, VanguardTransactionFilePar
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<TransferService>();
 builder.Services.AddScoped<TransactionService>();
-builder.Services.AddScoped<TransactionImportService>();
-builder.Services.AddSingleton<TransactionParserService>();
+builder.Services.AddScoped<ImportService>();
+builder.Services.AddSingleton<ParserService>();
 
 var app = builder.Build();
 

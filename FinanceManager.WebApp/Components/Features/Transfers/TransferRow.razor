@@ -1,9 +1,9 @@
 @code {
     [Parameter, EditorRequired]
-    public required TransferViewData Transfer { get; set; }
+    public required TransferSummary Transfer { get; set; }
 
     [Parameter]
-    public EventCallback<TransferViewData> OnRemove { get; set; }
+    public EventCallback<TransferSummary> OnRemove { get; set; }
 
     private bool IsDetailsOpen = false;
 

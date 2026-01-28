@@ -52,9 +52,9 @@ namespace FinanceManager.Application.Utilities
             };
         }
 
-        public static UncategorisedViewData BankRecordToUncategorisedViewData(BankRecord record)
+        public static UnreviewedTransactions BankRecordToUncategorisedViewData(BankRecord record)
         {
-            return new UncategorisedViewData
+            return new UnreviewedTransactions
             {
                 Record = record,
                 Transactions = [new()
@@ -82,9 +82,9 @@ namespace FinanceManager.Application.Utilities
             ];
         }
 
-        public static TransferViewData TransferToViewData(Transfer transfer, BankRecord fromRecord, BankRecord toRecord)
+        public static TransferSummary TransferToViewData(Transfer transfer, BankRecord fromRecord, BankRecord toRecord)
         {
-            return new TransferViewData
+            return new TransferSummary
             {
                 EntityId = transfer.Id,
                 Amount = transfer.Amount,

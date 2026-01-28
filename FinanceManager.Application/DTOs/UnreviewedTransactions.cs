@@ -1,7 +1,8 @@
 ﻿using FinanceManager.Domain.Entities;
+
 namespace FinanceManager.Application.DTOs
 {
-    public class UncategorisedViewData
+    public class UnreviewedTransactions
     {
         public required BankRecord Record { get; set; }
         public required IEnumerable<UncategorisedTransaction> Transactions { get; set; }
@@ -110,7 +111,7 @@ namespace FinanceManager.Application.DTOs
 
         public Category? Category { get; set; }
         public Relation Relation { get; set; } = Relation.None;
-        public TransactionSummaryViewData? RelatedTransction { get; set; }
+        public TransactionSummary? RelatedTransction { get; set; }
     }
 
     public enum Relation

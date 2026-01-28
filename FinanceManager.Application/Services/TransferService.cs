@@ -11,9 +11,9 @@ namespace FinanceManager.Application.Services
         IUnitOfWork _unitOfWork
     )
     {
-        public async Task<IEnumerable<TransferViewData>> GetAllAsync()
+        public async Task<IEnumerable<TransferSummary>> GetAllAsync()
         {
-            var result = new List<TransferViewData>();
+            var result = new List<TransferSummary>();
             var transfers = await _transferRepository.GetAllAsync();
 
             var transferRecordIds = transfers.SelectMany(t => new[] { t.ToRecordId, t.FromRecordId });
@@ -33,7 +33,7 @@ namespace FinanceManager.Application.Services
             return result;
         }
 
-        public async Task RemoveTransfer(TransferViewData transferViewData)
+        public async Task RemoveTransfer(TransferSummary transferViewData)
         {
             await using var transaction = _unitOfWork.BeginTransaction();
 

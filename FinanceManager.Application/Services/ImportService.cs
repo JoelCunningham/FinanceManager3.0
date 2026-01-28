@@ -4,9 +4,9 @@ using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.Application.Services
 {
-    public class TransactionImportService
+    public class ImportService
     (
-        TransactionParserService parserService,
+        ParserService parserService,
         IBankRecordRepository bankRecordRepository,
         ITransactionRepository transactionRepository,
         ITransferRepository transferRepository,
