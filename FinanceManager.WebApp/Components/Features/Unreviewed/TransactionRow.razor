@@ -5,11 +5,13 @@
     [Parameter]
     public IEnumerable<Category> Categories { get; set; } = [];
 
+    [Parameter]
+    public EventCallback<InnerTransaction> OnFindReimbusement { get; set; }
+
+    [Parameter]
+    public EventCallback OnFindTransfer { get; set; }
+
     private InnerTransaction? CurrentTransaction { get; set; }
-
-    private bool IsTransferModalOpen { get; set; } = false;
-
-    private bool IsReimbursementModalOpen { get; set; } = false;
 
     private void SetAmount(decimal value, InnerTransaction transaction)
     {
@@ -27,30 +29,6 @@
     {
         if (categoryId is null) return;
         transaction.Category = Categories.FirstOrDefault(c => c.Id == categoryId);
-    }
-
-    private void SetReimbursement(TransactionSummary transaction)
-    {
-        IsReimbursementModalOpen = false;
-        if (CurrentTransaction is null) return;
-        TransactionGroup.SetReimbursement(CurrentTransaction, transaction);
-    }
-
-    private void SetTransfer(TransactionSummary transaction)
-    {
-        IsTransferModalOpen = false;
-        TransactionGroup.SetTransfer(transaction);
-    }
-
-    private void OpenReimbursementModal(InnerTransaction transaction)
-    {
-        CurrentTransaction = transaction;
-        IsReimbursementModalOpen = true;
-    }
-
-    private void OpenTransferModal()
-    {
-        IsTransferModalOpen = true;
     }
 }
 
@@ -98,7 +76,7 @@
                     {
                         <button class="btn btn-secondary" @onclick="() => TransactionGroup.Unsplit(transaction)">Unsplit</button>
                     }
-                    <button class="btn btn-secondary" @onclick="() => OpenReimbursementModal(transaction)">Reimburse</button>
+                    <button class="btn btn-secondary" @onclick="() => OnFindReimbusement.InvokeAsync(transaction)">Reimburse</button>
                 </div>
                 @if (transaction.Reimbursement is not null)
                 {
@@ -115,7 +93,7 @@
         <div class="action-buttons">
             @if (TransactionGroup.InnerTransactions.Count() == 1)
             {
-                <button class="btn btn-secondary" @onclick="() => OpenTransferModal()">Change to transfer</button>
+                <button class="btn btn-secondary" @onclick="() => OnFindTransfer.InvokeAsync()">Change to transfer</button>
             }
             else
             {
@@ -126,21 +104,3 @@
         </div>
     }
 </div>
-
-@if (IsTransferModalOpen)
-{
-    <Modal Title="Find transfer" OnClose="() => IsTransferModalOpen = false">
-        <BodyContent>
-            <TransactionSearch OnSelect="SetTransfer" RequiredExactAmount="@(-TransactionGroup.Record.Amount)" Message="No possible transfers found." />
-        </BodyContent>
-    </Modal>
-}
-
-@if (IsReimbursementModalOpen && CurrentTransaction is not null)
-{
-    <Modal Title="Find reimbursement" OnClose="() => IsReimbursementModalOpen = false">
-        <BodyContent>
-            <TransactionSearch OnSelect="SetReimbursement" RequireOppositeSignFrom="@CurrentTransaction.Amount" Message="No possible reimbursements found." />
-        </BodyContent>
-    </Modal>
-}@*  // TODO suggest reimbusements based on date and amount *@

@@ -6,14 +6,41 @@
 @inject CategoryService CategoryService;
 
 @code {
-    private IEnumerable<UnreviewedTransaction> uncategorised = [];
-
-    private IEnumerable<Category> categories = [];
+    private UnreviewedPageModel Model = new();
 
     protected override async Task OnInitializedAsync()
     {
-        uncategorised = await TransactionService.GetUnreviewedAsync();
-        categories = CategoryService.GetCategories();
+        Model.Unreviewed = (await TransactionService.GetUnreviewedAsync()).ToList();
+        Model.Categories = CategoryService.GetCategories().ToList();
+    }
+
+    private void SetReimbursement(TransactionSummary reimbursement)
+    {
+        if (Model.CurrentTransaction is null || Model.CurrentInnerTransaction is null) return;
+
+        Model.IsReimbursementSearchOpen = false;
+        Model.CurrentTransaction.SetReimbursement(Model.CurrentInnerTransaction, reimbursement);
+    }
+
+    private void SetTransfer(TransactionSummary transaction)
+    {
+        if (Model.CurrentTransaction is null) return;
+
+        Model.IsTransferSearchOpen = false;
+        Model.CurrentTransaction.SetTransfer(transaction);
+    }
+
+    private void OnFindReimbursement(UnreviewedTransaction transaction, InnerTransaction innerTransaction)
+    {
+        Model.CurrentTransaction = transaction;
+        Model.CurrentInnerTransaction = innerTransaction;
+        Model.IsReimbursementSearchOpen = true;
+    }
+
+    private void OnFindTransfer(UnreviewedTransaction transaction)
+    {
+        Model.CurrentTransaction = transaction;
+        Model.IsTransferSearchOpen = true;
     }
 }
 
@@ -21,7 +48,29 @@
 
 <h1 class="page-heading">Categorise transactions</h1>
 
-@foreach (var group in uncategorised)
+@foreach (var transactionGroup in Model.Unreviewed)
 {
-    <TransactionRow TransactionGroup="group" Categories="categories" />
+    <TransactionRow TransactionGroup="transactionGroup"
+                    Categories="Model.Categories"
+                    OnFindTransfer="() => OnFindTransfer(transactionGroup)"
+                    OnFindReimbusement="(t) => OnFindReimbursement(transactionGroup, t)" />
 }
+
+@if (Model.IsTransferSearchOpen && Model.CurrentTransaction is not null)
+{
+    <Modal Title="Find transfer" OnClose="() => Model.IsTransferSearchOpen = false">
+        <BodyContent>
+            <TransactionSearch Filters="Model.Filters" Categories="Model.Categories" OnSelect="SetTransfer" Message="No possible transfers found." />
+        </BodyContent>
+    </Modal>
+}
+
+@if (Model.IsReimbursementSearchOpen && Model.CurrentInnerTransaction is not null)
+{
+    <Modal Title="Find reimbursement" OnClose="() => Model.IsReimbursementSearchOpen = false">
+        <BodyContent>
+            <TransactionSearch Filters="Model.Filters" Categories="Model.Categories" OnSelect="SetReimbursement" Message="No possible reimbursements found." />
+        </BodyContent>
+    </Modal>
+}
+@*  // TODO suggest reimbusements based on date and amount *@

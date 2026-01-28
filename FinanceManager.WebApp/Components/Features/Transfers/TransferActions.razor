@@ -1,8 +1,4 @@
-﻿@using System.Linq
-@using FinanceManager.Application.DTOs
-@using FinanceManager.WebApp.Models.Base
-
-@code {
+﻿@code {
     [Parameter, EditorRequired]
     public required TransactionFilters Filters { get; set; }
 
@@ -13,82 +9,7 @@
     public decimal MaxAmount { get; set; }
 
     [Parameter]
-    public EventCallback OnFiltersChanged { get; set; }
-
-    private async Task OnSearchInput(ChangeEventArgs e)
-    {
-        Filters.SearchTerm = e.Value?.ToString() ?? string.Empty;
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task OnSortByChange(ChangeEventArgs e)
-    {
-        if (Enum.TryParse<TransactionSort>(e.Value?.ToString(), out var sortValue))
-        {
-            Filters.SortBy = sortValue;
-        }
-        else
-        {
-            Filters.SortBy = TransactionSort.Date;
-        }
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task ToggleSortDirection()
-    {
-        Filters.SortDescending = !Filters.SortDescending;
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task OnFilterChange(ChangeEventArgs e)
-    {
-        if (Enum.TryParse<TransferSource>(e.Value?.ToString(), out var filterValue))
-        {
-            Filters.FilterBySource = filterValue;
-        }
-        else
-        {
-            Filters.FilterBySource = TransferSource.All;
-        }
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task OnAccountFilterChange(ChangeEventArgs e)
-    {
-        var value = e.Value?.ToString();
-        Filters.FilterByAccount = string.IsNullOrWhiteSpace(value) || value == "All" ? null : value;
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task OnDateFromChange(ChangeEventArgs e)
-    {
-        Filters.FilterDateFrom = DateTime.TryParse(e.Value?.ToString(), out var date) ? date : null;
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task OnDateToChange(ChangeEventArgs e)
-    {
-        Filters.FilterDateTo = DateTime.TryParse(e.Value?.ToString(), out var date) ? date : null;
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task OnAmountMinChange(ChangeEventArgs e)
-    {
-        Filters.FilterAmountMin = decimal.TryParse(e.Value?.ToString(), out var amount) ? amount : null;
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task OnAmountMaxChange(ChangeEventArgs e)
-    {
-        Filters.FilterAmountMax = decimal.TryParse(e.Value?.ToString(), out var amount) ? amount : null;
-        await OnFiltersChanged.InvokeAsync();
-    }
-
-    private async Task ClearFilters()
-    {
-        Filters.ClearFilters();
-        await OnFiltersChanged.InvokeAsync();
-    }
+    public EventCallback OnFilterChanged { get; set; }
 }
 
 <div class="transfer-actions">
@@ -97,10 +18,11 @@
         <input type="text"
                class="form-control"
                placeholder="Search by description, bank, or account..."
-               value="@Filters.SearchTerm"
-               @oninput="OnSearchInput" />
+               @bind="Filters.SearchTerm"
+               @bind:event="oninput" 
+               @bind:after="() => OnFilterChanged.InvokeAsync()" />
 
-        <button type="button" class="btn btn-outline-secondary" @onclick="ClearFilters">
+        <button type="button" class="btn btn-outline-secondary" @onclick="Filters.ToggleVisibility">
             Clear all
         </button>
     </div>
@@ -110,13 +32,13 @@
             <label class="group-label">Filter by:</label>
 
             <div class="filter-pair">
-                <select id="source-filter" class="form-select" value="@Filters.FilterBySource" @onchange="OnFilterChange">
+                <select class="form-select" @bind="Filters.FilterBySource" @bind:after="() => OnFilterChanged.InvokeAsync()">
                     <option value="@TransferSource.All">All sources</option>
                     <option value="@TransferSource.User">User Created</option>
                     <option value="@TransferSource.Auto">Auto Created</option>
                 </select>
-                <select id="account-filter" class="form-select" value="@(Filters.FilterByAccount ?? "All")" @onchange="OnAccountFilterChange">
-                    <option value="All">All Accounts</option>
+                <select class="form-select" @bind="Filters.FilterByAccount" @bind:after="() => OnFilterChanged.InvokeAsync()">
+                    <option value="">All Accounts</option>
                     @foreach (var account in Accounts)
                     {
                         <option value="@account">@account</option>
@@ -125,39 +47,15 @@
             </div>
 
             <div class="filter-pair">
-                <input type="date"
-                       id="date-from"
-                       class="form-control"
-                       value="@(Filters.FilterDateFrom?.ToString("yyyy-MM-dd"))"
-                       @onchange="OnDateFromChange" />
+                <input type="date" class="form-control" @bind="Filters.FilterDateFrom" @bind:after="() => OnFilterChanged.InvokeAsync()" />
                 <Icon Name="arrow-right" />
-                <input type="date"
-                       id="date-to"
-                       class="form-control"
-                       value="@(Filters.FilterDateTo?.ToString("yyyy-MM-dd"))"
-                       @onchange="OnDateToChange" />
+                <input type="date" class="form-control" @bind="Filters.FilterDateTo" @bind:after="() => OnFilterChanged.InvokeAsync()" />
             </div>
 
             <div class="filter-pair">
-                <input type="number"
-                       id="amount-min"
-                       class="form-control"
-                       placeholder="0.00"
-                       min="0"
-                       max="@MaxAmount"
-                       step="0.01"
-                       value="@Filters.FilterAmountMin"
-                       @onchange="OnAmountMinChange" />
+                <input type="number" class="form-control" step="0.01" min="0" @bind="Filters.FilterAmountMin" @bind:after="() => OnFilterChanged.InvokeAsync()" placeholder="0.00" />
                 <Icon Name="arrow-right" AriaLabel="transferd to" />
-                <input type="number"
-                       id="amount-max"
-                       class="form-control"
-                       placeholder="@MaxAmount"
-                       min="0"
-                       max="@MaxAmount"
-                       step="0.01"
-                       value="@Filters.FilterAmountMax"
-                       @onchange="OnAmountMaxChange" />
+                <input type="number" class="form-control" step="0.01" min="0" @bind="Filters.FilterAmountMax" @bind:after="() => OnFilterChanged.InvokeAsync()" placeholder="0.00" />
             </div>
 
         </div>
@@ -165,13 +63,13 @@
         <div class="sort-group">
             <label class="group-label" for="sort-by">Sort by:</label>
             <div class="filter-pair">
-                <select id="sort-by" class="form-select" value="@Filters.SortBy" @onchange="OnSortByChange">
+                <select class="form-select sort-select" @bind="Filters.SortBy" @bind:after="() => OnFilterChanged.InvokeAsync()">
                     <option value="@TransactionSort.Date">Date</option>
                     <option value="@TransactionSort.Amount">Amount</option>
                     <option value="@TransactionSort.FromAccount">From Account</option>
                     <option value="@TransactionSort.ToAccount">To Account</option>
                 </select>
-                <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortDirection" title="Toggle sort direction">
+                <button type="button" class="btn btn-outline-secondary" @onclick="Filters.ToggleSortOrder" @bind:after="() => OnFilterChanged.InvokeAsync()">
                     <Icon Name="@(Filters.SortDescending ? "sort-down" : "sort-up")" />
                 </button>
             </div>
