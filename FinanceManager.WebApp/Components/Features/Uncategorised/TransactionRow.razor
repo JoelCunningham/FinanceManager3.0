@@ -1,11 +1,11 @@
 @code {
     [Parameter, EditorRequired]
-    public required UnreviewedTransactions TransactionGroup { get; set; }
+    public required UnreviewedTransaction TransactionGroup { get; set; }
 
     [Parameter]
     public IEnumerable<Category> Categories { get; set; } = [];
 
-    private void SetAmount(decimal value, UncategorisedTransaction transaction)
+    private void SetAmount(decimal value, InnerTransaction transaction)
     {
         try
         {
@@ -17,18 +17,18 @@
         }
     }
 
-    private void SetCategory(Guid? categoryId, UncategorisedTransaction transaction)
+    private void SetCategory(Guid? categoryId, InnerTransaction transaction)
     {
         if (categoryId is null) return;
         transaction.Category = Categories.FirstOrDefault(c => c.Id == categoryId);
     }
 
-    private bool IsTransferDisabled => TransactionGroup.Transactions.Count() != 1;
+    private bool IsTransferDisabled => TransactionGroup.InnerTransactions.Count() != 1;
 }
 
 <div class="transaction-group">
     <div class="transaction-rows">
-        @foreach (var (transaction, index) in TransactionGroup.Transactions.Select((t, i) => (t, i)))
+        @foreach (var (transaction, index) in TransactionGroup.InnerTransactions.Select((t, i) => (t, i)))
         {
             <div class="transactions-row">
                 <select class="form-control form-select" @bind:get="transaction.Category?.Id" @bind:set="v => SetCategory(v, transaction)">

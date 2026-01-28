@@ -4,7 +4,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IReadOnlyList<BankRecord> Transactions { get; set; }
+    public required IReadOnlyList<ParsedTransaction> Transactions { get; set; }
 
     private int TransfersCount => Transactions.Count(t => t.IsInternalTransfer);
 

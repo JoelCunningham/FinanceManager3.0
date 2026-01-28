@@ -27,7 +27,7 @@ namespace FinanceManager.Application.Services
                     !recordsLookup.TryGetValue(transfer.FromRecordId, out var fromRecord))
                     continue;
 
-                result.Add(TypeConverter.TransferToViewData(transfer, fromRecord, toRecord));
+                result.Add(TransferSummary.FromTransfer(transfer, fromRecord, toRecord));
             }
 
             return result;
@@ -46,8 +46,8 @@ namespace FinanceManager.Application.Services
 
                 await _transferRepository.RemoveAsync(transfer.Id);
 
-                var fromTransaction = TypeConverter.BankRecordToTransaction(fromRecord);
-                var toTransaction = TypeConverter.BankRecordToTransaction(toRecord);
+                var fromTransaction = EntityConverter.BankRecordToTransaction(fromRecord);
+                var toTransaction = EntityConverter.BankRecordToTransaction(toRecord);
 
                 await _transactionRepository.SaveAsync([fromTransaction, toTransaction]);
 

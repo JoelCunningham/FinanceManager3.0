@@ -2,21 +2,35 @@
 
 namespace FinanceManager.Application.DTOs
 {
-    public class UnreviewedTransactions
+    public class UnreviewedTransaction
     {
         public required BankRecord Record { get; set; }
-        public required IEnumerable<UncategorisedTransaction> Transactions { get; set; }
+        public required IEnumerable<InnerTransaction> InnerTransactions { get; set; }
+
+        public static UnreviewedTransaction FromBankRecord(BankRecord record)
+        {
+            return new UnreviewedTransaction
+            {
+                Record = record,
+                InnerTransactions = [new()
+                {
+                    Description = record.Description,
+                    Amount = record.Amount,
+                    Date = record.Date,
+                }]
+            };
+        }
 
         public void Reset()
         {
-            Transactions = [new() {
+            InnerTransactions = [new() {
                 Amount = Record.Amount,
                 Description = Record.Description,
                 Date = Record.Date,
             }];
         }
 
-        public void Backdate(UncategorisedTransaction transaction, DateTime date)
+        public void Backdate(InnerTransaction transaction, DateTime date)
         {
             IsTransactionInRecord(transaction);
 
@@ -28,7 +42,7 @@ namespace FinanceManager.Application.DTOs
             transaction.Date = date;
         }
 
-        public void ResetDate(UncategorisedTransaction transaction)
+        public void ResetDate(InnerTransaction transaction)
         {
             IsTransactionInRecord(transaction);
             transaction.Date = Record.Date;
@@ -36,30 +50,30 @@ namespace FinanceManager.Application.DTOs
 
         public void Split()
         {
-            var split = new UncategorisedTransaction
+            var split = new InnerTransaction
             {
                 Amount = 0,
                 Date = Record.Date,
                 Description = Record.Description,
                 Category = null,
             };
-            Transactions = Transactions.Append(split);
+            InnerTransactions = InnerTransactions.Append(split);
         }
 
-        public void Unsplit(UncategorisedTransaction transaction)
+        public void Unsplit(InnerTransaction transaction)
         {
             IsTransactionInRecord(transaction);
 
-            if (Transactions.Count() <= 1)
+            if (InnerTransactions.Count() <= 1)
             {
                 throw new InvalidOperationException("No splits to unsplit.");
             }
-            Transactions = Transactions.Where(t => t != transaction);
+            InnerTransactions = InnerTransactions.Where(t => t != transaction);
 
             // TODO Set amount of remaining transactions proportionally
         }
 
-        public void SetAmount(UncategorisedTransaction transaction, decimal amount)
+        public void SetAmount(InnerTransaction transaction, decimal amount)
         {
             IsTransactionInRecord(transaction);
 
@@ -70,8 +84,8 @@ namespace FinanceManager.Application.DTOs
                 return;
 
             var diff = transaction.Amount - amount;
-            var current = Transactions.ToList().IndexOf(transaction);
-            var nextTransactions = Transactions.Skip(current + 1).Concat(Transactions.Take(current));
+            var current = InnerTransactions.ToList().IndexOf(transaction);
+            var nextTransactions = InnerTransactions.Skip(current + 1).Concat(InnerTransactions.Take(current));
 
             foreach (var split in nextTransactions)
             {
@@ -96,14 +110,14 @@ namespace FinanceManager.Application.DTOs
             }
         }
 
-        private void IsTransactionInRecord(UncategorisedTransaction transaction)
+        private void IsTransactionInRecord(InnerTransaction transaction)
         {
-            if (!Transactions.Contains(transaction))
+            if (!InnerTransactions.Contains(transaction))
                 throw new InvalidOperationException("Transaction does not belong to this record.");
         }
     }
 
-    public class UncategorisedTransaction
+    public class InnerTransaction
     {
         public required string Description { get; set; }
         public required decimal Amount { get; set; }

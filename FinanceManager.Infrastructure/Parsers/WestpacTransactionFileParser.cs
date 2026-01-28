@@ -13,6 +13,8 @@ namespace FinanceManager.Infrastructure.Parsers
             {
                 var parsedTransaction = new ParsedTransaction
                 {
+                    Id = Guid.NewGuid(),
+                    Bank = GetBankName(),
                     AccountNumber = record.BankAccount,
                     Date = record.Date,
                     Amount = (record.CreditAmount ?? 0) - (record.DebitAmount ?? 0),

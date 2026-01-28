@@ -6,13 +6,13 @@
 @inject CategoryService CategoryService;
 
 @code {
-    private IEnumerable<UnreviewedTransactions> uncategorised = [];
+    private IEnumerable<UnreviewedTransaction> uncategorised = [];
 
     private IEnumerable<Category> categories = [];
 
     protected override async Task OnInitializedAsync()
     {
-        uncategorised = await TransactionService.GetUncategorisedAsync();
+        uncategorised = await TransactionService.GetUnreviewedAsync();
         categories = CategoryService.GetCategories();
     }
 }

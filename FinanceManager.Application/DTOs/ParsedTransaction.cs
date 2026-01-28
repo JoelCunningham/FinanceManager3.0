@@ -4,6 +4,8 @@ namespace FinanceManager.Application.DTOs
 {
     public class ParsedTransaction
     {
+        public Guid Id { get; set; }
+        public required string Bank { get; set; }
         public string? AccountNumber { get; set; }
         public required DateTime Date { get; set; }
         public decimal Amount { get; set; }
@@ -12,13 +14,13 @@ namespace FinanceManager.Application.DTOs
         public string? Reference { get; set; }
         public bool IsInternalTransfer { get; set; }
 
-        public BankRecord ToBankRecord(string bank, Guid importId)
+        public BankRecord ToBankRecord(Guid importId)
         {
             return new BankRecord
             {
-                Id = Guid.NewGuid(),
+                Id = Id,
                 ImportId = importId,
-                Bank = bank,
+                Bank = Bank,
                 AccountNumber = AccountNumber,
                 Amount = Amount,
                 Date = Date,

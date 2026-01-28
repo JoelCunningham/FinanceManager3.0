@@ -1,6 +1,5 @@
 ﻿using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
-using FinanceManager.Application.Utilities;
 
 namespace FinanceManager.Application.Services
 {
@@ -9,12 +8,12 @@ namespace FinanceManager.Application.Services
         IBankRecordRepository bankRecordRepository
     )
     {
-        public async Task<IEnumerable<UnreviewedTransactions>> GetUncategorisedAsync()
+        public async Task<IEnumerable<UnreviewedTransaction>> GetUnreviewedAsync()
         {
             var recordIds = (await transactionRepository.GetUncategorised()).Select(t => t.RecordId);
             var records = await bankRecordRepository.GetByIdsAsync(recordIds);
 
-            return records.Select(TypeConverter.BankRecordToUncategorisedViewData);
+            return records.Select(UnreviewedTransaction.FromBankRecord);
         }
     }
 }

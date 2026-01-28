@@ -13,6 +13,8 @@ namespace FinanceManager.Infrastructure.Parsers
             {
                 var parsedTransaction = new ParsedTransaction
                 {
+                    Id = Guid.NewGuid(),
+                    Bank = GetBankName(),
                     Date = record.Date,
                     Amount = record.Total,
                     Description = $"{record.ProductName} ({record.ProductId}) - {record.ProductType} - {record.Units} units",

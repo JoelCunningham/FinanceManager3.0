@@ -1,13 +1,12 @@
 ﻿using FinanceManager.Application.DTOs;
-using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Enums;
 
 namespace FinanceManager.WebApp.Models
 {
     public class ImportPageModel
     {
-        public ParserViewData? SelectedBank { get; set; }
-        public IReadOnlyList<BankRecord>? ImportedTransactions { get; set; }
+        public ParserSummary? SelectedBank { get; set; }
+        public IReadOnlyList<ParsedTransaction>? ImportedTransactions { get; set; }
         public string SupportedExtensions => GetSupportedExtensions();
 
         public string? UploadErrorMessage { get; set; }
@@ -29,7 +28,7 @@ namespace FinanceManager.WebApp.Models
             IsSuccessOpen = false;
         }
 
-        public void UploadSuccess(IEnumerable<BankRecord> records)
+        public void UploadSuccess(IEnumerable<ParsedTransaction> records)
         {
             ImportedTransactions = [.. records];
             UploadErrorMessage = null;
@@ -65,7 +64,7 @@ namespace FinanceManager.WebApp.Models
             IsPreviewOpen = false;
         }
 
-        public void BankChanged(ParserViewData bank)
+        public void BankChanged(ParserSummary bank)
         {
             Reset();
             SelectedBank = bank;

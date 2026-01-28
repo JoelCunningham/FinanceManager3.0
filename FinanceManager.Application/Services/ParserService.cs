@@ -1,6 +1,5 @@
 ﻿using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Utilities;
 
 namespace FinanceManager.Application.Services
 {
@@ -8,9 +7,9 @@ namespace FinanceManager.Application.Services
     {
         private readonly IEnumerable<ITransactionFileParser> _parsers = parsers;
 
-        public IReadOnlyList<ParserViewData> GetAvailableParsers()
+        public IReadOnlyList<ParserSummary> GetAvailableParsers()
         {
-            return [.. TypeConverter.ParsersToViewData(_parsers)];
+            return [.. ParserSummary.FromParsers(_parsers)];
         }
 
         public ITransactionFileParser GetParser(string companyName, string fileExtension)

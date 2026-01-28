@@ -2,13 +2,13 @@
 
 @code {
     [Parameter, EditorRequired]
-    public required IReadOnlyList<BankRecord> Transactions { get; set; }
+    public required IReadOnlyList<ParsedTransaction> Transactions { get; set; }
 
-    private BankRecord? CurrentTransaction = null;
+    private ParsedTransaction? CurrentTransaction = null;
 
     private bool IsDetailsOpen = false;
 
-    private void ShowDetails(BankRecord transaction)
+    private void ShowDetails(ParsedTransaction transaction)
     {
         CurrentTransaction = transaction;
         IsDetailsOpen = true;
