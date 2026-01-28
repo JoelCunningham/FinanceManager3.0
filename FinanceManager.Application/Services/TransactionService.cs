@@ -8,6 +8,13 @@ namespace FinanceManager.Application.Services
         IBankRecordRepository bankRecordRepository
     )
     {
+        public async Task<IEnumerable<TransactionSummary>> SearchAsync(string searchTerm)
+        {
+            var transactions = await transactionRepository.SearchAsync(searchTerm);
+
+            return transactions.Select(TransactionSummary.FromTransaction);
+        }
+
         public async Task<IEnumerable<UnreviewedTransaction>> GetUnreviewedAsync()
         {
             var recordIds = (await transactionRepository.GetUncategorised()).Select(t => t.RecordId);

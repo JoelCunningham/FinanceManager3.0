@@ -6,6 +6,8 @@ namespace FinanceManager.Application.DTOs
     {
         public required BankRecord Record { get; set; }
         public required IEnumerable<InnerTransaction> InnerTransactions { get; set; }
+        public TransactionSummary? Transfer { get; set; }
+        public InnerTransaction DefaultTransaction => InnerTransactions.First();
 
         public static UnreviewedTransaction FromBankRecord(BankRecord record)
         {
@@ -23,6 +25,7 @@ namespace FinanceManager.Application.DTOs
 
         public void Reset()
         {
+            Transfer = null;
             InnerTransactions = [new() {
                 Amount = Record.Amount,
                 Description = Record.Description,
@@ -32,7 +35,7 @@ namespace FinanceManager.Application.DTOs
 
         public void Backdate(InnerTransaction transaction, DateTime date)
         {
-            IsTransactionInRecord(transaction);
+            IsTransactionInGroup(transaction);
 
             if (date > Record.Date)
             {
@@ -44,7 +47,7 @@ namespace FinanceManager.Application.DTOs
 
         public void ResetDate(InnerTransaction transaction)
         {
-            IsTransactionInRecord(transaction);
+            IsTransactionInGroup(transaction);
             transaction.Date = Record.Date;
         }
 
@@ -62,7 +65,7 @@ namespace FinanceManager.Application.DTOs
 
         public void Unsplit(InnerTransaction transaction)
         {
-            IsTransactionInRecord(transaction);
+            IsTransactionInGroup(transaction);
 
             if (InnerTransactions.Count() <= 1)
             {
@@ -75,7 +78,7 @@ namespace FinanceManager.Application.DTOs
 
         public void SetAmount(InnerTransaction transaction, decimal amount)
         {
-            IsTransactionInRecord(transaction);
+            IsTransactionInGroup(transaction);
 
             if (amount < 0 || amount > Record.Amount)
                 throw new InvalidOperationException("Amount must be between 0 and the record amount.");
@@ -110,10 +113,31 @@ namespace FinanceManager.Application.DTOs
             }
         }
 
-        private void IsTransactionInRecord(InnerTransaction transaction)
+        public void SetTransfer(TransactionSummary transfer)
+        {
+            if (InnerTransactions.Any(t => t.Reimbursement is not null))
+            {
+                throw new InvalidOperationException("Cannot set transfer when reimbursements are present.");
+            }
+            Transfer = transfer;
+        }
+
+        public void SetReimbursement(InnerTransaction transaction, TransactionSummary reimbursement)
+        {
+            IsTransactionInGroup(transaction);
+            if (Transfer is not null)
+            {
+                throw new InvalidOperationException("Cannot set reimbursement when a transfer is present.");
+            }
+            transaction.Reimbursement = reimbursement;
+        }
+
+        private void IsTransactionInGroup(InnerTransaction transaction)
         {
             if (!InnerTransactions.Contains(transaction))
+            {
                 throw new InvalidOperationException("Transaction does not belong to this record.");
+            }
         }
     }
 
@@ -124,14 +148,6 @@ namespace FinanceManager.Application.DTOs
         public required DateTime Date { get; set; }
 
         public Category? Category { get; set; }
-        public Relation Relation { get; set; } = Relation.None;
-        public TransactionSummary? RelatedTransction { get; set; }
-    }
-
-    public enum Relation
-    {
-        None,
-        Reimbursement,
-        Transfer,
+        public TransactionSummary? Reimbursement { get; set; }
     }
 }

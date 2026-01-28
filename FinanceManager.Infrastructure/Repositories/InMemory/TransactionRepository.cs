@@ -18,5 +18,10 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             return _transactions.Where(t => t.CategoryId == null);
             // TODO, change this to discard transfers
         }
+
+        public async Task<IEnumerable<Transaction>> SearchAsync(string searchTerm)
+        {
+            return _transactions.Where(t => t.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }

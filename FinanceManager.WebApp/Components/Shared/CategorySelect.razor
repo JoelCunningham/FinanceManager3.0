@@ -1,0 +1,27 @@
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<Category> Categories { get; set; } = [];
+
+    [Parameter]
+    public Guid? SelectedCategoryId { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<Guid?> SelectedCategoryIdChanged { get; set; }
+
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        Guid? value = Guid.TryParse(e.Value?.ToString(), out var id)
+            ? id
+            : null;
+
+        await SelectedCategoryIdChanged.InvokeAsync(value);
+    }
+}
+
+<select class="form-control form-select" value="@(SelectedCategoryId is null ? "" : SelectedCategoryId)" @onchange="OnChange">
+    <option disabled value="">Select category</option>
+    @foreach (var category in Categories)
+    {
+        <option value="@category.Id">@category.Name</option>
+    }
+</select>

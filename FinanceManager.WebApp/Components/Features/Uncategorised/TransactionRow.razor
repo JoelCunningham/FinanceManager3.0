@@ -5,6 +5,12 @@
     [Parameter]
     public IEnumerable<Category> Categories { get; set; } = [];
 
+    private InnerTransaction? CurrentTransaction { get; set; }
+
+    private bool IsTransferModalOpen { get; set; } = false;
+
+    private bool IsReimbursementModalOpen { get; set; } = false;
+
     private void SetAmount(decimal value, InnerTransaction transaction)
     {
         try
@@ -23,43 +29,118 @@
         transaction.Category = Categories.FirstOrDefault(c => c.Id == categoryId);
     }
 
-    private bool IsTransferDisabled => TransactionGroup.InnerTransactions.Count() != 1;
+    private void SetReimbursement(TransactionSummary transaction)
+    {
+        IsReimbursementModalOpen = false;
+        if (CurrentTransaction is null) return;
+        TransactionGroup.SetReimbursement(CurrentTransaction, transaction);
+    }
+
+    private void SetTransfer(TransactionSummary transaction)
+    {
+        IsTransferModalOpen = false;
+        TransactionGroup.SetTransfer(transaction);
+    }
+
+    private void OpenReimbursementModal(InnerTransaction transaction)
+    {
+        CurrentTransaction = transaction;
+        IsReimbursementModalOpen = true;
+    }
+
+    private void OpenTransferModal()
+    {
+        IsTransferModalOpen = true;
+    }
 }
 
 <div class="transaction-group">
-    <div class="transaction-rows">
-        @foreach (var (transaction, index) in TransactionGroup.InnerTransactions.Select((t, i) => (t, i)))
-        {
+    @if (TransactionGroup.Transfer is not null)
+    {
+        <div class="transaction-rows">
             <div class="transactions-row">
-                <select class="form-control form-select" @bind:get="transaction.Category?.Id" @bind:set="v => SetCategory(v, transaction)">
-                    <option disabled value="">Select category</option>
-                    @foreach (var category in Categories)
-                    {
-                        <option value="@category.Id">@category.Name</option>
-                    }
-                </select>
-                <input type="date" class="form-control" @bind="transaction.Date" @bind:format="yyyy-MM-dd" max="@TransactionGroup.Record.Date.ToString("yyyy-MM-dd")" />
-                <input type="text" class="form-control" @bind="transaction.Description" @bind:event="oninput" />
-                <input type="number" class="form-control" @bind:get="transaction.Amount" @bind:set="v => SetAmount(v, transaction)" min="0" max="@TransactionGroup.Record.Amount" />
-                @if (index == 0)
-                {
-                    <button class="btn btn-secondary" @onclick="() => TransactionGroup.Split()">Split</button>
-                }
-                else
-                {
-                    <button class="btn btn-secondary" @onclick="() => TransactionGroup.Unsplit(transaction)">Unsplit</button>
-                }
-                <button class="btn btn-secondary">Reimburse</button>
+                <br />
+                <input type="date" class="form-control disabled" @bind="TransactionGroup.DefaultTransaction.Date" disabled />
+                <input type="text" class="form-control disabled" @bind="TransactionGroup.DefaultTransaction.Description" disabled />
+                <input type="number" step="0.01" class="form-control disabled" @bind="TransactionGroup.DefaultTransaction.Amount" disabled />
             </div>
-        }
-    </div>
-    <div class="action-buttons">
-        <button class="btn btn-secondary @(IsTransferDisabled ? "disabled" : "")"
-                disabled="@IsTransferDisabled"
-                title="@(IsTransferDisabled ? "Cannot transfer split records" : "")">
-            Change to transfer
-        </button>
+            <div class="transactions-row transfer-row">
+                <span class="transaction-label">Transfers</span>
+                <input type="date" class="form-control disabled" @bind="TransactionGroup.Transfer.Date" disabled />
+                <input type="text" class="form-control disabled" @bind="TransactionGroup.Transfer.Description" disabled />
+                <input type="number" step="0.01" class="form-control disabled" @bind="TransactionGroup.Transfer.Amount" disabled />
+            </div>
+        </div>
         <button class="btn btn-secondary" @onclick="TransactionGroup.Reset">Reset</button>
-        <button class="btn btn-primary">Confirm</button>
-    </div>
+    }
+    else
+    {
+        <div class="transaction-rows">
+            @foreach (var (transaction, index) in TransactionGroup.InnerTransactions.Select((t, i) => (t, i)))
+            {
+                <div class="transactions-row">
+                    <CategorySelect Categories="Categories" SelectedCategoryId="transaction.Category?.Id" SelectedCategoryIdChanged="v => SetCategory(v, transaction)" />
+                    <input type="date" class="form-control" @bind="transaction.Date" @bind:format="yyyy-MM-dd" max="@TransactionGroup.Record.Date.ToString("yyyy-MM-dd")" />
+                    <input type="text" class="form-control" @bind="transaction.Description" @bind:event="oninput" />
+                    @if (index == 0)
+                    {
+                        <input type="number" step="0.01" class="form-control disabled" @bind="transaction.Amount" disabled />
+                    }
+                    else
+                    {
+                        <input type="number" step="0.01" class="form-control" @bind:get="transaction.Amount" @bind:set="v => SetAmount(v, transaction)" min="0" max="@TransactionGroup.Record.Amount" />
+                    }
+                    @if (index == 0)
+                    {
+                        <button class="btn btn-secondary" @onclick="() => TransactionGroup.Split()">Split</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary" @onclick="() => TransactionGroup.Unsplit(transaction)">Unsplit</button>
+                    }
+                    <button class="btn btn-secondary" @onclick="() => OpenReimbursementModal(transaction)">Reimburse</button>
+                </div>
+                @if (transaction.Reimbursement is not null)
+                {
+                    <div class="transactions-row reimbursement-row">
+                        <span class="transaction-label">Reimburses</span>
+                        <input type="date" class="form-control disabled" @bind="transaction.Reimbursement.Date" disabled />
+                        <input type="text" class="form-control disabled" @bind="transaction.Reimbursement.Description" disabled />
+                        <input type="number" class="form-control disabled" @bind="transaction.Reimbursement.Amount" disabled />
+                        <button class="btn btn-secondary" @onclick="() => transaction.Reimbursement = null">Remove</button>
+                    </div>
+                }
+            }
+        </div>
+        <div class="action-buttons">
+            @if (TransactionGroup.InnerTransactions.Count() == 1)
+            {
+                <button class="btn btn-secondary" @onclick="() => OpenTransferModal()">Change to transfer</button>
+            }
+            else
+            {
+                <button class="btn btn-secondary disabled" disabled>Change to transfer</button>
+            }
+            <button class="btn btn-secondary" @onclick="TransactionGroup.Reset">Reset</button>
+            <button class="btn btn-primary">Save</button>
+        </div>
+    }
 </div>
+
+@if (IsTransferModalOpen)
+{
+    <Modal Title="Find transfer" OnClose="() => IsTransferModalOpen = false">
+        <BodyContent>
+            <TransactionSearch OnSelect="SetTransfer" RequiredExactAmount="@(-TransactionGroup.Record.Amount)" Message="No possible transfers found." />
+        </BodyContent>
+    </Modal>
+}
+
+@if (IsReimbursementModalOpen && CurrentTransaction is not null)
+{
+    <Modal Title="Find reimbursement" OnClose="() => IsReimbursementModalOpen = false">
+        <BodyContent>
+            <TransactionSearch OnSelect="SetReimbursement" RequireOppositeSignFrom="@CurrentTransaction.Amount" Message="No possible reimbursements found." />
+        </BodyContent>
+    </Modal>
+}@*  // TODO suggest reimbusements base don date and amount *@

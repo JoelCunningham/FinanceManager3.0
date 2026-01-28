@@ -1,0 +1,248 @@
+@inject CategoryService CategoryService;
+@inject TransactionService TransactionService;
+
+@code {
+    [Parameter]
+    public EventCallback<TransactionSummary> OnSelect { get; set; }
+
+    [Parameter]
+    public string? Message { get; set; }
+
+    [Parameter]
+    public decimal? RequiredExactAmount { get; set; }
+
+    [Parameter]
+    public decimal? RequireOppositeSignFrom { get; set; }
+
+    private IReadOnlyList<TransactionSummary> Transactions = [];
+
+    private IReadOnlyList<Category> Categories = [];
+
+    private string searchTerm = string.Empty;
+    private bool showFilters = false;
+    private SortOption sortBy = SortOption.DateDesc;
+
+    private string? selectedCategory = null;
+    private DateTime? dateFrom = null;
+    private DateTime? dateTo = null;
+    private decimal? amountMin = null;
+    private decimal? amountMax = null;
+
+    private List<TransactionSummary> FilteredTransactions => GetFilteredTransactions();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = CategoryService.GetCategories().ToList();
+        Transactions = (await TransactionService.SearchAsync(string.Empty)).ToList();
+    }
+
+    private List<TransactionSummary> GetFilteredTransactions()
+    {
+        var filtered = Transactions.AsEnumerable();
+
+        if (RequiredExactAmount.HasValue)
+        {
+            filtered = filtered.Where(t => t.Amount == RequiredExactAmount.Value);
+        }
+
+        if (RequireOppositeSignFrom.HasValue)
+        {
+            var requiredSign = Math.Sign(RequireOppositeSignFrom.Value);
+            filtered = filtered.Where(t => Math.Sign(t.Amount) != requiredSign && Math.Sign(t.Amount) != 0);
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            filtered = filtered.Where(t =>
+                t.Description.ToLower().Contains(search) ||
+                t.Amount.ToString().Contains(search) ||
+                t.Date.ToString("dd/MM/yyyy").Contains(search));
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedCategory))
+        {
+            filtered = filtered.Where(t => t.CategoryName?.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase) ?? false);
+        }
+
+        if (dateFrom.HasValue)
+        {
+            filtered = filtered.Where(t => t.Date >= dateFrom.Value);
+        }
+
+        if (dateTo.HasValue)
+        {
+            filtered = filtered.Where(t => t.Date <= dateTo.Value);
+        }
+
+        if (amountMin.HasValue)
+        {
+            filtered = filtered.Where(t => Math.Abs(t.Amount) >= amountMin.Value);
+        }
+
+        if (amountMax.HasValue)
+        {
+            filtered = filtered.Where(t => Math.Abs(t.Amount) <= amountMax.Value);
+        }
+
+        filtered = sortBy switch
+        {
+            SortOption.DateAsc => filtered.OrderBy(t => t.Date),
+            SortOption.DateDesc => filtered.OrderByDescending(t => t.Date),
+            SortOption.AmountAsc => filtered.OrderBy(t => Math.Abs(t.Amount)),
+            SortOption.AmountDesc => filtered.OrderByDescending(t => Math.Abs(t.Amount)),
+            _ => filtered.OrderByDescending(t => t.Date)
+        };
+
+        return filtered.ToList();
+    }
+
+    private void ToggleFilters()
+    {
+        showFilters = !showFilters;
+    }
+
+    private void ClearFilters()
+    {
+        selectedCategory = null;
+        dateFrom = null;
+        dateTo = null;
+        amountMin = null;
+        amountMax = null;
+    }
+
+    private bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(selectedCategory) ||
+        dateFrom.HasValue ||
+        dateTo.HasValue ||
+        amountMin.HasValue ||
+        amountMax.HasValue;
+
+    private enum SortOption
+    {
+        DateAsc,
+        DateDesc,
+        AmountAsc,
+        AmountDesc
+    }
+}
+
+<div class="search-container mb-3">
+    <div class="search-with-filter">
+        <input type="text"
+               class="form-control"
+               placeholder="Search transactions..."
+               @bind="searchTerm"
+               @bind:event="oninput" />
+        <select class="form-select sort-select" @bind="sortBy">
+            <option value="@SortOption.DateDesc">Date (Newest First)</option>
+            <option value="@SortOption.DateAsc">Date (Oldest First)</option>
+            <option value="@SortOption.AmountDesc">Amount (High to Low)</option>
+            <option value="@SortOption.AmountAsc">Amount (Low to High)</option>
+        </select>
+        <button type="button"
+                class="btn btn-outline-secondary filter-toggle @(HasActiveFilters ? "active" : "")"
+                @onclick="ToggleFilters">
+            Filters
+            @if (HasActiveFilters)
+            {
+                <span class="badge bg-primary ms-1">•</span>
+            }
+        </button>
+    </div>
+</div>
+
+@if (showFilters)
+{
+    <div class="filters-panel mb-3">
+        <div class="filters-grid">
+
+            <div class="filter-item">
+                <label class="form-label">Category</label>
+                <select class="form-select" @bind="selectedCategory">
+                    <option value="">All Categories</option>
+                    @foreach (var category in Categories)
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-item">
+                <label class="form-label">Date From</label>
+                <input type="date" class="form-control" @bind="dateFrom" />
+            </div>
+
+            <div class="filter-item">
+                <label class="form-label">Date To</label>
+                <input type="date" class="form-control" @bind="dateTo" />
+            </div>
+
+            <div class="filter-item">
+                <label class="form-label">Amount Min</label>
+                <input type="number" class="form-control" step="0.01" min="0" @bind="amountMin" placeholder="0.00" />
+            </div>
+
+            <div class="filter-item">
+                <label class="form-label">Amount Max</label>
+                <input type="number" class="form-control" step="0.01" min="0" @bind="amountMax" placeholder="0.00" />
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button type="button" class="btn btn-sm btn-secondary" @onclick="ClearFilters">
+                Clear Filters
+            </button>
+        </div>
+    </div>
+}
+
+@if (FilteredTransactions.Count > 0)
+{
+    <div class="transaction-list">
+        <div class="transaction-header">
+            <div>Date</div>
+            <div>Description</div>
+            <div>Amount</div>
+            <div>Account</div>
+            <div></div>
+        </div>
+        @foreach (var transaction in FilteredTransactions)
+        {
+            <div class="transaction-item">
+                <div>@transaction.Date.ToString("dd/MM/yyyy")</div>
+                <div>@transaction.Description</div>
+                <div>@transaction.Amount.ToString("C")</div>
+                <div>
+                    <button type="button"
+                            class="btn btn-sm btn-primary"
+                            @onclick="() => OnSelect.InvokeAsync(transaction)">
+                        Select
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="transaction-list">
+        <div class="text-muted text-center p-4">
+            @if (string.IsNullOrWhiteSpace(searchTerm) && !HasActiveFilters)
+            {
+                @if (Message is not null)
+                {
+                    <text>@Message</text>
+                }
+                else
+                {
+                    <text>No transactions exist.</text>
+                }
+            }
+            else
+            {
+                <text>No transactions match your search or filters.</text>
+            }
+        </div>
+    </div>
+}

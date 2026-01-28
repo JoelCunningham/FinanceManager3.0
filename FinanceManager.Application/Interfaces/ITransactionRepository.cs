@@ -6,5 +6,6 @@ namespace FinanceManager.Application.Interfaces
     {
         Task SaveAsync(IEnumerable<Transaction> transactions);
         Task<IEnumerable<Transaction>> GetUncategorised();
+        Task<IEnumerable<Transaction>> SearchAsync(string searchTerm);
     }
 }
