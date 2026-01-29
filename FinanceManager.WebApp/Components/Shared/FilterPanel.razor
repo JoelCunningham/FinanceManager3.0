@@ -1,0 +1,40 @@
+﻿@code {
+    [Parameter, EditorRequired]
+    public required TransactionFilters Filters { get; set; }
+
+    [Parameter]
+    public RenderFragment? OuterContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? InnerContent { get; set; }
+
+    [Parameter]
+    public EventCallback OnChange { get; set; }
+
+    public async Task OnClear()
+    {
+        Filters.ClearFilters();
+        await OnChange.InvokeAsync();
+    }
+}
+
+<div class="outer-content">
+    @OuterContent
+    <button type="button" class="btn btn-outline-primary filter-toggle @(Filters.HasActiveFilters() ? "active" : "")" @onclick="Filters.ToggleVisibility">
+        Filters
+        @if (Filters.HasActiveFilters())
+        {
+            <span class="badge">•</span>
+        }
+    </button>
+</div>
+
+@if (Filters.IsVisible)
+{
+    <div class="inner-content">
+        @InnerContent
+        <button type="button" class="btn btn-secondary" @onclick="OnClear">
+            Clear Filters
+        </button>
+    </div>
+}

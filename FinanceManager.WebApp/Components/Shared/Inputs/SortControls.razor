@@ -1,0 +1,34 @@
+@code {
+    [Parameter, EditorRequired]
+    public required List<TransactionSort> AvailableSorts { get; set; }
+    
+    [Parameter, EditorRequired]
+    public TransactionSort SortBy { get; set; }
+
+    [Parameter]
+    public EventCallback<TransactionSort> SortByChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public bool SortDescending { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> SortDescendingChanged { get; set; }
+
+    private async Task ToggleSortOrder()
+    {
+        SortDescending = !SortDescending;
+        await SortDescendingChanged.InvokeAsync(SortDescending);
+    }
+}
+
+<div class="sort-group">
+    <select class="form-select" @bind="SortBy" @bind:after="() => SortByChanged.InvokeAsync(SortBy)">
+        @foreach (var sort in AvailableSorts)
+        {
+            <option value="@sort">@sort.ToString()</option>
+        }
+    </select>
+    <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortOrder">
+        <Icon Name="@(SortDescending ? "sort-down" : "sort-up")" />
+    </button>
+</div>

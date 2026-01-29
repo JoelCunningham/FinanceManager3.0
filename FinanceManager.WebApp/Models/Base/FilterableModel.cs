@@ -1,4 +1,5 @@
 ﻿using FinanceManager.Application.DTOs;
+using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.WebApp.Models.Base
 {
@@ -13,8 +14,9 @@ namespace FinanceManager.WebApp.Models.Base
         public TransactionSort SortBy { get; set; } = TransactionSort.Date;
         public bool SortDescending { get; set; } = true;
         public TransferSource FilterBySource { get; set; } = TransferSource.All;
-        public string? FilterByAccount { get; set; }
-        public string? FilterByCategory { get; set; }
+        public string? FilterAccountFrom { get; set; }
+        public string? FilterAccountTo { get; set; }
+        public Category? FilterByCategory { get; set; }
         public DateTime? FilterDateFrom { get; set; } = DateTime.Today.AddYears(-1);
         public DateTime? FilterDateTo { get; set; } = DateTime.Today;
         public decimal? FilterAmountMin { get; set; }
@@ -25,7 +27,8 @@ namespace FinanceManager.WebApp.Models.Base
         public void ClearFilters()
         {
             FilterBySource = TransferSource.All;
-            FilterByAccount = null;
+            FilterAccountFrom = null;
+            FilterAccountTo = null;
             FilterDateFrom = DateTime.Today.AddYears(-1);
             FilterDateTo = DateTime.Today;
             FilterAmountMin = null;
@@ -35,12 +38,13 @@ namespace FinanceManager.WebApp.Models.Base
         public bool HasActiveFilters()
         {
             return FilterBySource != TransferSource.All ||
-                   !string.IsNullOrWhiteSpace(FilterByAccount) ||
-                   !string.IsNullOrWhiteSpace(FilterByCategory) ||
-                   FilterDateFrom.HasValue ||
-                   FilterDateTo.HasValue ||
-                   FilterAmountMin.HasValue ||
-                   FilterAmountMax.HasValue;
+                   FilterAccountFrom is not null ||
+                   FilterAccountTo is not null ||
+                   FilterByCategory is not null ||
+                   FilterDateFrom != DateTime.Today.AddYears(-1) ||
+                   FilterDateTo != DateTime.Today ||
+                   FilterAmountMin is not null ||
+                   FilterAmountMax is not null;
         }
 
         public void ToggleVisibility()
@@ -53,6 +57,27 @@ namespace FinanceManager.WebApp.Models.Base
             SortDescending = !SortDescending;
         }
 
+        private IEnumerable<T> ApplyCommonFilters<T>(IEnumerable<T> items, Func<T, DateTime> dateSelector, Func<T, decimal> amountSelector)
+        {
+            if (FilterDateFrom is not null)
+            {
+                items = items.Where(t => dateSelector(t) >= FilterDateFrom);
+            }
+            if (FilterDateTo is not null)
+            {
+                items = items.Where(t => dateSelector(t) <= FilterDateTo);
+            }
+            if (FilterAmountMin is not null)
+            {
+                items = items.Where(t => Math.Abs(amountSelector(t)) >= FilterAmountMin);
+            }
+            if (FilterAmountMax is not null)
+            {
+                items = items.Where(t => Math.Abs(amountSelector(t)) <= FilterAmountMax);
+            }
+            return items;
+        }
+
         public List<TransactionSummary> GetFilteredTransactions(List<TransactionSummary> allTransactions)
         {
             var filtered = allTransactions.AsEnumerable();
@@ -62,30 +87,12 @@ namespace FinanceManager.WebApp.Models.Base
                 filtered = filtered.Where(t => t.Description.Contains(SearchTerm, StringComparison.CurrentCultureIgnoreCase));
             }
 
-            if (!string.IsNullOrWhiteSpace(FilterByCategory))
+            if (FilterByCategory is not null)
             {
-                filtered = filtered.Where(t => t.CategoryName?.Equals(FilterByCategory, StringComparison.OrdinalIgnoreCase) ?? false);
+                filtered = filtered.Where(t => t.Category == FilterByCategory);
             }
 
-            if (FilterDateFrom is not null)
-            {
-                filtered = filtered.Where(t => t.Date >= FilterDateFrom);
-            }
-
-            if (FilterDateTo is not null)
-            {
-                filtered = filtered.Where(t => t.Date <= FilterDateTo);
-            }
-
-            if (FilterAmountMin is not null)
-            {
-                filtered = filtered.Where(t => Math.Abs(t.Amount) >= FilterAmountMin);
-            }
-
-            if (FilterAmountMax is not null)
-            {
-                filtered = filtered.Where(t => Math.Abs(t.Amount) <= FilterAmountMax);
-            }
+            filtered = ApplyCommonFilters(filtered, t => t.Date, t => t.Amount);
 
             filtered = SortBy switch
             {
@@ -122,33 +129,17 @@ namespace FinanceManager.WebApp.Models.Base
                 filtered = filtered.Where(t => t.IsUserCreated == isUserCreated);
             }
 
-            if (!string.IsNullOrWhiteSpace(FilterByAccount))
+            if (!string.IsNullOrWhiteSpace(FilterAccountFrom))
             {
-                filtered = filtered.Where(t =>
-                {
-                    var fromAccount = $"{t.From.Bank} - {t.From.Account}";
-                    var toAccount = $"{t.To.Bank} - {t.To.Account}";
-                    return fromAccount == FilterByAccount || toAccount == FilterByAccount;
-                });
+                filtered = filtered.Where(t => $"{t.To.Bank} - {t.To.Account}" == FilterAccountFrom);
             }
 
-            if (FilterDateFrom.HasValue)
+            if (!string.IsNullOrWhiteSpace(FilterAccountTo))
             {
-                filtered = filtered.Where(t => t.Date >= FilterDateFrom.Value);
-            }
-            if (FilterDateTo.HasValue)
-            {
-                filtered = filtered.Where(t => t.Date <= FilterDateTo.Value);
+                filtered = filtered.Where(t => $"{t.To.Bank} - {t.To.Account}" == FilterAccountTo);
             }
 
-            if (FilterAmountMin.HasValue)
-            {
-                filtered = filtered.Where(t => t.Amount >= FilterAmountMin.Value);
-            }
-            if (FilterAmountMax.HasValue)
-            {
-                filtered = filtered.Where(t => t.Amount <= FilterAmountMax.Value);
-            }
+            filtered = ApplyCommonFilters(filtered, t => t.Date, t => t.Amount);
 
             filtered = SortBy switch
             {
@@ -159,11 +150,11 @@ namespace FinanceManager.WebApp.Models.Base
                     ? filtered.OrderByDescending(t => t.Date)
                     : filtered.OrderBy(t => t.Date),
                 TransactionSort.FromAccount => SortDescending
-                    ? filtered.OrderByDescending(t => t.From.Bank).OrderByDescending(t => t.From.Account)
-                    : filtered.OrderBy(t => t.From.Bank).OrderBy(t => t.From.Account),
+                    ? filtered.OrderByDescending(t => t.From.Bank).ThenByDescending(t => t.From.Account)
+                    : filtered.OrderBy(t => t.From.Bank).ThenBy(t => t.From.Account),
                 TransactionSort.ToAccount => SortDescending
-                    ? filtered.OrderByDescending(t => t.To.Bank).OrderByDescending(t => t.To.Account)
-                    : filtered.OrderBy(t => t.To.Bank).OrderBy(t => t.To.Account),
+                    ? filtered.OrderByDescending(t => t.To.Bank).ThenByDescending(t => t.To.Account)
+                    : filtered.OrderBy(t => t.To.Bank).ThenBy(t => t.To.Account),
                 _ => filtered
             };
 

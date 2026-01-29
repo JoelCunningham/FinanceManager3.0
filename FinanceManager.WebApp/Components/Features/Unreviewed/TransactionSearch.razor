@@ -18,80 +18,29 @@
 
     private List<TransactionSummary> FilteredTransactions => Filters.GetFilteredTransactions(AllTransactions);
 
+    private List<TransactionSort> AvailableSorts = new List<TransactionSort>
+    {
+        TransactionSort.Date,
+        TransactionSort.Amount,
+    };
+
     protected override async Task OnInitializedAsync()
     {
         AllTransactions = (await TransactionService.SearchAsync(string.Empty)).ToList();
     }
 }
 
-<div class="search-container mb-3">
-    <div class="search-with-filter">
-        <input type="text"
-               class="form-control"
-               placeholder="Search transactions..."
-               @bind="Filters.SearchTerm"
-               @bind:event="oninput" />
-        <select class="form-select sort-select" @bind="Filters.SortBy">
-            <option value="@TransactionSort.Date">Date</option>
-            <option value="@TransactionSort.Amount">Amount</option>
-        </select>
-        <button type="button" class="btn btn-outline-secondary" @onclick="Filters.ToggleSortOrder">
-            <Icon Name="@(Filters.SortDescending ? "sort-down" : "sort-up")" />
-        </button>
-        <button type="button" class="btn btn-outline-secondary filter-toggle @(Filters.HasActiveFilters() ? "active" : "")" @onclick="Filters.ToggleVisibility">
-            Filters
-            @if (Filters.HasActiveFilters())
-            {
-                <span class="badge bg-primary ms-1">•</span>
-            }
-        </button>
-    </div>
-</div>
-
-@if (Filters.IsVisible)
-{
-    <div class="filters-panel mb-3">
-        <div class="filters-grid">
-
-            <div class="filter-item">
-                <label class="form-label">Category</label>
-                <select class="form-select" @bind="Filters.FilterByCategory">
-                    <option value="">All Categories</option>
-                    @foreach (var category in Categories)
-                    {
-                        <option value="@category">@category</option>
-                    }
-                </select>
-            </div>
-
-            <div class="filter-item">
-                <label class="form-label">Date From</label>
-                <input type="date" class="form-control" @bind="Filters.FilterDateFrom" />
-            </div>
-
-            <div class="filter-item">
-                <label class="form-label">Date To</label>
-                <input type="date" class="form-control" @bind="Filters.FilterDateTo" />
-            </div>
-
-            <div class="filter-item">
-                <label class="form-label">Amount Min</label>
-                <input type="number" class="form-control" step="0.01" min="0" @bind="Filters.FilterAmountMin" placeholder="0.00" />
-            </div>
-
-            <div class="filter-item">
-                <label class="form-label">Amount Max</label>
-                <input type="number" class="form-control" step="0.01" min="0" @bind="Filters.FilterAmountMax" placeholder="0.00" />
-            </div>
-        </div>
-
-        <div class="filter-actions">
-            <button type="button" class="btn btn-sm btn-secondary" @onclick="Filters.ClearFilters">
-                Clear Filters
-            </button>
-        </div>
-    </div>
-}
+<FilterPanel Filters="Filters">
+    <OuterContent>
+        <SearchInput Placeholder="Search transactions..." SearchTerm="@Filters.SearchTerm" />
+        <SortControls SortBy="Filters.SortBy" SortDescending="Filters.SortDescending" AvailableSorts="AvailableSorts" />
+    </OuterContent>
+    <InnerContent>
+        <CategorySelect Categories="Categories" SelectedCategory="Filters.FilterByCategory" />
+        <DateRangeInput DateFrom="Filters.FilterDateFrom" DateTo="Filters.FilterDateTo" />
+        <AmountRangeInput AmountMin="Filters.FilterAmountMin" AmountMax="Filters.FilterAmountMax" />
+    </InnerContent>
+</FilterPanel>
 
 @if (FilteredTransactions.Count > 0)
 {
@@ -110,9 +59,7 @@
                 <div>@transaction.Description</div>
                 <div>@transaction.Amount.ToString("C")</div>
                 <div>
-                    <button type="button"
-                            class="btn btn-sm btn-primary"
-                            @onclick="() => OnSelect.InvokeAsync(transaction)">
+                    <button type="button" class="btn btn-sm btn-primary" @onclick="() => OnSelect.InvokeAsync(transaction)">
                         Select
                     </button>
                 </div>

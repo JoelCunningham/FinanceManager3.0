@@ -1,0 +1,34 @@
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<Category> Categories { get; set; } = [];
+
+    [Parameter]
+    public Category? SelectedCategory { get; set; }
+
+    [Parameter]
+    public EventCallback<Category?> SelectedCategoryChanged { get; set; }
+
+    private string? selectedCategoryId;
+
+    protected override void OnParametersSet()
+    {
+        selectedCategoryId = SelectedCategory?.Id.ToString();
+    }
+
+    private async Task HandleCategoryChange()
+    {
+        SelectedCategory = selectedCategoryId is not null
+            ? Categories.FirstOrDefault(c => c.Id.ToString() == selectedCategoryId)
+            : null;
+
+        await SelectedCategoryChanged.InvokeAsync(SelectedCategory);
+    }
+}
+
+<select class="form-select" @bind="selectedCategoryId" @bind:after="HandleCategoryChange">
+    <option value="">Select category</option>
+    @foreach (var category in Categories)
+    {
+        <option value="@category.Id">@category.Name</option>
+    }
+</select>

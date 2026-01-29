@@ -1,0 +1,31 @@
+@code {
+    [Parameter, EditorRequired]
+    public DateTime? DateFrom { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> DateFromChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public DateTime? DateTo { get; set; }
+
+    [Parameter]
+    public EventCallback<DateTime?> DateToChanged { get; set; }
+}
+
+<div class="filter">
+    <label class="form-label">Date From</label>
+    <input class="form-control"
+           type="date"
+           @bind="DateFrom"
+           @bind:event="oninput"
+           @bind:after="() => DateFromChanged.InvokeAsync(DateFrom)" />
+</div>
+
+<div class="filter">
+    <label class="form-label">Date To</label>
+    <input class="form-control"
+           type="date"
+           @bind="DateTo"
+           @bind:event="oninput"
+           @bind:after="() => DateToChanged.InvokeAsync(DateTo)" />
+</div>

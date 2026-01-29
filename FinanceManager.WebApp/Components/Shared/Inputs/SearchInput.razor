@@ -1,0 +1,20 @@
+@code {
+    [Parameter, EditorRequired]
+    public required string SearchTerm { get; set; }
+
+    [Parameter]
+    public EventCallback<string> SearchTermChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Placeholder { get; set; }
+}
+
+<div class="search-box">
+    <Icon Name="search" />
+    <input class="form-control"
+           type="text"
+           placeholder="@Placeholder"
+           @bind="SearchTerm"
+           @bind:event="oninput"
+           @bind:after="() => SearchTermChanged.InvokeAsync(SearchTerm)" />
+</div>

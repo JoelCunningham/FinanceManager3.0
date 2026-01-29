@@ -1,0 +1,34 @@
+@code {
+    [Parameter]
+    public decimal? AmountMin { get; set; }
+
+    [Parameter]
+    public EventCallback<decimal?> AmountMinChanged { get; set; }
+
+    [Parameter]
+    public decimal? AmountMax { get; set; }
+
+    [Parameter]
+    public EventCallback<decimal?> AmountMaxChanged { get; set; }
+}
+
+<div class="filter">
+    <label class="form-label">Amount Min</label>
+    <input class="form-control"
+           type="number"
+           step="0.01"
+           placeholder="0.00"
+           @bind="AmountMin"
+           @bind:event="oninput"
+           @bind:after="() => AmountMinChanged.InvokeAsync(AmountMin)" />
+</div>
+<div class="filter">
+    <label class="form-label">Amount Max</label>
+    <input class="form-control"
+           type="number"
+           step="0.01"
+           placeholder="0.00"
+           @bind="AmountMax"
+           @bind:event="oninput"
+           @bind:after="() => AmountMaxChanged.InvokeAsync(AmountMax)" />
+</div>

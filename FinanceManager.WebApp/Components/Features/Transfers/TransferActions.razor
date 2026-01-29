@@ -10,69 +10,30 @@
 
     [Parameter]
     public EventCallback OnFilterChanged { get; set; }
+
+    private List<TransactionSort> AvailableSorts = new List<TransactionSort>
+    {
+        TransactionSort.Date,
+        TransactionSort.Amount,
+        TransactionSort.FromAccount,
+        TransactionSort.ToAccount
+    };
+
+    private async Task OnChange()
+    {
+        await OnFilterChanged.InvokeAsync();
+    }
 }
 
-<div class="transfer-actions">
-    <div class="search-box">
-        <Icon Name="search" />
-        <input type="text"
-               class="form-control"
-               placeholder="Search by description, bank, or account..."
-               @bind="Filters.SearchTerm"
-               @bind:event="oninput" 
-               @bind:after="() => OnFilterChanged.InvokeAsync()" />
-
-        <button type="button" class="btn btn-outline-secondary" @onclick="Filters.ToggleVisibility">
-            Clear all
-        </button>
-    </div>
-
-    <div class="filter-sort-container">
-        <div class="filter-group">
-            <label class="group-label">Filter by:</label>
-
-            <div class="filter-pair">
-                <select class="form-select" @bind="Filters.FilterBySource" @bind:after="() => OnFilterChanged.InvokeAsync()">
-                    <option value="@TransferSource.All">All sources</option>
-                    <option value="@TransferSource.User">User Created</option>
-                    <option value="@TransferSource.Auto">Auto Created</option>
-                </select>
-                <select class="form-select" @bind="Filters.FilterByAccount" @bind:after="() => OnFilterChanged.InvokeAsync()">
-                    <option value="">All Accounts</option>
-                    @foreach (var account in Accounts)
-                    {
-                        <option value="@account">@account</option>
-                    }
-                </select>
-            </div>
-
-            <div class="filter-pair">
-                <input type="date" class="form-control" @bind="Filters.FilterDateFrom" @bind:after="() => OnFilterChanged.InvokeAsync()" />
-                <Icon Name="arrow-right" />
-                <input type="date" class="form-control" @bind="Filters.FilterDateTo" @bind:after="() => OnFilterChanged.InvokeAsync()" />
-            </div>
-
-            <div class="filter-pair">
-                <input type="number" class="form-control" step="0.01" min="0" @bind="Filters.FilterAmountMin" @bind:after="() => OnFilterChanged.InvokeAsync()" placeholder="0.00" />
-                <Icon Name="arrow-right" AriaLabel="transferd to" />
-                <input type="number" class="form-control" step="0.01" min="0" @bind="Filters.FilterAmountMax" @bind:after="() => OnFilterChanged.InvokeAsync()" placeholder="0.00" />
-            </div>
-
-        </div>
-
-        <div class="sort-group">
-            <label class="group-label" for="sort-by">Sort by:</label>
-            <div class="filter-pair">
-                <select class="form-select sort-select" @bind="Filters.SortBy" @bind:after="() => OnFilterChanged.InvokeAsync()">
-                    <option value="@TransactionSort.Date">Date</option>
-                    <option value="@TransactionSort.Amount">Amount</option>
-                    <option value="@TransactionSort.FromAccount">From Account</option>
-                    <option value="@TransactionSort.ToAccount">To Account</option>
-                </select>
-                <button type="button" class="btn btn-outline-secondary" @onclick="Filters.ToggleSortOrder" @bind:after="() => OnFilterChanged.InvokeAsync()">
-                    <Icon Name="@(Filters.SortDescending ? "sort-down" : "sort-up")" />
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<FilterPanel Filters="Filters" OnChange="OnChange">
+    <OuterContent>
+        <SearchInput @bind-SearchTerm="Filters.SearchTerm" Placeholder="Search transfers..." @bind-SearchTerm:after="OnChange" />
+        <SortControls @bind-SortBy="Filters.SortBy" @bind-SortDescending="Filters.SortDescending" AvailableSorts="AvailableSorts" @bind-SortBy:after="OnChange" @bind-SortDescending:after="OnChange" />
+    </OuterContent>
+    <InnerContent>
+        <AccountSelect @bind-AccountFrom="Filters.FilterAccountFrom" @bind-AccountTo="Filters.FilterAccountTo" Accounts="Accounts" @bind-AccountFrom:after="OnChange" @bind-AccountTo:after="OnChange" />
+        <DateRangeInput @bind-DateFrom="Filters.FilterDateFrom" @bind-DateTo="Filters.FilterDateTo" @bind-DateFrom:after="OnChange" @bind-DateTo:after="OnChange" />
+        <AmountRangeInput @bind-AmountMin="Filters.FilterAmountMin" @bind-AmountMax="Filters.FilterAmountMax" @bind-AmountMin:after="OnChange" @bind-AmountMax:after="OnChange" />
+        <SourceSelect @bind-SelectedSource="Filters.FilterBySource" @bind-SelectedSource:after="OnChange" />
+    </InnerContent>
+</FilterPanel>

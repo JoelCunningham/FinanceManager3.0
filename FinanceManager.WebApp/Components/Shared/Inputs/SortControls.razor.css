@@ -1,0 +1,22 @@
+.sort-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+    width: 100%;
+
+    select {
+        cursor: pointer;
+    }
+
+    button {
+        color: var(--bs-body-color);
+        background-color: var(--bs-body-bg);
+        border: var(--bs-border-width) solid var(--bs-border-color);
+    }
+
+    ::deep .bi {
+        width: 1rem;
+        height: 1rem;
+        margin: auto;
+    }
+}

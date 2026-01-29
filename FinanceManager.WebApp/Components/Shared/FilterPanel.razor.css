@@ -1,0 +1,32 @@
+.outer-content {
+    display: grid;
+    grid-template-columns: 1fr 14rem 5rem;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .filter-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .badge {
+        top: -0.5px;
+        right: 3px;
+    }
+}
+
+.inner-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--colour-light-grey);
+    border-radius: var(--radius-medium);
+
+    label {
+        margin-bottom: -20px;
+    }
+}
+/*//TODO cursor pointer*/

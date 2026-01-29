@@ -1,0 +1,59 @@
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<string> Accounts { get; set; } = [];
+
+    [Parameter]
+    public string? AccountFrom { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> AccountFromChanged { get; set; }
+
+    [Parameter]
+    public string? AccountTo { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> AccountToChanged { get; set; }
+
+    private string accountTo = "";
+    private string accountFrom = "";
+
+    protected override void OnParametersSet()
+    {
+        accountTo = AccountTo is not null ? AccountTo : "";
+        accountFrom = AccountFrom is not null ? AccountFrom : "";
+    }
+
+    private async Task FromAccountChange()
+    {
+        AccountFrom = accountFrom is not null ? accountFrom : null;
+        await AccountFromChanged.InvokeAsync(AccountFrom);
+    }
+
+    private async Task ToAccountChange()
+    {
+        AccountTo = accountTo is not null ? accountTo : null;
+        await AccountToChanged.InvokeAsync(AccountTo);
+    }
+}
+
+<div class="filter">
+    <label class="form-label">From Account</label>
+    <select class="form-select form" @bind="accountFrom" @bind:after="FromAccountChange">
+        <option disabled selected value="">Select account</option>
+        @foreach (var account in Accounts)
+        {
+            <option value="@account">@account</option>
+        }
+    </select>
+</div>
+
+<div class="filter">
+    <label class="form-label">To Account</label>
+    <select class="form-select" @bind="accountTo" @bind:after="ToAccountChange">
+        <option disabled selected value="">Select account</option>
+        @foreach (var account in Accounts)
+        {
+            <option value="@account">@account</option>
+        }
+    </select>
+</div>
