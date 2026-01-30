@@ -12,6 +12,8 @@
     {
         Model.Unreviewed = (await TransactionService.GetUnreviewedAsync()).ToList();
         Model.Categories = CategoryService.GetCategories().ToList();
+        Model.AllTransactions = (await TransactionService.SearchAsync(string.Empty)).ToList();
+        //TODO allow uncategorised by auto saving records
     }
 
     private void SetReimbursement(TransactionSummary reimbursement)
@@ -42,6 +44,18 @@
         Model.CurrentTransaction = transaction;
         Model.IsTransferSearchOpen = true;
     }
+
+    private void CloseReimbursementModal()
+    {
+        Model.IsReimbursementSearchOpen = false;
+        Model.Filters.ClearFilters();
+    }
+
+    private void CloseTransferModal()
+    {
+        Model.IsTransferSearchOpen = false;
+        Model.Filters.ClearFilters();
+    }
 }
 
 <PageTitle>Uncategorised Transactions</PageTitle>
@@ -53,23 +67,25 @@
     <TransactionRow TransactionGroup="transactionGroup"
                     Categories="Model.Categories"
                     OnFindTransfer="() => OnFindTransfer(transactionGroup)"
-                    OnFindReimbusement="(t) => OnFindReimbursement(transactionGroup, t)" />
+                    OnFindReimbursement="(t) => OnFindReimbursement(transactionGroup, t)" />
 }
 
 @if (Model.IsTransferSearchOpen && Model.CurrentTransaction is not null)
 {
-    <Modal Title="Find transfer" OnClose="() => Model.IsTransferSearchOpen = false">
+    <Modal Title="Find transfer" OnClose="CloseTransferModal">
         <BodyContent>
-            <TransactionSearch Filters="Model.Filters" Categories="Model.Categories" OnSelect="SetTransfer" Message="No possible transfers found." />
+            <TransactionActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
+            <TransactionSearch FilteredTransactions="Model.PotentialTransfers" OnSelect="SetTransfer" />
         </BodyContent>
     </Modal>
 }
 
 @if (Model.IsReimbursementSearchOpen && Model.CurrentInnerTransaction is not null)
 {
-    <Modal Title="Find reimbursement" OnClose="() => Model.IsReimbursementSearchOpen = false">
+    <Modal Title="Find reimbursement" OnClose="CloseReimbursementModal">
         <BodyContent>
-            <TransactionSearch Filters="Model.Filters" Categories="Model.Categories" OnSelect="SetReimbursement" Message="No possible reimbursements found." />
+            <TransactionActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
+            <TransactionSearch FilteredTransactions="Model.PotentialReimbursements" OnSelect="SetReimbursement" />
         </BodyContent>
     </Modal>
 }

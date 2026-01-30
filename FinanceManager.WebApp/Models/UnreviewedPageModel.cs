@@ -15,5 +15,12 @@ namespace FinanceManager.WebApp.Models
         public bool IsTransferSearchOpen { get; set; } = false;
         public bool IsReimbursementSearchOpen { get; set; } = false;
 
+        public List<TransactionSummary> AllTransactions { get; set; } = [];
+        public List<TransactionSummary> PotentialReimbursements => Filters.GetFilteredTransactions(AllTransactions)
+            .Where(t => t.Category is not null)
+            .ToList();
+        public List<TransactionSummary> PotentialTransfers => Filters.GetFilteredTransactions(AllTransactions)
+            .Where(t => t.Amount == -CurrentTransaction?.Record.Amount)
+            .ToList();
     }
 }

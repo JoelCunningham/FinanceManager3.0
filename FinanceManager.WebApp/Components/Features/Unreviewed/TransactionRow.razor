@@ -6,7 +6,7 @@
     public IEnumerable<Category> Categories { get; set; } = [];
 
     [Parameter]
-    public EventCallback<InnerTransaction> OnFindReimbusement { get; set; }
+    public EventCallback<InnerTransaction> OnFindReimbursement { get; set; }
 
     [Parameter]
     public EventCallback OnFindTransfer { get; set; }
@@ -57,7 +57,7 @@
             @foreach (var (transaction, index) in TransactionGroup.InnerTransactions.Select((t, i) => (t, i)))
             {
                 <div class="transactions-row">
-                    <CategorySelect Categories="Categories" SelectedCategory="transaction.Category" OnChange="StateHasChanged" />
+                    <CategorySelect Categories="Categories" AllowAll="false" @bind-SelectedCategory="transaction.Category" @bind-SelectedCategory:after="StateHasChanged" />
                     <input type="date" class="form-control" @bind="transaction.Date" @bind:format="yyyy-MM-dd" max="@TransactionGroup.Record.Date.ToString("yyyy-MM-dd")" />
                     <input type="text" class="form-control" @bind="transaction.Description" @bind:event="oninput" />
                     @if (index == 0)
@@ -70,13 +70,13 @@
                     }
                     @if (index == 0)
                     {
-                        <button class="btn btn-secondary" @onclick="() => TransactionGroup.Split()">Split</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => TransactionGroup.Split()">Split</button>
                     }
                     else
                     {
-                        <button class="btn btn-secondary" @onclick="() => TransactionGroup.Unsplit(transaction)">Unsplit</button>
+                        <button class="btn btn-secondary" type="button" @onclick="() => TransactionGroup.Unsplit(transaction)">Unsplit</button>
                     }
-                    <button class="btn btn-secondary" @onclick="() => OnFindReimbusement.InvokeAsync(transaction)">Reimburse</button>
+                    <button class="btn btn-secondary" type="button" @onclick="() => OnFindReimbursement.InvokeAsync(transaction)">Reimburse</button>
                 </div>
                 @if (transaction.Reimbursement is not null)
                 {
@@ -93,14 +93,14 @@
         <div class="action-buttons">
             @if (TransactionGroup.InnerTransactions.Count() == 1)
             {
-                <button class="btn btn-secondary" @onclick="() => OnFindTransfer.InvokeAsync()">Change to transfer</button>
+                <button class="btn btn-secondary" type="button" @onclick="() => OnFindTransfer.InvokeAsync()">Change to transfer</button>
             }
             else
             {
-                <button class="btn btn-secondary disabled" disabled>Change to transfer</button>
+                <button class="btn btn-secondary disabled" type="button" disabled>Change to transfer</button>
             }
-            <button class="btn btn-secondary" @onclick="TransactionGroup.Reset">Reset</button>
-            <button class="btn btn-primary">Save</button>
+            <button class="btn btn-secondary" type="button" @onclick="TransactionGroup.Reset">Reset</button>
+            <button class="btn btn-primary" type="button">Save</button>
         </div>
     }
 </div>

@@ -1,9 +1,9 @@
-﻿@code {
+@code {
     [Parameter, EditorRequired]
     public required TransactionFilters Filters { get; set; }
 
-    [Parameter]
-    public List<string> Accounts { get; set; } = [];
+    [Parameter, EditorRequired]
+    public required List<Category> Categories { get; set; }
 
     [Parameter]
     public EventCallback OnFilterChanged { get; set; }
@@ -12,8 +12,6 @@
     {
         TransactionSort.Date,
         TransactionSort.Amount,
-        TransactionSort.FromAccount,
-        TransactionSort.ToAccount
     };
 
     private async Task OnChange()
@@ -22,23 +20,21 @@
     }
 }
 
-<FilterPanel Filters="Filters" OnChange="OnChange">
+<FilterPanel Filters="Filters">
     <OuterContent>
-        <SearchInput Placeholder="Search transfers..."
+        <SearchInput Placeholder="Search transactions..."
                      @bind-SearchTerm="Filters.SearchTerm"
                      @bind-SearchTerm:after="OnChange" />
-        <SortControls InculdeAccountSorts="true"
+        <SortControls InculdeAccountSorts="false"
                       @bind-SortBy="Filters.SortBy"
                       @bind-SortBy:after="OnChange"
                       @bind-SortDescending="Filters.SortDescending"
                       @bind-SortDescending:after="OnChange" />
     </OuterContent>
     <InnerContent>
-        <AccountSelect Accounts="Accounts"
-                       @bind-AccountFrom="Filters.FilterAccountFrom"
-                       @bind-AccountTo="Filters.FilterAccountTo"
-                       @bind-AccountFrom:after="OnChange"
-                       @bind-AccountTo:after="OnChange" />
+        <CategorySelect Categories="Categories"
+                        @bind-SelectedCategory="Filters.FilterByCategory"
+                        @bind-SelectedCategory:after="OnChange" />
         <DateRangeInput MaxDate="DateTime.Today"
                         @bind-DateFrom="Filters.FilterDateFrom"
                         @bind-DateFrom:after="OnChange"
@@ -48,7 +44,5 @@
                           @bind-AmountMax="Filters.FilterAmountMax"
                           @bind-AmountMin:after="OnChange"
                           @bind-AmountMax:after="OnChange" />
-        <SourceSelect @bind-SelectedSource="Filters.FilterBySource"
-                      @bind-SelectedSource:after="OnChange" />
     </InnerContent>
 </FilterPanel>

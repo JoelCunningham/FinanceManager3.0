@@ -11,7 +11,6 @@ namespace FinanceManager.WebApp.Models
         public string? RemoveErrorMessage { get; set; }
 
         public List<string> UniqueAccounts => GetUniqueAccounts();
-        public decimal MaxAmount => Transfers.Count != 0 ? Transfers.Max(t => t.Amount) : 0;
         public List<TransferSummary> FilteredAndSortedTransfers => Filters.GetFilteredTransfers(Transfers);
 
 

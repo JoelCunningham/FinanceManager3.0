@@ -2,50 +2,18 @@
 @inject TransactionService TransactionService;
 
 @code {
-    [Parameter, EditorRequired]
-    public required TransactionFilters Filters { get; set; }
-
-    [Parameter, EditorRequired]
-    public required List<Category> Categories { get; set; }
+    [Parameter]
+    public List<TransactionSummary> FilteredTransactions { get; set; } = [];
 
     [Parameter]
     public EventCallback<TransactionSummary> OnSelect { get; set; }
-
-    [Parameter]
-    public string? Message { get; set; }
-
-    private List<TransactionSummary> AllTransactions = [];
-
-    private List<TransactionSummary> FilteredTransactions => Filters.GetFilteredTransactions(AllTransactions);
-
-    private List<TransactionSort> AvailableSorts = new List<TransactionSort>
-    {
-        TransactionSort.Date,
-        TransactionSort.Amount,
-    };
-
-    protected override async Task OnInitializedAsync()
-    {
-        AllTransactions = (await TransactionService.SearchAsync(string.Empty)).ToList();
-    }
 }
-
-<FilterPanel Filters="Filters">
-    <OuterContent>
-        <SearchInput Placeholder="Search transactions..." SearchTerm="@Filters.SearchTerm" />
-        <SortControls SortBy="Filters.SortBy" SortDescending="Filters.SortDescending" AvailableSorts="AvailableSorts" />
-    </OuterContent>
-    <InnerContent>
-        <CategorySelect Categories="Categories" SelectedCategory="Filters.FilterByCategory" />
-        <DateRangeInput DateFrom="Filters.FilterDateFrom" DateTo="Filters.FilterDateTo" />
-        <AmountRangeInput AmountMin="Filters.FilterAmountMin" AmountMax="Filters.FilterAmountMax" />
-    </InnerContent>
-</FilterPanel>
 
 @if (FilteredTransactions.Count > 0)
 {
     <div class="transaction-list">
         <div class="transaction-header">
+            <div>Category</div>
             <div>Date</div>
             <div>Description</div>
             <div>Amount</div>
@@ -55,6 +23,7 @@
         @foreach (var transaction in FilteredTransactions)
         {
             <div class="transaction-item">
+                <div>@(transaction.Category is not null ? transaction.Category : "Uncategorised")</div>
                 <div>@transaction.Date.ToString("dd/MM/yyyy")</div>
                 <div>@transaction.Description</div>
                 <div>@transaction.Amount.ToString("C")</div>
@@ -62,30 +31,14 @@
                     <button type="button" class="btn btn-sm btn-primary" @onclick="() => OnSelect.InvokeAsync(transaction)">
                         Select
                     </button>
-                </div>
+                </div> @* //TODO change to on row click *@
             </div>
         }
     </div>
 }
 else
 {
-    <div class="transaction-list">
-        <div class="text-muted text-center p-4">
-            @if (string.IsNullOrWhiteSpace(Filters.SearchTerm) && !Filters.HasActiveFilters())
-            {
-                @if (Message is not null)
-                {
-                    <text>@Message</text>
-                }
-                else
-                {
-                    <text>No transactions exist.</text>
-                }
-            }
-            else
-            {
-                <text>No transactions match your search or filters.</text>
-            }
-        </div>
+    <div class="text-muted text-center p-4">
+        <text>No transactions found.</text>
     </div>
 }

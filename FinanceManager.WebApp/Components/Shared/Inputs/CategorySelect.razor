@@ -1,12 +1,15 @@
 @code {
-    [Parameter, EditorRequired]
-    public IEnumerable<Category> Categories { get; set; } = [];
-
     [Parameter]
     public Category? SelectedCategory { get; set; }
 
     [Parameter]
     public EventCallback<Category?> SelectedCategoryChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public IEnumerable<Category> Categories { get; set; } = [];
+
+    [Parameter]
+    public bool AllowAll { get; set; } = true;
 
     private string? selectedCategoryId;
 
@@ -17,7 +20,7 @@
 
     private async Task HandleCategoryChange()
     {
-        SelectedCategory = selectedCategoryId is not null
+        SelectedCategory = selectedCategoryId != "" && selectedCategoryId != "None"
             ? Categories.FirstOrDefault(c => c.Id.ToString() == selectedCategoryId)
             : null;
 
@@ -25,10 +28,24 @@
     }
 }
 
-<select class="form-select" @bind="selectedCategoryId" @bind:after="HandleCategoryChange">
-    <option value="">Select category</option>
-    @foreach (var category in Categories)
+<div class="filter">
+    @if (AllowAll)
     {
-        <option value="@category.Id">@category.Name</option>
+        <label class="form-label">Category</label>
     }
-</select>
+    <select class="form-select" @bind="selectedCategoryId" @bind:after="HandleCategoryChange">
+        @if (AllowAll)
+        {
+            <option value="">All categories</option>
+            <option value="None">Uncategorised</option> @* //TODO support uncategorised filtering *@
+        }
+        else
+        {
+            <option disabled selected value="">Select category</option>
+        }
+        @foreach (var category in Categories)
+        {
+            <option value="@category.Id">@category.Name</option>
+        }
+    </select>
+</div>

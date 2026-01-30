@@ -30,7 +30,7 @@
 
 <h1 class="page-heading">Manage transfers</h1>
 
-<TransferActions Filters="Model.Filters" Accounts="Model.UniqueAccounts" MaxAmount="Model.MaxAmount" OnFilterChanged="StateHasChanged" />
+<TransferActions Filters="Model.Filters" Accounts="Model.UniqueAccounts" OnFilterChanged="StateHasChanged" />
 @foreach (var transfer in Model.FilteredAndSortedTransfers)
 {
     <TransferRow Transfer="transfer" OnRemove="RemoveTransfer" />
