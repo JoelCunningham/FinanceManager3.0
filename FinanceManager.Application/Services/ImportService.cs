@@ -19,7 +19,7 @@ namespace FinanceManager.Application.Services
             var parsed = await parser.ParseTransactionsFileAsync(file);
 
             var records = parsed.Select(t => t.ToBankRecord(new Guid()));
-            var duplicates = await bankRecordRepository.FindDuplicatesAsync(records);
+            var duplicates = await bankRecordRepository.GetDuplicatesAsync(records);
             var duplicateIds = duplicates.Select(d => d.Id).ToHashSet();
 
             return parsed.Where(p => !duplicateIds.Contains(p.Id));
@@ -34,13 +34,13 @@ namespace FinanceManager.Application.Services
             {
                 var records = parsedTransactions.Select(t => t.ToBankRecord(importId)).ToList();
 
-                await bankRecordRepository.SaveAsync(records);
+                await bankRecordRepository.CreateAsync(records);
 
                 var transfers = EntityConverter.BankRecordsToTransfers(records.Where(t => t.IsInternalTransfer));
                 var transactions = records.Where(t => !t.IsInternalTransfer).Select(EntityConverter.BankRecordToTransaction);
 
-                await transferRepository.SaveAsync(transfers);
-                await transactionRepository.SaveAsync(transactions);
+                await transferRepository.CreateAsync(transfers);
+                await transactionRepository.CreateAsync(transactions);
 
                 await transaction.CommitAsync();
             }

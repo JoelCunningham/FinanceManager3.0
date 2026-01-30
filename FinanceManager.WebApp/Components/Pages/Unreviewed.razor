@@ -10,48 +10,73 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Model.Unreviewed = (await TransactionService.GetUnreviewedAsync()).ToList();
+        Model.UnreviewedGroups = (await TransactionService.GetUnreviewedAsync()).ToList();
         Model.Categories = CategoryService.GetCategories().ToList();
         Model.AllTransactions = (await TransactionService.SearchAsync(string.Empty)).ToList();
-        //TODO allow uncategorised by auto saving records
+        // Add pagination
     }
 
-    private void SetReimbursement(TransactionSummary reimbursement)
-    {
-        if (Model.CurrentTransaction is null || Model.CurrentInnerTransaction is null) return;
-
-        Model.IsReimbursementSearchOpen = false;
-        Model.CurrentTransaction.SetReimbursement(Model.CurrentInnerTransaction, reimbursement);
-    }
-
-    private void SetTransfer(TransactionSummary transaction)
+    private async Task SetReimbursement(TransactionSummary transaction)
     {
         if (Model.CurrentTransaction is null) return;
 
-        Model.IsTransferSearchOpen = false;
-        Model.CurrentTransaction.SetTransfer(transaction);
+        Model.CurrentTransaction.Reimburses = transaction;
+        Model.Clean();
     }
 
-    private void OnFindReimbursement(UnreviewedTransaction transaction, InnerTransaction innerTransaction)
+    private async Task SetTransfer(TransactionSummary transaction)
     {
+        if (Model.CurrentGroup is null) return;
+
+        Model.CurrentGroup.Transfers = transaction;
+        Model.Clean();
+    }
+
+    private async Task SaveGroup(ReviewGroup group)
+    {
+        if (group.Transactions.Any(t => t.Category is null) && group.Transfers is null)
+        {
+            // TODO highlight field
+            return;
+        }
+        if (group.Transactions.Any(t => t.Amount == 0))
+        {
+            // TODO highlight field
+            return;
+        }
+
+        try
+        {
+            await TransactionService.SaveTransactionGroupAsync(group);
+            Model.UnreviewedGroups.Remove(group);
+        }
+        catch (Exception)
+        {
+            // TODO show error message?
+        }
+        Model.Clean();
+    }
+
+    private void OnFindReimbursement(ReviewGroup group, ReviewTransaction transaction)
+    {
+        Model.CurrentGroup = group;
         Model.CurrentTransaction = transaction;
-        Model.CurrentInnerTransaction = innerTransaction;
         Model.IsReimbursementSearchOpen = true;
     }
 
-    private void OnFindTransfer(UnreviewedTransaction transaction)
+    private void OnFindTransfer(ReviewGroup group)
     {
-        Model.CurrentTransaction = transaction;
+        Model.CurrentGroup = group;
         Model.IsTransferSearchOpen = true;
     }
 
-    private void CloseReimbursementModal()
+    private void EndFindReimbursement()
     {
         Model.IsReimbursementSearchOpen = false;
         Model.Filters.ClearFilters();
     }
 
-    private void CloseTransferModal()
+    private void EndFindTransfer()
     {
         Model.IsTransferSearchOpen = false;
         Model.Filters.ClearFilters();
@@ -62,17 +87,18 @@
 
 <h1 class="page-heading">Categorise transactions</h1>
 
-@foreach (var transactionGroup in Model.Unreviewed)
+@foreach (var transactionGroup in Model.UnreviewedGroups)
 {
     <TransactionRow TransactionGroup="transactionGroup"
                     Categories="Model.Categories"
+                    OnSave="() => SaveGroup(transactionGroup)"
                     OnFindTransfer="() => OnFindTransfer(transactionGroup)"
                     OnFindReimbursement="(t) => OnFindReimbursement(transactionGroup, t)" />
 }
 
-@if (Model.IsTransferSearchOpen && Model.CurrentTransaction is not null)
+@if (Model.IsTransferSearchOpen && Model.CurrentGroup is not null)
 {
-    <Modal Title="Find transfer" OnClose="CloseTransferModal">
+    <Modal Title="Find transfer" OnClose="EndFindTransfer">
         <BodyContent>
             <TransactionActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
             <TransactionSearch FilteredTransactions="Model.PotentialTransfers" OnSelect="SetTransfer" />
@@ -80,9 +106,9 @@
     </Modal>
 }
 
-@if (Model.IsReimbursementSearchOpen && Model.CurrentInnerTransaction is not null)
+@if (Model.IsReimbursementSearchOpen && Model.CurrentTransaction is not null)
 {
-    <Modal Title="Find reimbursement" OnClose="CloseReimbursementModal">
+    <Modal Title="Find reimbursement" OnClose="EndFindReimbursement">
         <BodyContent>
             <TransactionActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
             <TransactionSearch FilteredTransactions="Model.PotentialReimbursements" OnSelect="SetReimbursement" />

@@ -12,7 +12,7 @@ namespace FinanceManager.Application.DTOs
         public required string Description { get; set; }
         public bool IsUserCreated { get; set; }
 
-        public static TransferSummary FromTransfer(Transfer transfer, BankRecord fromRecord, BankRecord toRecord)
+        public static TransferSummary FromTransfer(Transfer transfer)
         {
             return new TransferSummary
             {
@@ -23,13 +23,13 @@ namespace FinanceManager.Application.DTOs
                 IsUserCreated = transfer.IsUserCreated,
                 From = new Transferable
                 {
-                    Bank = fromRecord.Bank,
-                    Account = fromRecord.AccountNumber,
+                    Bank = transfer.FromRecord.Bank,
+                    Account = transfer.FromRecord.AccountNumber,
                 },
                 To = new Transferable
                 {
-                    Bank = toRecord.Bank,
-                    Account = toRecord.AccountNumber,
+                    Bank = transfer.ToRecord.Bank,
+                    Account = transfer.ToRecord.AccountNumber,
                 }
             };
         }

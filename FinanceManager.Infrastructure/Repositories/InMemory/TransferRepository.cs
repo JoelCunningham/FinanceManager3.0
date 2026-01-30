@@ -7,18 +7,6 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
     {
         private readonly List<Transfer> _transfers = [];
 
-        public async Task SaveAsync(IEnumerable<Transfer> transfers)
-        {
-            _transfers.AddRange(transfers);
-            //throw here on failure
-        }
-
-        public async Task<IEnumerable<Transfer>> GetAllAsync()
-        {
-            return [.. _transfers];
-            //throw here on failure
-        }
-
         public async Task<Transfer> GetByIdAsync(Guid id)
         {
             var transfer = _transfers.FirstOrDefault(t => t.Id == id);
@@ -29,7 +17,25 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             throw new KeyNotFoundException($"Transfer with id {id} not found.");
         }
 
-        public async Task RemoveAsync(Guid id)
+        public async Task<IEnumerable<Transfer>> GetAllAsync()
+        {
+            return [.. _transfers];
+            //throw here on failure
+        }
+
+        public async Task CreateAsync(Transfer transfer)
+        {
+            _transfers.Add(transfer);
+            //throw here on failure
+        }
+
+        public async Task CreateAsync(IEnumerable<Transfer> transfers)
+        {
+            _transfers.AddRange(transfers);
+            //throw here on failure
+        }
+
+        public async Task DeleteAsync(Guid id)
         {
             var transfer = _transfers.FirstOrDefault(t => t.Id == id);
             if (transfer is not null)

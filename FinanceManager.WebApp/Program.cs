@@ -14,6 +14,7 @@ builder.Services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();
 builder.Services.AddSingleton<ITransferRepository, TransferRepository>();
 builder.Services.AddSingleton<ITransactionRepository, TransactionRepository>();
 builder.Services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
+builder.Services.AddSingleton<IReimbursementRepository, ReimbursementRepository>();
 
 // Parsers
 builder.Services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();

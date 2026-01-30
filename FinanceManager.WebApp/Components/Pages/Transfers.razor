@@ -16,7 +16,7 @@
     {
         try
         {
-            await TransferService.RemoveTransfer(transfer);
+            await TransferService.ConvertToTransactionAsync(transfer.EntityId);
             Model.Transfers.Remove(transfer);
         }
         catch (Exception)

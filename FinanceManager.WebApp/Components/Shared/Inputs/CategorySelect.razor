@@ -33,19 +33,20 @@
     {
         <label class="form-label">Category</label>
     }
-    <select class="form-select" @bind="selectedCategoryId" @bind:after="HandleCategoryChange">
-        @if (AllowAll)
-        {
-            <option value="">All categories</option>
-            <option value="None">Uncategorised</option> @* //TODO support uncategorised filtering *@
-        }
-        else
-        {
-            <option disabled selected value="">Select category</option>
-        }
-        @foreach (var category in Categories)
-        {
-            <option value="@category.Id">@category.Name</option>
-        }
-    </select>
+        <select class="form-select" @bind="selectedCategoryId" @bind:after="HandleCategoryChange">
+            @if (AllowAll)
+            {
+                <option value="">All categories</option>
+                <option value="None">Uncategorised</option>
+                @* //TODO support uncategorised filtering *@
+            }
+            else
+            {
+                <option disabled selected value="">Select category</option>
+            }
+            @foreach (var category in Categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
 </div>

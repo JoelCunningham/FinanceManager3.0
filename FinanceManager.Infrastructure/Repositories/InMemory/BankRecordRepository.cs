@@ -7,12 +7,6 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
     {
         private readonly List<BankRecord> _bankRecords = [];
 
-        public async Task SaveAsync(IEnumerable<BankRecord> bankRecords)
-        {
-            _bankRecords.AddRange(bankRecords);
-            //throw here on failure
-        }
-
         public async Task<BankRecord> GetByIdAsync(Guid id)
         {
             var bankRecord = _bankRecords.FirstOrDefault(br => br.Id == id);
@@ -35,7 +29,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             throw new KeyNotFoundException("One or more BankRecords not found for the provided Ids.");
         }
 
-        public async Task<IEnumerable<BankRecord>> FindDuplicatesAsync(IEnumerable<BankRecord> bankRecords)
+        public async Task<IEnumerable<BankRecord>> GetDuplicatesAsync(IEnumerable<BankRecord> bankRecords)
         {
             var duplicates = new List<BankRecord>();
 
@@ -56,6 +50,12 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             }
 
             return duplicates;
+            //throw here on failure
+        }
+
+        public async Task CreateAsync(IEnumerable<BankRecord> bankRecords)
+        {
+            _bankRecords.AddRange(bankRecords);
             //throw here on failure
         }
     }

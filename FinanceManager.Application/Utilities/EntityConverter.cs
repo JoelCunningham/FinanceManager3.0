@@ -10,10 +10,26 @@ namespace FinanceManager.Application.Utilities
             {
                 Id = Guid.NewGuid(),
                 RecordId = record.Id,
+                Record = record,
                 Date = record.Date,
                 Amount = record.Amount,
                 Description = record.Description,
                 CategoryId = null
+            };
+        }
+
+        public static Reimbursement TransactionToReimbursement(Transaction transaction)
+        {
+            return new Reimbursement
+            {
+                Id = Guid.NewGuid(),
+                TransactionId = transaction.Id,
+                Transaction = transaction,
+                RecordId = transaction.RecordId,
+                Record = transaction.Record,
+                Date = transaction.Date,
+                Amount = transaction.Amount,
+                Description = transaction.Description
             };
         }
 
@@ -36,13 +52,15 @@ namespace FinanceManager.Application.Utilities
             return transfers;
         }
 
-        private static Transfer BankRecordPairToTransfer(BankRecord from, BankRecord to)
+        public static Transfer BankRecordPairToTransfer(BankRecord from, BankRecord to)
         {
             return new Transfer
             {
                 Id = Guid.NewGuid(),
                 FromRecordId = from.Id,
+                FromRecord = from,
                 ToRecordId = to.Id,
+                ToRecord = to,
                 Amount = from.Amount,
                 Date = from.Date,
                 Description = from.Description + " / " + to.Description,

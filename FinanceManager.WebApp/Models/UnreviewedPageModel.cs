@@ -6,11 +6,11 @@ namespace FinanceManager.WebApp.Models
 {
     public class UnreviewedPageModel() : FilterableModel
     {
-        public List<UnreviewedTransaction> Unreviewed { get; set; } = [];
+        public List<ReviewGroup> UnreviewedGroups { get; set; } = [];
         public List<Category> Categories { get; set; } = [];
 
-        public UnreviewedTransaction? CurrentTransaction { get; set; }
-        public InnerTransaction? CurrentInnerTransaction { get; set; }
+        public ReviewGroup? CurrentGroup { get; set; }
+        public ReviewTransaction? CurrentTransaction { get; set; }
 
         public bool IsTransferSearchOpen { get; set; } = false;
         public bool IsReimbursementSearchOpen { get; set; } = false;
@@ -20,7 +20,15 @@ namespace FinanceManager.WebApp.Models
             .Where(t => t.Category is not null)
             .ToList();
         public List<TransactionSummary> PotentialTransfers => Filters.GetFilteredTransactions(AllTransactions)
-            .Where(t => t.Amount == -CurrentTransaction?.Record.Amount)
+            .Where(t => t.Amount == -CurrentGroup?.InitalTransaction.Amount)
             .ToList();
+
+        public void Clean()
+        {
+            CurrentGroup = null;
+            CurrentTransaction = null;
+            IsTransferSearchOpen = false;
+            IsReimbursementSearchOpen = false;
+        }
     }
 }
