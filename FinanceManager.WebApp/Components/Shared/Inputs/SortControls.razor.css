@@ -4,10 +4,6 @@
     margin-left: auto;
     width: 100%;
 
-    select {
-        cursor: pointer;
-    }
-
     button {
         color: var(--bs-body-color);
         background-color: var(--bs-body-bg);

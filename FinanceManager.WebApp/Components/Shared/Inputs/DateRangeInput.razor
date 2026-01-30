@@ -10,12 +10,20 @@
 
     [Parameter]
     public EventCallback<DateTime?> DateToChanged { get; set; }
+
+    [Parameter]
+    public DateTime? MinDate { get; set; }
+
+    [Parameter]
+    public DateTime? MaxDate { get; set; }
 }
 
 <div class="filter">
     <label class="form-label">Date From</label>
     <input class="form-control"
            type="date"
+           min="@MinDate"
+           max="@MaxDate"
            @bind="DateFrom"
            @bind:event="oninput"
            @bind:after="() => DateFromChanged.InvokeAsync(DateFrom)" />
@@ -25,6 +33,8 @@
     <label class="form-label">Date To</label>
     <input class="form-control"
            type="date"
+           min="@MinDate"
+           max="@MaxDate"
            @bind="DateTo"
            @bind:event="oninput"
            @bind:after="() => DateToChanged.InvokeAsync(DateTo)" />

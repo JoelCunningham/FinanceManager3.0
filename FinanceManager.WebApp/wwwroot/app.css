@@ -5,10 +5,8 @@
     --colour-green: #198754;
     --colour-green-accent: #d4edda;
     --colour-light-grey: #dee2e6;
-
     --radius-small: 0.375rem;
     --radius-medium: 0.5rem;
-
     --width-sidebar: 250px;
 }
 
@@ -31,6 +29,18 @@ html, body {
 
 h1 {
     font-size: 2em;
+}
+
+select {
+    cursor: pointer;
+}
+
+input[type=date] {
+    cursor: text;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
 }
 
 .bi {
@@ -83,5 +93,3 @@ h1 {
         }
     }
 }
-
-

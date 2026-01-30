@@ -1,8 +1,5 @@
 @code {
     [Parameter, EditorRequired]
-    public required List<TransactionSort> AvailableSorts { get; set; }
-    
-    [Parameter, EditorRequired]
     public TransactionSort SortBy { get; set; }
 
     [Parameter]
@@ -14,6 +11,9 @@
     [Parameter]
     public EventCallback<bool> SortDescendingChanged { get; set; }
 
+    [Parameter]
+    public bool InculdeAccountSorts { get; set; } = true;
+
     private async Task ToggleSortOrder()
     {
         SortDescending = !SortDescending;
@@ -23,9 +23,12 @@
 
 <div class="sort-group">
     <select class="form-select" @bind="SortBy" @bind:after="() => SortByChanged.InvokeAsync(SortBy)">
-        @foreach (var sort in AvailableSorts)
+        <option value="@TransactionSort.Date">Date</option>
+        <option value="@TransactionSort.Amount">Amount</option>
+        @if (InculdeAccountSorts)
         {
-            <option value="@sort">@sort.ToString()</option>
+            <option value="@TransactionSort.FromAccount">From Account</option>
+            <option value="@TransactionSort.ToAccount">To Account</option>
         }
     </select>
     <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortOrder">

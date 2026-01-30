@@ -20,12 +20,8 @@
 
 <div class="outer-content">
     @OuterContent
-    <button type="button" class="btn btn-outline-primary filter-toggle @(Filters.HasActiveFilters() ? "active" : "")" @onclick="Filters.ToggleVisibility">
+    <button type="button" class="btn btn-outline-primary filter-toggle @(Filters.IsVisible ? "active" : "")" @onclick="Filters.ToggleVisibility">
         Filters
-        @if (Filters.HasActiveFilters())
-        {
-            <span class="badge">•</span>
-        }
     </button>
 </div>
 
@@ -33,8 +29,8 @@
 {
     <div class="inner-content">
         @InnerContent
-        <button type="button" class="btn btn-secondary" @onclick="OnClear">
-            Clear Filters
+        <button type="button" class="btn btn-primary" @onclick="OnClear">
+            Clear filters
         </button>
     </div>
 }

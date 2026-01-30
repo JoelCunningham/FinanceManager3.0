@@ -27,13 +27,31 @@
 
 <FilterPanel Filters="Filters" OnChange="OnChange">
     <OuterContent>
-        <SearchInput @bind-SearchTerm="Filters.SearchTerm" Placeholder="Search transfers..." @bind-SearchTerm:after="OnChange" />
-        <SortControls @bind-SortBy="Filters.SortBy" @bind-SortDescending="Filters.SortDescending" AvailableSorts="AvailableSorts" @bind-SortBy:after="OnChange" @bind-SortDescending:after="OnChange" />
+        <SearchInput Placeholder="Search transfers..."
+                     @bind-SearchTerm="Filters.SearchTerm"
+                     @bind-SearchTerm:after="OnChange" />
+        <SortControls InculdeAccountSorts="true"
+                      @bind-SortBy="Filters.SortBy"
+                      @bind-SortBy:after="OnChange"
+                      @bind-SortDescending="Filters.SortDescending"
+                      @bind-SortDescending:after="OnChange" />
     </OuterContent>
     <InnerContent>
-        <AccountSelect @bind-AccountFrom="Filters.FilterAccountFrom" @bind-AccountTo="Filters.FilterAccountTo" Accounts="Accounts" @bind-AccountFrom:after="OnChange" @bind-AccountTo:after="OnChange" />
-        <DateRangeInput @bind-DateFrom="Filters.FilterDateFrom" @bind-DateTo="Filters.FilterDateTo" @bind-DateFrom:after="OnChange" @bind-DateTo:after="OnChange" />
-        <AmountRangeInput @bind-AmountMin="Filters.FilterAmountMin" @bind-AmountMax="Filters.FilterAmountMax" @bind-AmountMin:after="OnChange" @bind-AmountMax:after="OnChange" />
-        <SourceSelect @bind-SelectedSource="Filters.FilterBySource" @bind-SelectedSource:after="OnChange" />
+        <AccountSelect Accounts="Accounts"
+                       @bind-AccountFrom="Filters.FilterAccountFrom"
+                       @bind-AccountTo="Filters.FilterAccountTo"
+                       @bind-AccountFrom:after="OnChange"
+                       @bind-AccountTo:after="OnChange" />
+        <DateRangeInput MaxDate="DateTime.Today"
+                        @bind-DateFrom="Filters.FilterDateFrom"
+                        @bind-DateFrom:after="OnChange"
+                        @bind-DateTo="Filters.FilterDateTo"
+                        @bind-DateTo:after="OnChange" />
+        <AmountRangeInput @bind-AmountMin="Filters.FilterAmountMin"
+                          @bind-AmountMax="Filters.FilterAmountMax"
+                          @bind-AmountMin:after="OnChange"
+                          @bind-AmountMax:after="OnChange" />
+        <SourceSelect @bind-SelectedSource="Filters.FilterBySource"
+                      @bind-SelectedSource:after="OnChange" />
     </InnerContent>
 </FilterPanel>

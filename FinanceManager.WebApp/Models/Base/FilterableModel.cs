@@ -35,18 +35,6 @@ namespace FinanceManager.WebApp.Models.Base
             FilterAmountMax = null;
         }
 
-        public bool HasActiveFilters()
-        {
-            return FilterBySource != TransferSource.All ||
-                   FilterAccountFrom is not null ||
-                   FilterAccountTo is not null ||
-                   FilterByCategory is not null ||
-                   FilterDateFrom != DateTime.Today.AddYears(-1) ||
-                   FilterDateTo != DateTime.Today ||
-                   FilterAmountMin is not null ||
-                   FilterAmountMax is not null;
-        }
-
         public void ToggleVisibility()
         {
             IsVisible = !IsVisible;
@@ -131,7 +119,7 @@ namespace FinanceManager.WebApp.Models.Base
 
             if (!string.IsNullOrWhiteSpace(FilterAccountFrom))
             {
-                filtered = filtered.Where(t => $"{t.To.Bank} - {t.To.Account}" == FilterAccountFrom);
+                filtered = filtered.Where(t => $"{t.From.Bank} - {t.From.Account}" == FilterAccountFrom);
             }
 
             if (!string.IsNullOrWhiteSpace(FilterAccountTo))

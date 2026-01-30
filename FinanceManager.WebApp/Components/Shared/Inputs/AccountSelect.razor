@@ -1,7 +1,4 @@
 @code {
-    [Parameter, EditorRequired]
-    public IEnumerable<string> Accounts { get; set; } = [];
-
     [Parameter]
     public string? AccountFrom { get; set; }
 
@@ -13,6 +10,9 @@
 
     [Parameter]
     public EventCallback<string?> AccountToChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public IEnumerable<string> Accounts { get; set; } = [];
 
     private string accountTo = "";
     private string accountFrom = "";
@@ -39,7 +39,7 @@
 <div class="filter">
     <label class="form-label">From Account</label>
     <select class="form-select form" @bind="accountFrom" @bind:after="FromAccountChange">
-        <option disabled selected value="">Select account</option>
+        <option value="">All accounts</option>
         @foreach (var account in Accounts)
         {
             <option value="@account">@account</option>
@@ -50,7 +50,7 @@
 <div class="filter">
     <label class="form-label">To Account</label>
     <select class="form-select" @bind="accountTo" @bind:after="ToAccountChange">
-        <option disabled selected value="">Select account</option>
+        <option value="">All accounts</option>
         @foreach (var account in Accounts)
         {
             <option value="@account">@account</option>
