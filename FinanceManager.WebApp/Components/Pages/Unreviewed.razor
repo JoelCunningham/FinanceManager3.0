@@ -7,13 +7,15 @@
 
 @code {
     private UnreviewedPageModel Model = new();
+    private HashSet<Guid> TransactionsWithInvalidCategory { get; set; } = new();
+    private HashSet<Guid> TransactionsWithInvalidAmount { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         Model.UnreviewedGroups = (await TransactionService.GetUnreviewedAsync()).ToList();
         Model.Categories = CategoryService.GetCategories().ToList();
         Model.AllTransactions = (await TransactionService.SearchAsync(string.Empty)).ToList();
-        // Add pagination
+        // TODO Add pagination
     }
 
     private async Task SetReimbursement(TransactionSummary transaction)
@@ -34,25 +36,39 @@
 
     private async Task SaveGroup(ReviewGroup group)
     {
+        Model.HasError = false;
         if (group.Transactions.Any(t => t.Category is null) && group.Transfers is null)
         {
-            // TODO highlight field
-            return;
+            TransactionsWithInvalidCategory = group.Transactions
+                .Where(t => t.Category is null)
+                .Select(t => t.Id)
+                .ToHashSet();
+            Model.HasError = true;
+            Model.ErrorMessage = "A category is required";
         }
         if (group.Transactions.Any(t => t.Amount == 0))
         {
-            // TODO highlight field
-            return;
+            TransactionsWithInvalidAmount = group.Transactions
+                .Where(t => t.Amount == 0)
+                .Select(t => t.Id)
+                .ToHashSet();
+            Model.HasError = true;
+            Model.ErrorMessage = Model.ErrorMessage is null ? "Amount must not be zero" : "Multiple problems detected";
         }
+
+         if (Model.HasError) return;
 
         try
         {
             await TransactionService.SaveTransactionGroupAsync(group);
             Model.UnreviewedGroups.Remove(group);
+            TransactionsWithInvalidCategory.Clear();
+            TransactionsWithInvalidAmount.Clear();
         }
         catch (Exception)
         {
-            // TODO show error message?
+            Model.HasError = true;
+            Model.ErrorMessage = "An unexpected error occured. Please try again";
         }
         Model.Clean();
     }
@@ -85,12 +101,16 @@
 
 <PageTitle>Uncategorised Transactions</PageTitle>
 
+<ErrorPopup Message="@Model.ErrorMessage" IsVisible="Model.HasError" OnClose="() => Model.HasError = false" />
+
 <h1 class="page-heading">Categorise transactions</h1>
 
 @foreach (var transactionGroup in Model.UnreviewedGroups)
 {
     <TransactionRow TransactionGroup="transactionGroup"
                     Categories="Model.Categories"
+                    ErrorCategoryIds="TransactionsWithInvalidCategory"
+                    ErrorAmountIds="TransactionsWithInvalidAmount"
                     OnSave="() => SaveGroup(transactionGroup)"
                     OnFindTransfer="() => OnFindTransfer(transactionGroup)"
                     OnFindReimbursement="(t) => OnFindReimbursement(transactionGroup, t)" />

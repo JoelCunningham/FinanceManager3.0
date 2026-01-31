@@ -11,17 +11,22 @@
     [Parameter]
     public bool AllowAll { get; set; } = true;
 
-    private string? selectedCategoryId;
+    [Parameter]
+    public bool HasError { get; set; } = true;
+
+    private string? SelectedCategoryId;
+
+    private string SelectClass => HasError ? "form-select is-invalid" : "form-select";
 
     protected override void OnParametersSet()
     {
-        selectedCategoryId = SelectedCategory?.Id.ToString();
+        SelectedCategoryId = SelectedCategory?.Id.ToString();
     }
 
     private async Task HandleCategoryChange()
     {
-        SelectedCategory = selectedCategoryId != "" && selectedCategoryId != "None"
-            ? Categories.FirstOrDefault(c => c.Id.ToString() == selectedCategoryId)
+        SelectedCategory = SelectedCategoryId != "" && SelectedCategoryId != "None"
+            ? Categories.FirstOrDefault(c => c.Id.ToString() == SelectedCategoryId)
             : null;
 
         await SelectedCategoryChanged.InvokeAsync(SelectedCategory);
@@ -33,20 +38,20 @@
     {
         <label class="form-label">Category</label>
     }
-        <select class="form-select" @bind="selectedCategoryId" @bind:after="HandleCategoryChange">
-            @if (AllowAll)
-            {
-                <option value="">All categories</option>
-                <option value="None">Uncategorised</option>
-                @* //TODO support uncategorised filtering *@
-            }
-            else
-            {
-                <option disabled selected value="">Select category</option>
-            }
-            @foreach (var category in Categories)
-            {
-                <option value="@category.Id">@category.Name</option>
-            }
-        </select>
+    <select class="@SelectClass" @bind="SelectedCategoryId" @bind:after="HandleCategoryChange">
+        @if (AllowAll)
+        {
+            <option value="">All categories</option>
+            <option value="None">Uncategorised</option>
+            @* //TODO support uncategorised filtering *@
+        }
+        else
+        {
+            <option disabled selected value="">Select category</option>
+        }
+        @foreach (var category in Categories)
+        {
+            <option value="@category.Id">@category.Name</option>
+        }
+    </select>
 </div>
