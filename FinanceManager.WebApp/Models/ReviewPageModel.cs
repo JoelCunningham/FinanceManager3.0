@@ -4,7 +4,7 @@ using FinanceManager.WebApp.Models.Base;
 
 namespace FinanceManager.WebApp.Models
 {
-    public class UnreviewedPageModel() : FilterableModel
+    public class ReviewPageModel() : FilterableModel
     {
         public List<ReviewGroup> UnreviewedGroups { get; set; } = [];
         public List<Category> Categories { get; set; } = [];
