@@ -45,7 +45,6 @@ namespace FinanceManager.WebApp.Models.Base
             SortDescending = !SortDescending;
         }
 
-        //TODO pagination
         private IEnumerable<T> ApplyCommonFilters<T>(IEnumerable<T> items, Func<T, DateTime> dateSelector, Func<T, decimal> amountSelector)
         {
             if (FilterDateFrom is not null)
