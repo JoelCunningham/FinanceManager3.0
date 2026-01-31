@@ -1,4 +1,4 @@
-﻿@page "/Transactions/Uncategorised"
+﻿@page "/Transactions/Review"
 
 @rendermode InteractiveServer
 
@@ -56,7 +56,7 @@
             Model.ErrorMessage = Model.ErrorMessage is null ? "Amount must not be zero" : "Multiple problems detected";
         }
 
-         if (Model.HasError) return;
+        if (Model.HasError) return;
 
         try
         {
@@ -99,11 +99,11 @@
     }
 }
 
-<PageTitle>Uncategorised Transactions</PageTitle>
+<PageTitle>Review Transactions</PageTitle>
 
 <ErrorPopup Message="@Model.ErrorMessage" IsVisible="Model.HasError" OnClose="() => Model.HasError = false" />
 
-<h1 class="page-heading">Categorise transactions</h1>
+<h1 class="page-heading">Review transactions</h1>
 
 @foreach (var transactionGroup in Model.UnreviewedGroups)
 {

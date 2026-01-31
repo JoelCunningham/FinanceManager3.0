@@ -10,7 +10,7 @@
 
     private void NavigateToTransfers() => NavigationManager.NavigateTo("/Transactions/Transfers");
 
-    private void NavigateToCategorise() => NavigationManager.NavigateTo("/Transactions/Uncategorised");
+    private void NavigateToReview() => NavigationManager.NavigateTo("/Transactions/Review");
 }
 
 <h2>Import Successful</h2>
@@ -32,7 +32,7 @@
     }
     @if (TransfersCount != Transactions.Count)
     {
-        <button class="btn btn-primary" @onclick="NavigateToCategorise">
+        <button class="btn btn-primary" @onclick="NavigateToReview">
             Review transactions
         </button>
     }
