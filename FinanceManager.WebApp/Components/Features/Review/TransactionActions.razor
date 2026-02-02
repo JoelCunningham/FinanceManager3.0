@@ -1,0 +1,33 @@
+@code {
+    [Parameter]
+    public bool IsInitial { get; set; }
+
+    [Parameter]
+    public bool IsTransferable { get; set;  }
+
+    [Parameter]
+    public EventCallback OnSplit { get; set; }
+
+    [Parameter]
+    public EventCallback OnUnsplit { get; set; }
+
+    [Parameter]
+    public EventCallback OnReimburse { get; set; }
+
+    [Parameter]
+    public EventCallback OnTransfer { get; set; }
+}
+
+@if (IsInitial)
+{
+    <button class="btn btn-secondary" type="button" @onclick="() => OnSplit.InvokeAsync()">Split</button>
+}
+else
+{
+    <button class="btn btn-secondary" type="button" @onclick="() => OnUnsplit.InvokeAsync()">Unsplit</button>
+}
+<button class="btn btn-secondary" type="button" @onclick="() => OnReimburse.InvokeAsync()">Reimburse existing</button>
+@if (IsTransferable)
+{
+    <button class="btn btn-secondary" type="button" @onclick="() => OnTransfer.InvokeAsync()">Change to transfer</button>
+}

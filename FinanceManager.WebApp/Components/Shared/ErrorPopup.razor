@@ -29,7 +29,6 @@
 {
     <div class="error-popup @(IsVisible ? "" : "hiding")" @onanimationend="OnAnimationEnd">
         <p>@Message</p>
-        <button class="btn-close btn-close-white" @onclick="() => OnClose.InvokeAsync()">
-        </button>
+        <button class="btn-close btn-close-white" @onclick="() => OnClose.InvokeAsync()" />
     </div>
 }

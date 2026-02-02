@@ -1,13 +1,13 @@
 .transaction-group {
     display: grid;
-    grid-template-columns: 1fr 23rem;
+    grid-template-columns: 1fr 6rem;
     border: 1px solid #d4d7d9;
     border-radius: 8px;
     margin-bottom: 1rem;
 
     .transactions-row {
         display: grid;
-        grid-template-columns: 12rem 9rem 1fr 6rem 5rem 7rem;
+        grid-template-columns: 12rem 9rem 1fr 6rem 5rem 7rem 7rem;
         gap: 1rem;
         align-items: center;
         padding: 0.75rem 1rem;
@@ -22,10 +22,28 @@
     }
 
     .action-buttons {
-        display: grid;
-        grid-template-columns: 1fr 5rem 5rem;
-        justify-content: end;
+        display: flex;
         gap: 1rem;
+        justify-content: end;
         padding: 0.75rem 1rem 0.75rem 0;
+
+        button {
+            padding: 0;
+
+            svg {
+                margin: 0;
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+
+            &.save-button {
+                color: var( --bs-success);
+
+                svg {
+                    width: 1.7rem;
+                    height: 1.7rem;
+                }
+            }
+        }
     }
 }

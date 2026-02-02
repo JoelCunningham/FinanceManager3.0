@@ -97,15 +97,12 @@
                                @bind:get="transaction.Amount"
                                @bind:set="v => SetAmount(v, transaction)" />
                     }
-                    @if (index == 0)
-                    {
-                        <button class="btn btn-secondary" type="button" @onclick="() => TransactionGroup.Split()">Split</button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-secondary" type="button" @onclick="() => TransactionGroup.Unsplit(transaction)">Unsplit</button>
-                    }
-                    <button class="btn btn-secondary" type="button" @onclick="() => OnFindReimbursement.InvokeAsync(transaction)">Reimburse</button>
+                    <TransactionActions IsInitial="index == 0"
+                                        IsTransferable="TransactionGroup.Transactions.Count == 1"
+                                        OnSplit="() => TransactionGroup.Split()"
+                                        OnUnsplit="() => TransactionGroup.Unsplit(transaction)"
+                                        OnReimburse="() => OnFindReimbursement.InvokeAsync(transaction)"
+                                        OnTransfer="() => OnFindTransfer.InvokeAsync()" />
                 </div>
                 @if (transaction.Reimburses is not null)
                 {
@@ -120,16 +117,12 @@
             }
         </div>
         <div class="action-buttons">
-            @if (TransactionGroup.Transactions.Count == 1)
-            {
-                <button class="btn btn-secondary" type="button" @onclick="() => OnFindTransfer.InvokeAsync()">Change to transfer</button>
-            }
-            else
-            {
-                <button class="btn btn-secondary disabled" type="button" disabled>Change to transfer</button>
-            }
-            <button class="btn btn-secondary" type="button" @onclick="TransactionGroup.Reset">Reset</button>
-            <button class="btn btn-primary" type="button" @onclick="() => OnSave.InvokeAsync()">Save</button>
+            <button class="btn reset-button" type="button" @onclick="TransactionGroup.Reset" title="Reset">
+                <Icon Name="arrow-counterclockwise" AriaLabel="Reset" />
+            </button>
+            <button class="btn save-button" type="button" @onclick="() => OnSave.InvokeAsync()" title="Save">
+                <Icon Name="check-lg" AriaLabel="Reset" />
+            </button>
         </div>
     }
 </div>
