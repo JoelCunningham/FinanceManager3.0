@@ -17,21 +17,14 @@
             <div>Date</div>
             <div>Description</div>
             <div>Amount</div>
-            <div>Account</div>
-            <div></div>
         </div>
         @foreach (var transaction in FilteredTransactions)
         {
-            <div class="transaction-item">
+            <div class="transaction-item" @onclick="() => OnSelect.InvokeAsync(transaction)">
                 <div>@(transaction.Category is not null ? transaction.Category : "Uncategorised")</div>
                 <div>@transaction.Date.ToString("dd/MM/yyyy")</div>
                 <div>@transaction.Description</div>
                 <div>@transaction.Amount.ToString("C")</div>
-                <div>
-                    <button type="button" class="btn btn-sm btn-primary" @onclick="() => OnSelect.InvokeAsync(transaction)">
-                        Select
-                    </button>
-                </div> @* //TODO change to on row click *@
             </div>
         }
     </div>

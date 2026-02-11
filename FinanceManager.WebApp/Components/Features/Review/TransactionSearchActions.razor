@@ -32,9 +32,6 @@
                       @bind-SortDescending:after="OnChange" />
     </OuterContent>
     <InnerContent>
-        <CategorySelect Categories="Categories"
-                        @bind-SelectedCategory="Filters.FilterByCategory"
-                        @bind-SelectedCategory:after="OnChange" />
         <DateRangeInput MaxDate="DateTime.Today"
                         @bind-DateFrom="Filters.FilterDateFrom"
                         @bind-DateFrom:after="OnChange"
@@ -44,5 +41,9 @@
                           @bind-AmountMax="Filters.FilterAmountMax"
                           @bind-AmountMin:after="OnChange"
                           @bind-AmountMax:after="OnChange" />
+        <CategorySelect Categories="Categories"
+                        HasError="false"
+                        @bind-SelectedCategory="Filters.FilterByCategory"
+                        @bind-SelectedCategory:after="OnChange" />
     </InnerContent>
 </FilterPanel>

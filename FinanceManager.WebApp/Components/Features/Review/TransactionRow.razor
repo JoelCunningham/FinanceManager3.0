@@ -54,9 +54,12 @@
             </div>
         </div>
         <div class="action-buttons">
-            <br />
-            <button class="btn btn-secondary" type="button" @onclick="TransactionGroup.Reset">Reset</button>
-            <button class="btn btn-primary" type="button" @onclick="() => OnSave.InvokeAsync()">Save</button>
+            <button class="btn reset-button" type="button" @onclick="TransactionGroup.Reset" title="Reset">
+                <Icon Name="arrow-counterclockwise" AriaLabel="Reset" />
+            </button>
+            <button class="btn save-button" type="button" @onclick="() => OnSave.InvokeAsync()" title="Save">
+                <Icon Name="check-lg" AriaLabel="Reset" />
+            </button>
         </div>
     }
     else

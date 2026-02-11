@@ -5,7 +5,7 @@
 
 .transaction-header {
     display: grid;
-    grid-template-columns: 120px 120px 1fr 120px 150px 80px;
+    grid-template-columns: 120px 120px 1fr 120px;
     gap: 1rem;
     padding: 0.75rem 1rem;
     background-color: #f8f9fa;
@@ -15,11 +15,12 @@
 
 .transaction-item {
     display: grid;
-    grid-template-columns: 120px 120px 1fr 120px 150px 80px;
+    grid-template-columns: 120px 120px 1fr 120px;
     gap: 1rem;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid #dee2e6;
     align-items: center;
+    cursor: pointer;
 
     &:last-child {
         border-bottom: none;

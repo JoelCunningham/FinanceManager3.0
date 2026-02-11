@@ -31,6 +31,10 @@ h1 {
     font-size: 2em;
 }
 
+button:active {
+    border-color: transparent !important;
+}
+
 select {
     cursor: pointer;
 }

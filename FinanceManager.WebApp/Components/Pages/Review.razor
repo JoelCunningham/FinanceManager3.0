@@ -120,8 +120,8 @@
 {
     <Modal Title="Find transfer" OnClose="EndFindTransfer">
         <BodyContent>
-            <TransactionActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
-            <TransactionSearch FilteredTransactions="Model.PotentialTransfers" OnSelect="SetTransfer" />
+            <TransactionSearchActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
+            <TransactionSearchResults FilteredTransactions="Model.PotentialTransfers" OnSelect="SetTransfer" />
         </BodyContent>
     </Modal>
 }
@@ -130,8 +130,8 @@
 {
     <Modal Title="Find reimbursement" OnClose="EndFindReimbursement">
         <BodyContent>
-            <TransactionActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
-            <TransactionSearch FilteredTransactions="Model.PotentialReimbursements" OnSelect="SetReimbursement" />
+            <TransactionSearchActions Filters="Model.Filters" Categories="Model.Categories" OnFilterChanged="StateHasChanged" />
+            <TransactionSearchResults FilteredTransactions="Model.PotentialReimbursements" OnSelect="SetReimbursement" />
         </BodyContent>
     </Modal>
 }
