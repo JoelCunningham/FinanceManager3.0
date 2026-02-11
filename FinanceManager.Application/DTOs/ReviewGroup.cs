@@ -7,6 +7,7 @@ namespace FinanceManager.Application.DTOs
         public required Transaction InitalTransaction { get; set; }
         public List<ReviewTransaction> Transactions { get; set; } = [];
         public TransactionSummary? Transfers { get; set; }
+        public bool IsIncome => InitalTransaction.Amount > 0;
 
         public static ReviewGroup FromTransaction(Transaction transaction)
         {

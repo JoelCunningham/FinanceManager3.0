@@ -7,10 +7,12 @@ namespace FinanceManager.WebApp.Models
     public class ReviewPageModel : FilterableModel
     {
         public List<ReviewGroup> UnreviewedGroups { get; set; } = [];
-        public List<Category> Categories { get; set; } = [];
-
         public ReviewGroup? CurrentGroup { get; set; }
         public ReviewTransaction? CurrentTransaction { get; set; }
+
+        public List<Category> Categories { get; set; } = [];
+        public List<Category> IncomeCategories => [.. Categories.Where(c => c.Group.IsIncome)];
+        public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
 
         public bool IsTransferSearchOpen { get; set; } = false;
         public bool IsReimbursementSearchOpen { get; set; } = false;
@@ -38,6 +40,12 @@ namespace FinanceManager.WebApp.Models
             CurrentTransaction = null;
             IsTransferSearchOpen = false;
             IsReimbursementSearchOpen = false;
+        }
+
+        public void SetError(string errorMessage)
+        {
+            HasError = true;
+            ErrorMessage = ErrorMessage is null ? errorMessage : "Multiple problems detected";
         }
     }
 }

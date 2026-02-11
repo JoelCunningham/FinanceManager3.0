@@ -37,23 +37,23 @@
     private async Task SaveGroup(ReviewGroup group)
     {
         Model.HasError = false;
+
         if (group.Transactions.Any(t => t.Category is null) && group.Transfers is null)
         {
             TransactionsWithInvalidCategory = group.Transactions
                 .Where(t => t.Category is null)
                 .Select(t => t.Id)
                 .ToHashSet();
-            Model.HasError = true;
-            Model.ErrorMessage = "A category is required";
+            Model.SetError("A category is required");
         }
+
         if (group.Transactions.Any(t => t.Amount == 0))
         {
             TransactionsWithInvalidAmount = group.Transactions
                 .Where(t => t.Amount == 0)
                 .Select(t => t.Id)
                 .ToHashSet();
-            Model.HasError = true;
-            Model.ErrorMessage = Model.ErrorMessage is null ? "Amount must not be zero" : "Multiple problems detected";
+            Model.SetError("Amount must not be zero");
         }
 
         if (Model.HasError) return;
@@ -108,7 +108,7 @@
 @foreach (var transactionGroup in Model.UnreviewedGroups)
 {
     <TransactionRow TransactionGroup="transactionGroup"
-                    Categories="Model.Categories"
+                    Categories="transactionGroup.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
                     ErrorCategoryIds="TransactionsWithInvalidCategory"
                     ErrorAmountIds="TransactionsWithInvalidAmount"
                     OnSave="() => SaveGroup(transactionGroup)"
@@ -135,4 +135,3 @@
         </BodyContent>
     </Modal>
 }
-@*  // TODO suggest reimbusements based on date and amount *@
