@@ -8,10 +8,10 @@
     [Parameter]
     public EventCallback OnFilterChanged { get; set; }
 
-    private List<TransactionSort> AvailableSorts = new List<TransactionSort>
+    private List<TransactionSortBy> AvailableSorts = new List<TransactionSortBy>
     {
-        TransactionSort.Date,
-        TransactionSort.Amount,
+        TransactionSortBy.Date,
+        TransactionSortBy.Amount,
     };
 
     private async Task OnChange()

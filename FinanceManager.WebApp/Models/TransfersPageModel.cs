@@ -1,45 +1,35 @@
 ﻿using FinanceManager.Application.DTOs;
-using FinanceManager.WebApp.Models.Base;
 
 namespace FinanceManager.WebApp.Models
 {
-    public class TransfersPageModel : FilterableModel
+    public class TransfersPageModel
     {
-        public List<TransferSummary> Transfers { get; set; } = [];
+        public PagedResult<TransferSummary> PagedTransfers { get; set; } = new();
+        public List<string> UniqueAccounts { get; set; } = [];
+        public FilterQuery Query { get; set; } = new();
 
         public TransferSummary? ErrorTransfer { get; set; }
-        public string? RemoveErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
 
-        public List<string> UniqueAccounts => GetUniqueAccounts();
-        public List<TransferSummary> FilteredAndSortedTransfers => Filters.GetFilteredTransfers(Transfers);
-
-        public TransfersPageModel()
+        public void SetPage(int page)
         {
-            Filters.FilterAmountMin = 0.00m;
-            Filters.FilterAmountMax = 999999.99m;
+            Query = Query with { Page = Math.Max(1, page) };
         }
 
-        public void Reset()
+        public void UpdateFilters()
         {
-            ErrorTransfer = null;
-            RemoveErrorMessage = null;
+            Query = Query with { Page = 1 };
         }
 
-        public void RemoveError(TransferSummary transfer)
+        public void ClearFilters()
+        {
+            Query = new();
+        }
+
+        public void SetError(TransferSummary transfer)
         {
             ErrorTransfer = transfer;
-            RemoveErrorMessage = "Could not remove transfer. Please try again.";
-        }
-
-        private List<string> GetUniqueAccounts()
-        {
-            var accounts = new HashSet<string>();
-            foreach (var transfer in Transfers)
-            {
-                accounts.Add($"{transfer.From.Bank} - {transfer.From.Account}");
-                accounts.Add($"{transfer.To.Bank} - {transfer.To.Account}");
-            }
-            return [.. accounts.OrderBy(a => a)];
+            ErrorMessage = "Could not remove transfer. Please try again.";
         }
     }
 }

@@ -1,19 +1,20 @@
-﻿@code {
-    [Parameter, EditorRequired]
-    public required TransactionFilters Filters { get; set; }
+﻿@using FinanceManager.Application.DTOs
 
-    [Parameter]
-    public List<string> Accounts { get; set; } = [];
+@code {
+    [Parameter] public FilterQuery Query { get; set; } = new();
 
-    [Parameter]
-    public EventCallback OnFilterChanged { get; set; }
+    [Parameter] public List<string> Accounts { get; set; } = [];
 
-    private List<TransactionSort> AvailableSorts = new List<TransactionSort>
+    [Parameter] public EventCallback OnFilterCleared { get; set; }
+
+    [Parameter] public EventCallback<FilterQuery> OnFilterChanged { get; set; }
+
+    private List<TransactionSortBy> AvailableSorts = new List<TransactionSortBy>
     {
-        TransactionSort.Date,
-        TransactionSort.Amount,
-        TransactionSort.FromAccount,
-        TransactionSort.ToAccount
+        TransactionSortBy.Date,
+        TransactionSortBy.Amount,
+        TransactionSortBy.FromAccount,
+        TransactionSortBy.ToAccount
     };
 
     private async Task OnChange()
@@ -22,33 +23,33 @@
     }
 }
 
-<FilterPanel Filters="Filters" OnChange="OnChange">
+<NewFilterPanel Filters="Query" OnClear="OnFilterCleared">
     <OuterContent>
         <SearchInput Placeholder="Search transfers..."
-                     @bind-SearchTerm="Filters.SearchTerm"
+                     @bind-SearchTerm="Query.SearchTerm"
                      @bind-SearchTerm:after="OnChange" />
         <SortControls InculdeAccountSorts="true"
-                      @bind-SortBy="Filters.SortBy"
+                      @bind-SortBy="Query.SortBy"
                       @bind-SortBy:after="OnChange"
-                      @bind-SortDescending="Filters.SortDescending"
+                      @bind-SortDescending="Query.SortDescending"
                       @bind-SortDescending:after="OnChange" />
     </OuterContent>
     <InnerContent>
         <AccountSelect Accounts="Accounts"
-                       @bind-AccountFrom="Filters.FilterAccountFrom"
-                       @bind-AccountTo="Filters.FilterAccountTo"
+                       @bind-AccountFrom="Query.FilterAccountFrom"
+                       @bind-AccountTo="Query.FilterAccountTo"
                        @bind-AccountFrom:after="OnChange"
                        @bind-AccountTo:after="OnChange" />
         <DateRangeInput MaxDate="DateTime.Today"
-                        @bind-DateFrom="Filters.FilterDateFrom"
+                        @bind-DateFrom="Query.FilterDateFrom"
                         @bind-DateFrom:after="OnChange"
-                        @bind-DateTo="Filters.FilterDateTo"
+                        @bind-DateTo="Query.FilterDateTo"
                         @bind-DateTo:after="OnChange" />
-        <AmountRangeInput @bind-AmountMin="Filters.FilterAmountMin"
-                          @bind-AmountMax="Filters.FilterAmountMax"
+        <AmountRangeInput @bind-AmountMin="Query.FilterAmountMin"
+                          @bind-AmountMax="Query.FilterAmountMax"
                           @bind-AmountMin:after="OnChange"
                           @bind-AmountMax:after="OnChange" />
-        <SourceSelect @bind-SelectedSource="Filters.FilterBySource"
+        <SourceSelect @bind-SelectedSource="Query.FilterBySource"
                       @bind-SelectedSource:after="OnChange" />
     </InnerContent>
-</FilterPanel>
+</NewFilterPanel>

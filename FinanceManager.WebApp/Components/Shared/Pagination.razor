@@ -1,0 +1,115 @@
+﻿@typeparam T
+
+@code {
+    [Parameter] public PagedResult<T> PagedResult { get; set; } = new();
+
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    [Parameter] public int MaxVisiblePages { get; set; } = 7;
+
+    private async Task ChangePage(int page)
+    {
+        if (page >= 1 && page <= PagedResult.TotalPages && page != PagedResult.CurrentPage)
+        {
+            await OnPageChanged.InvokeAsync(page);
+        }
+    }
+
+    private IEnumerable<int> GetVisiblePages()
+    {
+        var halfVisible = MaxVisiblePages / 2;
+        var start = Math.Max(1, PagedResult.CurrentPage - halfVisible);
+        var end = Math.Min(PagedResult.TotalPages, start + MaxVisiblePages - 1);
+
+        if (end - start < MaxVisiblePages - 1)
+        {
+            start = Math.Max(1, end - MaxVisiblePages + 1);
+        }
+
+        return Enumerable.Range(start, end - start + 1);
+    }
+}
+
+@if (PagedResult.TotalPages > 1)
+{
+    <nav aria-label="Pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(PagedResult.HasPrevious ? "" : "disabled")">
+                @if (PagedResult.HasPrevious)
+                {
+                    <button class="page-link icon-link" aria-label="First" @onclick="() => ChangePage(1)">
+                        <Icon Name="chevron-double-left" />​
+                    </button>
+                }
+                else
+                {
+                    <span class="page-link icon-link" aria-label="First">
+                        <Icon Name="chevron-double-left" />​
+                    </span>
+                }
+            </li>
+            <li class="page-item @(PagedResult.HasPrevious ? "" : "disabled")">
+                @if (PagedResult.HasPrevious)
+                {
+                    <button class="page-link icon-link" aria-label="Previous" @onclick="() => ChangePage(PagedResult.CurrentPage - 1)">
+                        <Icon Name="chevron-left" />​
+                    </button>
+                }
+                else
+                {
+                    <span class="page-link icon-link" aria-label="Previous">
+                        <Icon Name="chevron-left" />​
+                    </span>
+                }
+            </li>
+
+            @foreach (var visiblePage in GetVisiblePages())
+            {
+                if (visiblePage == PagedResult.CurrentPage)
+                {
+                    <li class="page-item active">
+                        <span class="page-link" aria-current="@visiblePage">@visiblePage</span>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <button class="page-link" @onclick="() => ChangePage(visiblePage)">@visiblePage</button>
+                    </li>
+                }
+            }
+
+            <li class="page-item @(PagedResult.HasNext ? "" : "disabled")">
+                @if (PagedResult.HasNext)
+                {
+                    <button class="page-link icon-link" aria-label="Next" @onclick="() => ChangePage(PagedResult.CurrentPage + 1)">
+                        <Icon Name="chevron-right" />​
+                    </button>
+                }
+                else
+                {
+                    <span class="page-link icon-link" aria-label="Next">
+                        <Icon Name="chevron-right" />​
+                    </span>
+                }
+            </li>
+            <li class="page-item @(PagedResult.HasNext ? "" : "disabled")">
+                @if (PagedResult.HasNext)
+                {
+                    <button class="page-link icon-link" aria-label="Last" @onclick="() => ChangePage(PagedResult.TotalPages)">
+                        <Icon Name="chevron-double-right" />​
+                    </button>
+                }
+                else
+                {
+                    <span class="page-link icon-link" aria-label="Last">
+                        <Icon Name="chevron-double-right" />​
+                    </span>
+                }
+            </li>
+        </ul>
+        <div class="text-center text-muted small">
+            Page @PagedResult.CurrentPage of @PagedResult.TotalPages
+        </div>
+    </nav>
+}

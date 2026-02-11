@@ -2,14 +2,20 @@
 
 @rendermode InteractiveServer
 
-@inject TransferService TransferService;
+@inject TransferService TransferService
 
 @code {
     private TransfersPageModel Model = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Model.Transfers = [.. await TransferService.GetAllAsync()];
+        await LoadTransfersAsync();
+        Model.UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
+    }
+
+    private async Task LoadTransfersAsync()
+    {
+        Model.PagedTransfers = await TransferService.GetPagedAsync(Model.Query);
     }
 
     private async Task RemoveTransfer(TransferSummary transfer)
@@ -17,12 +23,30 @@
         try
         {
             await TransferService.ConvertToTransactionAsync(transfer.EntityId);
-            Model.Transfers.Remove(transfer);
+            await LoadTransfersAsync();
         }
         catch (Exception)
         {
-            Model.RemoveError(transfer);
+            Model.SetError(transfer);
         }
+    }
+
+    private async Task HandlePageChanged(int page)
+    {
+        Model.SetPage(page);
+        await LoadTransfersAsync();
+    }
+
+    private async Task HandleFilterChanged()
+    {
+        Model.UpdateFilters();
+        await LoadTransfersAsync();
+    }
+
+    private async Task HandleFiltersCleared()
+    {
+        Model.ClearFilters();
+        await LoadTransfersAsync();
     }
 }
 
@@ -30,15 +54,25 @@
 
 <h1 class="page-heading">Manage transfers</h1>
 
-<TransferActions Filters="Model.Filters" Accounts="Model.UniqueAccounts" OnFilterChanged="StateHasChanged" />
+<TransferActions Query="Model.Query"
+                 Accounts="Model.UniqueAccounts"
+                 OnFilterChanged="HandleFilterChanged"
+                 OnFilterCleared="HandleFiltersCleared" />
 
-@if (Model.FilteredAndSortedTransfers.Count > 0)
+@if (Model.PagedTransfers.TotalItems > 0)
 {
-    @foreach (var transfer in Model.FilteredAndSortedTransfers)
+    <div class="mb-3 text-muted">
+        Showing @Model.PagedTransfers.StartItem - @Model.PagedTransfers.EndItem of @Model.PagedTransfers.TotalItems transfers
+    </div>
+
+    @foreach (var transfer in Model.PagedTransfers.Items)
     {
         <TransferRow Transfer="transfer" OnRemove="RemoveTransfer" />
     }
-} else
+
+    <Pagination PagedResult="Model.PagedTransfers" OnPageChanged="HandlePageChanged" />
+}
+else
 {
     <div class="alert alert-info" role="alert">
         No transfers match your search. Try adjusting the filters.

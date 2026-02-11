@@ -10,10 +10,22 @@ namespace FinanceManager.Application.Services
         IUnitOfWork unitOfWork
     )
     {
-        public async Task<IEnumerable<TransferSummary>> GetAllAsync()
+        public async Task<PagedResult<TransferSummary>> GetPagedAsync(FilterQuery query)
         {
-            var transfers = await transferRepository.GetAllAsync();
-            return transfers.Select(TransferSummary.FromTransfer);
+            var pagedTransfers = await transferRepository.GetPagedAsync(query);
+
+            return new PagedResult<TransferSummary>
+            {
+                Items = [.. pagedTransfers.Items.Select(TransferSummary.FromTransfer)],
+                TotalItems = pagedTransfers.TotalItems,
+                CurrentPage = pagedTransfers.CurrentPage,
+                PageSize = pagedTransfers.PageSize
+            };
+        }
+
+        public async Task<List<string>> GetUniqueAccountsAsync()
+        {
+            return await transferRepository.GetUniqueAccountsAsync();
         }
 
         public async Task ConvertToTransactionAsync(Guid transferId)

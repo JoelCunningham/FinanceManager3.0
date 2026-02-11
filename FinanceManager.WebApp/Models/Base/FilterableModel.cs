@@ -11,7 +11,7 @@ namespace FinanceManager.WebApp.Models.Base
     public class TransactionFilters()
     {
         public string SearchTerm { get; set; } = string.Empty;
-        public TransactionSort SortBy { get; set; } = TransactionSort.Date;
+        public TransactionSortBy SortBy { get; set; } = TransactionSortBy.Date;
         public bool SortDescending { get; set; } = true;
         public TransferSource FilterBySource { get; set; } = TransferSource.All;
         public string? FilterAccountFrom { get; set; }
@@ -72,10 +72,10 @@ namespace FinanceManager.WebApp.Models.Base
 
             filtered = SortBy switch
             {
-                TransactionSort.Amount => SortDescending
+                TransactionSortBy.Amount => SortDescending
                     ? filtered.OrderByDescending(t => t.Amount)
                     : filtered.OrderBy(t => t.Amount),
-                TransactionSort.Date => SortDescending
+                TransactionSortBy.Date => SortDescending
                     ? filtered.OrderByDescending(t => t.Date)
                     : filtered.OrderBy(t => t.Date),
                 _ => filtered
@@ -119,16 +119,16 @@ namespace FinanceManager.WebApp.Models.Base
 
             filtered = SortBy switch
             {
-                TransactionSort.Amount => SortDescending
+                TransactionSortBy.Amount => SortDescending
                     ? filtered.OrderByDescending(t => t.Amount)
                     : filtered.OrderBy(t => t.Amount),
-                TransactionSort.Date => SortDescending
+                TransactionSortBy.Date => SortDescending
                     ? filtered.OrderByDescending(t => t.Date)
                     : filtered.OrderBy(t => t.Date),
-                TransactionSort.FromAccount => SortDescending
+                TransactionSortBy.FromAccount => SortDescending
                     ? filtered.OrderByDescending(t => t.From.Bank).ThenByDescending(t => t.From.Account)
                     : filtered.OrderBy(t => t.From.Bank).ThenBy(t => t.From.Account),
-                TransactionSort.ToAccount => SortDescending
+                TransactionSortBy.ToAccount => SortDescending
                     ? filtered.OrderByDescending(t => t.To.Bank).ThenByDescending(t => t.To.Account)
                     : filtered.OrderBy(t => t.To.Bank).ThenBy(t => t.To.Account),
                 _ => filtered
@@ -136,20 +136,5 @@ namespace FinanceManager.WebApp.Models.Base
 
             return [.. filtered];
         }
-    }
-
-    public enum TransactionSort
-    {
-        Date,
-        Amount,
-        FromAccount,
-        ToAccount,
-    }
-
-    public enum TransferSource
-    {
-        All,
-        User,
-        Auto,
     }
 }

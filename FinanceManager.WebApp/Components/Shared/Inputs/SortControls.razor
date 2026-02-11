@@ -1,9 +1,9 @@
 @code {
     [Parameter, EditorRequired]
-    public TransactionSort SortBy { get; set; }
+    public TransactionSortBy SortBy { get; set; }
 
     [Parameter]
-    public EventCallback<TransactionSort> SortByChanged { get; set; }
+    public EventCallback<TransactionSortBy> SortByChanged { get; set; }
 
     [Parameter, EditorRequired]
     public bool SortDescending { get; set; }
@@ -23,12 +23,12 @@
 
 <div class="input-group">
     <select class="form-select" @bind="SortBy" @bind:after="() => SortByChanged.InvokeAsync(SortBy)">
-        <option value="@TransactionSort.Date">Date</option>
-        <option value="@TransactionSort.Amount">Amount</option>
+        <option value="@TransactionSortBy.Date">Date</option>
+        <option value="@TransactionSortBy.Amount">Amount</option>
         @if (InculdeAccountSorts)
         {
-            <option value="@TransactionSort.FromAccount">Account from</option>
-            <option value="@TransactionSort.ToAccount">Account to</option>
+            <option value="@TransactionSortBy.FromAccount">Account from</option>
+            <option value="@TransactionSortBy.ToAccount">Account to</option>
         }
     </select>
     <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortOrder">

@@ -50,7 +50,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .bi {
     display: inline-block;
     position: relative;
-    margin-right: 0.75rem;
     top: -1px;
     background-size: cover;
 }
