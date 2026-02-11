@@ -1,26 +1,24 @@
-﻿using FinanceManager.Domain.Entities;
+﻿using FinanceManager.Application.Interfaces;
+using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.Application.Services
 {
-    public class CategoryService()
+    public class CategoryService(ICategoryRepository categoryRepository)
     {
-        public IEnumerable<Category> GetCategories()
+        public async Task<IEnumerable<Category>> GetCategories()
         {
-            return [new()
-            {
-                Id = Guid.NewGuid(),
-                Name ="Fuel"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Name ="Groceries"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Name ="Phone"
-            }];
+            var categories = await categoryRepository.GetAllAsync();
+            return categories.OrderBy(c => c.Group.Name).ThenBy(c => c.Name);
+        }
+
+        public async Task<IEnumerable<Category>> GetIncomeCategories()
+        {
+            return (await GetCategories()).Where(c => c.Group.IsIncome);
+        }
+
+        public async Task<IEnumerable<Category>> GetExpenseCategories()
+        {
+            return (await GetCategories()).Where(c => !c.Group.IsIncome);
         }
     }
 }

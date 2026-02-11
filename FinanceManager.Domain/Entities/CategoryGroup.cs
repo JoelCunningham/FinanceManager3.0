@@ -2,10 +2,11 @@
 
 namespace FinanceManager.Domain.Entities
 {
-    public sealed class Category : IEntity
+    public sealed class CategoryGroup : IEntity
     {
         public Guid Id { get; set; }
         public required string Name { get; set; }
-        public required CategoryGroup Group { get; set; }
+        public ICollection<Category>? Categories { get; set; }
+        public bool IsIncome { get; set; }
     }
 }

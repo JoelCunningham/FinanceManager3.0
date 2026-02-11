@@ -12,13 +12,12 @@ namespace FinanceManager.Application.DTOs
 
         public static TransactionSummary FromTransaction(Transaction transaction)
         {
-            var category = transaction.CategoryId is null ? null : new Category() { Id = transaction.CategoryId.Value, Name = transaction.CategoryId.Value.ToString() };
             var amount = transaction.Amount - (transaction.Reimbursements?.Sum(r => r.Amount) ?? 0);
 
             return new TransactionSummary
             {
                 Id = transaction.Id,
-                Category = category,
+                Category = transaction.Category,
                 Description = transaction.Description,
                 Amount = amount,
                 Date = transaction.Date

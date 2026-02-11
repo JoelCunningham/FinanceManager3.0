@@ -13,7 +13,7 @@
     protected override async Task OnInitializedAsync()
     {
         Model.UnreviewedGroups = (await TransactionService.GetUnreviewedAsync()).ToList();
-        Model.Categories = CategoryService.GetCategories().ToList();
+        Model.Categories = (await CategoryService.GetCategories()).ToList();
         Model.AllTransactions = (await TransactionService.SearchAsync(string.Empty)).ToList();
         // TODO Add pagination
     }
