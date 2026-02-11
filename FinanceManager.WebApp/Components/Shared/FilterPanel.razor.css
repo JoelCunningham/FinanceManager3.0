@@ -31,36 +31,41 @@
     }
 }
 
-.inner-content {
+.collapsing,
+.collapse.show {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     padding: 1rem;
     margin-bottom: 1rem;
-    background: var(--bs-gray-200);
-    border-radius: var(--bs-border-radius-lg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
 }
 
 @media (min-width: 768px) {
-    .inner-content {
+    .collapsing,
+    .collapse.show {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (min-width: 1300px) {
-    .inner-content {
+    .collapsing,
+    .collapse.show {
         grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (min-width: 1800px) {
-    .inner-content {
+    .collapsing,
+    .collapse.show {
         grid-template-columns: repeat(6, 1fr);
     }
 }
 
 @media (min-width: 2300px) {
-    .inner-content {
+    .collapsing,
+    .collapse.show {
         grid-template-columns: repeat(8, 1fr);
     }
 }

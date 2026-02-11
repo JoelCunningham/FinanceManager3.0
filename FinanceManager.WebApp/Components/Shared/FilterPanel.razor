@@ -21,18 +21,15 @@
 <div class="outer-content">
     @OuterContent
     <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle @(Filters.IsVisible ? "active" : "")" type="button" @onclick="Filters.ToggleVisibility">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#filter-collapse" aria-expanded="false" aria-controls="filter-collapse">
             Filters
         </button>
     </div>
 </div>
 
-@if (Filters.IsVisible)
-{
-    <div class="inner-content">
-        @InnerContent
-        <button type="button" class="btn btn-outline-primary" @onclick="OnClear">
-            Reset
-        </button>
-    </div>
-}
+<div class="collapse" id="filter-collapse">
+    @InnerContent
+    <button type="button" class="btn btn-outline-primary" @onclick="OnClear">
+        Reset
+    </button>
+</div>

@@ -22,8 +22,6 @@ namespace FinanceManager.WebApp.Models.Base
         public decimal? FilterAmountMin { get; set; }
         public decimal? FilterAmountMax { get; set; }
 
-        public bool IsVisible { get; set; } = false;
-
         public void ClearFilters()
         {
             FilterBySource = TransferSource.All;
@@ -33,16 +31,6 @@ namespace FinanceManager.WebApp.Models.Base
             FilterDateTo = DateTime.Today;
             FilterAmountMin = null;
             FilterAmountMax = null;
-        }
-
-        public void ToggleVisibility()
-        {
-            IsVisible = !IsVisible;
-        }
-
-        public void ToggleSortOrder()
-        {
-            SortDescending = !SortDescending;
         }
 
         private IEnumerable<T> ApplyCommonFilters<T>(IEnumerable<T> items, Func<T, DateTime> dateSelector, Func<T, decimal> amountSelector)
