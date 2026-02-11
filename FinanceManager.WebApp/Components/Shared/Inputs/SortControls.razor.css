@@ -1,9 +1,4 @@
-.sort-group {
-    display: flex;
-    gap: 0.5rem;
-    margin-left: auto;
-    width: 100%;
-
+.input-group {
     button {
         color: var(--bs-body-color);
         background-color: var(--bs-body-bg);

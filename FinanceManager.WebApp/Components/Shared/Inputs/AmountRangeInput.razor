@@ -12,23 +12,31 @@
     public EventCallback<decimal?> AmountMaxChanged { get; set; }
 }
 
-<div class="filter">
-    <label class="form-label">Amount Min</label>
-    <input class="form-control"
-           type="number"
-           step="0.01"
-           placeholder="0.00"
-           @bind="AmountMin"
-           @bind:event="oninput"
-           @bind:after="() => AmountMinChanged.InvokeAsync(AmountMin)" />
+<div class="input-group">
+    <span class="input-group-text" id="amount-min-addon">$</span>
+    <div class="form-floating">
+        <input class="form-control"
+               type="number"
+               id="amount-min"
+               aria-describedby="amount-min-addon"
+               max="@AmountMax"
+               @bind="AmountMin"
+               @bind:event="oninput"
+               @bind:after="() => AmountMinChanged.InvokeAsync(AmountMin)">
+        <label for="amount-min">Amount min</label>
+    </div>
 </div>
-<div class="filter">
-    <label class="form-label">Amount Max</label>
-    <input class="form-control"
-           type="number"
-           step="0.01"
-           placeholder="0.00"
-           @bind="AmountMax"
-           @bind:event="oninput"
-           @bind:after="() => AmountMaxChanged.InvokeAsync(AmountMax)" />
+<div class="input-group">
+    <span class="input-group-text" id="amount-max-addon">$</span>
+    <div class="form-floating">
+        <input class="form-control"
+               type="number"
+               id="amount-max"
+               aria-describedby="amount-max-addon"
+               min="@AmountMin"
+               @bind="AmountMax"
+               @bind:event="oninput"
+               @bind:after="() => AmountMaxChanged.InvokeAsync(AmountMax)">
+        <label for="amount-max">Amount max</label>
+    </div>
 </div>

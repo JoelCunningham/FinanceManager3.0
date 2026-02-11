@@ -1,8 +1,7 @@
-.search-box {
-    position: relative;
+.input-group {
 
-    input {
-        padding-left: 2.5rem;
+    .input-group-text {
+        width: 38px;
     }
 
     & ::deep .bi-search {

@@ -4,7 +4,7 @@ using FinanceManager.WebApp.Models.Base;
 
 namespace FinanceManager.WebApp.Models
 {
-    public class ReviewPageModel() : FilterableModel
+    public class ReviewPageModel : FilterableModel
     {
         public List<ReviewGroup> UnreviewedGroups { get; set; } = [];
         public List<Category> Categories { get; set; } = [];
@@ -25,6 +25,12 @@ namespace FinanceManager.WebApp.Models
         public List<TransactionSummary> PotentialTransfers => Filters.GetFilteredTransactions(AllTransactions)
             .Where(t => t.Amount == -CurrentGroup?.InitalTransaction.Amount)
             .ToList();
+
+        public ReviewPageModel()
+        {
+            Filters.FilterAmountMin = -999999.99m;
+            Filters.FilterAmountMax = 999999.99m;
+        }
 
         public void Clean()
         {

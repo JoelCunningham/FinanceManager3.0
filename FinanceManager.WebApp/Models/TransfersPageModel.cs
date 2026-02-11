@@ -3,7 +3,7 @@ using FinanceManager.WebApp.Models.Base;
 
 namespace FinanceManager.WebApp.Models
 {
-    public class TransfersPageModel() : FilterableModel
+    public class TransfersPageModel : FilterableModel
     {
         public List<TransferSummary> Transfers { get; set; } = [];
 
@@ -13,6 +13,11 @@ namespace FinanceManager.WebApp.Models
         public List<string> UniqueAccounts => GetUniqueAccounts();
         public List<TransferSummary> FilteredAndSortedTransfers => Filters.GetFilteredTransfers(Transfers);
 
+        public TransfersPageModel()
+        {
+            Filters.FilterAmountMin = 0.00m;
+            Filters.FilterAmountMax = 999999.99m;
+        }
 
         public void Reset()
         {

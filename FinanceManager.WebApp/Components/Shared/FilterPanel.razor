@@ -20,17 +20,19 @@
 
 <div class="outer-content">
     @OuterContent
-    <button type="button" class="btn btn-outline-primary filter-toggle @(Filters.IsVisible ? "active" : "")" @onclick="Filters.ToggleVisibility">
-        Filters
-    </button>
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle @(Filters.IsVisible ? "active" : "")" type="button" @onclick="Filters.ToggleVisibility">
+            Filters
+        </button>
+    </div>
 </div>
 
 @if (Filters.IsVisible)
 {
     <div class="inner-content">
         @InnerContent
-        <button type="button" class="btn btn-primary" @onclick="OnClear">
-            Clear filters
+        <button type="button" class="btn btn-outline-primary" @onclick="OnClear">
+            Reset
         </button>
     </div>
 }

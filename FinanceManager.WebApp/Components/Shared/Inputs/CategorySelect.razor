@@ -16,6 +16,8 @@
 
     private string? SelectedCategoryId;
 
+    private string DivClass => AllowAll ? "form-floating" : "";
+
     private string SelectClass => HasError ? "form-select is-invalid" : "form-select";
 
     protected override void OnParametersSet()
@@ -33,11 +35,7 @@
     }
 }
 
-<div class="filter">
-    @if (AllowAll)
-    {
-        <label class="form-label">Category</label>
-    }
+<div class="@DivClass">
     <select class="@SelectClass" @bind="SelectedCategoryId" @bind:after="HandleCategoryChange">
         @if (AllowAll)
         {
@@ -54,4 +52,8 @@
             <option value="@category.Id">@category.Name</option>
         }
     </select>
+    @if (AllowAll)
+    {
+        <label for="category">Category</label>
+    }
 </div>

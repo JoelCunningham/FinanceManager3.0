@@ -36,24 +36,24 @@
     }
 }
 
-<div class="filter">
-    <label class="form-label">From Account</label>
-    <select class="form-select form" @bind="accountFrom" @bind:after="FromAccountChange">
-        <option value="">All accounts</option>
+<div class="form-floating">
+    <select class="form-select" id="from-account" @bind="accountFrom" @bind:after="FromAccountChange">
+        <option value="">Any</option>
         @foreach (var account in Accounts)
         {
             <option value="@account">@account</option>
         }
     </select>
+    <label for="from-account">Account from</label>
 </div>
 
-<div class="filter">
-    <label class="form-label">To Account</label>
-    <select class="form-select" @bind="accountTo" @bind:after="ToAccountChange">
-        <option value="">All accounts</option>
+<div class="form-floating">
+    <select class="form-select" id="to-account" @bind="accountTo" @bind:after="ToAccountChange">
+        <option value="">Any</option>
         @foreach (var account in Accounts)
         {
             <option value="@account">@account</option>
         }
     </select>
+    <label for="from-account">Account to</label>
 </div>

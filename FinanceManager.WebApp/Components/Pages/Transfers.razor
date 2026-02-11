@@ -31,7 +31,16 @@
 <h1 class="page-heading">Manage transfers</h1>
 
 <TransferActions Filters="Model.Filters" Accounts="Model.UniqueAccounts" OnFilterChanged="StateHasChanged" />
-@foreach (var transfer in Model.FilteredAndSortedTransfers)
+
+@if (Model.FilteredAndSortedTransfers.Count > 0)
 {
-    <TransferRow Transfer="transfer" OnRemove="RemoveTransfer" />
+    @foreach (var transfer in Model.FilteredAndSortedTransfers)
+    {
+        <TransferRow Transfer="transfer" OnRemove="RemoveTransfer" />
+    }
+} else
+{
+    <div class="alert alert-info" role="alert">
+        No transfers match your search. Try adjusting the filters.
+    </div>
 }

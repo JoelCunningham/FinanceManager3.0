@@ -21,14 +21,14 @@
     }
 }
 
-<div class="sort-group">
+<div class="input-group">
     <select class="form-select" @bind="SortBy" @bind:after="() => SortByChanged.InvokeAsync(SortBy)">
         <option value="@TransactionSort.Date">Date</option>
         <option value="@TransactionSort.Amount">Amount</option>
         @if (InculdeAccountSorts)
         {
-            <option value="@TransactionSort.FromAccount">From Account</option>
-            <option value="@TransactionSort.ToAccount">To Account</option>
+            <option value="@TransactionSort.FromAccount">Account from</option>
+            <option value="@TransactionSort.ToAccount">Account to</option>
         }
     </select>
     <button type="button" class="btn btn-outline-secondary" @onclick="ToggleSortOrder">

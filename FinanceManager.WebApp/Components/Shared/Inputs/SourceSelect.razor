@@ -6,11 +6,11 @@
     public EventCallback<TransferSource> SelectedSourceChanged { get; set; }
 }
 
-<div class="filter">
-    <label class="form-label">Source</label>
-    <select class="form-select" @bind="SelectedSource" @bind:after="() => SelectedSourceChanged.InvokeAsync(SelectedSource)">
-        <option value="@TransferSource.All">All sources</option>
-        <option value="@TransferSource.User">User Created</option>
-        <option value="@TransferSource.Auto">Auto Created</option>
+<div class="form-floating">
+    <select class="form-select" id="source" @bind="SelectedSource" @bind:after="() => SelectedSourceChanged.InvokeAsync(SelectedSource)">
+        <option value="@TransferSource.All">Any</option>
+        <option value="@TransferSource.User">Me</option>
+        <option value="@TransferSource.Auto">System</option>
     </select>
+    <label for="source">Created by</label>
 </div>

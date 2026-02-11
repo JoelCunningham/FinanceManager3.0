@@ -18,24 +18,29 @@
     public DateTime? MaxDate { get; set; }
 }
 
-<div class="filter">
-    <label class="form-label">Date From</label>
-    <input class="form-control"
-           type="date"
-           min="@MinDate"
-           max="@MaxDate"
-           @bind="DateFrom"
-           @bind:event="oninput"
-           @bind:after="() => DateFromChanged.InvokeAsync(DateFrom)" />
+<div class="input-group">
+    <div class="form-floating">
+        <input class="form-control"
+               type="date"
+               id="date-min"
+               min="@MinDate"
+               max="@MaxDate"
+               @bind="DateFrom"
+               @bind:event="oninput"
+               @bind:after="() => DateFromChanged.InvokeAsync(DateFrom)" />
+        <label for="date-min">Date from</label>
+    </div>
 </div>
-
-<div class="filter">
-    <label class="form-label">Date To</label>
-    <input class="form-control"
-           type="date"
-           min="@MinDate"
-           max="@MaxDate"
-           @bind="DateTo"
-           @bind:event="oninput"
-           @bind:after="() => DateToChanged.InvokeAsync(DateTo)" />
+<div class="input-group">
+    <div class="form-floating">
+        <input class="form-control"
+               type="date"
+               id="date-max"
+               min="@MinDate"
+               max="@MaxDate"
+               @bind="DateTo"
+               @bind:event="oninput"
+               @bind:after="() => DateToChanged.InvokeAsync(DateTo)" />
+        <label for="date-max">Date to</label>
+    </div>
 </div>
