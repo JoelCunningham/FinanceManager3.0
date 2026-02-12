@@ -6,168 +6,58 @@
 
 @code {
     private ReviewPageModel Model = new();
-    private HashSet<Guid> TransactionsWithInvalidCategory { get; set; } = [];
-    private HashSet<Guid> TransactionsWithInvalidAmount { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadUnreviewedTransactionsAsync();
+        Model.ReviewPagination.FetchPagedResult = TransactionService.GetPagedAsync<ReviewGroup>;
+        Model.TransferPagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
+        Model.ReimbursePagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
         Model.Categories = (await CategoryService.GetCategories()).ToList();
-    }
 
-    private async Task LoadUnreviewedTransactionsAsync()
-    {
-        Model.PagedReviewGroups = await TransactionService.GetPagedAsync<ReviewGroup>(Model.ReviewQuery);
-    }
-
-    private async Task LoadSearchResultsAsync()
-    {
-        var searchResults = await TransactionService.GetPagedAsync<TransactionSummary>(Model.SearchQuery);
-
-        if (Model.CurrentGroup is not null)
-        {
-            searchResults.Items = searchResults.Items.Where(t => t.Id != Model.CurrentGroup.InitalTransaction.Id).ToList();
-        }
-        if (Model.CurrentTransaction is not null)
-        {
-            searchResults.Items = searchResults.Items.Where(t => t.Id != Model.CurrentTransaction.Id).ToList();
-        }
-
-        if (searchResults.Items.Count < searchResults.PageSize)
-        {
-            searchResults.TotalItems--;
-        }
-
-        Model.PagedSearchResults = searchResults;
-    }
-
-    private async Task HandleReviewPageChanged(int page)
-    {
-        Model.SetReviewPage(page);
-        await LoadUnreviewedTransactionsAsync();
-    }
-
-    private async Task HandleSearchPageChanged(int page)
-    {
-        Model.SetSearchPage(page);
-        await LoadSearchResultsAsync();
-    }
-
-    private async Task HandleSearchFilterChanged()
-    {
-        Model.UpdateSearchFilters();
-        await LoadSearchResultsAsync();
-    }
-
-    private async Task HandleSearchFilterCleared()
-    {
-        Model.ClearSearchFilters();
-        await LoadSearchResultsAsync();
-    }
-
-    private async Task SetReimbursement(TransactionSummary transaction)
-    {
-        if (Model.CurrentTransaction is null) return;
-
-        Model.CurrentTransaction.Reimburses = transaction;
-        Model.Clean();
-    }
-
-    private async Task SetTransfer(TransactionSummary transaction)
-    {
-        if (Model.CurrentGroup is null) return;
-
-        Model.CurrentGroup.Transfers = transaction;
-        Model.Clean();
+        await Model.ReviewPagination.UpdateResults();
     }
 
     private async Task SaveGroup(ReviewGroup group)
     {
-        if (!ValidateGroup(group)) return;
+        if (!Model.ValidateGroup(group)) return;
 
         try
         {
             await TransactionService.SaveTransactionGroupAsync(group);
-            await LoadUnreviewedTransactionsAsync();
+            await Model.ReviewPagination.UpdateResults();
         }
         catch (Exception)
         {
-            Model.SetError("An unexpected error occurred. Please try again");
+            Model.Validation.SetError("An unexpected error occurred. Please try again");
         }
-
         Model.Clean();
-    }
-
-    private bool ValidateGroup(ReviewGroup group)
-    {
-        Model.HasError = false;
-
-        TransactionsWithInvalidCategory.Clear();
-        TransactionsWithInvalidAmount.Clear();
-
-        if (group.Transactions.Any(t => t.Category is null) && group.Transfers is null)
-        {
-            TransactionsWithInvalidCategory = group.Transactions
-                .Where(t => t.Category is null)
-                .Select(t => t.Id)
-                .ToHashSet();
-            Model.SetError("A category is required");
-        }
-
-        if (group.Transactions.Any(t => t.Amount == 0))
-        {
-            TransactionsWithInvalidAmount = group.Transactions
-                .Where(t => t.Amount == 0)
-                .Select(t => t.Id)
-                .ToHashSet();
-            Model.SetError("Amount must not be zero");
-        }
-
-        return !Model.HasError;
-    }
-
-    private async Task OnFindReimbursement(ReviewGroup group, ReviewTransaction transaction)
-    {
-        Model.CurrentGroup = group;
-        Model.CurrentTransaction = transaction;
-        Model.IsReimbursementSearchOpen = true;
-        await LoadSearchResultsAsync();
-    }
-
-    private async Task OnFindTransfer(ReviewGroup group)
-    {
-        Model.CurrentGroup = group;
-        Model.IsTransferSearchOpen = true;
-
-        Model.UpdateSearchFiltersForTransfer(group.InitalTransaction.Amount);
-        await LoadSearchResultsAsync();
     }
 }
 
 <PageTitle>Review Transactions</PageTitle>
 
-<ErrorPopup Message="@Model.ErrorMessage" IsVisible="Model.HasError" OnClose="() => Model.HasError = false" />
+<ErrorPopup Message="@Model.Validation.ErrorMessage" IsVisible="Model.Validation.HasError" OnClose="Model.Validation.ClearErrors" />
 
 <h1 class="page-heading">Review transactions</h1>
 
-@if (Model.PagedReviewGroups.TotalItems > 0)
+@if (Model.ReviewPagination.Result.TotalItems > 0)
 {
     <div class="mb-3 text-muted">
-        Showing @Model.PagedReviewGroups.StartItem - @Model.PagedReviewGroups.EndItem of @Model.PagedReviewGroups.TotalItems unreviewed transactions. Review these transactions for better insights.
+        Showing @Model.ReviewPagination.Result.StartItem - @Model.ReviewPagination.Result.EndItem of @Model.ReviewPagination.Result.TotalItems unreviewed transactions
     </div>
 
-    @foreach (var transactionGroup in Model.PagedReviewGroups.Items)
+    @foreach (var transactionGroup in Model.ReviewPagination.Result.Items)
     {
         <TransactionRow TransactionGroup="transactionGroup"
                         Categories="transactionGroup.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
-                        ErrorCategoryIds="TransactionsWithInvalidCategory"
-                        ErrorAmountIds="TransactionsWithInvalidAmount"
+                        ErrorCategoryIds="@Model.Validation.GetErrorItemIds("category")"
+                        ErrorAmountIds="@Model.Validation.GetErrorItemIds("amount")"
                         OnSave="() => SaveGroup(transactionGroup)"
-                        OnFindTransfer="() => OnFindTransfer(transactionGroup)"
-                        OnFindReimbursement="(t) => OnFindReimbursement(transactionGroup, t)" />
+                        OnFindTransfer="() => Model.OnFindTransfer(transactionGroup)"
+                        OnFindReimbursement="(t) => Model.OnFindReimbursement(transactionGroup, t)" />
     }
 
-    <Pagination PagedResult="Model.PagedReviewGroups" OnPageChanged="HandleReviewPageChanged" />
+    <Pagination PagedResult="Model.ReviewPagination.Result" OnPageChanged="Model.ReviewPagination.SetPage" />
 }
 else
 {
@@ -178,23 +68,19 @@ else
 
 @if (Model.IsTransferSearchOpen && Model.CurrentGroup is not null)
 {
-    <Modal Title="Find transfer" OnClose="Model.Clean">
+    <Modal Title="Find transfer" OnClose="Model.EndFindTransfer">
         <BodyContent>
-            <TransactionSearchActions Filters="Model.SearchQuery"
-                                      Categories="Model.Categories"
-                                      OnFilterChanged="HandleSearchFilterChanged"
-                                      OnFilterCleared="HandleSearchFilterCleared"
-                                      IsTransferSearch="false" />
+            <TransactionSearchActions Filters="Model.TransferPagination.Query" Categories="Model.Categories" OnFilterChanged="Model.TransferPagination.UpdateResults" />
 
-            @if (Model.PagedSearchResults.TotalItems > 0)
+            @if (Model.TransferPagination.Result.TotalItems > 0)
             {
                 <div class="mb-2 text-muted small">
-                    Showing @Model.PagedSearchResults.StartItem - @Model.PagedSearchResults.EndItem of @Model.PagedSearchResults.TotalItems transactions
+                    Showing @Model.TransferPagination.Result.StartItem - @Model.TransferPagination.Result.EndItem of @Model.TransferPagination.Result.TotalItems transactions
                 </div>
 
-                <TransactionSearchResults Transactions="Model.PagedSearchResults.Items" OnSelect="SetTransfer" />
+                <TransactionSearchResults Transactions="Model.TransferPagination.Result.Items" OnSelect="Model.SetTransfer" />
 
-                <Pagination PagedResult="Model.PagedSearchResults" OnPageChanged="HandleSearchPageChanged" />
+                <Pagination PagedResult="Model.TransferPagination.Result" OnPageChanged="Model.TransferPagination.SetPage" />
             }
             else
             {
@@ -206,21 +92,21 @@ else
     </Modal>
 }
 
-@if (Model.IsReimbursementSearchOpen && Model.CurrentTransaction is not null)
+@if (Model.IsReimburseSearchOpen && Model.CurrentTransaction is not null)
 {
-    <Modal Title="Find reimbursement" OnClose="Model.Clean">
+    <Modal Title="Find reimbursement" OnClose="Model.EndFindReimbursement">
         <BodyContent>
-            <TransactionSearchActions Filters="Model.SearchQuery" Categories="Model.Categories" OnFilterChanged="HandleSearchFilterChanged" OnFilterCleared="HandleSearchFilterCleared" />
+            <TransactionSearchActions Filters="Model.ReimbursePagination.Query" Categories="Model.Categories" OnFilterChanged="Model.ReimbursePagination.UpdateResults" />
 
-            @if (Model.PagedSearchResults.TotalItems > 0)
+            @if (Model.ReimbursePagination.Result.TotalItems > 0)
             {
                 <div class="mb-2 text-muted small">
-                    Showing @Model.PagedSearchResults.StartItem - @Model.PagedSearchResults.EndItem of @Model.PagedSearchResults.TotalItems transactions
+                    Showing @Model.ReimbursePagination.Result.StartItem - @Model.ReimbursePagination.Result.EndItem of @Model.ReimbursePagination.Result.TotalItems transactions
                 </div>
 
-                <TransactionSearchResults Transactions="Model.PagedSearchResults.Items" OnSelect="SetReimbursement" />
+                <TransactionSearchResults Transactions="Model.ReimbursePagination.Result.Items" OnSelect="Model.SetReimbursement" />
 
-                <Pagination PagedResult="Model.PagedSearchResults" OnPageChanged="HandleSearchPageChanged" />
+                <Pagination PagedResult="Model.ReimbursePagination.Result" OnPageChanged="Model.ReimbursePagination.SetPage" />
             }
             else
             {

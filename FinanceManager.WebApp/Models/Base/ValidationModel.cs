@@ -2,25 +2,46 @@
 
 public class ValidationModel
 {
-    public Guid? ErrorId { get; set; }
+    public List<ErrorItem> Items { get; set; } = [];
     public string? ErrorMessage { get; set; }
-    public bool HasError => !string.IsNullOrEmpty(ErrorMessage) || ErrorId is not null;
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage) || Items.Count > 0;
 
-    public void ClearError()
+    public void ClearErrors()
     {
-        ErrorId = null;
+        Items = [];
         ErrorMessage = null;
     }
 
     public void SetError(string message)
     {
-        ErrorMessage = message;
+        SetErrorMessage(message);
     }
 
-    public void SetError(Guid errorId, string message)
+    public void SetError(Guid itemId, string message)
     {
-        ErrorId = errorId;
-        ErrorMessage = message;
+        Items.Add(new() { Id = itemId });
+        SetErrorMessage(message);
+    }
+
+    public void SetError(Guid itemId, string field, string message)
+    {
+        Items.Add(new() { Id = itemId, Field = field });
+        SetErrorMessage(message);
+    }
+
+    public List<Guid> GetErrorItemIds(string field)
+    {
+        return [.. Items.Where(i => i.Field == field).Select(i => i.Id)];
+    }
+
+    private void SetErrorMessage(string message)
+    {
+        ErrorMessage = ErrorMessage is null ? message : "Multiple problems detected";
     }
 }
 
+public class ErrorItem
+{
+    public Guid Id { get; set; }
+    public string Field { get; set; } = string.Empty;
+}

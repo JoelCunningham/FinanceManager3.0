@@ -124,11 +124,11 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             // Amount filters
             if (request.FilterAmountMin.HasValue)
             {
-                query = query.Where(t => Math.Abs(t.Amount) >= request.FilterAmountMin.Value);
+                query = query.Where(t => t.Amount >= request.FilterAmountMin.Value);
             }
             if (request.FilterAmountMax.HasValue)
             {
-                query = query.Where(t => Math.Abs(t.Amount) <= request.FilterAmountMax.Value);
+                query = query.Where(t => t.Amount <= request.FilterAmountMax.Value);
             }
 
             return query;
