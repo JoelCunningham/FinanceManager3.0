@@ -57,11 +57,11 @@
 
 @if (Model.SelectedBank is not null)
 {
-    <TransactionFileUpload SupportedExtensions="@Model.SupportedExtensions" ErrorMessage="@Model.UploadErrorMessage" ValidationState="Model.UploadValidationState" OnFileUploaded="ImportFileTransactions" />
+    <TransactionFileUpload SupportedExtensions="@Model.SupportedExtensions" ErrorMessage="@Model.UploadValidation.ErrorMessage" HasSuccess="Model.UploadValidation.HasSuccess" OnFileUploaded="ImportFileTransactions" />
 }
 @if (Model.ImportedTransactions is not null)
 {
-    <ImportActions TransactionCount="Model.ImportedTransactions.Count" ErrorMessage="@Model.ImportErrorMessage" OnSubmit="SaveImportedTransactions" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
+    <ImportActions TransactionCount="Model.ImportedTransactions.Count" ErrorMessage="@Model.ImportValidation.ErrorMessage" OnSubmit="SaveImportedTransactions" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
 }
 @if (Model.IsPreviewOpen && Model.ImportedTransactions is not null)
 {

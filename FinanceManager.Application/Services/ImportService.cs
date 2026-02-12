@@ -16,7 +16,7 @@ namespace FinanceManager.Application.Services
         public async Task<IEnumerable<ParsedTransaction>> ImportAsync(Stream file, string bank, string extension)
         {
             var parser = parserService.GetParser(bank, extension);
-            var parsed = await parser.ParseTransactionsFileAsync(file);
+            var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();
 
             var records = parsed.Select(t => t.ToBankRecord(new Guid()));
             var duplicates = await bankRecordRepository.GetDuplicatesAsync(records);

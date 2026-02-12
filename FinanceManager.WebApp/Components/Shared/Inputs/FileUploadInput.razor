@@ -1,37 +1,22 @@
 @code {
-    [Parameter, EditorRequired]
-    public required string AcceptedExtensions { get; set; }
+    [Parameter] public string? Heading { get; set; }
 
-    [Parameter, EditorRequired]
-    public required FormValidationState ValidationState { get; set; }
+    [Parameter] public string AcceptedExtensions { get; set; } = string.Empty;
 
-    [Parameter]
-    public string? ValidationMessage { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
 
-    [Parameter]
-    public EventCallback<IBrowserFile> OnFileSelected { get; set; }
+    [Parameter] public bool HasSuccess { get; set; }
 
-    [Parameter]
-    public string? Heading { get; set; }
+    [Parameter] public EventCallback<IBrowserFile> OnFileSelected { get; set; }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
         await OnFileSelected.InvokeAsync(e.File);
     }
 
-    private string InputValidationClass => ValidationState switch
-    {
-        FormValidationState.Valid => "is-valid",
-        FormValidationState.Invalid => "is-invalid",
-        _ => string.Empty
-    };
+    private string InputValidationClass => !string.IsNullOrEmpty(ErrorMessage) ? "is-invalid" : HasSuccess ? "is-valid" : string.Empty;
 
-    private string MessageValidationClass => ValidationState switch
-    {
-        FormValidationState.Valid => "valid-feedback",
-        FormValidationState.Invalid => "invalid-feedback",
-        _ => string.Empty
-    };
+    private string MessageValidationClass => !string.IsNullOrEmpty(ErrorMessage) ? "invalid-feedback" : HasSuccess ? "valid-feedback" : string.Empty;
 }
 
 @if (!string.IsNullOrEmpty(Heading))
@@ -41,7 +26,7 @@
 
 <InputFile OnChange="HandleFileSelected" accept="@AcceptedExtensions" class="@($"form-control {InputValidationClass}")" />
 
-@if (!string.IsNullOrEmpty(ValidationMessage))
+@if (!string.IsNullOrEmpty(ErrorMessage))
 {
-    <div class="@MessageValidationClass">@ValidationMessage</div>
+    <div class="@MessageValidationClass">@ErrorMessage</div>
 }

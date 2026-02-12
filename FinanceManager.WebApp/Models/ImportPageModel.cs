@@ -1,29 +1,25 @@
 ﻿using FinanceManager.Application.DTOs;
-using FinanceManager.WebApp.Enums;
+using FinanceManager.WebApp.Models.Base;
 
 namespace FinanceManager.WebApp.Models
 {
     public class ImportPageModel
     {
+        public ValidationModel UploadValidation { get; set; } = new();
+        public ValidationModel ImportValidation { get; set; } = new();
+
         public ParserSummary? SelectedBank { get; set; }
         public IReadOnlyList<ParsedTransaction>? ImportedTransactions { get; set; }
         public string SupportedExtensions => GetSupportedExtensions();
 
-        public string? UploadErrorMessage { get; set; }
-        public string? ImportErrorMessage { get; set; }
-        public FormValidationState UploadValidationState { get; set; } = FormValidationState.None;
-
-
-        public bool IsPreviewOpen = false;
-
-        public bool IsSuccessOpen = false;
+        public bool IsPreviewOpen { get; set; } = false;
+        public bool IsSuccessOpen { get; set; } = false;
 
         public void Reset()
         {
             SelectedBank = null;
             ImportedTransactions = null;
-            UploadErrorMessage = null;
-            UploadValidationState = FormValidationState.None;
+            UploadValidation.ClearErrors();
             IsPreviewOpen = false;
             IsSuccessOpen = false;
         }
@@ -31,36 +27,33 @@ namespace FinanceManager.WebApp.Models
         public void UploadSuccess(IEnumerable<ParsedTransaction> records)
         {
             ImportedTransactions = [.. records];
-            UploadErrorMessage = null;
-            UploadValidationState = FormValidationState.Valid;
+            UploadValidation.SetSucess();
             IsPreviewOpen = false;
         }
 
         public void UploadError(Exception exception)
         {
             ImportedTransactions = null;
-            UploadErrorMessage = GetUploadErrorMessage(exception);
-            UploadValidationState = FormValidationState.Invalid;
+            UploadValidation.SetError(GetUploadErrorMessage(exception));
             IsPreviewOpen = false;
         }
 
         public void ImportSuccess()
         {
-            ImportErrorMessage = null;
+            ImportValidation.SetSucess();
             IsSuccessOpen = true;
         }
 
         public void ImportError()
         {
-            ImportErrorMessage = "An unexpected error occurred. Please try again.";
+            ImportValidation.SetError("An unexpected error occurred. Please try again.");
             IsSuccessOpen = false;
         }
 
         public void NoTransactionsFound()
         {
             ImportedTransactions = null;
-            UploadErrorMessage = "No new transactions were found in the uploaded file.";
-            UploadValidationState = FormValidationState.Invalid;
+            UploadValidation.SetError("No new transactions were found in the uploaded file.");
             IsPreviewOpen = false;
         }
 

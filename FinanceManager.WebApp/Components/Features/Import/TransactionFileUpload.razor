@@ -1,15 +1,11 @@
 @code {
-    [Parameter, EditorRequired]
-    public required string SupportedExtensions { get; set; }
+    [Parameter] public string SupportedExtensions { get; set; } = string.Empty;
 
-    [Parameter]
-    public string? ErrorMessage { get; set; }
+    [Parameter] public string? ErrorMessage { get; set; }
 
-    [Parameter, EditorRequired]
-    public required FormValidationState ValidationState { get; set; }
+    [Parameter] public bool HasSuccess { get; set; } = false;
 
-    [Parameter]
-    public EventCallback<IBrowserFile> OnFileUploaded { get; set; }
+    [Parameter] public EventCallback<IBrowserFile> OnFileUploaded { get; set; }
 
     private async Task OnFileSelected(IBrowserFile file)
     {
@@ -19,6 +15,6 @@
 
 <FileUploadInput Heading="Upload your transactions:"
                  AcceptedExtensions="@SupportedExtensions"
-                 ValidationState="@ValidationState"
-                 ValidationMessage="@ErrorMessage"
+                 ErrorMessage="@ErrorMessage"
+                 HasSuccess="HasSuccess"
                  OnFileSelected="@OnFileSelected" />

@@ -4,6 +4,7 @@ public class ValidationModel
 {
     public List<ErrorItem> Items { get; set; } = [];
     public string? ErrorMessage { get; set; }
+    public bool HasSuccess { get; set; } = false;
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage) || Items.Count > 0;
 
     public void ClearErrors()
@@ -27,6 +28,12 @@ public class ValidationModel
     {
         Items.Add(new() { Id = itemId, Field = field });
         SetErrorMessage(message);
+    }
+
+    public void SetSucess()
+    {
+        ClearErrors();
+        HasSuccess = true;
     }
 
     public List<Guid> GetErrorItemIds(string field)
