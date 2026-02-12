@@ -1,76 +1,51 @@
 ﻿@page "/Transactions/Transfers"
-
 @rendermode InteractiveServer
-
 @inject TransferService TransferService
 
 @code {
-    private TransfersPageModel Model = new();
+    private List<string> UniqueAccounts = [];
+    private ValidationModel Validation = new();
+    private PaginationModel<FilterQuery, TransferSummary> Pagination = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTransfersAsync();
-        Model.UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
-    }
+        Pagination.FetchPagedResult = TransferService.GetPagedAsync;
+        UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
 
-    private async Task LoadTransfersAsync()
-    {
-        Model.PagedTransfers = await TransferService.GetPagedAsync(Model.Query);
+        await Pagination.UpdateResults();
     }
 
     private async Task RemoveTransfer(TransferSummary transfer)
     {
         try
         {
-            await TransferService.ConvertToTransactionAsync(transfer.EntityId);
-            await LoadTransfersAsync();
+            await TransferService.ConvertToTransactionAsync(transfer.Id);
+            await Pagination.UpdateResults();
         }
         catch (Exception)
         {
-            Model.SetError(transfer);
+            Validation.SetError(transfer.Id, "Could not remove transfer. Please try again.");
         }
-    }
-
-    private async Task HandlePageChanged(int page)
-    {
-        Model.SetPage(page);
-        await LoadTransfersAsync();
-    }
-
-    private async Task HandleFilterChanged()
-    {
-        Model.UpdateFilters();
-        await LoadTransfersAsync();
-    }
-
-    private async Task HandleFiltersCleared()
-    {
-        Model.ClearFilters();
-        await LoadTransfersAsync();
     }
 }
 
 <PageTitle>Transfers</PageTitle>
-
 <h1 class="page-heading">Manage transfers</h1>
 
-<TransferActions Query="Model.Query"
-                 Accounts="Model.UniqueAccounts"
-                 OnFilterChanged="HandleFilterChanged"
-                 OnFilterCleared="HandleFiltersCleared" />
+<TransferActions Query="Pagination.Query" Accounts="UniqueAccounts" OnFilterChanged="Pagination.UpdateFilters" OnFilterCleared="Pagination.ClearFilters" />
 
-@if (Model.PagedTransfers.TotalItems > 0)
+@if (Pagination.Result.TotalItems > 0)
 {
     <div class="mb-3 text-muted">
-        Showing @Model.PagedTransfers.StartItem - @Model.PagedTransfers.EndItem of @Model.PagedTransfers.TotalItems transfers
+        Showing @Pagination.Result.StartItem - @Pagination.Result.EndItem of @Pagination.Result.TotalItems transfers
     </div>
 
-    @foreach (var transfer in Model.PagedTransfers.Items)
+    @foreach (var transfer in Pagination.Result.Items)
     {
         <TransferRow Transfer="transfer" OnRemove="RemoveTransfer" />
     }
 
-    <Pagination PagedResult="Model.PagedTransfers" OnPageChanged="HandlePageChanged" />
+    <Pagination PagedResult="Pagination.Result" OnPageChanged="Pagination.SetPage" />
 }
 else
 {

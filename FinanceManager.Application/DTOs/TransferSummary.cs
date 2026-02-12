@@ -4,7 +4,7 @@ namespace FinanceManager.Application.DTOs
 {
     public class TransferSummary
     {
-        public Guid EntityId { get; set; }
+        public Guid Id { get; set; }
         public decimal Amount { get; set; }
         public required Transferable From { get; set; }
         public required Transferable To { get; set; }
@@ -16,7 +16,7 @@ namespace FinanceManager.Application.DTOs
         {
             return new TransferSummary
             {
-                EntityId = transfer.Id,
+                Id = transfer.Id,
                 Amount = transfer.Amount,
                 Date = transfer.Date,
                 Description = transfer.Description,
