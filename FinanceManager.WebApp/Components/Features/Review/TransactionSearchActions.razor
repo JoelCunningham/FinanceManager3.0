@@ -1,12 +1,16 @@
+@using FinanceManager.Application.DTOs
+@using FinanceManager.Domain.Entities
+
 @code {
-    [Parameter, EditorRequired]
-    public required TransactionFilters Filters { get; set; }
+    [Parameter] public FilterQuery Filters { get; set; } = new();
 
-    [Parameter, EditorRequired]
-    public required List<Category> Categories { get; set; }
+    [Parameter] public List<Category> Categories { get; set; } = [];
 
-    [Parameter]
-    public EventCallback OnFilterChanged { get; set; }
+    [Parameter] public EventCallback OnFilterCleared { get; set; }
+
+    [Parameter] public EventCallback<FilterQuery> OnFilterChanged { get; set; }
+
+    [Parameter] public bool IsTransferSearch { get; set; } = true;
 
     private List<TransactionSortBy> AvailableSorts = new List<TransactionSortBy>
     {
@@ -37,13 +41,16 @@
                         @bind-DateFrom:after="OnChange"
                         @bind-DateTo="Filters.FilterDateTo"
                         @bind-DateTo:after="OnChange" />
-        <AmountRangeInput @bind-AmountMin="Filters.FilterAmountMin"
-                          @bind-AmountMax="Filters.FilterAmountMax"
-                          @bind-AmountMin:after="OnChange"
-                          @bind-AmountMax:after="OnChange" />
-        <CategorySelect Categories="Categories"
-                        HasError="false"
-                        @bind-SelectedCategory="Filters.FilterByCategory"
-                        @bind-SelectedCategory:after="OnChange" />
+        @if (IsTransferSearch)
+        {
+            <AmountRangeInput @bind-AmountMin="Filters.FilterAmountMin"
+                              @bind-AmountMax="Filters.FilterAmountMax"
+                              @bind-AmountMin:after="OnChange"
+                              @bind-AmountMax:after="OnChange" />
+            <CategorySelect Categories="Categories"
+                            HasError="false"
+                            @bind-SelectedCategory="Filters.FilterCategory"
+                            @bind-SelectedCategory:after="OnChange" />
+        }
     </InnerContent>
 </FilterPanel>

@@ -1,15 +1,10 @@
-@inject CategoryService CategoryService;
-@inject TransactionService TransactionService;
-
 @code {
-    [Parameter]
-    public List<TransactionSummary> FilteredTransactions { get; set; } = [];
+    [Parameter] public List<TransactionSummary> Transactions { get; set; } = [];
 
-    [Parameter]
-    public EventCallback<TransactionSummary> OnSelect { get; set; }
+    [Parameter] public EventCallback<TransactionSummary> OnSelect { get; set; }
 }
 
-@if (FilteredTransactions.Count > 0)
+@if (Transactions.Count > 0)
 {
     <div class="transaction-list">
         <div class="transaction-header">
@@ -18,7 +13,7 @@
             <div>Description</div>
             <div>Amount</div>
         </div>
-        @foreach (var transaction in FilteredTransactions)
+        @foreach (var transaction in Transactions)
         {
             <div class="transaction-item" @onclick="() => OnSelect.InvokeAsync(transaction)">
                 <div>@(transaction.Category is not null ? transaction.Category : "Uncategorised")</div>

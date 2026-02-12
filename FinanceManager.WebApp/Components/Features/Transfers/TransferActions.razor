@@ -23,7 +23,7 @@
     }
 }
 
-<NewFilterPanel Filters="Query" OnClear="OnFilterCleared">
+<FilterPanel Filters="Query" OnClear="OnFilterCleared">
     <OuterContent>
         <SearchInput Placeholder="Search transfers..."
                      @bind-SearchTerm="Query.SearchTerm"
@@ -49,7 +49,7 @@
                           @bind-AmountMax="Query.FilterAmountMax"
                           @bind-AmountMin:after="OnChange"
                           @bind-AmountMax:after="OnChange" />
-        <SourceSelect @bind-SelectedSource="Query.FilterBySource"
+        <SourceSelect @bind-SelectedSource="Query.FilterSource"
                       @bind-SelectedSource:after="OnChange" />
     </InnerContent>
-</NewFilterPanel>
+</FilterPanel>

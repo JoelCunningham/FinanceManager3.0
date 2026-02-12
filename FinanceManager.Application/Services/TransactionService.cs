@@ -1,4 +1,5 @@
 ﻿using FinanceManager.Application.DTOs;
+using FinanceManager.Application.DTOs.Base;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
 
@@ -11,16 +12,17 @@ namespace FinanceManager.Application.Services
         IUnitOfWork unitOfWork
     )
     {
-        public async Task<IEnumerable<TransactionSummary>> SearchAsync(string searchTerm)
+        public async Task<PagedResult<T>> GetPagedAsync<T>(FilterQuery query) where T : ITransactionConvertible<T>
         {
-            var transactions = await transactionRepository.GetBySearchTermAsync(searchTerm);
-            return transactions.Select(TransactionSummary.FromTransaction);
-        }
+            var pagedTransactions = await transactionRepository.GetPagedAsync(query);
 
-        public async Task<IEnumerable<ReviewGroup>> GetUnreviewedAsync()
-        {
-            var unreviewed = await transactionRepository.GetUnreviewedAsync();
-            return unreviewed.Select(ReviewGroup.FromTransaction);
+            return new PagedResult<T>
+            {
+                Items = [.. pagedTransactions.Items.Select(T.FromTransaction)],
+                TotalItems = pagedTransactions.TotalItems,
+                CurrentPage = pagedTransactions.CurrentPage,
+                PageSize = pagedTransactions.PageSize
+            };
         }
 
         public async Task SaveTransactionGroupAsync(ReviewGroup group)

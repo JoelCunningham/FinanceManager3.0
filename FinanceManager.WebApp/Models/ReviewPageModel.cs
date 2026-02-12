@@ -1,51 +1,66 @@
 ﻿using FinanceManager.Application.DTOs;
 using FinanceManager.Domain.Entities;
-using FinanceManager.WebApp.Models.Base;
 
-namespace FinanceManager.WebApp.Models
+namespace FinanceManager.WebApp.Models;
+
+public class ReviewPageModel
 {
-    public class ReviewPageModel : FilterableModel
+    public PagedResult<ReviewGroup> PagedReviewGroups { get; set; } = new();
+    public FilterQuery ReviewQuery { get; set; } = new() { FilterStatus = ReviewStatus.Unreviewed };
+
+    public PagedResult<TransactionSummary> PagedSearchResults { get; set; } = new();
+    public FilterQuery SearchQuery { get; set; } = new() { FilterStatus = ReviewStatus.Reviewed };
+
+    public ReviewGroup? CurrentGroup { get; set; }
+    public ReviewTransaction? CurrentTransaction { get; set; }
+
+    public List<Category> Categories { get; set; } = [];
+    public List<Category> IncomeCategories => [.. Categories.Where(c => c.Group.IsIncome)];
+    public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
+
+    public bool IsTransferSearchOpen { get; set; } = false;
+    public bool IsReimbursementSearchOpen { get; set; } = false;
+
+    public bool HasError { get; set; } = false;
+    public string? ErrorMessage { get; set; }
+
+    public void SetReviewPage(int page)
     {
-        public List<ReviewGroup> UnreviewedGroups { get; set; } = [];
-        public ReviewGroup? CurrentGroup { get; set; }
-        public ReviewTransaction? CurrentTransaction { get; set; }
+        ReviewQuery = ReviewQuery with { Page = Math.Max(1, page) };
+    }
 
-        public List<Category> Categories { get; set; } = [];
-        public List<Category> IncomeCategories => [.. Categories.Where(c => c.Group.IsIncome)];
-        public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
+    public void SetSearchPage(int page)
+    {
+        SearchQuery = SearchQuery with { Page = Math.Max(1, page) };
+    }
 
-        public bool IsTransferSearchOpen { get; set; } = false;
-        public bool IsReimbursementSearchOpen { get; set; } = false;
+    public void UpdateSearchFilters()
+    {
+        SearchQuery = SearchQuery with { Page = 1, FilterStatus = ReviewStatus.Reviewed };
+    }
 
-        public bool HasError { get; set; } = false;
-        public string? ErrorMessage { get; set; }
+    public void ClearSearchFilters()
+    {
+        SearchQuery = new();
+    }
 
-        public List<TransactionSummary> AllTransactions { get; set; } = [];
-        public List<TransactionSummary> PotentialReimbursements => Filters.GetFilteredTransactions(AllTransactions)
-            .Where(t => t.Category is not null)
-            .ToList();
-        public List<TransactionSummary> PotentialTransfers => Filters.GetFilteredTransactions(AllTransactions)
-            .Where(t => t.Amount == -CurrentGroup?.InitalTransaction.Amount)
-            .ToList();
+    public void UpdateSearchFiltersForTransfer(decimal targetAmount)
+    {
+        SearchQuery = new FilterQuery { FilterStatus = ReviewStatus.All, FilterAmountMin = -targetAmount, FilterAmountMax = -targetAmount };
+    }
 
-        public ReviewPageModel()
-        {
-            Filters.FilterAmountMin = -999999.99m;
-            Filters.FilterAmountMax = 999999.99m;
-        }
+    public void Clean()
+    {
+        CurrentGroup = null;
+        CurrentTransaction = null;
+        IsTransferSearchOpen = false;
+        IsReimbursementSearchOpen = false;
+        SearchQuery = new FilterQuery { FilterStatus = ReviewStatus.Reviewed };
+    }
 
-        public void Clean()
-        {
-            CurrentGroup = null;
-            CurrentTransaction = null;
-            IsTransferSearchOpen = false;
-            IsReimbursementSearchOpen = false;
-        }
-
-        public void SetError(string errorMessage)
-        {
-            HasError = true;
-            ErrorMessage = ErrorMessage is null ? errorMessage : "Multiple problems detected";
-        }
+    public void SetError(string errorMessage)
+    {
+        HasError = true;
+        ErrorMessage = ErrorMessage is null ? errorMessage : "Multiple problems detected";
     }
 }

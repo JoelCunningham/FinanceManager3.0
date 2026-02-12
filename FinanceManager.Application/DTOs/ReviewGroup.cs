@@ -1,8 +1,9 @@
-﻿using FinanceManager.Domain.Entities;
+﻿using FinanceManager.Application.DTOs.Base;
+using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.Application.DTOs
 {
-    public class ReviewGroup
+    public class ReviewGroup : ITransactionConvertible<ReviewGroup>
     {
         public required Transaction InitalTransaction { get; set; }
         public List<ReviewTransaction> Transactions { get; set; } = [];
@@ -108,7 +109,7 @@ namespace FinanceManager.Application.DTOs
         }
     }
 
-    public class ReviewTransaction
+    public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
     {
         public Guid Id { get; set; }
         public required BankRecord Record { get; set; }

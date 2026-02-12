@@ -1,27 +1,22 @@
 ﻿@code {
-    [Parameter, EditorRequired]
-    public required TransactionFilters Filters { get; set; }
+    [Parameter] public FilterQuery Filters { get; set; } = new();
 
-    [Parameter]
-    public RenderFragment? OuterContent { get; set; }
+    [Parameter] public RenderFragment? OuterContent { get; set; }
 
-    [Parameter]
-    public RenderFragment? InnerContent { get; set; }
+    [Parameter] public RenderFragment? InnerContent { get; set; }
 
-    [Parameter]
-    public EventCallback OnChange { get; set; }
-
-    public async Task OnClear()
-    {
-        Filters.ClearFilters();
-        await OnChange.InvokeAsync();
-    }
+    [Parameter] public EventCallback OnClear { get; set; }
 }
 
 <div class="outer-content">
     @OuterContent
     <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#filter-collapse" aria-expanded="false" aria-controls="filter-collapse">
+        <button class="btn btn-secondary dropdown-toggle"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#filter-collapse"
+                aria-expanded="false"
+                aria-controls="filter-collapse">
             Filters
         </button>
     </div>

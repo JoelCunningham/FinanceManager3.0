@@ -1,8 +1,9 @@
-﻿using FinanceManager.Domain.Entities;
+﻿using FinanceManager.Application.DTOs.Base;
+using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.Application.DTOs
 {
-    public class TransactionSummary
+    public class TransactionSummary : ITransactionConvertible<TransactionSummary>
     {
         public Guid Id { get; set; }
         public Category? Category { get; set; }

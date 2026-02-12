@@ -1,4 +1,6 @@
-﻿namespace FinanceManager.Application.DTOs;
+﻿using FinanceManager.Domain.Entities;
+
+namespace FinanceManager.Application.DTOs;
 
 public record FilterQuery
 {
@@ -7,13 +9,15 @@ public record FilterQuery
     public string? SearchTerm { get; set; }
     public bool SortDescending { get; set; } = true;
     public TransactionSortBy SortBy { get; set; } = TransactionSortBy.Date;
-    public TransferSource FilterBySource { get; set; } = TransferSource.All;
+    public TransferSource FilterSource { get; set; } = TransferSource.All;
+    public Category? FilterCategory { get; set; }
     public string? FilterAccountFrom { get; set; }
     public string? FilterAccountTo { get; set; }
     public DateTime? FilterDateFrom { get; set; }
     public DateTime? FilterDateTo { get; set; }
     public decimal? FilterAmountMin { get; set; }
     public decimal? FilterAmountMax { get; set; }
+    public ReviewStatus FilterStatus { get; set; } = ReviewStatus.All;
 }
 
 public enum TransactionSortBy
@@ -29,4 +33,11 @@ public enum TransferSource
     All,
     User,
     System,
+}
+
+public enum ReviewStatus
+{
+    All,
+    Reviewed,
+    Unreviewed,
 }

@@ -93,9 +93,9 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             }
 
             // Source filter
-            if (request.FilterBySource != TransferSource.All)
+            if (request.FilterSource != TransferSource.All)
             {
-                bool isUserCreated = request.FilterBySource == TransferSource.User;
+                bool isUserCreated = request.FilterSource == TransferSource.User;
                 query = query.Where(t => t.IsUserCreated == isUserCreated);
             }
 
