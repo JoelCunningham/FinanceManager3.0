@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="ARCHITECTURE.md" />
+    <File Path="README.md" />
+    <File Path="STYLEGUIDE.md" />
+  </Folder>
   <Project Path="FinanceManager.Application/FinanceManager.Application.csproj" />
   <Project Path="FinanceManager.Domain/FinanceManager.Domain.csproj" />
   <Project Path="FinanceManager.Infrastructure/FinanceManager.Infrastructure.csproj" />
