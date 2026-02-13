@@ -2,53 +2,69 @@
 
 public class ValidationModel
 {
-    public List<ErrorItem> Items { get; set; } = [];
-    public string? ErrorMessage { get; set; }
-    public bool HasSuccess { get; set; } = false;
-    public bool HasError => !string.IsNullOrEmpty(ErrorMessage) || Items.Count > 0;
+    public ValidationType Type { get; set; }
+    public string? ValidationMessage { get; set; }
+    public List<ValidationItem> Items { get; set; } = [];
 
-    public void ClearErrors()
+    public bool HasState => Type != ValidationType.None;
+    public bool HasError => Type == ValidationType.Error;
+    public bool HasSuccess => Type == ValidationType.Success;
+
+    public void ClearValidation()
     {
         Items = [];
-        ErrorMessage = null;
-    }
-
-    public void SetError(string message)
-    {
-        SetErrorMessage(message);
+        ValidationMessage = null;
+        Type = ValidationType.None;
     }
 
     public void SetError(Guid itemId, string message)
     {
         Items.Add(new() { Id = itemId });
-        SetErrorMessage(message);
+        SetMessage(message);
+        Type = ValidationType.Error;
     }
 
     public void SetError(Guid itemId, string field, string message)
     {
         Items.Add(new() { Id = itemId, Field = field });
-        SetErrorMessage(message);
+        SetMessage(message);
+        Type = ValidationType.Error;
     }
 
-    public void SetSucess()
+    public void SetValidationState(ValidationType type, string? message = null)
     {
-        ClearErrors();
-        HasSuccess = true;
+        if (!string.IsNullOrEmpty(message))
+        {
+            SetMessage(message);
+        }
+        Type = type;
     }
 
-    public List<Guid> GetErrorItemIds(string field)
+    public List<Guid> GetValidationItemIds(string field)
     {
         return [.. Items.Where(i => i.Field == field).Select(i => i.Id)];
     }
 
-    private void SetErrorMessage(string message)
+    private void SetMessage(string message)
     {
-        ErrorMessage = ErrorMessage is null ? message : "Multiple problems detected";
+        if (Type == ValidationType.Error)
+        {
+            ValidationMessage = ValidationMessage is null ? message : "Multiple problems detected";
+        }
+        ValidationMessage = message;
     }
 }
 
-public class ErrorItem
+public class ValidationItem
 {
     public Guid Id { get; set; }
     public string Field { get; set; } = string.Empty;
+}
+
+public enum ValidationType
+{
+    None,
+    Info,
+    Error,
+    Success,
 }

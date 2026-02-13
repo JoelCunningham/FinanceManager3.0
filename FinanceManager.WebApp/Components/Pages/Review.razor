@@ -3,6 +3,7 @@
 
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
+@inject CategorisationService CategorisationService
 
 @code {
     private ReviewPageModel Model = new();
@@ -17,7 +18,7 @@
         await Model.ReviewPagination.UpdateResults();
     }
 
-    private async Task SaveGroup(ReviewGroup group)
+    private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
     {
         if (!Model.ValidateGroup(group)) return;
 
@@ -25,33 +26,92 @@
         {
             await TransactionService.SaveTransactionGroupAsync(group);
             await Model.ReviewPagination.UpdateResults();
+            if (showMessage)
+            {
+                Model.Validation.SetValidationState(ValidationType.Success, $"Saved transaction successfully");
+            }
         }
         catch (Exception)
         {
-            Model.Validation.SetError("An unexpected error occurred. Please try again");
+            Model.Validation.SetValidationState(ValidationType.Error, "An unexpected error occurred. Please try again");
         }
         Model.Clean();
     }
+
+    private async Task AutoAssign()
+    {
+        var assignedCount = 0;
+
+        foreach (var group in Model.ReviewPagination.Result.Items)
+        {
+            foreach (var transaction in group.Transactions)
+            {
+                var category = await CategorisationService.SuggestCategory(transaction);
+                if (category is not null)
+                {
+                    transaction.Category = category;
+                    transaction.AutoCategorised = true;
+                    assignedCount++;
+                }
+            }
+        }
+
+        if (assignedCount > 0)
+        {
+            Model.Validation.SetValidationState(ValidationType.Success, $"Auto assigned {assignedCount} transactions");
+        } 
+        else
+        {
+            Model.Validation.SetValidationState(ValidationType.Info, "Not enough information to assign categories");
+        }
+    }
+
+    private async Task AcceptAll()
+    {
+        var savedCount = 0;
+
+        foreach (var group in Model.ReviewPagination.Result.Items)
+        {
+            if (Model.ValidateGroup(group))
+            {
+                await SaveGroup(group, false);
+                savedCount++;
+            }
+        }
+
+        if (savedCount > 0)
+        {
+            Model.Validation.SetValidationState(ValidationType.Success, $"Saved {savedCount} transactions");
+        }
+    }
 }
 
-<PageTitle>Review Transactions</PageTitle>
+<PageTitle>Review Transaction</PageTitle>
 
-<ErrorPopup Message="@Model.Validation.ErrorMessage" IsVisible="Model.Validation.HasError" OnClose="Model.Validation.ClearErrors" />
+<Popup Type="Model.Validation.Type" Message="@Model.Validation.ValidationMessage" IsVisible="Model.Validation.HasState" OnClose="Model.Validation.ClearValidation" />
 
 <h1 class="page-heading">Review transactions</h1>
 
 @if (Model.ReviewPagination.Result.TotalItems > 0)
 {
-    <div class="mb-3 text-muted">
-        Showing @Model.ReviewPagination.Result.StartItem - @Model.ReviewPagination.Result.EndItem of @Model.ReviewPagination.Result.TotalItems unreviewed transactions
+    <div class="mb-3 text-muted d-flex align-bottom">
+        <span class="align-self-end">
+            Showing @Model.ReviewPagination.Result.StartItem -
+            @Model.ReviewPagination.Result.EndItem of
+            @Model.ReviewPagination.Result.TotalItems unreviewed transactions
+        </span>
+        <div class="ms-auto">
+            <button class="btn btn-outline-info me-2" @onclick="AutoAssign">Auto Assign</button>
+            <button class="btn btn-outline-success" @onclick="AcceptAll">Accept Reviewed</button>
+        </div>
     </div>
 
     @foreach (var transactionGroup in Model.ReviewPagination.Result.Items)
     {
         <TransactionRow TransactionGroup="transactionGroup"
                         Categories="transactionGroup.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
-                        ErrorCategoryIds="@Model.Validation.GetErrorItemIds("category")"
-                        ErrorAmountIds="@Model.Validation.GetErrorItemIds("amount")"
+                        ErrorCategoryIds="Model.Validation.GetValidationItemIds(Model.CategoryKey)"
+                        ErrorAmountIds="Model.Validation.GetValidationItemIds(Model.AmountKey)"
                         OnSave="() => SaveGroup(transactionGroup)"
                         OnFindTransfer="() => Model.OnFindTransfer(transactionGroup)"
                         OnFindReimbursement="(t) => Model.OnFindReimbursement(transactionGroup, t)" />

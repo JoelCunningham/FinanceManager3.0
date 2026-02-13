@@ -19,7 +19,7 @@ public class ImportPageModel
     {
         SelectedBank = null;
         ImportedTransactions = null;
-        UploadValidation.ClearErrors();
+        UploadValidation.ClearValidation();
         IsPreviewOpen = false;
         IsSuccessOpen = false;
     }
@@ -27,33 +27,33 @@ public class ImportPageModel
     public void UploadSuccess(IEnumerable<ParsedTransaction> records)
     {
         ImportedTransactions = [.. records];
-        UploadValidation.SetSucess();
+        UploadValidation.SetValidationState(ValidationType.Success);
         IsPreviewOpen = false;
     }
 
     public void UploadError(Exception exception)
     {
         ImportedTransactions = null;
-        UploadValidation.SetError(GetUploadErrorMessage(exception));
+        UploadValidation.SetValidationState(ValidationType.Error, GetUploadErrorMessage(exception));
         IsPreviewOpen = false;
     }
 
     public void ImportSuccess()
     {
-        ImportValidation.SetSucess();
+        UploadValidation.SetValidationState(ValidationType.Success);
         IsSuccessOpen = true;
     }
 
     public void ImportError()
     {
-        ImportValidation.SetError("An unexpected error occurred. Please try again.");
+        UploadValidation.SetValidationState(ValidationType.Error, "An unexpected error occurred. Please try again.");
         IsSuccessOpen = false;
     }
 
     public void NoTransactionsFound()
     {
         ImportedTransactions = null;
-        UploadValidation.SetError("No new transactions were found in the uploaded file.");
+        UploadValidation.SetValidationState(ValidationType.Error, "No new transactions were found in the uploaded file.");
         IsPreviewOpen = false;
     }
 

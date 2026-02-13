@@ -33,6 +33,11 @@
             // TODO Maybe a warning?
         }
     }
+
+    private void CategoryChanged(ReviewTransaction transaction)
+    {
+        transaction.AutoCategorised = false;
+    }
 }
 
 <div class="transaction-group">
@@ -68,11 +73,11 @@
             @foreach (var (transaction, index) in TransactionGroup.Transactions.Select((t, i) => (t, i)))
             {
                 <div class="transactions-row">
-                    <CategorySelect Categories="Categories"
-                                    AllowAll="false"
-                                    HasError="ErrorCategoryIds.Contains(transaction.Id)"
-                                    @bind-SelectedCategory="transaction.Category"
-                                    @bind-SelectedCategory:after="StateHasChanged" />
+                    <CategoryInput Categories="Categories"
+                                   HasError="ErrorCategoryIds.Contains(transaction.Id)"
+                                   IsAutoCategorised="transaction.AutoCategorised"
+                                   @bind-SelectedCategory="transaction.Category"
+                                   @bind-SelectedCategory:after="() => CategoryChanged(transaction)" />
                     <input class="form-control"
                            type="date"
                            max="@TransactionGroup.InitalTransaction.Date.ToString("yyyy-MM-dd")"

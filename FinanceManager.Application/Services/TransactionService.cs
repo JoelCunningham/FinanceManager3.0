@@ -1,154 +1,155 @@
-﻿using FinanceManager.Application.DTOs;
+﻿namespace FinanceManager.Application.Services;
+
+using FinanceManager.Application.DTOs;
 using FinanceManager.Application.DTOs.Base;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
 
-namespace FinanceManager.Application.Services
+public class TransactionService(
+    ITransferRepository TransferRepository,
+    ITransactionRepository TransactionRepository,
+    IReimbursementRepository ReimbursementRepository,
+    IMachineLearningRepository MachineLearningRepository,
+    IUnitOfWork UnitOfWork
+)
 {
-    public class TransactionService(
-        ITransferRepository transferRepository,
-        ITransactionRepository transactionRepository,
-        IReimbursementRepository reimbursementRepository,
-        IUnitOfWork unitOfWork
-    )
+    public async Task<PagedResult<T>> GetPagedAsync<T>(FilterQuery query) where T : ITransactionConvertible<T>
     {
-        public async Task<PagedResult<T>> GetPagedAsync<T>(FilterQuery query) where T : ITransactionConvertible<T>
-        {
-            var pagedTransactions = await transactionRepository.GetPagedAsync(query);
+        var pagedTransactions = await TransactionRepository.GetPagedAsync(query);
 
-            return new PagedResult<T>
-            {
-                Items = [.. pagedTransactions.Items.Select(T.FromTransaction)],
-                TotalItems = pagedTransactions.TotalItems,
-                CurrentPage = pagedTransactions.CurrentPage,
-                PageSize = pagedTransactions.PageSize
-            };
+        return new PagedResult<T>
+        {
+            Items = [.. pagedTransactions.Items.Select(T.FromTransaction)],
+            TotalItems = pagedTransactions.TotalItems,
+            CurrentPage = pagedTransactions.CurrentPage,
+            PageSize = pagedTransactions.PageSize
+        };
+    }
+
+    public async Task SaveTransactionGroupAsync(ReviewGroup group)
+    {
+        if (group.Transactions.Count == 0)
+        {
+            throw new ArgumentException("Transaction group must contain at least one transaction.");
+        }
+        if (group.Transfers is not null && group.Transactions.Count > 1)
+        {
+            throw new ArgumentException("Transfer transactions cannot be split.");
         }
 
-        public async Task SaveTransactionGroupAsync(ReviewGroup group)
+        if (group.Transfers is null)
         {
-            if (group.Transactions.Count == 0)
+            foreach (var transaction in group.Transactions)
             {
-                throw new ArgumentException("Transaction group must contain at least one transaction.");
-            }
-            if (group.Transfers is not null && group.Transactions.Count > 1)
-            {
-                throw new ArgumentException("Transfer transactions cannot be split.");
-            }
-
-            if (group.Transfers is null)
-            {
-                foreach (var transaction in group.Transactions)
+                if (transaction.Reimburses is null && transaction.Category is not null)
                 {
-                    if (transaction.Reimburses is null)
-                    {
-                        await SaveTransactionAsync(transaction);
-                    }
-                    else
-                    {
-                        await AddReimbursementAsync(transaction.Reimburses.Id, transaction.Id);
-                    }
+                    await SaveTransactionAsync(transaction);
+                    await MachineLearningRepository.SaveAsync(transaction.Category, transaction.Description);
+                }
+                else if (transaction.Reimburses is not null)
+                {
+                    await AddReimbursementAsync(transaction.Reimburses.Id, transaction.Id);
                 }
             }
-            else
-            {
-                await ConvertToTransferAsync(group.InitalTransaction.Id, group.Transfers.Id);
-            }
+        }
+        else
+        {
+            await ConvertToTransferAsync(group.InitalTransaction.Id, group.Transfers.Id);
+        }
+    }
+
+    private async Task SaveTransactionAsync(ReviewTransaction transaction)
+    {
+        if (transaction.Amount == 0)
+        {
+            throw new ArgumentException("Transaction must have a nonzero amount.");
+        }
+        if (transaction.Category is null)
+        {
+            throw new ArgumentException("Transaction must have a category.");
         }
 
-        private async Task SaveTransactionAsync(ReviewTransaction transaction)
+        var entity = transaction.ToTransaction();
+        entity.IsReviewed = true;
+
+        await using var operations = UnitOfWork.BeginTransaction();
+
+        try
         {
-            if (transaction.Amount == 0)
-            {
-                throw new ArgumentException("Transaction must have a nonzero amount.");
-            }
-            if (transaction.Category is null)
-            {
-                throw new ArgumentException("Transaction must have a category.");
-            }
+            await TransactionRepository.CreateOrUpdateAsync(entity);
+            await operations.CommitAsync();
+        }
+        catch
+        {
+            await operations.RollbackAsync();
+            throw;
+        }
+    }
 
-            var entity = transaction.ToTransaction();
-            entity.IsReviewed = true;
-
-            await using var operations = unitOfWork.BeginTransaction();
-
-            try
-            {
-                await transactionRepository.CreateOrUpdateAsync(entity);
-                await operations.CommitAsync();
-            }
-            catch
-            {
-                await operations.RollbackAsync();
-                throw;
-            }
+    private async Task AddReimbursementAsync(Guid transactionId, Guid reimbursementId)
+    {
+        if (transactionId == reimbursementId)
+        {
+            throw new ArgumentException("Transaction IDs must be different.");
         }
 
-        private async Task AddReimbursementAsync(Guid transactionId, Guid reimbursementId)
+        await using var operations = UnitOfWork.BeginTransaction();
+
+        try
         {
-            if (transactionId == reimbursementId)
-            {
-                throw new ArgumentException("Transaction IDs must be different.");
-            }
+            var transaction = await TransactionRepository.GetByIdAsync(transactionId);
+            var reimbursement = EntityConverter.TransactionToReimbursement(await TransactionRepository.GetByIdAsync(reimbursementId));
 
-            await using var operations = unitOfWork.BeginTransaction();
+            await TransactionRepository.DeleteAsync(reimbursementId);
+            await ReimbursementRepository.CreateAsync(reimbursement);
 
-            try
-            {
-                var transaction = await transactionRepository.GetByIdAsync(transactionId);
-                var reimbursement = EntityConverter.TransactionToReimbursement(await transactionRepository.GetByIdAsync(reimbursementId));
+            transaction.Reimbursements ??= [];
+            transaction.Reimbursements.Add(reimbursement);
+            transaction.IsReviewed = false;
 
-                await transactionRepository.DeleteAsync(reimbursementId);
-                await reimbursementRepository.CreateAsync(reimbursement);
+            await TransactionRepository.UpdateAsync(transaction);
 
-                transaction.Reimbursements ??= [];
-                transaction.Reimbursements.Add(reimbursement);
-                transaction.IsReviewed = false;
+            await operations.CommitAsync();
+        }
+        catch
+        {
+            await operations.RollbackAsync();
+            throw;
+        }
+    }
 
-                await transactionRepository.UpdateAsync(transaction);
-
-                await operations.CommitAsync();
-            }
-            catch
-            {
-                await operations.RollbackAsync();
-                throw;
-            }
+    private async Task ConvertToTransferAsync(Guid transactionIdA, Guid transactionIdB)
+    {
+        if (transactionIdA == transactionIdB)
+        {
+            throw new ArgumentException("Transaction IDs must be different.");
         }
 
-        private async Task ConvertToTransferAsync(Guid transactionIdA, Guid transactionIdB)
+        await using var operations = UnitOfWork.BeginTransaction();
+
+        try
         {
-            if (transactionIdA == transactionIdB)
+            var transactionA = await TransactionRepository.GetByIdAsync(transactionIdA);
+            var transactionB = await TransactionRepository.GetByIdAsync(transactionIdB);
+
+            if (transactionA.Record.Transactions.Count > 1 || transactionB.Record.Transactions.Count > 1)
             {
-                throw new ArgumentException("Transaction IDs must be different.");
+                throw new InvalidOperationException("Split transactions cannot be converted to transfers.");
             }
 
-            await using var operations = unitOfWork.BeginTransaction();
+            await TransactionRepository.DeleteAsync(transactionA.Id);
+            await TransactionRepository.DeleteAsync(transactionB.Id);
 
-            try
-            {
-                var transactionA = await transactionRepository.GetByIdAsync(transactionIdA);
-                var transactionB = await transactionRepository.GetByIdAsync(transactionIdB);
+            var transfer = EntityConverter.BankRecordPairToTransfer(transactionA.Record, transactionB.Record);
 
-                if (transactionA.Record.Transactions.Count > 1 || transactionB.Record.Transactions.Count > 1)
-                {
-                    throw new InvalidOperationException("Split transactions cannot be converted to transfers.");
-                }
+            await TransferRepository.CreateAsync(transfer);
 
-                await transactionRepository.DeleteAsync(transactionA.Id);
-                await transactionRepository.DeleteAsync(transactionB.Id);
-
-                var transfer = EntityConverter.BankRecordPairToTransfer(transactionA.Record, transactionB.Record);
-
-                await transferRepository.CreateAsync(transfer);
-
-                await operations.CommitAsync();
-            }
-            catch
-            {
-                await operations.RollbackAsync();
-                throw;
-            }
+            await operations.CommitAsync();
+        }
+        catch
+        {
+            await operations.RollbackAsync();
+            throw;
         }
     }
 }

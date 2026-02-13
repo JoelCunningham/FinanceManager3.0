@@ -1,8 +1,8 @@
-﻿using FinanceManager.Application.DTOs;
+﻿namespace FinanceManager.WebApp.Models;
+
+using FinanceManager.Application.DTOs;
 using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Models.Base;
-
-namespace FinanceManager.WebApp.Models;
 
 public class ReviewPageModel
 {
@@ -20,6 +20,9 @@ public class ReviewPageModel
 
     public bool IsTransferSearchOpen { get; set; } = false;
     public bool IsReimburseSearchOpen { get; set; } = false;
+
+    public string AmountKey = "amount";
+    public string CategoryKey = "category";
 
     public void Clean()
     {
@@ -47,7 +50,7 @@ public class ReviewPageModel
 
     public bool ValidateGroup(ReviewGroup group)
     {
-        Validation.ClearErrors();
+        Validation.ClearValidation();
 
         foreach (var transaction in group.Transactions)
         {

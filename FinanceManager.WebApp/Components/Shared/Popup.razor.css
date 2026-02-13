@@ -1,9 +1,8 @@
-.error-popup {
+.popup {
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: var(--bs-danger);
     color: var(--bs-white);
     padding: 1rem 1.5rem;
     border-radius: var(--bs-border-radius-lg);
@@ -13,6 +12,18 @@
     gap: 1rem;
     max-width: 600px;
     animation: slideDown 0.3s ease-out;
+
+    &.info {
+        background-color: var(--bs-info);
+    }
+
+    &.error {
+        background-color: var(--bs-danger);
+    }
+
+    &.success {
+        background-color: var(--bs-success);
+    }
 
     p {
         margin-bottom: 0;

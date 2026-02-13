@@ -5,7 +5,19 @@
 
     [Parameter] public IEnumerable<Category> Categories { get; set; } = [];
 
+    [Parameter] public bool HasError { get; set; } = true;
+
+    [Parameter] public bool IsAutoCategorised { get; set; } = false;
+
     private string? SelectedCategoryId;
+
+    private string GetSelectClass()
+    {
+        var builder = new StringBuilder("form-select");
+        if (HasError) builder.Append(" is-invalid");
+        if (IsAutoCategorised) builder.Append(" auto-categorised");
+        return builder.ToString();
+    }
 
     protected override void OnParametersSet()
     {
@@ -21,15 +33,16 @@
         await SelectedCategoryChanged.InvokeAsync(SelectedCategory);
     }
 }
-
-<div class="form-floating">
-    <select class="form-select" @bind="SelectedCategoryId" @bind:after="HandleCategoryChange">
-        <option value="">All categories</option>
-        <option value="None">Uncategorised</option>
+<div>
+    @if (IsAutoCategorised)
+    {
+        <Icon Name="stars" />
+    }
+    <select class="@GetSelectClass()" @bind="SelectedCategoryId" @bind:after="HandleCategoryChange">
+        <option disabled selected value="">Select category</option>
         @foreach (var category in Categories)
         {
             <option value="@category.Id">@category.Group.Name - @category.Name</option>
         }
     </select>
-    <label for="category">Category</label>
 </div>

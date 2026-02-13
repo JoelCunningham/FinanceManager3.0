@@ -1,12 +1,13 @@
-﻿using FinanceManager.Domain.Entities.Base;
+﻿namespace FinanceManager.Domain.Entities;
 
-namespace FinanceManager.Domain.Entities
+using FinanceManager.Domain.Entities.Base;
+
+public sealed class CategoryGroup : IEntity
 {
-    public sealed class CategoryGroup : IEntity
-    {
-        public Guid Id { get; set; }
-        public required string Name { get; set; }
-        public ICollection<Category>? Categories { get; set; }
-        public bool IsIncome { get; set; }
-    }
+    public Guid Id { get; set; }
+
+    public bool IsIncome { get; set; }
+    public required string Name { get; set; }
+
+    public ICollection<Category>? Categories { get; set; }
 }

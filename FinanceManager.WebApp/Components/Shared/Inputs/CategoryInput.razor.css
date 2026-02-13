@@ -1,0 +1,18 @@
+div {
+    display: flex;
+    position: relative;
+
+    .auto-categorised {
+        padding-left: 26px;
+        outline: 0;
+        box-shadow: 0 0 0 .25rem rgba(13,202,240, .25);
+    }
+}
+
+    div ::deep .bi {
+        position: absolute;
+        height: 16px;
+        width: 16px;
+        left: 8px;
+        top: 10px;
+    }
