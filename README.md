@@ -1,81 +1,156 @@
-﻿# Finance Manager 3.0
+﻿<div align="center">
 
-A personal finance management application built with Blazor Server that helps you import, categorize, and manage financial transactions from multiple banks.
+# 💰 Finance Manager 3.0
 
-## Features
+**Your Personal Finance Companion**
 
-- **Transaction Import**: Import transactions from multiple bank file formats
-  - Westpac
-  - Vanguard
-- **Transaction Management**: View, categorize, and manage imported transactions
-- **Category Management**: Organize transactions with custom categories
-- **Transfers**: Track transfers between accounts
-- **Reimbursements**: Manage reimbursable expenses
-- **Interactive UI**: Built with Blazor Server for a responsive, interactive experience
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![C# 14](https://img.shields.io/badge/C%23-14.0-239120?logo=csharp)](https://learn.microsoft.com/en-us/dotnet/csharp/)
+[![Blazor](https://img.shields.io/badge/Blazor-Server-512BD4?logo=blazor)](https://blazor.net/)
+[![License](https://img.shields.io/github/license/JoelCunningham/FinanceManager3.0)](LICENSE)
 
-## Tech Stack
+*A modern finance management application built with Blazor Server that helps you import, categorize, and manage financial transactions from multiple banks.*
 
-- **.NET 10** with C# 14.0
-- **Blazor Server**: Interactive server-side rendering
-- **Clean Architecture**: Separated into Domain, Application, Infrastructure, and WebApp layers
+[Features](#-features) • [Getting Started](#-getting-started) • [Architecture](#-architecture) • [Documentation](#-documentation)
 
-## Project Structure
+</div>
+
+---
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 📥 Transaction Import
+Import transactions from multiple bank file formats including Westpac and Vanguard.
+
+### 📊 Transaction Management
+View, filter, and categorize your imported transactions with ease.
+
+</td>
+<td width="50%">
+
+### 🏷️ Category Management
+Organize transactions with custom categories and category groups.
+
+### 🔄 Transfers & Reimbursements
+Track inter-account transfers and manage reimbursable expenses.
+
+</td>
+</tr>
+</table>
+
+### 🎨 Modern UI
+Built with **Blazor Server** for a responsive, interactive experience with real-time updates.
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Description |
+|------------|-------------|
+| ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet) | Latest .NET framework with C# 14.0 |
+| ![Blazor](https://img.shields.io/badge/Blazor-Server-512BD4?style=flat-square&logo=blazor) | Interactive server-side rendering |
+| ![Architecture](https://img.shields.io/badge/Architecture-Clean-blue?style=flat-square) | Separated into four distinct layers |
+
+---
+
+## 📁 Project Structure
 
 ```
-FinanceManager
-├── FinanceManager.Domain          # Core business entities and domain logic
-├── FinanceManager.Application     # Business logic and services
-├── FinanceManager.Infrastructure  # Data access, parsers, and external integrations
-└── FinanceManager.WebApp          # Blazor Server UI application
+📦 FinanceManager
+├── 🏛️ FinanceManager.Domain          # Core business entities and domain logic
+├── 💼 FinanceManager.Application     # Business logic and services
+├── 🔧 FinanceManager.Infrastructure  # Data access, parsers, and external integrations
+└── 🌐 FinanceManager.WebApp          # Blazor Server UI application
 ```
 
-## Getting Started
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- .NET 10 SDK or later
-- A code editor (Visual Studio 2026 recommended)
+- ✅ [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later
+- ✅ [Visual Studio 2022](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/) (recommended)
 
-### Running the Application
+### 📦 Installation
 
-1. Clone the repository:
+1. **Clone the repository**
    ```bash
    git clone https://github.com/JoelCunningham/FinanceManager3.0.git
    cd FinanceManager3.0
    ```
 
-2. Restore dependencies:
+2. **Restore dependencies**
    ```bash
    dotnet restore
    ```
 
-3. Run the application:
+3. **Run the application**
    ```bash
    cd FinanceManager.WebApp
    dotnet run
    ```
 
-4. Open your browser and navigate to `https://localhost:5001` (or the URL shown in the console)
+4. **Open in browser** 🌐
+   
+   Navigate to `https://localhost:5001` (or the URL shown in the console)
 
-## Architecture
+---
+
+## 🏗️ Architecture
 
 The application follows **Clean Architecture** principles with four distinct layers:
 
-- **Domain**: Core business entities and domain logic
-- **Application**: Business logic, services, and interfaces
-- **Infrastructure**: Data access, file parsers, and external integrations
-- **WebApp**: Blazor Server UI and components
+```
+┌─────────────────────────────────────────┐
+│         🌐 Presentation Layer           │  Blazor Server UI
+├─────────────────────────────────────────┤
+│        🔧 Infrastructure Layer          │  Data Access & External Services
+├─────────────────────────────────────────┤
+│          💼 Application Layer           │  Business Logic & Use Cases
+├─────────────────────────────────────────┤
+│             🏛️ Domain Layer             │  Core Business Entities
+└─────────────────────────────────────────┘
+```
+```
+FinanceManager
+├── FinanceManager.Domain          
+├── FinanceManager.Application     
+├── FinanceManager.Infrastructure  
+└── FinanceManager.WebApp         
+```
 
-Dependencies flow inward toward the domain, ensuring the core business logic remains independent of external concerns.
+Dependencies flow **inward** toward the domain, ensuring core business logic remains independent of external concerns.
 
-> 📚 For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md)
+> 📚 **For detailed documentation**, see [ARCHITECTURE.md](ARCHITECTURE.md)
 
-**Note**: Currently uses in-memory storage. Database implementation planned for future releases.
+> ⚠️ **Note**: Currently uses in-memory storage. Database implementation planned for future releases.
 
-## Contributing
+---
 
-This is a personal project, but suggestions and improvements are welcome! Feel free to open an issue or submit a pull request.
+## 📚 Documentation
 
-## License
+| Document | Description |
+|----------|-------------|
+| [📖 Architecture Guide](ARCHITECTURE.md) | Detailed architecture and design patterns |
+| [📝 Style Guide](STYLEGUIDE.md) | Coding standards and conventions |
+
+---
+
+## 📄 License
 
 This project is licensed under the terms specified in the repository.
+
+---
+
+<div align="center">
+
+**Built  by Joel Cunningham**
+
+[⬆ Back to Top](#-finance-manager-30)
+
+</div>
