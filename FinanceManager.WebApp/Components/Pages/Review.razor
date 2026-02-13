@@ -13,7 +13,9 @@
         Model.ReviewPagination.FetchPagedResult = TransactionService.GetPagedAsync<ReviewGroup>;
         Model.TransferPagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
         Model.ReimbursePagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
+
         Model.Categories = (await CategoryService.GetCategories()).ToList();
+        Model.HasMemories = await CategorisationService.HasMemories();
 
         await Model.ReviewPagination.UpdateResults();
     }
@@ -91,6 +93,11 @@
 <Popup Type="Model.Validation.Type" Message="@Model.Validation.ValidationMessage" IsVisible="Model.Validation.HasState" OnClose="Model.Validation.ClearValidation" />
 
 <h1 class="page-heading">Review transactions</h1>
+
+@if (!Model.HasMemories)
+{
+    <div class="alert alert-info" role="alert">Review and correct transactions to help the automatic categorisation get smarter and more accurate.</div>
+}
 
 @if (Model.ReviewPagination.Result.TotalItems > 0)
 {

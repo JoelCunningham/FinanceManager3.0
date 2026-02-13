@@ -24,6 +24,12 @@ public class CategorisationService(IMachineLearningRepository MachineLearningRep
         return null;
     }
 
+    public async Task<bool> HasMemories()
+    {
+        var memories = await MachineLearningRepository.GetAllAsync();
+        return memories.Any();
+    }
+
     private Category? SuggestBySimilarity(string description, IEnumerable<Category> categories, IEnumerable<MachineLearning> memories)
     {
         var categoryScores = new Dictionary<Category, int>();

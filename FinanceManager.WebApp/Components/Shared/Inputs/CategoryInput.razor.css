@@ -15,4 +15,5 @@ div {
         width: 16px;
         left: 8px;
         top: 10px;
+        cursor: pointer;
     }

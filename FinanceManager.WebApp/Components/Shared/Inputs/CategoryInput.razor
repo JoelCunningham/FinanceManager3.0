@@ -1,3 +1,5 @@
+@inject IJSRuntime JSRuntime
+
 @code {
     [Parameter] public Category? SelectedCategory { get; set; }
 
@@ -10,6 +12,7 @@
     [Parameter] public bool IsAutoCategorised { get; set; } = false;
 
     private string? SelectedCategoryId;
+    private ElementReference selectElement;
 
     private string GetSelectClass()
     {
@@ -32,13 +35,18 @@
 
         await SelectedCategoryChanged.InvokeAsync(SelectedCategory);
     }
+
+    private async Task OpenSelect()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", "arguments[0].focus(); arguments[0].click();", selectElement);
+    }
 }
 <div>
     @if (IsAutoCategorised)
     {
-        <Icon Name="stars" />
+        <Icon Name="stars" @onclick="OpenSelect" />
     }
-    <select class="@GetSelectClass()" @bind="SelectedCategoryId" @bind:after="HandleCategoryChange">
+    <select @ref="selectElement" class="@GetSelectClass()" @bind="SelectedCategoryId" @bind:after="HandleCategoryChange">
         <option disabled selected value="">Select category</option>
         @foreach (var category in Categories)
         {
