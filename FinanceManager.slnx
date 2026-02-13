@@ -1,6 +1,9 @@
 <Solution>
-  <Folder Name="/Solution Items/">
+  <Folder Name="/Config/">
+    <File Path=".github/instructions/.instructions.md" />
     <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/Documentation/">
     <File Path="ARCHITECTURE.md" />
     <File Path="README.md" />
     <File Path="STYLEGUIDE.md" />
