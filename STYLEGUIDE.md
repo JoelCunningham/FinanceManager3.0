@@ -19,19 +19,20 @@ This document defines the coding standards and conventions for the Finance Manag
 5. **Consistency**: Follow existing patterns in the codebase
 
 ## Naming Conventions
-| Element                          | Convention                       | Example                           |
-| -------------------------------- | -------------------------------- | --------------------------------- |
-| Classes                          | PascalCase                       | `Transaction`, `ImportService`    |
+| Element                          | Convention                           | Example                           |
+| -------------------------------- | ------------------------------------ | --------------------------------- |
+| Classes                          | PascalCase                           | `Transaction`, `ImportService`    |
 | Interfaces                       | PascalCase <br/> `I` prefix          | `ITransactionRepository`          |
-| Properties                       | PascalCase                       | `BankName`, `Amount`              |
+| Properties                       | PascalCase                           | `BankName`, `Amount`              |
 | Boolean properties               | PascalCase <br/> `Is/Has/Can` prefix | `IsReviewed`, `HasErrors`         |
-| Methods                          | PascalCase                       | `GetParser()`                     |
+| Methods                          | PascalCase                           | `GetParser()`                     |
 | Async methods                    | PascalCase <br/> `Async` suffix      | `SaveAsync()`                     |
-| Method parameters                | camelCase                        | `transaction`, `bankName`         |
-| Primary constructor parameters   | PascalCase                       | `Service(IRepository Repository)` |
-| Blazor parameters                | PascalCase                       | `SelectedBank`                    |
+| Method parameters                | camelCase                            | `transaction`, `bankName`         |
+| Primary constructor parameters   | PascalCase                           | `Service(IRepository Repository)` |
+| Blazor parameters                | PascalCase                           | `SelectedBank`                    |
 | Event callbacks                  | PascalCase <br/> `On` prefix         | `OnFileUploaded`                  |
-| CSS classes                      | kebab-case                       | `transaction-list` |
+| CSS classes                      | kebab-case                           | `transaction-list`                |
+| HTML ids 					       | camelCase                            | `autoAssign`, `cateogryInput`     |                  |
 
 ## C# Language Features
 

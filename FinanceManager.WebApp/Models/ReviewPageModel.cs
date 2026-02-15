@@ -19,6 +19,8 @@ public class ReviewPageModel
     public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
 
     public bool HasMemories { get; set; } = true;
+    public bool IsAutoAssignmentEnabled { get; set; } = true;
+
     public bool IsTransferSearchOpen { get; set; } = false;
     public bool IsReimburseSearchOpen { get; set; } = false;
 

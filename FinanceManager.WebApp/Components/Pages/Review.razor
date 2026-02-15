@@ -11,6 +11,8 @@
     protected override async Task OnInitializedAsync()
     {
         Model.ReviewPagination.FetchPagedResult = TransactionService.GetPagedAsync<ReviewGroup>;
+        Model.ReviewPagination.AfterFetchPagedResult = OnFetch;
+
         Model.TransferPagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
         Model.ReimbursePagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
 
@@ -18,6 +20,14 @@
         Model.HasMemories = await CategorisationService.HasMemories();
 
         await Model.ReviewPagination.UpdateResults();
+    }
+
+    private async Task OnFetch()
+    {
+        if (Model.IsAutoAssignmentEnabled)
+        {
+            await AutoAssign();
+        }
     }
 
     private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
@@ -61,29 +71,45 @@
         if (assignedCount > 0)
         {
             Model.Validation.SetValidationState(ValidationType.Success, $"Auto assigned {assignedCount} transactions");
-        } 
+        }
         else
         {
             Model.Validation.SetValidationState(ValidationType.Info, "Not enough information to assign categories");
         }
     }
 
-    private async Task AcceptAll()
+    private void UnAutoAssign()
     {
-        var savedCount = 0;
+        var unassignedCount = 0;
 
         foreach (var group in Model.ReviewPagination.Result.Items)
         {
-            if (Model.ValidateGroup(group))
+            foreach (var transaction in group.Transactions)
             {
-                await SaveGroup(group, false);
-                savedCount++;
+                if (transaction.AutoCategorised)
+                {
+                    transaction.Category = null;
+                    transaction.AutoCategorised = false;
+                    unassignedCount++;
+                }
             }
         }
 
-        if (savedCount > 0)
+        if (unassignedCount > 0)
         {
-            Model.Validation.SetValidationState(ValidationType.Success, $"Saved {savedCount} transactions");
+            Model.Validation.SetValidationState(ValidationType.Success, $"Reverted {unassignedCount} assignments");
+        }
+    }
+
+    private async Task HandleAutoAssignChange()
+    {
+        if (Model.IsAutoAssignmentEnabled)
+        {
+            await AutoAssign();
+        }
+        else
+        {
+            UnAutoAssign();
         }
     }
 }
@@ -108,8 +134,7 @@
             @Model.ReviewPagination.Result.TotalItems unreviewed transactions
         </span>
         <div class="ms-auto">
-            <button class="btn btn-outline-info me-2" @onclick="AutoAssign">Auto Assign</button>
-            <button class="btn btn-outline-success" @onclick="AcceptAll">Accept Reviewed</button>
+            <AutoAssignCheckbox @bind-IsChecked="Model.IsAutoAssignmentEnabled" @bind-IsChecked:after="HandleAutoAssignChange" />
         </div>
     </div>
 

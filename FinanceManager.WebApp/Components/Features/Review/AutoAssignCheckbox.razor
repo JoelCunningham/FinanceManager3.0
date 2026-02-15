@@ -1,0 +1,17 @@
+@code {
+    [Parameter] public bool IsChecked { get; set; }
+
+    [Parameter] public EventCallback<bool> IsCheckedChanged { get; set; }
+}
+
+<div class="form-check">
+    <input class="form-check-input"
+           type="checkbox"
+           id="autoAssign"
+           @bind="IsChecked"
+           @bind:event="onchange"
+           @bind:after="() => IsCheckedChanged.InvokeAsync(IsChecked)">
+    <label class="form-check-label" for="autoAssign">
+        Auto assign categories
+    </label>
+</div>
