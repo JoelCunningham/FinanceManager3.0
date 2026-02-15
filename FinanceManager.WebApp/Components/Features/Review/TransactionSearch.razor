@@ -1,0 +1,26 @@
+@code {
+    [Parameter] public PaginationModel<FilterQuery, TransactionSummary> PaginationModel { get; set; } = new();
+
+    [Parameter] public List<Category> Categories { get; set; } = [];
+
+    [Parameter] public EventCallback<TransactionSummary> OnSelect { get; set; }
+}
+
+<TransactionSearchActions Filters="PaginationModel.Query" Categories="Categories" OnFilterChanged="PaginationModel.UpdateResults" />
+
+@if (PaginationModel.Result.TotalItems > 0)
+{
+    <div class="mb-2 text-muted small">
+        Showing @PaginationModel.Result.StartItem - @PaginationModel.Result.EndItem of @PaginationModel.Result.TotalItems transactions
+    </div>
+
+    <TransactionSearchResults Transactions="PaginationModel.Result.Items" OnSelect="OnSelect" />
+
+    <Pagination PagedResult="PaginationModel.Result" OnPageChanged="PaginationModel.SetPage" />
+}
+else
+{
+    <div class="alert alert-info" role="alert">
+        No matching transactions found. Try adjusting the filters.
+    </div>
+}

@@ -103,4 +103,27 @@ public class ReviewPageModel
         IsTransferSearchOpen = false;
         Clean();
     }
+
+    public void RevertAutoAssign()
+    {
+        var unassignedCount = 0;
+
+        foreach (var group in ReviewPagination.Result.Items)
+        {
+            foreach (var transaction in group.Transactions)
+            {
+                if (transaction.AutoCategorised)
+                {
+                    transaction.Category = null;
+                    transaction.AutoCategorised = false;
+                    unassignedCount++;
+                }
+            }
+        }
+
+        if (unassignedCount > 0)
+        {
+            Validation.SetValidationState(ValidationType.Success, $"Reverted {unassignedCount} assignments");
+        }
+    }
 }

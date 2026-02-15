@@ -30,6 +30,18 @@
         }
     }
 
+    private async Task OnAutoAssignChange()
+    {
+        if (Model.IsAutoAssignmentEnabled)
+        {
+            await AutoAssign();
+        }
+        else
+        {
+            Model.RevertAutoAssign();
+        }
+    }
+
     private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
     {
         if (!Model.ValidateGroup(group)) return;
@@ -77,41 +89,6 @@
             Model.Validation.SetValidationState(ValidationType.Info, "Not enough information to assign categories");
         }
     }
-
-    private void UnAutoAssign()
-    {
-        var unassignedCount = 0;
-
-        foreach (var group in Model.ReviewPagination.Result.Items)
-        {
-            foreach (var transaction in group.Transactions)
-            {
-                if (transaction.AutoCategorised)
-                {
-                    transaction.Category = null;
-                    transaction.AutoCategorised = false;
-                    unassignedCount++;
-                }
-            }
-        }
-
-        if (unassignedCount > 0)
-        {
-            Model.Validation.SetValidationState(ValidationType.Success, $"Reverted {unassignedCount} assignments");
-        }
-    }
-
-    private async Task HandleAutoAssignChange()
-    {
-        if (Model.IsAutoAssignmentEnabled)
-        {
-            await AutoAssign();
-        }
-        else
-        {
-            UnAutoAssign();
-        }
-    }
 }
 
 <PageTitle>Review Transaction</PageTitle>
@@ -127,14 +104,12 @@
 
 @if (Model.ReviewPagination.Result.TotalItems > 0)
 {
-    <div class="mb-3 text-muted d-flex align-bottom">
+    <div class="mb-3 text-muted d-flex">
         <span class="align-self-end">
-            Showing @Model.ReviewPagination.Result.StartItem -
-            @Model.ReviewPagination.Result.EndItem of
-            @Model.ReviewPagination.Result.TotalItems unreviewed transactions
+            Showing @Model.ReviewPagination.Result.StartItem - @Model.ReviewPagination.Result.EndItem of @Model.ReviewPagination.Result.TotalItems unreviewed transactions
         </span>
         <div class="ms-auto">
-            <AutoAssignCheckbox @bind-IsChecked="Model.IsAutoAssignmentEnabled" @bind-IsChecked:after="HandleAutoAssignChange" />
+            <AutoAssignCheckbox @bind-IsChecked="Model.IsAutoAssignmentEnabled" @bind-IsChecked:after="OnAutoAssignChange" />
         </div>
     </div>
 
@@ -162,24 +137,7 @@ else
 {
     <Modal Title="Find transfer" OnClose="Model.EndFindTransfer">
         <BodyContent>
-            <TransactionSearchActions Filters="Model.TransferPagination.Query" Categories="Model.Categories" OnFilterChanged="Model.TransferPagination.UpdateResults" />
-
-            @if (Model.TransferPagination.Result.TotalItems > 0)
-            {
-                <div class="mb-2 text-muted small">
-                    Showing @Model.TransferPagination.Result.StartItem - @Model.TransferPagination.Result.EndItem of @Model.TransferPagination.Result.TotalItems transactions
-                </div>
-
-                <TransactionSearchResults Transactions="Model.TransferPagination.Result.Items" OnSelect="Model.SetTransfer" />
-
-                <Pagination PagedResult="Model.TransferPagination.Result" OnPageChanged="Model.TransferPagination.SetPage" />
-            }
-            else
-            {
-                <div class="alert alert-info" role="alert">
-                    No matching transactions found. Try adjusting the filters.
-                </div>
-            }
+            <TransactionSearch PaginationModel="Model.TransferPagination" Categories="Model.Categories" OnSelect="Model.SetTransfer" />
         </BodyContent>
     </Modal>
 }
@@ -188,24 +146,7 @@ else
 {
     <Modal Title="Find reimbursement" OnClose="Model.EndFindReimbursement">
         <BodyContent>
-            <TransactionSearchActions Filters="Model.ReimbursePagination.Query" Categories="Model.Categories" OnFilterChanged="Model.ReimbursePagination.UpdateResults" />
-
-            @if (Model.ReimbursePagination.Result.TotalItems > 0)
-            {
-                <div class="mb-2 text-muted small">
-                    Showing @Model.ReimbursePagination.Result.StartItem - @Model.ReimbursePagination.Result.EndItem of @Model.ReimbursePagination.Result.TotalItems transactions
-                </div>
-
-                <TransactionSearchResults Transactions="Model.ReimbursePagination.Result.Items" OnSelect="Model.SetReimbursement" />
-
-                <Pagination PagedResult="Model.ReimbursePagination.Result" OnPageChanged="Model.ReimbursePagination.SetPage" />
-            }
-            else
-            {
-                <div class="alert alert-info" role="alert">
-                    No matching transactions found. Try adjusting the filters.
-                </div>
-            }
+            <TransactionSearch PaginationModel="Model.ReimbursePagination" Categories="Model.Categories" OnSelect="Model.SetReimbursement" />
         </BodyContent>
     </Modal>
 }
