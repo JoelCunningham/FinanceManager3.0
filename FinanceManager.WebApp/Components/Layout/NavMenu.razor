@@ -1,38 +1,14 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">FinanceManager.WebApp</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <Icon Name="house" /> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Transactions">
-                <Icon Name="view-list" /> Transactions
-            </NavLink>
-        </div>
-        <div class="nav-item px-3 nested">
-            <NavLink class="nav-link" href="Transactions/Review">
-                <Icon Name="patch-question" /> Review
-            </NavLink>
-        </div>
-        <div class="nav-item px-3 nested">
-            <NavLink class="nav-link" href="Transactions/Transfers">
-                <Icon Name="arrow-left-right" /> Transfers
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="import">
-                <Icon Name="file-arrow-up" /> Import
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+﻿ ﻿<HxSidebar CssClass="sticky-top bg-body-secondary">
+    <HeaderTemplate>
+        <HxSidebarBrand BrandName="Finance Manager" BrandNameShort="FM" />
+    </HeaderTemplate>
+    <ItemsTemplate>
+        <HxSidebarItem Text="Home" Href="" Icon="BootstrapIcon.HouseDoorFill" Match="NavLinkMatch.All" />
+        <HxSidebarItem Text="Review" Href="Review" Icon="BootstrapIcon.PatchQuestion" />
+        <HxSidebarItem Text="Transfers" Href="Transfers" Icon="BootstrapIcon.ArrowLeftRight" />
+        <HxSidebarItem Text="Import" Href="Import" Icon="BootstrapIcon.FileArrowUp" />
+    </ItemsTemplate>
+    <FooterTemplate>
+        <HxSidebarFooter Text="Settings" Href="Settings" Icon="BootstrapIcon.Gear" TextCssClass="@(context.SidebarCollapsed ? "d-md-none" : null)" />
+    </FooterTemplate>
+</HxSidebar>

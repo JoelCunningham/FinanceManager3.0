@@ -3,11 +3,14 @@ using FinanceManager.Application.Services;
 using FinanceManager.Infrastructure.Parsers;
 using FinanceManager.Infrastructure.Repositories.InMemory;
 using FinanceManager.WebApp.Components;
+using Havit.Blazor.Components.Web;
+using Havit.Blazor.Components.Web.Bootstrap;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddHxServices().AddHxMessenger().AddHxMessageBoxHost();
 
 // Repositories (TODO change to scoped when using a database) 
 builder.Services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();
@@ -36,7 +39,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);

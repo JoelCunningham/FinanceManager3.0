@@ -1,16 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<HxMessenger Position="ToastContainerPosition.TopCenter" />
+<HxMessageBoxHost />
 
-    <main>
-        <div class="header">
-            <Header />
-        </div>
-        <article class="content">
-            @Body
-        </article>
+<div class="d-md-flex min-vh-100">
+    <NavMenu />
+    <main class="main p-4 flex-grow-1">
+        @Body
     </main>
 </div>
