@@ -1,50 +1,53 @@
 ﻿@page "/Import"
 
-@rendermode InteractiveServer
-
 @inject ImportService ImportService
+@inject ParserService ParserService
+@inject IHxMessengerService Messenger
+@inject NavigationManager NavigationManager
 
 @code {
     private ImportPageModel Model = new();
 
-    private async Task ImportFileTransactions(IBrowserFile file)
+    protected override async Task OnInitializedAsync()
     {
-        if (Model.SelectedBank is null) return;
+        Model.AvailableParsers = ParserService.GetAvailableParsers().ToList();
+    }
+
+    private async Task ParseFile(IBrowserFile file)
+    {
+        if (Model.SelectedParser is null || file is null) return;
 
         try
         {
             await using var stream = file.OpenReadStream();
-            var bankName = Model.SelectedBank.BankName;
+            var bankName = Model.SelectedParser.BankName;
             var fileExtension = Path.GetExtension(file.Name);
 
             var results = (await ImportService.ImportAsync(stream, bankName, fileExtension)).ToList();
+            if (results.Count == 0) throw new ArgumentNullException();
 
-            if (results.Count == 0)
-            {
-                Model.NoTransactionsFound();
-                return;
-            }
-
-            Model.UploadSuccess(results);
+            Model.ImportedTransactions = [.. results];
+            Model.Validation.SetState(ValidationType.Success, $"{results.Count} new tranasctions found.");
         }
         catch (Exception exception)
         {
-            Model.UploadError(exception);
+            Model.ImportedTransactions = null;
+            Model.Validation.SetState(ValidationType.Error, Model.GetUploadErrorMessage(exception));
         }
     }
 
-    private async Task SaveImportedTransactions()
+    private async Task ImportTransactions()
     {
         if (Model.ImportedTransactions is null) return;
 
         try
         {
             await ImportService.SaveAsync(Model.ImportedTransactions);
-            Model.ImportSuccess();
+            await Model.SuccessModal.ShowAsync();
         }
         catch
         {
-            Model.ImportError();
+            Messenger.AddError("An unexpected error occurred. Please try again.");
         }
     }
 }
@@ -53,27 +56,47 @@
 
 <h1 class="page-heading">Import transactions</h1>
 
-<BankSelectList SelectedBank="Model.SelectedBank" OnBankChange="Model.BankChanged" />
+<div class="d-flex flex-column gap-3">
+    @if (Model.AvailableParsers is not null && Model.AvailableParsers.Any())
+    {
+        <BankSelectList AvailableParsers="Model.AvailableParsers" @bind-SelectedBank="Model.SelectedParser" @bind-SelectedBank:after="Model.BankChanged" />
+    }
+    @if (Model.SelectedParser is not null)
+    {
+        <TransactionFileUpload SupportedExtensions="@Model.SupportedExtensions" ValidationModel="Model.Validation" OnFileUploaded="ParseFile" />
+    }
+    @if (Model.ImportedTransactions is not null)
+    {
+        <div class="ms-auto">
+            <HxButton Color="ThemeColor.Secondary" OnClick="Model.Reset">Cancel</HxButton>
+            <HxButton Color="ThemeColor.Info" OnClick="Model.PreviewModal.ShowAsync">Preview</HxButton>
+            <HxSubmit Color="ThemeColor.Primary" OnClick="ImportTransactions">Import</HxSubmit>
+        </div>
+    }
+</div>
 
-@if (Model.SelectedBank is not null)
-{
-    <TransactionFileUpload SupportedExtensions="@Model.SupportedExtensions" ErrorMessage="@Model.UploadValidation.ValidationMessage" HasSuccess="Model.UploadValidation.HasSuccess" OnFileUploaded="ImportFileTransactions" />
-}
-@if (Model.ImportedTransactions is not null)
-{
-    <ImportActions TransactionCount="Model.ImportedTransactions.Count" ErrorMessage="@Model.ImportValidation.ValidationMessage" OnSubmit="SaveImportedTransactions" OnPreview="Model.ShowPreview" OnCancel="Model.Reset" />
-}
-@if (Model.IsPreviewOpen && Model.ImportedTransactions is not null)
-{
-    <Modal Title="Preview transactions" OnClose="Model.ClosePreview">
+<HxModal Title="Preview transactions" @ref="Model.PreviewModal" Size="ModalSize.ExtraLarge">
+    <BodyTemplate>
         <TransactionsPreview Transactions="Model.ImportedTransactions" />
-    </Modal>
-}
-@if (Model.IsSuccessOpen)
-{
-    <Modal FullWidth="false" OnClose="Model.CloseSuccess">
-        <BodyContent>
-            <ImportSuccess Transactions="Model.ImportedTransactions" />
-        </BodyContent>
-    </Modal>
-}
+    </BodyTemplate>
+</HxModal>
+
+<HxModal @ref="Model.SuccessModal" ShowCloseButton="false" Centered="true" OnClosed="Model.Reset">
+    <BodyTemplate>
+        <ImportSuccess Transactions="Model.ImportedTransactions" />
+    </BodyTemplate>
+    <FooterTemplate>
+        @if (Model.TransfersCount > 0)
+        {
+            <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Transfers"))" Color="ThemeColor.Secondary">
+                View transfers
+            </HxButton>
+        }
+        @if (Model.TransfersCount < Model.ImportedTransactions?.Count)
+        {
+            <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Review"))" Color="ThemeColor.Primary">
+                Review transactions
+            </HxButton>
+        }
+    </FooterTemplate>
+</HxModal>

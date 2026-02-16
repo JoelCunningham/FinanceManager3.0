@@ -1,12 +1,14 @@
-﻿.bank-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+﻿.bank-select-content {
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
-}
+    min-width: 110px;
 
-@media (max-width: 1000px) {
-    .bank-cards-container {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 0.75rem;
+    .bank-logo {
+        width: 80px;
+        height: 55px;
+        margin: 20px;
+        margin-bottom: 0;
+        object-fit: contain;
     }
 }

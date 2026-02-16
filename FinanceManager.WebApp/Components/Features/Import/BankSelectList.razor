@@ -1,38 +1,29 @@
-﻿@inject IJSRuntime JsRuntime
-@inject ParserService ParserService
+﻿@code {
+    [Parameter] public IReadOnlyList<ParserSummary> AvailableParsers { get; set; } = [];
 
-@code {
-    [Parameter]
-    public ParserSummary? SelectedBank { get; set; }
+    [Parameter] public ParserSummary? SelectedBank { get; set; }
 
-    [Parameter]
-    public EventCallback<ParserSummary> OnBankChange { get; set; }
+    [Parameter] public EventCallback<ParserSummary?> SelectedBankChanged { get; set; }
 
-    private IReadOnlyList<ParserSummary> availableParsers = [];
-
-    protected override void OnInitialized()
-    {
-        availableParsers = ParserService.GetAvailableParsers();
-    }
-
-    private async Task OnBankSelected(string bankName)
-    {
-        await OnBankChange.InvokeAsync(availableParsers?.FirstOrDefault(p => p.BankName == bankName));
-    }
+    private string GetBankLogoPath(string name) => $"/images/banks/{name.ToLower().Replace(" ", "-")}.svg";
 }
 
-@if (availableParsers.Count > 0)
-{
-    <h2 class="section-heading">Select your bank:</h2>
-    <div class="bank-cards-container">
-        @foreach (var bank in availableParsers)
-        {
-            var isSelected = SelectedBank?.BankName == bank.BankName;
-            <BankSelectCard BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
-        }
-    </div>
-}
-else
-{
-    <div class="alert alert-info" role="alert">No parsers are currently available.</div>
-}
+<HxRadioButtonList Label="Select your bank:"
+                   TItem="ParserSummary"
+                   TValue="ParserSummary"
+                   Data="AvailableParsers"
+                   Value="SelectedBank"
+                   ValueChanged="SelectedBankChanged"
+                   ValueExpression="() => SelectedBank"
+                   Color="ThemeColor.Primary"
+                   Outline="true"
+                   Inline="true"
+                   RenderMode="RadioButtonListRenderMode.ToggleButtons"
+                   ItemTextCssClass="me-2">
+    <ItemTemplate Context="p">
+        <div class="bank-select-content">
+            <img class="bank-logo" src="@GetBankLogoPath(p.BankName)" />
+            <span>@p.BankName</span>
+        </div>
+    </ItemTemplate>
+</HxRadioButtonList>

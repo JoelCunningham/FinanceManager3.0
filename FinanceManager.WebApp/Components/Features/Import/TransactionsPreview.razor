@@ -1,48 +1,33 @@
-@using FinanceManager.WebApp.Models
-
 @code {
-    [Parameter, EditorRequired]
-    public required IReadOnlyList<ParsedTransaction> Transactions { get; set; }
+    [Parameter] public IReadOnlyList<ParsedTransaction> Transactions { get; set; } = [];
 
-    private ParsedTransaction? CurrentTransaction = null;
-
-    private bool IsDetailsOpen = false;
-
-    private void ShowDetails(ParsedTransaction transaction)
+    private Task<GridDataProviderResult<ParsedTransaction>> GetGridData(GridDataProviderRequest<ParsedTransaction> request)
     {
-        CurrentTransaction = transaction;
-        IsDetailsOpen = true;
+        return Task.FromResult(request.ApplyTo(Transactions));
     }
 }
 
-<div class="alert alert-info" role="alert">
-    After importing, you will be able to edit and assign these transactions
+<div class="transactions-preview">
+    <HxGrid TItem="ParsedTransaction" DataProvider="GetGridData" Responsive="true" Hover="true" PageSize="10">
+        <Columns>
+            <HxGridColumn HeaderText="Account"
+                          TItem="ParsedTransaction"
+                          ItemTextSelector="@(t => t.AccountNumber)"
+                          SortKeySelector="@(t => t.AccountNumber)" />
+            <HxGridColumn HeaderText="Date"
+                          TItem="ParsedTransaction"
+                          ItemTextSelector="@(t => t.Date.ToShortDateString())"
+                          SortKeySelector="@(t => t.Date)"
+                          IsDefaultSortColumn="true" />
+            <HxGridColumn HeaderText="Description"
+                          TItem="ParsedTransaction"
+                          ItemTextSelector="@(t => t.Description)" />
+            <HxGridColumn HeaderText="Amount"
+                          TItem="ParsedTransaction"
+                          ItemTextSelector="@(t => t.Amount.ToString("C"))"
+                          SortKeySelector="@(t => t.Amount)"
+                          ItemCssClass="text-end"
+                          HeaderCssClass="text-end" />
+        </Columns>
+    </HxGrid>
 </div>
-
-<div class="transactions-header">
-    <div>Account</div>
-    <div>Date</div>
-    <div>Amount</div>
-    <div>Description</div>
-</div>
-@foreach (var transaction in Transactions)
-{
-    <div class="transactions-row" @onclick="() => ShowDetails(transaction)">
-        <div>@transaction.AccountNumber</div>
-        <div>@transaction.Date.ToShortDateString()</div>
-        <div>@transaction.Amount.ToString("C")</div>
-        <div>@transaction.Description</div>
-    </div>
-}
-
-@if (IsDetailsOpen)
-{
-    <Modal Title="Transaction details" OnClose="() => IsDetailsOpen = false">
-        <BodyContent>
-            <TransactionDetails Transaction="CurrentTransaction" />
-        </BodyContent>
-        <FooterContent>
-            <button type="button" class="btn btn-secondary" @onclick="() => IsDetailsOpen = false">Return</button>
-        </FooterContent>
-    </Modal>
-}

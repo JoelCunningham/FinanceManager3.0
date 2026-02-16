@@ -31,12 +31,9 @@ public class ValidationModel
         Type = ValidationType.Error;
     }
 
-    public void SetValidationState(ValidationType type, string? message = null)
+    public void SetState(ValidationType type, string? message = null)
     {
-        if (!string.IsNullOrEmpty(message))
-        {
-            SetMessage(message);
-        }
+        SetMessage(message);
         Type = type;
     }
 
@@ -45,7 +42,27 @@ public class ValidationModel
         return [.. Items.Where(i => i.Field == field).Select(i => i.Id)];
     }
 
-    private void SetMessage(string message)
+    public string GetControlClass()
+    {
+        return Type switch
+        {
+            ValidationType.Error => "is-invalid",
+            ValidationType.Success => "is-valid",
+            _ => string.Empty
+        };
+    }
+
+    public string GetFeedbackClass()
+    {
+        return Type switch
+        {
+            ValidationType.Error => "invalid-feedback",
+            ValidationType.Success => "valid-feedback",
+            _ => string.Empty
+        };
+    }
+
+    private void SetMessage(string? message)
     {
         if (Type == ValidationType.Error)
         {

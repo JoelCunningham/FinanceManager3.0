@@ -1,39 +1,13 @@
-@using FinanceManager.WebApp.Models
-
-@inject NavigationManager NavigationManager
-
 @code {
-    [Parameter, EditorRequired]
-    public required IReadOnlyList<ParsedTransaction> Transactions { get; set; }
+    [Parameter] public IReadOnlyList<ParsedTransaction> Transactions { get; set; } = [];
 
     private int TransfersCount => Transactions.Count(t => t.IsInternalTransfer);
-
-    private void NavigateToTransfers() => NavigationManager.NavigateTo("/Transactions/Transfers");
-
-    private void NavigateToReview() => NavigationManager.NavigateTo("/Transactions/Review");
 }
 
-<h2>Import Successful</h2>
-
-<div class="body">
-    <Icon Name="check-circle" AriaLabel="Import Successful" />
-    <h5 class="import-success-message">
+<div class="import-success">
+    <HxIcon Icon="@BootstrapIcon.CheckCircle" CssClass="import-success-icon" />
+    <span class="import-success-message">
         Successfully imported @Transactions.Count transaction@(Transactions.Count == 1 ? "" : "s");
         including @TransfersCount transfer@(TransfersCount == 1 ? "" : "s").
-    </h5>
-</div>
-
-<div class="buttons">
-    @if (TransfersCount > 0)
-    {
-        <button class="btn btn-secondary" @onclick="NavigateToTransfers">
-            View transfers
-        </button>
-    }
-    @if (TransfersCount != Transactions.Count)
-    {
-        <button class="btn btn-primary" @onclick="NavigateToReview">
-            Review transactions
-        </button>
-    }
+    </span>
 </div>

@@ -123,7 +123,7 @@ public class ReviewPageModel
 
         if (unassignedCount > 0)
         {
-            Validation.SetValidationState(ValidationType.Success, $"Reverted {unassignedCount} assignments");
+            Validation.SetState(ValidationType.Success, $"Reverted {unassignedCount} assignments");
         }
     }
 }

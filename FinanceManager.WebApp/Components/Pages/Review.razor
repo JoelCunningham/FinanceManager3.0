@@ -1,4 +1,4 @@
-﻿@page "/Transactions/Review"
+﻿@page "/Review"
 @rendermode InteractiveServer
 
 @inject TransactionService TransactionService
@@ -52,12 +52,12 @@
             await Model.ReviewPagination.UpdateResults();
             if (showMessage)
             {
-                Model.Validation.SetValidationState(ValidationType.Success, $"Saved transaction successfully");
+                Model.Validation.SetState(ValidationType.Success, $"Saved transaction successfully");
             }
         }
         catch (Exception)
         {
-            Model.Validation.SetValidationState(ValidationType.Error, "An unexpected error occurred. Please try again");
+            Model.Validation.SetState(ValidationType.Error, "An unexpected error occurred. Please try again");
         }
         Model.Clean();
     }
@@ -82,11 +82,11 @@
 
         if (assignedCount > 0)
         {
-            Model.Validation.SetValidationState(ValidationType.Success, $"Auto assigned {assignedCount} transactions");
+            Model.Validation.SetState(ValidationType.Success, $"Auto assigned {assignedCount} transactions");
         }
         else
         {
-            Model.Validation.SetValidationState(ValidationType.Info, "Not enough information to assign categories");
+            Model.Validation.SetState(ValidationType.Info, "Not enough information to assign categories");
         }
     }
 }
