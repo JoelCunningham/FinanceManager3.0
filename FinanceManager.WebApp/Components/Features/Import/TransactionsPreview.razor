@@ -11,19 +11,15 @@
     <HxGrid TItem="ParsedTransaction" DataProvider="GetGridData" Responsive="true" Hover="true" PageSize="10">
         <Columns>
             <HxGridColumn HeaderText="Account"
-                          TItem="ParsedTransaction"
                           ItemTextSelector="@(t => t.AccountNumber)"
                           SortKeySelector="@(t => t.AccountNumber)" />
             <HxGridColumn HeaderText="Date"
-                          TItem="ParsedTransaction"
                           ItemTextSelector="@(t => t.Date.ToShortDateString())"
                           SortKeySelector="@(t => t.Date)"
                           IsDefaultSortColumn="true" />
             <HxGridColumn HeaderText="Description"
-                          TItem="ParsedTransaction"
                           ItemTextSelector="@(t => t.Description)" />
             <HxGridColumn HeaderText="Amount"
-                          TItem="ParsedTransaction"
                           ItemTextSelector="@(t => t.Amount.ToString("C"))"
                           SortKeySelector="@(t => t.Amount)"
                           ItemCssClass="text-end"

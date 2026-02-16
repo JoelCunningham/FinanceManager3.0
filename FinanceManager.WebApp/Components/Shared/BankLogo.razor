@@ -1,0 +1,9 @@
+﻿@code {
+    [Parameter] public string BankName { get; set; } = default!;
+
+    [Parameter] public string? CssClass { get; set; }
+
+    private string BankLogoPath => $"/images/banks/{BankName.ToLower().Replace(" ", "-")}.svg";
+}
+
+<img class="bank-logo @CssClass" src="@BankLogoPath" alt="@BankName logo" style="max-width: -webkit-fill-available;" />

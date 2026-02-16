@@ -1,56 +1,78 @@
 ﻿@page "/Transfers"
-@rendermode InteractiveServer
+
 @inject TransferService TransferService
+@inject IHxMessengerService Messenger
 
 @code {
-    private List<string> UniqueAccounts = [];
-    private ValidationModel Validation = new();
-    private PaginationModel<FilterQuery, TransferSummary> Pagination = new();
+    private TransfersPageModel Model = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Pagination.FetchPagedResult = TransferService.GetPagedAsync;
-        UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
-
-        await Pagination.UpdateResults();
+        Model.UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
     }
 
-    private async Task RemoveTransfer(TransferSummary transfer)
+    private async Task<GridDataProviderResult<TransferSummary>> GetGridData(GridDataProviderRequest<TransferSummary> request)
+    {
+        Model.Query.Page = (request.StartIndex / (request.Count ?? 20)) + 1;
+        Model.Query.PageSize = request.Count ?? 20;
+
+        if (request.Sorting is not null && request.Sorting.Any())
+        {
+            var sort = request.Sorting.First();
+            Model.Query.SortDescending = sort.SortDirection == SortDirection.Descending;
+            if (Enum.TryParse<TransactionSortBy>(sort.SortString, out var sortBy))
+            {
+                Model.Query.SortBy = sortBy;
+            }
+        }
+
+        var result = await TransferService.GetPagedAsync(Model.Query);
+        return new GridDataProviderResult<TransferSummary>
+        {
+            Data = result.Items,
+            TotalCount = result.TotalItems
+        };
+    }
+
+    private async Task SeparateTransfer(TransferSummary transfer)
     {
         try
         {
             await TransferService.ConvertToTransactionAsync(transfer.Id);
-            await Pagination.UpdateResults();
+            Messenger.AddInformation("Transfer separated successfully.");
+            if (Model.Grid != null) await Model.Grid.RefreshDataAsync();
         }
         catch (Exception)
         {
-            Validation.SetError(transfer.Id, "Could not remove transfer. Please try again.");
+            Messenger.AddError("Could not remove transfer. Please try again.");
+        }
+    }
+
+    private async Task SeparateFromDetails()
+    {
+        if (Model.SelectedTransfer != null)
+        {
+            await SeparateTransfer(Model.SelectedTransfer);
+            await Model.DetailsModal.HideAsync();
         }
     }
 }
 
 <PageTitle>Transfers</PageTitle>
 
-<h1 class="page-heading">Manage transfers</h1>
+<h1 class="page-heading">Transfers</h1>
 
-<TransferActions Query="Pagination.Query" Accounts="UniqueAccounts" OnFilterChanged="Pagination.UpdateFilters" OnFilterCleared="Pagination.ClearFilters" />
+<TransfersGrid @ref="Model.Grid" @bind-Query="Model.Query" Accounts="Model.UniqueAccounts" GetGridData="GetGridData" RemoveTransfer="SeparateTransfer" OpenDetails="Model.OpenDetailsModal" />
 
-@if (Pagination.Result.TotalItems > 0)
-{
-    <div class="mb-3 text-muted">
-        Showing @Pagination.Result.StartItem - @Pagination.Result.EndItem of @Pagination.Result.TotalItems transfers
-    </div>
-
-    @foreach (var transfer in Pagination.Result.Items)
-    {
-        <TransferRow Transfer="transfer" OnRemove="RemoveTransfer" />
-    }
-
-    <Pagination PagedResult="Pagination.Result" OnPageChanged="Pagination.SetPage" />
-}
-else
-{
-    <div class="alert alert-info" role="alert">
-        No transfers match your search. Try adjusting the filters.
-    </div>
-}
+<HxModal @ref="Model.DetailsModal" Title="Transaction details" Size="ModalSize.Large">
+    <BodyTemplate>
+        @if (Model.SelectedTransfer is not null)
+        {
+            <TransferDetails Transfer="Model.SelectedTransfer" />
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <HxButton Color="ThemeColor.Primary" OnClick="SeparateFromDetails">Separate</HxButton>
+        <HxButton Color="ThemeColor.Secondary" OnClick="() => Model.DetailsModal.HideAsync()">Return</HxButton>
+    </FooterTemplate>
+</HxModal>

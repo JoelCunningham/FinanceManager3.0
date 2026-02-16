@@ -5,7 +5,6 @@
 
     [Parameter] public EventCallback<ParserSummary?> SelectedBankChanged { get; set; }
 
-    private string GetBankLogoPath(string name) => $"/images/banks/{name.ToLower().Replace(" ", "-")}.svg";
 }
 
 <HxRadioButtonList Label="Select your bank:"
@@ -22,7 +21,7 @@
                    ItemTextCssClass="me-2">
     <ItemTemplate Context="p">
         <div class="bank-select-content">
-            <img class="bank-logo" src="@GetBankLogoPath(p.BankName)" />
+            <BankLogo BankName="@p.BankName" />
             <span>@p.BankName</span>
         </div>
     </ItemTemplate>
