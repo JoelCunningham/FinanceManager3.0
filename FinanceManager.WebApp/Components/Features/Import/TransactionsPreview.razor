@@ -37,12 +37,12 @@
 
 @if (IsDetailsOpen)
 {
-    <Modal Title="Transaction details" OnClose="() => IsDetailsOpen = false">
+    <FinanceManager.WebApp.Components.Shared.Modal Title="Transaction details" OnClose="() => IsDetailsOpen = false">
         <BodyContent>
             <TransactionDetails Transaction="CurrentTransaction" />
         </BodyContent>
         <FooterContent>
             <button type="button" class="btn btn-secondary" @onclick="() => IsDetailsOpen = false">Return</button>
         </FooterContent>
-    </Modal>
+    </FinanceManager.WebApp.Components.Shared.Modal>
 }

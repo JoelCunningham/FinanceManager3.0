@@ -1,16 +1,45 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+@code {
+    private string? SearchText { get; set; }
 
-    <main>
-        <div class="header">
-            <Header />
-        </div>
-        <article class="content">
-            @Body
-        </article>
-    </main>
-</div>
+    private List<MenuItem> Items { get; } =
+    [
+        new() { Text = "Home", Icon = "fa-solid fa-house", Url = "/", Match = NavLinkMatch.All },
+        new() { Text = "Transactions", Icon = "fa-solid fa-list", Items =
+        [
+            new() { Text = "Review", Icon = "fa-solid fa-circle-question", Url = "/Transactions/Review" },
+            new() { Text = "Transfers", Icon = "fa-solid fa-right-left", Url = "/Transactions/Transfers" }
+        ]},
+        new() { Text = "Import", Icon = "fa-solid fa-file-arrow-up", Url = "/import" }
+    ];
+
+    private async Task<IEnumerable<string?>> OnSearchAsync(string? _)
+    {
+        return [];
+    }
+}
+
+<BootstrapBlazorRoot>
+    <div class="main-layout">
+        <Layout IsPage="true" IsFixedHeader="true">
+            <Header>
+                <span>Finance Manager</span>
+                <Search @bind-Value="SearchText"
+                        Placeholder="Search Finance Manager..."
+                        ShowSearchButton="false"
+                        ShowPrefixIcon="true" PrefixIcon="fa fa-magnifying-glass"
+                        OnSearch="OnSearchAsync" />
+                <Button Color="Color.None" Icon="fa-regular fa-user"></Button>
+                <Button Color="Color.None" Icon="fa-solid fa-gear"></Button>
+                <ThemeProvider />
+            </Header>
+            <Side>
+                <Menu Items="@Items" IsAccordion="true" IsVertical="true" />
+            </Side>
+            <Main>
+                @Body
+            </Main>
+        </Layout>
+    </div>
+</BootstrapBlazorRoot>

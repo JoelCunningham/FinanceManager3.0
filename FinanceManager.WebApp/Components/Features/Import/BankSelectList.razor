@@ -1,34 +1,32 @@
-﻿@inject IJSRuntime JsRuntime
-@inject ParserService ParserService
+﻿@inject ParserService ParserService
 
 @code {
-    [Parameter]
-    public ParserSummary? SelectedBank { get; set; }
+    [Parameter] public ParserSummary? SelectedBank { get; set; }
 
-    [Parameter]
-    public EventCallback<ParserSummary> OnBankChange { get; set; }
+    [Parameter] public EventCallback<ParserSummary> OnBankChange { get; set; }
 
-    private IReadOnlyList<ParserSummary> availableParsers = [];
+    private IReadOnlyList<ParserSummary> AvailableParsers = [];
+
+    private string LogoPath(string bankName) => $"/images/banks/{bankName.ToLowerInvariant().Replace(" ", "-")}.svg";
 
     protected override void OnInitialized()
     {
-        availableParsers = ParserService.GetAvailableParsers();
-    }
-
-    private async Task OnBankSelected(string bankName)
-    {
-        await OnBankChange.InvokeAsync(availableParsers?.FirstOrDefault(p => p.BankName == bankName));
+        AvailableParsers = ParserService.GetAvailableParsers();
     }
 }
 
-@if (availableParsers.Count > 0)
+@if (AvailableParsers.Count > 0)
 {
     <h2 class="section-heading">Select your bank:</h2>
-    <div class="bank-cards-container">
-        @foreach (var bank in availableParsers)
+    <div class="bank-cards">
+        @foreach (var bank in AvailableParsers)
         {
             var isSelected = SelectedBank?.BankName == bank.BankName;
-            <BankSelectCard BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
+            <Card Class="@(isSelected ? "selected" : "")" @onclick="() => OnBankChange.InvokeAsync(bank)">
+                <BodyTemplate>
+                    <img class="bank-logo" src="@LogoPath(bank.BankName)" alt="@bank.BankName logo" />
+                </BodyTemplate>
+            </Card>
         }
     </div>
 }

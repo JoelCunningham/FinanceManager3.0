@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddBootstrapBlazor();
 
 // Repositories (TODO change to scoped when using a database) 
 builder.Services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();

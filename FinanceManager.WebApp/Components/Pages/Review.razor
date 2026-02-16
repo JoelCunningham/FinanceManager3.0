@@ -124,7 +124,7 @@
                         OnFindReimbursement="(t) => Model.OnFindReimbursement(transactionGroup, t)" />
     }
 
-    <Pagination PagedResult="Model.ReviewPagination.Result" OnPageChanged="Model.ReviewPagination.SetPage" />
+    <FinanceManager.WebApp.Components.Shared.Pagination PagedResult="Model.ReviewPagination.Result" OnPageChanged="Model.ReviewPagination.SetPage" />
 }
 else
 {
@@ -135,18 +135,18 @@ else
 
 @if (Model.IsTransferSearchOpen && Model.CurrentGroup is not null)
 {
-    <Modal Title="Find transfer" OnClose="Model.EndFindTransfer">
+    <FinanceManager.WebApp.Components.Shared.Modal Title="Find transfer" OnClose="Model.EndFindTransfer">
         <BodyContent>
             <TransactionSearch PaginationModel="Model.TransferPagination" Categories="Model.Categories" OnSelect="Model.SetTransfer" />
         </BodyContent>
-    </Modal>
+    </FinanceManager.WebApp.Components.Shared.Modal>
 }
 
 @if (Model.IsReimburseSearchOpen && Model.CurrentTransaction is not null)
 {
-    <Modal Title="Find reimbursement" OnClose="Model.EndFindReimbursement">
+    <FinanceManager.WebApp.Components.Shared.Modal Title="Find reimbursement" OnClose="Model.EndFindReimbursement">
         <BodyContent>
             <TransactionSearch PaginationModel="Model.ReimbursePagination" Categories="Model.Categories" OnSelect="Model.SetReimbursement" />
         </BodyContent>
-    </Modal>
+    </FinanceManager.WebApp.Components.Shared.Modal>
 }

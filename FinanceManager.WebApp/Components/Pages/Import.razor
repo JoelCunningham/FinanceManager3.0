@@ -65,15 +65,15 @@
 }
 @if (Model.IsPreviewOpen && Model.ImportedTransactions is not null)
 {
-    <Modal Title="Preview transactions" OnClose="Model.ClosePreview">
+    <FinanceManager.WebApp.Components.Shared.Modal Title="Preview transactions" OnClose="Model.ClosePreview">
         <TransactionsPreview Transactions="Model.ImportedTransactions" />
-    </Modal>
+    </FinanceManager.WebApp.Components.Shared.Modal>
 }
 @if (Model.IsSuccessOpen)
 {
-    <Modal FullWidth="false" OnClose="Model.CloseSuccess">
+    <FinanceManager.WebApp.Components.Shared.Modal FullWidth="false" OnClose="Model.CloseSuccess">
         <BodyContent>
             <ImportSuccess Transactions="Model.ImportedTransactions" />
         </BodyContent>
-    </Modal>
+    </FinanceManager.WebApp.Components.Shared.Modal>
 }

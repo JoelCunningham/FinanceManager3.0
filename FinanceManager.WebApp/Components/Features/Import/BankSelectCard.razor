@@ -8,23 +8,17 @@
     [Parameter]
     public EventCallback<string> OnSelect { get; set; }
 
-    private string GetBankLogoPath(string bankName)
-    {
-        return $"/images/banks/{bankName.ToLowerInvariant().Replace(" ", "-")}.svg";
-    }
+    private string LogoPath => $"/images/banks/{BankName.ToLowerInvariant().Replace(" ", "-")}.svg";
 
-    private async Task HandleClick()
-    {
-        await OnSelect.InvokeAsync(BankName);
-    }
+    private Task HandleClick() => OnSelect.InvokeAsync(BankName);
+
+    private string CardCss => IsSelected ? "is-selected" : string.Empty;
 }
 
-<div class="bank-card" @onclick="HandleClick">
-    <input type="radio" class="bank-card-input" name="bankSelect" id="@BankName" checked="@IsSelected" />
-    <label class="bank-card-label">
-        <div class="bank-card-content">
-            <img class="bank-logo" src="@GetBankLogoPath(BankName)" alt="@BankName logo" />
-            <div class="bank-name">@BankName</div>
-        </div>
-    </label>
+<div class="bank-select-card">
+    <Card Class="@CardCss">
+        <BodyTemplate>
+            <img class="bank-logo" src="@LogoPath" alt="@BankName logo" />
+        </BodyTemplate>
+    </Card>
 </div>
