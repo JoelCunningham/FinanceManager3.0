@@ -3,11 +3,13 @@ using FinanceManager.Application.Services;
 using FinanceManager.Infrastructure.Parsers;
 using FinanceManager.Infrastructure.Repositories.InMemory;
 using FinanceManager.WebApp.Components;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.AddMudServices();
 
 // Repositories (TODO change to scoped when using a database) 
 builder.Services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();

@@ -1,38 +1,57 @@
-﻿@inject IJSRuntime JsRuntime
-@inject ParserService ParserService
+﻿@inject ParserService ParserService
 
 @code {
-    [Parameter]
-    public ParserSummary? SelectedBank { get; set; }
+    [Parameter] public ParserSummary? SelectedBank { get; set; }
 
-    [Parameter]
-    public EventCallback<ParserSummary> OnBankChange { get; set; }
+    [Parameter] public EventCallback<ParserSummary> OnBankChange { get; set; }
 
-    private IReadOnlyList<ParserSummary> availableParsers = [];
+    private IReadOnlyList<ParserSummary> AvailableParsers = [];
 
     protected override void OnInitialized()
     {
-        availableParsers = ParserService.GetAvailableParsers();
+        AvailableParsers = ParserService.GetAvailableParsers();
     }
 
-    private async Task OnBankSelected(string bankName)
+    private async Task SelectBank(ParserSummary bank)
     {
-        await OnBankChange.InvokeAsync(availableParsers?.FirstOrDefault(p => p.BankName == bankName));
+        await OnBankChange.InvokeAsync(bank);
     }
+
+    private static string GetBankLogoPath(string bankName) => $"/images/banks/{bankName.ToLowerInvariant().Replace(" ", "-")}.svg";
 }
 
-@if (availableParsers.Count > 0)
-{
-    <h2 class="section-heading">Select your bank:</h2>
-    <div class="bank-cards-container">
-        @foreach (var bank in availableParsers)
-        {
-            var isSelected = SelectedBank?.BankName == bank.BankName;
-            <BankSelectCard BankName="@bank.BankName" IsSelected="@isSelected" OnSelect="OnBankSelected" />
-        }
-    </div>
-}
-else
-{
-    <div class="alert alert-info" role="alert">No parsers are currently available.</div>
-}
+<div class="bank-select-list">
+    @if (AvailableParsers.Count > 0)
+    {
+        <MudText Typo="Typo.h5" Class="section-heading">Select your bank:</MudText>
+
+        <MudGrid Spacing="2">
+            @foreach (var bank in AvailableParsers)
+            {
+                var isSelected = SelectedBank?.BankName == bank.BankName;
+
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Outlined="true"
+                             Class="@(isSelected ? "mud-theme-primary bank-select-card" : "bank-select-card")"
+                             @onclick="() => SelectBank(bank)">
+                        <MudCardContent Class="bank-select-card-content">
+                            <MudAvatar Rounded="true" Size="Size.Medium" Color="Color.Tertiary">
+                                <img src="@GetBankLogoPath(bank.BankName)" class="bank-logo" alt="@bank.BankName logo" />
+                            </MudAvatar>
+                            <MudText Typo="Typo.subtitle1">@bank.BankName</MudText>
+                            <MudSpacer />
+                            <MudIcon Icon="@(isSelected? Icons.Material.Filled.RadioButtonChecked : Icons.Material.Filled.RadioButtonUnchecked)"
+                                     Color="@(isSelected ? Color.Primary : Color.Default)" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+            No parsers are currently available.
+        </MudAlert>
+    }
+</div>

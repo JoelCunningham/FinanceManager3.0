@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="9.0.0-rc.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FinanceManager.Application\FinanceManager.Application.csproj" />
     <ProjectReference Include="..\FinanceManager.Domain\FinanceManager.Domain.csproj" />
     <ProjectReference Include="..\FinanceManager.Infrastructure\FinanceManager.Infrastructure.csproj" />
