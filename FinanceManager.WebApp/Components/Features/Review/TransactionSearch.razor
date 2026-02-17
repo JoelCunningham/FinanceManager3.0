@@ -1,26 +1,48 @@
 @code {
-    [Parameter] public PaginationModel<FilterQuery, TransactionSummary> PaginationModel { get; set; } = new();
+    [Parameter] public DataGridModel<FilterQuery, TransactionSummary> Data { get; set; } = new();
 
     [Parameter] public List<Category> Categories { get; set; } = [];
 
     [Parameter] public EventCallback<TransactionSummary> OnSelect { get; set; }
+
+    [Parameter] public bool IsTransferMode { get; set; } = false;
 }
 
-<TransactionSearchActions Filters="PaginationModel.Query" Categories="Categories" OnFilterChanged="PaginationModel.UpdateResults" />
+<HxListLayout TFilterModel="FilterQuery" FilterModel="Data.Query" FilterModelChanged="Data.HandleFilterChange">
+    <SearchTemplate>
+        <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Data.Query.SearchTerm" @bind-Value:after="Data.Grid.RefreshDataAsync" />
+    </SearchTemplate>
 
-@if (PaginationModel.Result.TotalItems > 0)
-{
-    <div class="mb-2 text-muted small">
-        Showing @PaginationModel.Result.StartItem - @PaginationModel.Result.EndItem of @PaginationModel.Result.TotalItems transactions
-    </div>
+    <CommandsTemplate>
+        <HxButton Text="Clear filters" Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="Data.HandleFilterCleared" />
+    </CommandsTemplate>
 
-    <TransactionSearchResults Transactions="PaginationModel.Result.Items" OnSelect="OnSelect" />
+    <FilterTemplate Context="query">
+        <HxSelect Label="Category" @bind-Value="query.FilterCategory" Data="Categories" Nullable="true" NullText="- Any -" TextSelector="@(c => c.Name)" ValueSelector="@(c => c)" />
+        <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />
+        <HxInputDate Label="Date to" @bind-Value="query.FilterDateTo" MinDate="query.FilterDateFrom" MaxDate="DateTime.Today" CalendarIcon="BootstrapIcon.Calendar" />
+        @if (!IsTransferMode)
+        {
+            <HxInputNumber Label="Min amount" @bind-Value="query.FilterAmountMin" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" max="@query.FilterAmountMax" />
+            <HxInputNumber Label="Max amount" @bind-Value="query.FilterAmountMax" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" min="@query.FilterAmountMin" />
+        }
+    </FilterTemplate>
 
-    <Pagination PagedResult="PaginationModel.Result" OnPageChanged="PaginationModel.SetPage" />
-}
-else
-{
-    <div class="alert alert-info" role="alert">
-        No matching transactions found. Try adjusting the filters.
-    </div>
-}
+    <DataTemplate>
+        <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" TItem="TransactionSummary" PageSize="Data.Query.PageSize" PreserveSelection="false" Responsive="false" SelectedDataItemChanged="OnSelect">
+            <Columns>
+                <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => t.Category.Name)" ItemTextSelector="@(t => t.Category?.Name ?? "Uncategorised")" />
+                <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
+                <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col"><ItemTemplate Context="transaction"><span title="@transaction.Description">@transaction.Description</span></ItemTemplate></HxGridColumn>
+                @if (!IsTransferMode)
+                {
+                    <HxGridColumn HeaderText="Amount" SortString="Amount" SortKeySelector="@(t => t.Amount)" ItemTextSelector="@(t => t.Amount.ToString("C"))" />
+                }
+                else
+                {
+                    <HxGridColumn HeaderText="Amount" ItemTextSelector="@(t => t.Amount.ToString("C"))" />
+                }
+            </Columns>
+        </HxGrid>
+    </DataTemplate>
+</HxListLayout>

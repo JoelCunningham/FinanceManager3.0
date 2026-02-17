@@ -3,13 +3,15 @@
 using FinanceManager.Application.DTOs;
 using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Models.Base;
+using Havit.Blazor.Components.Web.Bootstrap;
 
 public class ReviewPageModel
 {
     public ValidationModel Validation { get; set; } = new();
-    public PaginationModel<FilterQuery, ReviewGroup>  ReviewPagination { get; set; } = new() { Query = new() { FilterStatus = ReviewStatus.Unreviewed} };
-    public PaginationModel<FilterQuery, TransactionSummary> TransferPagination { get; set; } = new();
-    public PaginationModel<FilterQuery, TransactionSummary> ReimbursePagination { get; set; } = new();
+    public PaginationModel<FilterQuery, ReviewGroup> Pagination { get; set; }
+
+    public DataGridModel<FilterQuery, TransactionSummary> TransferData { get; set; } = new();
+    public DataGridModel<FilterQuery, TransactionSummary> ReimburseData { get; set; } = new();
 
     public ReviewGroup? CurrentGroup { get; set; }
     public ReviewTransaction? CurrentTransaction { get; set; }
@@ -18,37 +20,41 @@ public class ReviewPageModel
     public List<Category> IncomeCategories => [.. Categories.Where(c => c.Group.IsIncome)];
     public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
 
+    public HxModal TransferModal { get; set; } = new();
+    public HxModal ReimburseModal { get; set; } = new();
+
+    public bool IsFirstAutoAssign { get; set; } = true;
     public bool HasMemories { get; set; } = true;
     public bool IsAutoAssignmentEnabled { get; set; } = true;
 
-    public bool IsTransferSearchOpen { get; set; } = false;
-    public bool IsReimburseSearchOpen { get; set; } = false;
-
     public string AmountKey = "amount";
     public string CategoryKey = "category";
+
+    public ReviewPageModel()
+    {
+        Pagination = new() { Query = new() { FilterStatus = ReviewStatus.Unreviewed } };
+    }
 
     public void Clean()
     {
         CurrentGroup = null;
         CurrentTransaction = null;
-        IsTransferSearchOpen = false;
-        IsReimburseSearchOpen = false;
     }
 
-    public async Task SetReimbursement(TransactionSummary transaction)
+    public async Task SetReimburse(TransactionSummary transaction)
     {
         if (CurrentTransaction is null) return;
-
         CurrentTransaction.Reimburses = transaction;
-        Clean();
+        await ReimburseModal.HideAsync();
+
     }
 
     public async Task SetTransfer(TransactionSummary transaction)
     {
         if (CurrentGroup is null) return;
-
         CurrentGroup.Transfers = transaction;
-        Clean();
+        await TransferModal.HideAsync();
+
     }
 
     public bool ValidateGroup(ReviewGroup group)
@@ -59,11 +65,11 @@ public class ReviewPageModel
         {
             if (transaction.Category is null && group.Transfers is null)
             {
-                Validation.SetError(transaction.Id, "category", "A category is required");
+                Validation.SetError(transaction.Id, CategoryKey, "A category is required");
             }
             if (transaction.Amount == 0)
             {
-                Validation.SetError(transaction.Id, "amount", "Amount must not be zero");
+                Validation.SetError(transaction.Id, AmountKey, "Amount must not be zero");
             }
         }
 
@@ -74,41 +80,24 @@ public class ReviewPageModel
     {
         CurrentGroup = group;
         CurrentTransaction = transaction;
-        IsReimburseSearchOpen = true;
+        await ReimburseModal.ShowAsync();
 
-        ReimbursePagination.Query.FilterStatus = ReviewStatus.Reviewed;
-
-        await ReimbursePagination.UpdateResults();
+        //await ReimbursePagination.UpdateResults();
     }
 
     public async Task OnFindTransfer(ReviewGroup group)
     {
         CurrentGroup = group;
-        IsTransferSearchOpen = true;
+        await TransferModal.ShowAsync();
 
-        TransferPagination.Query.FilterAmountMax = -group.InitalTransaction.Amount;
-        TransferPagination.Query.FilterAmountMin = -group.InitalTransaction.Amount;
-
-        await TransferPagination.UpdateResults();
-    }
-
-    public void EndFindReimbursement()
-    {
-        IsReimburseSearchOpen = false;
-        Clean();
-    }
-
-    public void EndFindTransfer()
-    {
-        IsTransferSearchOpen = false;
-        Clean();
+        //await TransferPagination.UpdateResults();
     }
 
     public void RevertAutoAssign()
     {
         var unassignedCount = 0;
 
-        foreach (var group in ReviewPagination.Result.Items)
+        foreach (var group in Pagination.Result.Items)
         {
             foreach (var transaction in group.Transactions)
             {

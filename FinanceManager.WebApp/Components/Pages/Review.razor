@@ -3,22 +3,72 @@
 @inject TransactionService TransactionService
 @inject CategoryService CategoryService
 @inject CategorisationService CategorisationService
+@inject IHxMessengerService Messenger
 
 @code {
     private ReviewPageModel Model = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Model.ReviewPagination.FetchPagedResult = TransactionService.GetPagedAsync<ReviewGroup>;
-        Model.ReviewPagination.AfterFetchPagedResult = OnFetch;
+        Model.Pagination.FetchPagedResult = TransactionService.GetPagedAsync<ReviewGroup>;
+        Model.Pagination.AfterFetchPagedResult = OnFetch;
 
-        Model.TransferPagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
-        Model.ReimbursePagination.FetchPagedResult = TransactionService.GetPagedAsync<TransactionSummary>;
+        Model.TransferData.GetGridData = GetTransferData;
+        Model.ReimburseData.GetGridData = GetReimburseData;
 
         Model.Categories = (await CategoryService.GetCategories()).ToList();
         Model.HasMemories = await CategorisationService.HasMemories();
 
-        await Model.ReviewPagination.UpdateResults();
+        await Model.Pagination.UpdateResults();
+    }
+
+    private async Task<GridDataProviderResult<TransactionSummary>> GetTransferData(GridDataProviderRequest<TransactionSummary> request)
+    {
+        Model.TransferData.Query.Page = (request.StartIndex / (request.Count ?? 15)) + 1;
+        Model.TransferData.Query.PageSize = request.Count ?? 20;
+        Model.TransferData.Query.FilterAmountMax = -Model.CurrentGroup?.InitalTransaction.Amount;
+        Model.TransferData.Query.FilterAmountMin = -Model.CurrentGroup?.InitalTransaction.Amount;
+
+        if (request.Sorting is not null && request.Sorting.Any())
+        {
+            var sort = request.Sorting.First();
+            Model.TransferData.Query.SortDescending = sort.SortDirection == SortDirection.Descending;
+            if (Enum.TryParse<TransactionSortBy>(sort.SortString, out var sortBy))
+            {
+                Model.TransferData.Query.SortBy = sortBy;
+            }
+        }
+
+        var result = await TransactionService.GetPagedAsync<TransactionSummary>(Model.TransferData.Query);
+        return new GridDataProviderResult<TransactionSummary>
+        {
+            Data = result.Items.Where(t => t.Id != Model.CurrentGroup?.InitalTransaction.Id),
+            TotalCount = result.TotalItems
+        };
+    }
+
+    private async Task<GridDataProviderResult<TransactionSummary>> GetReimburseData(GridDataProviderRequest<TransactionSummary> request)
+    {
+        Model.ReimburseData.Query.Page = (request.StartIndex / (request.Count ?? 15)) + 1;
+        Model.ReimburseData.Query.PageSize = request.Count ?? 20;
+        Model.ReimburseData.Query.FilterStatus = ReviewStatus.Reviewed;
+
+        if (request.Sorting is not null && request.Sorting.Any())
+        {
+            var sort = request.Sorting.First();
+            Model.ReimburseData.Query.SortDescending = sort.SortDirection == SortDirection.Descending;
+            if (Enum.TryParse<TransactionSortBy>(sort.SortString, out var sortBy))
+            {
+                Model.ReimburseData.Query.SortBy = sortBy;
+            }
+        }
+
+        var result = await TransactionService.GetPagedAsync<TransactionSummary>(Model.ReimburseData.Query);
+        return new GridDataProviderResult<TransactionSummary>
+        {
+            Data = result.Items,
+            TotalCount = result.TotalItems
+        };
     }
 
     private async Task OnFetch()
@@ -48,24 +98,26 @@
         try
         {
             await TransactionService.SaveTransactionGroupAsync(group);
-            await Model.ReviewPagination.UpdateResults();
+            await Model.Pagination.UpdateResults();
             if (showMessage)
             {
-                Model.Validation.SetState(ValidationType.Success, $"Saved transaction successfully");
+                Messenger.AddInformation("Saved transaction successfully");
             }
         }
         catch (Exception)
         {
-            Model.Validation.SetState(ValidationType.Error, "An unexpected error occurred. Please try again");
+            Messenger.AddError("An unexpected error occurred. Please try again");
         }
         Model.Clean();
     }
 
     private async Task AutoAssign()
     {
+        if (!Model.Pagination.Result.Items.Any()) return;
+
         var assignedCount = 0;
 
-        foreach (var group in Model.ReviewPagination.Result.Items)
+        foreach (var group in Model.Pagination.Result.Items)
         {
             foreach (var transaction in group.Transactions)
             {
@@ -81,38 +133,37 @@
 
         if (assignedCount > 0)
         {
-            Model.Validation.SetState(ValidationType.Success, $"Auto assigned {assignedCount} transactions");
+            Messenger.AddInformation($"Auto assigned {assignedCount} transactions");
         }
-        else
+        else if (Model.IsFirstAutoAssign)
         {
-            Model.Validation.SetState(ValidationType.Info, "Not enough information to assign categories");
+            Messenger.AddInformation("Not enough information to assign categories");
+            Model.IsFirstAutoAssign = false;
         }
     }
 }
 
 <PageTitle>Review Transaction</PageTitle>
 
-<Popup Type="Model.Validation.Type" Message="@Model.Validation.ValidationMessage" IsVisible="Model.Validation.HasState" OnClose="Model.Validation.ClearValidation" />
-
 <h1 class="page-heading">Review transactions</h1>
 
-@if (!Model.HasMemories)
-{
-    <div class="alert alert-info" role="alert">Review and correct transactions to help the automatic categorisation get smarter and more accurate.</div>
-}
+<HxAlert Color="ThemeColor.Info">
+    <HxIcon Icon="@BootstrapIcon.InfoCircleFill" />
+    Review and correct transactions to help the automatic categorisation get smarter and more accurate.
+</HxAlert>
 
-@if (Model.ReviewPagination.Result.TotalItems > 0)
+@if (Model.Pagination.Result.TotalItems > 0)
 {
     <div class="mb-3 text-muted d-flex">
         <span class="align-self-end">
-            Showing @Model.ReviewPagination.Result.StartItem - @Model.ReviewPagination.Result.EndItem of @Model.ReviewPagination.Result.TotalItems unreviewed transactions
+            Showing @Model.Pagination.Result.StartItem - @Model.Pagination.Result.EndItem of @Model.Pagination.Result.TotalItems unreviewed transactions
         </span>
         <div class="ms-auto">
-            <AutoAssignCheckbox @bind-IsChecked="Model.IsAutoAssignmentEnabled" @bind-IsChecked:after="OnAutoAssignChange" />
+            <HxCheckbox @bind-Value="Model.IsAutoAssignmentEnabled" Text="Auto assign categories" @bind-Value:after="OnAutoAssignChange" />
         </div>
     </div>
 
-    @foreach (var transactionGroup in Model.ReviewPagination.Result.Items)
+    @foreach (var transactionGroup in Model.Pagination.Result.Items)
     {
         <TransactionRow TransactionGroup="transactionGroup"
                         Categories="transactionGroup.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
@@ -123,29 +174,24 @@
                         OnFindReimbursement="(t) => Model.OnFindReimbursement(transactionGroup, t)" />
     }
 
-    <Pagination PagedResult="Model.ReviewPagination.Result" OnPageChanged="Model.ReviewPagination.SetPage" />
+    <HxPager CurrentPageIndex="Model.Pagination.Result.CurrentPage - 1" TotalPages="Model.Pagination.Result.TotalPages" CurrentPageIndexChanged="Model.Pagination.SetPageZeroIndex" />
 }
 else
 {
-    <div class="alert alert-success" role="alert">
-        <i class="bi bi-check-circle"></i> All transactions have been reviewed!
-    </div>
+    <HxAlert Color="ThemeColor.Success">
+        <HxIcon Icon="@BootstrapIcon.CheckCircleFill" />
+        You are up to date! All transactions have been reviewed.
+    </HxAlert>
 }
 
-@if (Model.IsTransferSearchOpen && Model.CurrentGroup is not null)
-{
-    <Modal Title="Find transfer" OnClose="Model.EndFindTransfer">
-        <BodyContent>
-            <TransactionSearch PaginationModel="Model.TransferPagination" Categories="Model.Categories" OnSelect="Model.SetTransfer" />
-        </BodyContent>
-    </Modal>
-}
+<HxModal @ref="Model.TransferModal" Title="Find transfer" Size="ModalSize.ExtraLarge">
+    <BodyTemplate>
+        <TransactionSearch Data="Model.TransferData" Categories="Model.Categories" OnSelect="Model.SetTransfer" IsTransferMode />
+    </BodyTemplate>
+</HxModal>
 
-@if (Model.IsReimburseSearchOpen && Model.CurrentTransaction is not null)
-{
-    <Modal Title="Find reimbursement" OnClose="Model.EndFindReimbursement">
-        <BodyContent>
-            <TransactionSearch PaginationModel="Model.ReimbursePagination" Categories="Model.Categories" OnSelect="Model.SetReimbursement" />
-        </BodyContent>
-    </Modal>
-}
+<HxModal @ref="Model.ReimburseModal" Title="Find reimbursement" Size="ModalSize.ExtraLarge">
+    <BodyTemplate>
+        <TransactionSearch Data="Model.ReimburseData" Categories="Model.Categories" OnSelect="Model.SetReimburse" />
+    </BodyTemplate>
+</HxModal>

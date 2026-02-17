@@ -26,15 +26,8 @@ public class PaginationModel<Q, R> where Q : PagedQuery, new() where R : class
         await UpdateResults();
     }
 
-    public async Task UpdateFilters()
+    public async Task SetPageZeroIndex(int page)
     {
-        Query = Query with { Page = 1 };
-        await UpdateResults();
-    }
-
-    public async Task ClearFilters()
-    {
-        Query = new();
-        await UpdateResults();
+        await SetPage(page + 1);
     }
 }

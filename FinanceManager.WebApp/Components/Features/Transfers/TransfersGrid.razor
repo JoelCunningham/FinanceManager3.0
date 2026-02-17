@@ -38,7 +38,6 @@
 
 <div class="tranfers-grid">
     <HxListLayout Title="View transfers" TFilterModel="FilterQuery" FilterModel="Query" FilterModelChanged="HandleFilterChange">
-
         <SearchTemplate>
             <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Query.SearchTerm" @bind-Value:after="RefreshDataAsync" />
         </SearchTemplate>
@@ -87,7 +86,6 @@
                             <HxContextMenuItem Text="Separate" OnClick="() => RemoveTransfer.InvokeAsync(transfer)" Icon="BootstrapIcon.BoxArrowUpRight" />
                         </HxContextMenu>
                     </HxContextMenuGridColumn>
-
                 </Columns>
             </HxGrid>
         </DataTemplate>
