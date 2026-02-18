@@ -39,12 +39,12 @@
         try
         {
             await TransferService.ConvertToTransactionAsync(transfer.Id);
-            Messenger.AddInformation("Transfer separated successfully.");
+            Model.Validation.SetSuccess("Transfer separated successfully.");
             if (Model.Grid != null) await Model.Grid.RefreshDataAsync();
         }
         catch (Exception)
         {
-            Messenger.AddError("Could not remove transfer. Please try again.");
+            Model.Validation.SetError("Could not remove transfer. Please try again.");
         }
     }
 

@@ -48,3 +48,7 @@
             font-size: 1.4rem;
             color: var( --bs-success);
         }
+
+    .transaction-group ::deep .transactions-row > div > div {
+        width: 100%
+    }

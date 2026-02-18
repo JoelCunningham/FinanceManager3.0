@@ -24,8 +24,7 @@ public class ReviewPageModel
     public HxModal ReimburseModal { get; set; } = new();
 
     public bool IsFirstAutoAssign { get; set; } = true;
-    public bool HasMemories { get; set; } = true;
-    public bool IsAutoAssignmentEnabled { get; set; } = true;
+    public bool IsAutoAssignEnabled { get; set; } = true;
 
     public string AmountKey = "amount";
     public string CategoryKey = "category";
@@ -57,40 +56,17 @@ public class ReviewPageModel
 
     }
 
-    public bool ValidateGroup(ReviewGroup group)
-    {
-        Validation.ClearValidation();
-
-        foreach (var transaction in group.Transactions)
-        {
-            if (transaction.Category is null && group.Transfers is null)
-            {
-                Validation.SetError(transaction.Id, CategoryKey, "A category is required");
-            }
-            if (transaction.Amount == 0)
-            {
-                Validation.SetError(transaction.Id, AmountKey, "Amount must not be zero");
-            }
-        }
-
-        return !Validation.HasError;
-    }
-
     public async Task OnFindReimbursement(ReviewGroup group, ReviewTransaction transaction)
     {
         CurrentGroup = group;
         CurrentTransaction = transaction;
         await ReimburseModal.ShowAsync();
-
-        //await ReimbursePagination.UpdateResults();
     }
 
     public async Task OnFindTransfer(ReviewGroup group)
     {
         CurrentGroup = group;
         await TransferModal.ShowAsync();
-
-        //await TransferPagination.UpdateResults();
     }
 
     public void RevertAutoAssign()
@@ -101,10 +77,10 @@ public class ReviewPageModel
         {
             foreach (var transaction in group.Transactions)
             {
-                if (transaction.AutoCategorised)
+                if (transaction.IsAutoCategorised)
                 {
                     transaction.Category = null;
-                    transaction.AutoCategorised = false;
+                    transaction.IsAutoCategorised = false;
                     unassignedCount++;
                 }
             }
@@ -112,7 +88,7 @@ public class ReviewPageModel
 
         if (unassignedCount > 0)
         {
-            Validation.SetState(ValidationType.Success, $"Reverted {unassignedCount} assignments");
+            Validation.SetSuccess($"Reverted {unassignedCount} assignments");
         }
     }
 }

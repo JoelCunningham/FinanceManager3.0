@@ -4,19 +4,20 @@
 @inject ParserService ParserService
 @inject IHxMessengerService Messenger
 @inject NavigationManager NavigationManager
+@inject IHxMessengerService Messenger
 
 @code {
     private ImportPageModel Model = new();
 
     protected override async Task OnInitializedAsync()
     {
+        Model.Validation.Messenger = Messenger;
         Model.AvailableParsers = ParserService.GetAvailableParsers().ToList();
     }
 
     private async Task ParseFile(IBrowserFile file)
     {
         if (Model.SelectedParser is null || file is null) return;
-
         try
         {
             await using var stream = file.OpenReadStream();
@@ -27,19 +28,18 @@
             if (results.Count == 0) throw new ArgumentNullException();
 
             Model.ImportedTransactions = [.. results];
-            Model.Validation.SetState(ValidationType.Success, $"{results.Count} new tranasctions found.");
+            Model.Validation.SetSuccess($"{results.Count} new tranasctions found.", true);
         }
         catch (Exception exception)
         {
             Model.ImportedTransactions = null;
-            Model.Validation.SetState(ValidationType.Error, Model.GetUploadErrorMessage(exception));
+            Model.Validation.SetError(Model.GetUploadErrorMessage(exception), true);
         }
     }
 
     private async Task ImportTransactions()
     {
         if (Model.ImportedTransactions is null) return;
-
         try
         {
             await ImportService.SaveAsync(Model.ImportedTransactions);
@@ -47,7 +47,7 @@
         }
         catch
         {
-            Messenger.AddError("An unexpected error occurred. Please try again.");
+            Model.Validation.SetError("An unexpected error occurred. Please try again.");
         }
     }
 }

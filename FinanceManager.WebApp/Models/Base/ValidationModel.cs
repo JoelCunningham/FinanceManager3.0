@@ -1,40 +1,49 @@
-﻿namespace FinanceManager.WebApp.Models.Base;
+﻿using Havit.Blazor.Components.Web;
+using Havit.Blazor.Components.Web.Bootstrap;
+
+namespace FinanceManager.WebApp.Models.Base;
 
 public class ValidationModel
 {
+    public IHxMessengerService? Messenger { get; set; }
     public ValidationType Type { get; set; }
-    public string? ValidationMessage { get; set; }
+    public string? Message { get; set; }
     public List<ValidationItem> Items { get; set; } = [];
-
-    public bool HasState => Type != ValidationType.None;
-    public bool HasError => Type == ValidationType.Error;
-    public bool HasSuccess => Type == ValidationType.Success;
 
     public void ClearValidation()
     {
         Items = [];
-        ValidationMessage = null;
+        Message = null;
         Type = ValidationType.None;
+        Messenger?.Clear();
     }
 
-    public void SetError(Guid itemId, string message)
+    public void SetState(ValidationType type, string? message = null, bool isSilent = false)
     {
-        Items.Add(new() { Id = itemId });
-        SetMessage(message);
-        Type = ValidationType.Error;
+        Type = type;
+        Message = message;
+        if (!isSilent) ShowMessage();
+    }
+
+    public void SetSuccess(string message, bool isSilent = false)
+    {
+        SetState(ValidationType.Success, message, isSilent);
+    }
+
+    public void SetInfo(string message, bool isSilent = false)
+    {
+        SetState(ValidationType.Info, message, isSilent);
+    }
+
+    public void SetError(string message, bool isSilent = false)
+    {
+        SetState(ValidationType.Error, message, isSilent);
     }
 
     public void SetError(Guid itemId, string field, string message)
     {
         Items.Add(new() { Id = itemId, Field = field });
-        SetMessage(message);
-        Type = ValidationType.Error;
-    }
-
-    public void SetState(ValidationType type, string? message = null)
-    {
-        SetMessage(message);
-        Type = type;
+        SetState(ValidationType.Error, message);
     }
 
     public List<Guid> GetValidationItemIds(string field)
@@ -62,13 +71,24 @@ public class ValidationModel
         };
     }
 
-    private void SetMessage(string? message)
+    private void ShowMessage()
     {
-        if (Type == ValidationType.Error)
+        if (Messenger is null || Message is null) return;
+
+        switch (Type)
         {
-            ValidationMessage = ValidationMessage is null ? message : "Multiple problems detected";
+            case ValidationType.Error:
+                Messenger.AddError(Message);
+                break;
+
+            case ValidationType.Success:
+                Messenger.AddInformation(Message);
+                break;
+
+            default:
+                Messenger.AddInformation(Message);
+                break;
         }
-        ValidationMessage = message;
     }
 }
 

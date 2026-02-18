@@ -15,8 +15,16 @@
 
     private ReviewTransaction? CurrentTransaction { get; set; }
 
+    private void SetCategory(Category? value, ReviewTransaction transaction)
+    {
+        ErrorCategoryIds = [];
+        transaction.Category = value;
+        transaction.IsAutoCategorised = false;
+    }
+
     private void SetAmount(decimal value, ReviewTransaction transaction)
     {
+        ErrorAmountIds = [];
         try
         {
             TransactionGroup.SetAmount(transaction, value);
@@ -25,11 +33,6 @@
         {
             // TODO Maybe a warning?
         }
-    }
-
-    private void CategoryChanged(ReviewTransaction transaction)
-    {
-        transaction.AutoCategorised = false;
     }
 }
 
@@ -53,7 +56,7 @@
         </div>
         <div class="action-buttons">
             <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="TransactionGroup.Reset" />
-            <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.CheckLg" OnClick="() => OnSave.InvokeAsync()" />
+            <HxSubmit Color="ThemeColor.None" Icon="BootstrapIcon.CheckLg" OnClick="() => OnSave.InvokeAsync()" />
         </div>
     }
     else
@@ -62,12 +65,7 @@
             @foreach (var (transaction, index) in TransactionGroup.Transactions.Select((t, i) => (t, i)))
             {
                 <div class="transactions-row">
-                    <HxSelect @bind-Value="transaction.Category"
-                              CssClass="@(transaction.AutoCategorised ? "auto-categorised" : "")"
-                              Data="Categories"
-                              NullText="Select category"
-                              TextSelector="@(c => $"{c.Group.Name} - {c.Name}")"
-                              ValueSelector="@(c => c)" />
+                    <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => SetCategory(v, transaction)" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.Id)" />
                     <HxInputDate @bind-Value="transaction.Date" CalendarIcon="BootstrapIcon.Calendar" MaxDate="@TransactionGroup.InitalTransaction.Date" />
                     <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
                     @if (index == 0)
@@ -98,7 +96,7 @@
                 {
                     <div class="transactions-row reimbursement-row">
                         <span class="transaction-label">Reimburses</span>
-                        <HxInputDate @bind-Value="transaction.Reimburses.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false"/>
+                        <HxInputDate @bind-Value="transaction.Reimburses.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
                         <HxInputText @bind-Value="transaction.Reimburses.Description" title="@transaction.Reimburses.Description" Enabled="false" />
                         <HxInputNumber @bind-Value="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
                         <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.XLg" OnClick="() => transaction.Reimburses = null" />
@@ -108,7 +106,7 @@
         </div>
         <div class="action-buttons">
             <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="TransactionGroup.Reset" />
-            <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.CheckLg" OnClick="() => OnSave.InvokeAsync()" />
+            <HxSubmit Color="ThemeColor.None" Icon="BootstrapIcon.CheckLg" OnClick="() => OnSave.InvokeAsync()" />
         </div>
     }
 </div>

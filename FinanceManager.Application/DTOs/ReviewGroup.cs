@@ -118,7 +118,7 @@ public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
     public required DateTime Date { get; set; }
     public Category? Category { get; set; }
     public TransactionSummary? Reimburses { get; set; }
-    public bool AutoCategorised { get; set; }
+    public bool IsAutoCategorised { get; set; }
 
     public static ReviewTransaction FromTransaction(Transaction transaction)
     {

@@ -10,6 +10,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Model.Validation.Messenger = Messenger;
+
         Model.Pagination.FetchPagedResult = TransactionService.GetPagedAsync<ReviewGroup>;
         Model.Pagination.AfterFetchPagedResult = OnFetch;
 
@@ -17,8 +19,6 @@
         Model.ReimburseData.GetGridData = GetReimburseData;
 
         Model.Categories = (await CategoryService.GetCategories()).ToList();
-        Model.HasMemories = await CategorisationService.HasMemories();
-
         await Model.Pagination.UpdateResults();
     }
 
@@ -73,7 +73,7 @@
 
     private async Task OnFetch()
     {
-        if (Model.IsAutoAssignmentEnabled)
+        if (Model.IsAutoAssignEnabled)
         {
             await AutoAssign();
         }
@@ -81,7 +81,7 @@
 
     private async Task OnAutoAssignChange()
     {
-        if (Model.IsAutoAssignmentEnabled)
+        if (Model.IsAutoAssignEnabled)
         {
             await AutoAssign();
         }
@@ -93,22 +93,38 @@
 
     private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
     {
-        if (!Model.ValidateGroup(group)) return;
-
+        if (!ValidateGroup(group)) return;
         try
         {
             await TransactionService.SaveTransactionGroupAsync(group);
             await Model.Pagination.UpdateResults();
             if (showMessage)
             {
-                Messenger.AddInformation("Saved transaction successfully");
+                Model.Validation.SetSuccess("Transaction saved successfully");
             }
         }
         catch (Exception)
         {
-            Messenger.AddError("An unexpected error occurred. Please try again");
+            Model.Validation.SetError("An unexpected error occurred. Please try again");
         }
         Model.Clean();
+    }
+
+    public bool ValidateGroup(ReviewGroup group)
+    {
+        Model.Validation.ClearValidation();
+        foreach (var transaction in group.Transactions)
+        {
+            if (transaction.Category is null && group.Transfers is null)
+            {
+                Model.Validation.SetError(transaction.Id, Model.CategoryKey, "A category is required");
+            }
+            if (transaction.Amount == 0)
+            {
+                Model.Validation.SetError(transaction.Id, Model.AmountKey, "Amount must not be zero");
+            }
+        }
+        return Model.Validation.Type != ValidationType.Error;
     }
 
     private async Task AutoAssign()
@@ -125,7 +141,7 @@
                 if (category is not null)
                 {
                     transaction.Category = category;
-                    transaction.AutoCategorised = true;
+                    transaction.IsAutoCategorised = true;
                     assignedCount++;
                 }
             }
@@ -133,11 +149,11 @@
 
         if (assignedCount > 0)
         {
-            Messenger.AddInformation($"Auto assigned {assignedCount} transactions");
+            Model.Validation.SetSuccess($"Auto assigned {assignedCount} transactions");
         }
         else if (Model.IsFirstAutoAssign)
         {
-            Messenger.AddInformation("Not enough information to assign categories");
+            Model.Validation.SetInfo("Not enough information to assign categories");
             Model.IsFirstAutoAssign = false;
         }
     }
@@ -159,7 +175,7 @@
             Showing @Model.Pagination.Result.StartItem - @Model.Pagination.Result.EndItem of @Model.Pagination.Result.TotalItems unreviewed transactions
         </span>
         <div class="ms-auto">
-            <HxCheckbox @bind-Value="Model.IsAutoAssignmentEnabled" Text="Auto assign categories" @bind-Value:after="OnAutoAssignChange" />
+            <HxCheckbox @bind-Value="Model.IsAutoAssignEnabled" Text="Auto assign categories" @bind-Value:after="OnAutoAssignChange" />
         </div>
     </div>
 

@@ -14,8 +14,8 @@
 <div class="file-input">
     <HxInputFile Label="Upload your transactions:" Accept="@SupportedExtensions" OnChange="OnChange" InputCssClass="@ValidationModel.GetControlClass()" />
 
-    @if (!string.IsNullOrEmpty(ValidationModel.ValidationMessage))
+    @if (!string.IsNullOrEmpty(ValidationModel.Message))
     {
-        <div class="d-block @ValidationModel.GetFeedbackClass()">@ValidationModel.ValidationMessage</div>
+        <div class="d-block @ValidationModel.GetFeedbackClass()">@ValidationModel.Message</div>
     }
 </div>

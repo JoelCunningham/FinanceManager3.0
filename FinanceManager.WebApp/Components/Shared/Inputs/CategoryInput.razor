@@ -1,56 +1,44 @@
-@inject IJSRuntime JSRuntime
-
 @code {
-    [Parameter] public Category? SelectedCategory { get; set; }
+    [Parameter] public Category? Value { get; set; }
 
-    [Parameter] public EventCallback<Category?> SelectedCategoryChanged { get; set; }
+    [Parameter] public EventCallback<Category?> ValueChanged { get; set; }
 
-    [Parameter] public IEnumerable<Category> Categories { get; set; } = [];
-
-    [Parameter] public bool HasError { get; set; } = true;
+    [Parameter] public IEnumerable<Category> Data { get; set; } = [];
 
     [Parameter] public bool IsAutoCategorised { get; set; } = false;
 
-    private string? SelectedCategoryId;
-    private ElementReference selectElement;
+    [Parameter] public bool HasError { get; set; } = false;
 
-    private string GetSelectClass()
+    private HxSelect<Category, Category> Select = new();
+
+    private IEnumerable<Category> GroupedData()
     {
-        var builder = new StringBuilder("form-select");
-        if (HasError) builder.Append(" is-invalid");
-        if (IsAutoCategorised) builder.Append(" auto-categorised");
-        return builder.ToString();
-    }
-
-    protected override void OnParametersSet()
-    {
-        SelectedCategoryId = SelectedCategory?.Id.ToString();
-    }
-
-    private async Task HandleCategoryChange()
-    {
-        SelectedCategory = SelectedCategoryId != "" && SelectedCategoryId != "None"
-            ? Categories.FirstOrDefault(c => c.Id.ToString() == SelectedCategoryId)
-            : null;
-
-        await SelectedCategoryChanged.InvokeAsync(SelectedCategory);
-    }
-
-    private async Task OpenSelect()
-    {
-        await JSRuntime.InvokeVoidAsync("eval", "arguments[0].focus(); arguments[0].click();", selectElement);
+        return Data.GroupBy(c => c.Group).OrderBy(g => g.Key.Name).SelectMany(g =>
+        {
+            var header = new Category { Id = new Guid(), Name = $"- {g.Key.Name} -", Group = g.Key };
+            var categories = g.OrderBy(c => c.Name);
+            return new[] { header }.Concat(categories);
+        });
     }
 }
+
 <div>
     @if (IsAutoCategorised)
     {
-        <Icon Name="stars" @onclick="OpenSelect" />
+        <HxIcon Icon="BootstrapIcon.Stars" />
     }
-    <select @ref="selectElement" class="@GetSelectClass()" @bind="SelectedCategoryId" @bind:after="HandleCategoryChange">
-        <option disabled selected value="">Select category</option>
-        @foreach (var category in Categories)
-        {
-            <option value="@category.Id">@category.Group.Name - @category.Name</option>
-        }
-    </select>
+    <HxSelect @bind-Value="Value"
+              @bind-Value:after="() => ValueChanged.InvokeAsync(Value)"
+              CssClass="@(IsAutoCategorised ? "auto-categorised" : "")"
+              InputCssClass="@(HasError ? "is-invalid" : "")"
+              Data="GroupedData()"
+              TItem="Category"
+              TValue="Category"
+              Nullable="false"
+              AutoSort="false"
+              NullText="Select category"
+              TextSelector="@(c => c.Name)"
+              ValueSelector="@(c => c)"
+              ItemDisabledSelector="@(c => c.Id == Guid.Empty)">
+    </HxSelect>
 </div>

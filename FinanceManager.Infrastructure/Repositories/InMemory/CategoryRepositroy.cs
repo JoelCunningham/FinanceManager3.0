@@ -89,6 +89,7 @@ public class CategoryRepository : ICategoryRepository
             new() { Id = Guid.NewGuid(), Name = "Rates & Taxes", Group = GetGroup("Housing") },
             new() { Id = Guid.NewGuid(), Name = "Maintenance", Group = GetGroup("Housing") },
             new() { Id = Guid.NewGuid(), Name = "Furniture", Group = GetGroup("Housing") },
+            new() { Id = Guid.NewGuid(), Name = "Manchester", Group = GetGroup("Housing") },
             new() { Id = Guid.NewGuid(), Name = "Accommodation", Group = GetGroup("Housing") },
 
             new() { Id = Guid.NewGuid(), Name = "Clothing", Group = GetGroup("Personal") },
