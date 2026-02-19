@@ -70,42 +70,46 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
     {
         if (!Transactions.Contains(transaction))
         {
-            throw new InvalidOperationException("Transaction does not belong to this InitalTransaction.");
+            throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
         }
-        if (amount < 0 || amount > InitalTransaction.Amount)
+        if (amount < Math.Min(0, InitalTransaction.Amount) || amount > Math.Max(0, InitalTransaction.Amount))
         {
-            throw new InvalidOperationException("Amount must be between 0 and the InitalTransaction amount.");
-        }
-        if (amount == transaction.Amount)
-        {
-            return;
+            throw new InvalidOperationException("Amount must be between 0 and the InitialTransaction amount.");
         }
 
-        var diff = transaction.Amount - amount;
+        var diff = Math.Abs(amount) - Math.Abs(transaction.Amount);
         var current = Transactions.IndexOf(transaction);
         var nextTransactions = Transactions.Skip(current + 1).Concat(Transactions.Take(current));
 
         foreach (var split in nextTransactions)
         {
-            if (diff == 0)
+            if (diff == 0) break;
+
+            var absSplit = Math.Abs(split.Amount);
+
+            if (diff > 0)
             {
-                break;
+                var reducible = absSplit;
+                var reduction = Math.Min(diff, reducible);
+
+                absSplit -= reduction;
+                diff -= reduction;
             }
-            if (diff > 0) // Need to decrease transaction amount
+            else
             {
-                var toAdd = Math.Min(diff, InitalTransaction.Amount - split.Amount);
-                split.Amount += toAdd;
-                diff -= toAdd;
-            }
-            if (diff < 0) // Need to increase transaction amount
-            {
-                var toRemove = Math.Min(-diff, split.Amount);
-                split.Amount -= toRemove;
-                diff += toRemove;
+                var currentAllocated = Transactions.Sum(t => Math.Abs(t.Amount));
+                var remainingCapacity = Math.Abs(InitalTransaction.Amount) - currentAllocated;
+
+                var increase = Math.Min(-diff, remainingCapacity);
+
+                absSplit += increase;
+                diff += increase;
             }
 
-            transaction.Amount = amount;
+            split.Amount = absSplit * Math.Sign(InitalTransaction.Amount);
         }
+
+        transaction.Amount = amount;
     }
 }
 
