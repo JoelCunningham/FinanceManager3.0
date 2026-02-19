@@ -18,13 +18,6 @@ public class ValidationModel
         Messenger?.Clear();
     }
 
-    public void SetState(ValidationType type, string? message = null, bool isSilent = false)
-    {
-        Type = type;
-        Message = message;
-        if (!isSilent) ShowMessage();
-    }
-
     public void SetSuccess(string message, bool isSilent = false)
     {
         SetState(ValidationType.Success, message, isSilent);
@@ -51,6 +44,11 @@ public class ValidationModel
         return [.. Items.Where(i => i.Field == field).Select(i => i.Id)];
     }
 
+    public void ClearValidationItem(Guid itemId, string field)
+    {
+        Items.RemoveAll(i => i.Id == itemId && i.Field == field);
+    }
+
     public string GetControlClass()
     {
         return Type switch
@@ -69,6 +67,13 @@ public class ValidationModel
             ValidationType.Success => "valid-feedback",
             _ => string.Empty
         };
+    }
+
+    private void SetState(ValidationType type, string? message = null, bool isSilent = false)
+    {
+        Type = type;
+        Message = message;
+        if (!isSilent) ShowMessage();
     }
 
     private void ShowMessage()

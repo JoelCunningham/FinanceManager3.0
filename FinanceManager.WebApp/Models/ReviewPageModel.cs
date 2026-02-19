@@ -34,12 +34,6 @@ public class ReviewPageModel
         Pagination = new() { Query = new() { FilterStatus = ReviewStatus.Unreviewed } };
     }
 
-    public void Clean()
-    {
-        CurrentGroup = null;
-        CurrentTransaction = null;
-    }
-
     public async Task SetReimburse(TransactionSummary transaction)
     {
         if (CurrentTransaction is null) return;
@@ -53,7 +47,43 @@ public class ReviewPageModel
         if (CurrentGroup is null) return;
         CurrentGroup.Transfers = transaction;
         await TransferModal.HideAsync();
+    }
 
+    public void SetCategory(ReviewTransaction transaction, Category? value)
+    {
+        Validation.ClearValidationItem(transaction.Id, CategoryKey);
+        transaction.Category = value;
+        transaction.IsAutoCategorised = false;
+    }
+
+    public void SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
+    {
+        Validation.ClearValidationItem(transaction.Id, AmountKey);
+        try
+        {
+            group.SetAmount(transaction, value);
+        }
+        catch (InvalidOperationException) 
+        {
+            Validation.SetError(transaction.Id, AmountKey, "Amount must be between 0 and the original amount");
+        }
+    }
+
+    public bool ValidateGroup(ReviewGroup group)
+    {
+        Validation.ClearValidation();
+        foreach (var transaction in group.Transactions)
+        {
+            if (transaction.Category is null && group.Transfers is null)
+            {
+                Validation.SetError(transaction.Id, CategoryKey, "A category is required");
+            }
+            if (transaction.Amount == 0)
+            {
+                Validation.SetError(transaction.Id, AmountKey, "Amount must not be zero");
+            }
+        }
+        return Validation.Type != ValidationType.Error;
     }
 
     public async Task OnFindReimbursement(ReviewGroup group, ReviewTransaction transaction)

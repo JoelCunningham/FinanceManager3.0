@@ -37,7 +37,7 @@
 }
 
 <div class="tranfers-grid">
-    <HxListLayout Title="View transfers" TFilterModel="FilterQuery" FilterModel="Query" FilterModelChanged="HandleFilterChange">
+    <HxListLayout TFilterModel="FilterQuery" FilterModel="Query" FilterModelChanged="HandleFilterChange">
         <SearchTemplate>
             <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Query.SearchTerm" @bind-Value:after="RefreshDataAsync" />
         </SearchTemplate>
@@ -73,9 +73,9 @@
                             }
                         </ItemTemplate>
                     </HxGridColumn>
-                    <HxGridColumn HeaderText="From" SortString="FromAccount" SortKeySelector="@(t => t.From.Account)"><ItemTemplate Context="transfer"><div class="d-flex align-items-center gap-2"><div class="bank-logo-container"><BankLogo BankName="@transfer.From.Bank" /></div><span>@transfer.From.Account</span></div></ItemTemplate></HxGridColumn>
+                    <HxGridColumn HeaderText="Account from" SortString="FromAccount" SortKeySelector="@(t => t.From.Account)"><ItemTemplate Context="transfer"><div class="d-flex align-items-center gap-2"><div class="bank-logo-container"><BankLogo BankName="@transfer.From.Bank" /></div><span>@transfer.From.Account</span></div></ItemTemplate></HxGridColumn>
                     <HxGridColumn><ItemTemplate><HxIcon Icon="BootstrapIcon.ArrowRight" /></ItemTemplate></HxGridColumn>
-                    <HxGridColumn HeaderText="To" SortString="ToAccount" SortKeySelector="@(t => t.To.Account)"><ItemTemplate Context="transfer"><div class="d-flex align-items-center gap-2"><div class="bank-logo-container"><BankLogo BankName="@transfer.To.Bank" /></div><span>@transfer.To.Account</span></div></ItemTemplate></HxGridColumn>
+                    <HxGridColumn HeaderText="Account to" SortString="ToAccount" SortKeySelector="@(t => t.To.Account)"><ItemTemplate Context="transfer"><div class="d-flex align-items-center gap-2"><div class="bank-logo-container"><BankLogo BankName="@transfer.To.Bank" /></div><span>@transfer.To.Account</span></div></ItemTemplate></HxGridColumn>
                     <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
                     <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col"><ItemTemplate Context="transfer"><span title="@transfer.Description">@transfer.Description</span></ItemTemplate></HxGridColumn>
                     <HxGridColumn HeaderText="Amount" SortString="Amount" SortKeySelector="@(t => t.Amount)" ItemTextSelector="@(t => t.Amount.ToString("C"))" />

@@ -2,7 +2,6 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.WebApp.Models.Base;
-using Google.GenAI.Types;
 using Havit.Blazor.Components.Web.Bootstrap;
 
 public class ImportPageModel

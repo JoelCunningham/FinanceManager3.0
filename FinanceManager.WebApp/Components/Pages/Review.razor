@@ -71,62 +71,6 @@
         };
     }
 
-    private async Task OnFetch()
-    {
-        if (Model.IsAutoAssignEnabled)
-        {
-            await AutoAssign();
-        }
-    }
-
-    private async Task OnAutoAssignChange()
-    {
-        if (Model.IsAutoAssignEnabled)
-        {
-            await AutoAssign();
-        }
-        else
-        {
-            Model.RevertAutoAssign();
-        }
-    }
-
-    private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
-    {
-        if (!ValidateGroup(group)) return;
-        try
-        {
-            await TransactionService.SaveTransactionGroupAsync(group);
-            await Model.Pagination.UpdateResults();
-            if (showMessage)
-            {
-                Model.Validation.SetSuccess("Transaction saved successfully");
-            }
-        }
-        catch (Exception)
-        {
-            Model.Validation.SetError("An unexpected error occurred. Please try again");
-        }
-        Model.Clean();
-    }
-
-    public bool ValidateGroup(ReviewGroup group)
-    {
-        Model.Validation.ClearValidation();
-        foreach (var transaction in group.Transactions)
-        {
-            if (transaction.Category is null && group.Transfers is null)
-            {
-                Model.Validation.SetError(transaction.Id, Model.CategoryKey, "A category is required");
-            }
-            if (transaction.Amount == 0)
-            {
-                Model.Validation.SetError(transaction.Id, Model.AmountKey, "Amount must not be zero");
-            }
-        }
-        return Model.Validation.Type != ValidationType.Error;
-    }
-
     private async Task AutoAssign()
     {
         if (!Model.Pagination.Result.Items.Any()) return;
@@ -157,6 +101,44 @@
             Model.IsFirstAutoAssign = false;
         }
     }
+
+    private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
+    {
+        if (!Model.ValidateGroup(group)) return;
+        try
+        {
+            await TransactionService.SaveTransactionGroupAsync(group);
+            await Model.Pagination.UpdateResults();
+            if (showMessage)
+            {
+                Model.Validation.SetSuccess("Transaction saved successfully");
+            }
+        }
+        catch (Exception)
+        {
+            Model.Validation.SetError("An unexpected error occurred. Please try again");
+        }
+    }
+
+    private async Task OnFetch()
+    {
+        if (Model.IsAutoAssignEnabled)
+        {
+            await AutoAssign();
+        }
+    }
+
+    private async Task OnAutoAssignChange()
+    {
+        if (Model.IsAutoAssignEnabled)
+        {
+            await AutoAssign();
+        }
+        else
+        {
+            Model.RevertAutoAssign();
+        }
+    }
 }
 
 <PageTitle>Review Transaction</PageTitle>
@@ -185,6 +167,8 @@
                         Categories="transactionGroup.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
                         ErrorCategoryIds="Model.Validation.GetValidationItemIds(Model.CategoryKey)"
                         ErrorAmountIds="Model.Validation.GetValidationItemIds(Model.AmountKey)"
+                        OnCategoryChange="args => Model.SetCategory(args.Item1, args.Item2)"
+                        OnAmountChange="args => Model.SetAmount(transactionGroup, args.Item1, args.Item2)"
                         OnSave="() => SaveGroup(transactionGroup)"
                         OnFindTransfer="() => Model.OnFindTransfer(transactionGroup)"
                         OnFindReimbursement="(t) => Model.OnFindReimbursement(transactionGroup, t)" />

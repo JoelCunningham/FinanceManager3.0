@@ -1,0 +1,32 @@
+.hx-list-layout .card {
+    border: none;
+
+
+    .card-body {
+        padding: 0 0 0.4rem 0;
+
+        .hx-list-layout-header {
+            grid-template-areas: "search title buttons";
+        }
+    }
+
+
+    .hx-grid-container {
+        border: var(--bs-card-border-width) solid var(--bs-card-border-color);
+        border-radius: var(--bs-card-border-radius);
+
+        tbody tr td {
+            padding-top: 0.7rem;
+            padding-bottom: 0.7rem;
+            background-color: transparent;
+        }
+
+        tbody tr:last-child {
+            border-bottom-color: transparent;
+        }
+
+        thead tr th {
+            background-color: transparent;
+        }
+    }
+}

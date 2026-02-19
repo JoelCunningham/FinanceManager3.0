@@ -1,0 +1,13 @@
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+}
+
+<div class="transactions-row">
+    @if (Label is not null)
+    {
+        <span class="transaction-label">@Label</span>
+    }
+    @ChildContent
+</div>
