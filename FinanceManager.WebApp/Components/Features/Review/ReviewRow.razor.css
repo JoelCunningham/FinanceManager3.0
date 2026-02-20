@@ -3,7 +3,6 @@
     grid-template-columns: 1fr 8rem;
     border: 1px solid #d4d7d9;
     border-radius: 8px;
-    margin-bottom: 1rem;
 
     .transactions-row {
         display: grid;

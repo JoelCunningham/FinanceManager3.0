@@ -9,29 +9,7 @@
     protected override async Task OnInitializedAsync()
     {
         Model.UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
-    }
-
-    private async Task<GridDataProviderResult<TransferSummary>> GetGridData(GridDataProviderRequest<TransferSummary> request)
-    {
-        Model.Query.Page = (request.StartIndex / (request.Count ?? 20)) + 1;
-        Model.Query.PageSize = request.Count ?? 20;
-
-        if (request.Sorting is not null && request.Sorting.Any())
-        {
-            var sort = request.Sorting.First();
-            Model.Query.SortDescending = sort.SortDirection == SortDirection.Descending;
-            if (Enum.TryParse<TransactionSortBy>(sort.SortString, out var sortBy))
-            {
-                Model.Query.SortBy = sortBy;
-            }
-        }
-
-        var result = await TransferService.GetPagedAsync(Model.Query);
-        return new GridDataProviderResult<TransferSummary>
-        {
-            Data = result.Items,
-            TotalCount = result.TotalItems
-        };
+        Model.Data.GetDataFunc = async (query) => await TransferService.GetPagedAsync(query);
     }
 
     private async Task SeparateTransfer(TransferSummary transfer)
@@ -40,7 +18,7 @@
         {
             await TransferService.ConvertToTransactionAsync(transfer.Id);
             Model.Validation.SetSuccess("Transfer separated successfully.");
-            if (Model.Grid != null) await Model.Grid.RefreshDataAsync();
+            await Model.Data.UpdateAsync();
         }
         catch (Exception)
         {
@@ -62,7 +40,7 @@
 
 <h1 class="page-heading">Transfers</h1>
 
-<TransfersGrid @ref="Model.Grid" @bind-Query="Model.Query" Accounts="Model.UniqueAccounts" GetGridData="GetGridData" RemoveTransfer="SeparateTransfer" OpenDetails="Model.OpenDetailsModal" />
+<TransfersGrid @bind-Data="Model.Data" Accounts="Model.UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="Model.OpenDetailsModal" />
 
 <HxModal @ref="Model.DetailsModal" Title="Transaction details" Size="ModalSize.Large">
     <BodyTemplate>

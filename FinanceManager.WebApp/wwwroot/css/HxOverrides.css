@@ -30,3 +30,19 @@
         }
     }
 }
+
+.hx-grid-container.grid-invisible table {
+
+    thead {
+        display: none;
+    }
+
+    tbody tr td {
+        border: 0;
+        padding: 0.5rem 0;
+
+        .hx-context-menu {
+            opacity: 1;
+        }
+    }
+}

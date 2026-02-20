@@ -12,72 +12,59 @@
     {
         Model.Validation.Messenger = Messenger;
 
-        Model.Pagination.FetchPagedResult = TransactionService.GetPagedAsync<ReviewGroup>;
-        Model.Pagination.AfterFetchPagedResult = OnFetch;
+        Model.Data.GetDataFunc = GetData;
+        Model.Data.UpdateViewState = StateHasChanged;
 
-        Model.TransferData.GetGridData = GetTransferData;
-        Model.ReimburseData.GetGridData = GetReimburseData;
+        Model.TransferData.GetDataFunc = GetTransferData;
+        Model.ReimburseData.GetDataFunc = GetReimburseData;
 
         Model.Categories = (await CategoryService.GetCategories()).ToList();
-        await Model.Pagination.UpdateResults();
     }
 
-    private async Task<GridDataProviderResult<TransactionSummary>> GetTransferData(GridDataProviderRequest<TransactionSummary> request)
+    private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)
     {
-        Model.TransferData.Query.Page = (request.StartIndex / (request.Count ?? 15)) + 1;
-        Model.TransferData.Query.PageSize = request.Count ?? 20;
-        Model.TransferData.Query.FilterAmountMax = -Model.CurrentGroup?.InitalTransaction.Amount;
-        Model.TransferData.Query.FilterAmountMin = -Model.CurrentGroup?.InitalTransaction.Amount;
+        query.FilterStatus = ReviewStatus.Unreviewed;
+        var result = await TransactionService.GetPagedAsync<ReviewGroup>(query);
+        if (Model.IsAutoAssignEnabled) await AutoAssign(result.Items);
+        return result;
+    }
 
-        if (request.Sorting is not null && request.Sorting.Any())
+    private async Task<PagedResult<TransactionSummary>> GetTransferData(FilterQuery query)
+    {
+        query.FilterAmountMax = -Model.CurrentGroup?.InitalTransaction.Amount;
+        query.FilterAmountMin = -Model.CurrentGroup?.InitalTransaction.Amount;
+        return await TransactionService.GetPagedAsync<TransactionSummary>(query);
+    }
+
+    private async Task<PagedResult<TransactionSummary>> GetReimburseData(FilterQuery query)
+    {
+        query.FilterStatus = ReviewStatus.Reviewed;
+        return await TransactionService.GetPagedAsync<TransactionSummary>(query);
+    }
+
+    private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
+    {
+        if (!Model.ValidateGroup(group)) return;
+        try
         {
-            var sort = request.Sorting.First();
-            Model.TransferData.Query.SortDescending = sort.SortDirection == SortDirection.Descending;
-            if (Enum.TryParse<TransactionSortBy>(sort.SortString, out var sortBy))
+            await TransactionService.SaveTransactionGroupAsync(group);
+            await Model.Data.UpdateAsync();
+            if (showMessage)
             {
-                Model.TransferData.Query.SortBy = sortBy;
+                Model.Validation.SetSuccess("Transaction saved successfully");
             }
         }
-
-        var result = await TransactionService.GetPagedAsync<TransactionSummary>(Model.TransferData.Query);
-        return new GridDataProviderResult<TransactionSummary>
+        catch (Exception)
         {
-            Data = result.Items.Where(t => t.Id != Model.CurrentGroup?.InitalTransaction.Id),
-            TotalCount = result.TotalItems
-        };
-    }
-
-    private async Task<GridDataProviderResult<TransactionSummary>> GetReimburseData(GridDataProviderRequest<TransactionSummary> request)
-    {
-        Model.ReimburseData.Query.Page = (request.StartIndex / (request.Count ?? 15)) + 1;
-        Model.ReimburseData.Query.PageSize = request.Count ?? 20;
-        Model.ReimburseData.Query.FilterStatus = ReviewStatus.Reviewed;
-
-        if (request.Sorting is not null && request.Sorting.Any())
-        {
-            var sort = request.Sorting.First();
-            Model.ReimburseData.Query.SortDescending = sort.SortDirection == SortDirection.Descending;
-            if (Enum.TryParse<TransactionSortBy>(sort.SortString, out var sortBy))
-            {
-                Model.ReimburseData.Query.SortBy = sortBy;
-            }
+            Model.Validation.SetError("An unexpected error occurred. Please try again");
         }
-
-        var result = await TransactionService.GetPagedAsync<TransactionSummary>(Model.ReimburseData.Query);
-        return new GridDataProviderResult<TransactionSummary>
-        {
-            Data = result.Items,
-            TotalCount = result.TotalItems
-        };
     }
 
-    private async Task AutoAssign()
+    private async Task AutoAssign(IEnumerable<ReviewGroup> groups)
     {
-        if (!Model.Pagination.Result.Items.Any()) return;
-
         var assignedCount = 0;
 
-        foreach (var group in Model.Pagination.Result.Items)
+        foreach (var group in groups)
         {
             foreach (var transaction in group.Transactions)
             {
@@ -101,44 +88,6 @@
             Model.IsFirstAutoAssign = false;
         }
     }
-
-    private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
-    {
-        if (!Model.ValidateGroup(group)) return;
-        try
-        {
-            await TransactionService.SaveTransactionGroupAsync(group);
-            await Model.Pagination.UpdateResults();
-            if (showMessage)
-            {
-                Model.Validation.SetSuccess("Transaction saved successfully");
-            }
-        }
-        catch (Exception)
-        {
-            Model.Validation.SetError("An unexpected error occurred. Please try again");
-        }
-    }
-
-    private async Task OnFetch()
-    {
-        if (Model.IsAutoAssignEnabled)
-        {
-            await AutoAssign();
-        }
-    }
-
-    private async Task OnAutoAssignChange()
-    {
-        if (Model.IsAutoAssignEnabled)
-        {
-            await AutoAssign();
-        }
-        else
-        {
-            Model.RevertAutoAssign();
-        }
-    }
 }
 
 <PageTitle>Review Transaction</PageTitle>
@@ -150,39 +99,41 @@
     Review and correct transactions to help the automatic categorisation get smarter and more accurate.
 </HxAlert>
 
-@if (Model.Pagination.Result.TotalItems > 0)
+@if (Model.Data.Result is not null)
 {
-    <div class="mb-3 text-muted d-flex">
+    <div class="text-muted d-flex">
         <span class="align-self-end">
-            Showing @Model.Pagination.Result.StartItem - @Model.Pagination.Result.EndItem of @Model.Pagination.Result.TotalItems unreviewed transactions
+            Showing @Model.Data.Result.StartItem - @Model.Data.Result.EndItem of @Model.Data.Result.TotalItems unreviewed transactions
         </span>
         <div class="ms-auto">
-            <HxCheckbox @bind-Value="Model.IsAutoAssignEnabled" Text="Auto assign categories" @bind-Value:after="OnAutoAssignChange" />
+            <HxCheckbox @bind-Value="Model.IsAutoAssignEnabled" Text="Auto assign categories" @bind-Value:after="Model.Data.UpdateAsync" />
         </div>
     </div>
-
-    @foreach (var transactionGroup in Model.Pagination.Result.Items)
-    {
-        <TransactionRow TransactionGroup="transactionGroup"
-                        Categories="transactionGroup.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
-                        ErrorCategoryIds="Model.Validation.GetValidationItemIds(Model.CategoryKey)"
-                        ErrorAmountIds="Model.Validation.GetValidationItemIds(Model.AmountKey)"
-                        OnCategoryChange="args => Model.SetCategory(args.Item1, args.Item2)"
-                        OnAmountChange="args => Model.SetAmount(transactionGroup, args.Item1, args.Item2)"
-                        OnSave="() => SaveGroup(transactionGroup)"
-                        OnFindTransfer="() => Model.OnFindTransfer(transactionGroup)"
-                        OnFindReimbursement="(t) => Model.OnFindReimbursement(transactionGroup, t)" />
-    }
-
-    <HxPager CurrentPageIndex="Model.Pagination.Result.CurrentPage - 1" TotalPages="Model.Pagination.Result.TotalPages" CurrentPageIndexChanged="Model.Pagination.SetPageZeroIndex" />
 }
-else
-{
-    <HxAlert Color="ThemeColor.Success">
-        <HxIcon Icon="@BootstrapIcon.CheckCircleFill" />
-        You are up to date! All transactions have been reviewed.
-    </HxAlert>
-}
+
+<HxGrid @ref="Model.Data.Grid" DataProvider="Model.Data.GetGridData" TItem="ReviewGroup" PageSize="Model.Data.Query.PageSize" SelectionEnabled="false" Responsive="false" TableContainerCssClass="grid-invisible">
+    <Columns>
+        <HxGridColumn>
+            <ItemTemplate Context="g">
+                <TransactionRow TransactionGroup="g"
+                                Categories="g.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
+                                ErrorCategoryIds="Model.Validation.GetValidationItemIds(Model.CategoryKey)"
+                                ErrorAmountIds="Model.Validation.GetValidationItemIds(Model.AmountKey)"
+                                OnCategoryChange="args => Model.SetCategory(args.Item1, args.Item2)"
+                                OnAmountChange="args => Model.SetAmount(g, args.Item1, args.Item2)"
+                                OnSave="() => SaveGroup(g)"
+                                OnFindTransfer="() => Model.OnFindTransfer(g)"
+                                OnFindReimbursement="(t) => Model.OnFindReimbursement(g, t)" />
+            </ItemTemplate>
+        </HxGridColumn>
+    </Columns>
+    <EmptyDataTemplate>
+        <HxAlert Color="ThemeColor.Success">
+            <HxIcon Icon="@BootstrapIcon.CheckCircleFill" />
+            You are up to date! All transactions have been reviewed.
+        </HxAlert>
+    </EmptyDataTemplate>
+</HxGrid>
 
 <HxModal @ref="Model.TransferModal" Title="Find transfer" Size="ModalSize.ExtraLarge">
     <BodyTemplate>

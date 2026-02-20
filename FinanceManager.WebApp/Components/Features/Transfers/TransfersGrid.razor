@@ -1,49 +1,23 @@
 @code {
-    [Parameter] public FilterQuery Query { get; set; } = new();
+    [Parameter] public DataGridModel<FilterQuery, TransferSummary> Data { get; set; } = new();
 
-    [Parameter] public EventCallback<FilterQuery> QueryChanged { get; set; }
+    [Parameter] public EventCallback<DataGridModel<FilterQuery, TransferSummary>> DataChanged { get; set; }
 
     [Parameter] public List<string> Accounts { get; set; } = [];
-
-    [Parameter] public GridDataProviderDelegate<TransferSummary>? GetGridData { get; set; }
 
     [Parameter] public EventCallback<TransferSummary> OpenDetails { get; set; }
 
     [Parameter] public EventCallback<TransferSummary> RemoveTransfer { get; set; }
-
-    private HxGrid<TransferSummary> GridComponent = new();
-
-    public async Task RefreshDataAsync()
-    {
-        if (QueryChanged.HasDelegate)
-        {
-            await QueryChanged.InvokeAsync(Query);
-        }
-        await GridComponent.RefreshDataAsync();
-    }
-
-    private async Task HandleFilterChange(FilterQuery newQuery)
-    {
-        newQuery.SearchTerm = Query.SearchTerm;
-        Query = newQuery;
-        await RefreshDataAsync();
-    }
-
-    private async Task HandleFilterCleared()
-    {
-        Query = new FilterQuery();
-        await RefreshDataAsync();
-    }
 }
 
 <div class="tranfers-grid">
-    <HxListLayout TFilterModel="FilterQuery" FilterModel="Query" FilterModelChanged="HandleFilterChange">
+    <HxListLayout TFilterModel="FilterQuery" FilterModel="Data.Query" FilterModelChanged="Data.HandleFilterChanged">
         <SearchTemplate>
-            <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Query.SearchTerm" @bind-Value:after="RefreshDataAsync" />
+            <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Data.Query.SearchTerm" @bind-Value:after="Data.UpdateAsync" />
         </SearchTemplate>
 
         <CommandsTemplate>
-            <HxButton Text="Clear filters" Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="HandleFilterCleared" />
+            <HxButton Text="Clear filters" Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="Data.HandleFilterCleared" />
         </CommandsTemplate>
 
         <FilterTemplate Context="query">
@@ -57,7 +31,7 @@
         </FilterTemplate>
 
         <DataTemplate>
-            <HxGrid @ref="GridComponent" DataProvider="GetGridData" PageSize="Query.PageSize" PreserveSelection="false" SelectionEnabled="false" Responsive="false" Hover="true">
+            <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" PageSize="Data.Query.PageSize" PreserveSelection="false" SelectionEnabled="false" Responsive="false" Hover="true">
                 <Columns>
 
                     <HxGridColumn HeaderText="Type" ItemCssClass="text-center" HeaderCssClass="text-center">

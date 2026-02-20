@@ -8,10 +8,10 @@ using Havit.Blazor.Components.Web.Bootstrap;
 public class ReviewPageModel
 {
     public ValidationModel Validation { get; set; } = new();
-    public PaginationModel<FilterQuery, ReviewGroup> Pagination { get; set; }
 
-    public DataGridModel<FilterQuery, TransactionSummary> TransferData { get; set; } = new();
-    public DataGridModel<FilterQuery, TransactionSummary> ReimburseData { get; set; } = new();
+    public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new(20);
+    public DataGridModel<FilterQuery, TransactionSummary> TransferData { get; set; } = new(15);
+    public DataGridModel<FilterQuery, TransactionSummary> ReimburseData { get; set; } = new(15);
 
     public ReviewGroup? CurrentGroup { get; set; }
     public ReviewTransaction? CurrentTransaction { get; set; }
@@ -28,11 +28,6 @@ public class ReviewPageModel
 
     public string AmountKey = "amount";
     public string CategoryKey = "category";
-
-    public ReviewPageModel()
-    {
-        Pagination = new() { Query = new() { FilterStatus = ReviewStatus.Unreviewed } };
-    }
 
     public async Task SetReimburse(TransactionSummary transaction)
     {
@@ -97,28 +92,5 @@ public class ReviewPageModel
     {
         CurrentGroup = group;
         await TransferModal.ShowAsync();
-    }
-
-    public void RevertAutoAssign()
-    {
-        var unassignedCount = 0;
-
-        foreach (var group in Pagination.Result.Items)
-        {
-            foreach (var transaction in group.Transactions)
-            {
-                if (transaction.IsAutoCategorised)
-                {
-                    transaction.Category = null;
-                    transaction.IsAutoCategorised = false;
-                    unassignedCount++;
-                }
-            }
-        }
-
-        if (unassignedCount > 0)
-        {
-            Validation.SetSuccess($"Reverted {unassignedCount} assignments");
-        }
     }
 }

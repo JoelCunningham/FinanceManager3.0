@@ -5,8 +5,6 @@ namespace FinanceManager.Application.DTOs;
 public record FilterQuery : PagedQuery
 {
     public string? SearchTerm { get; set; }
-    public bool SortDescending { get; set; } = true;
-    public TransactionSortBy SortBy { get; set; } = TransactionSortBy.Date;
     public TransferSource FilterSource { get; set; } = TransferSource.All;
     public Category? FilterCategory { get; set; }
     public string? FilterAccountFrom { get; set; }
@@ -16,14 +14,6 @@ public record FilterQuery : PagedQuery
     public decimal? FilterAmountMin { get; set; }
     public decimal? FilterAmountMax { get; set; }
     public ReviewStatus FilterStatus { get; set; } = ReviewStatus.All;
-}
-
-public enum TransactionSortBy
-{
-    Date,
-    Amount,
-    FromAccount,
-    ToAccount,
 }
 
 public enum TransferSource
