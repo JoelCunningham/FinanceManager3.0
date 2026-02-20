@@ -115,7 +115,7 @@
     <Columns>
         <HxGridColumn>
             <ItemTemplate Context="g">
-                <TransactionRow TransactionGroup="g"
+                <TransactionsReviewGrid TransactionGroup="g"
                                 Categories="g.IsIncome ? Model.IncomeCategories : Model.ExpenseCategories"
                                 ErrorCategoryIds="Model.Validation.GetValidationItemIds(Model.CategoryKey)"
                                 ErrorAmountIds="Model.Validation.GetValidationItemIds(Model.AmountKey)"
@@ -137,12 +137,12 @@
 
 <HxModal @ref="Model.TransferModal" Title="Find transfer" Size="ModalSize.ExtraLarge">
     <BodyTemplate>
-        <TransactionSearch Data="Model.TransferData" Categories="Model.Categories" OnSelect="Model.SetTransfer" IsTransferMode />
+        <TransactionsSearchGrid Data="Model.TransferData" Categories="Model.Categories" OnSelect="Model.SetTransfer" IsTransferMode />
     </BodyTemplate>
 </HxModal>
 
 <HxModal @ref="Model.ReimburseModal" Title="Find reimbursement" Size="ModalSize.ExtraLarge">
     <BodyTemplate>
-        <TransactionSearch Data="Model.ReimburseData" Categories="Model.Categories" OnSelect="Model.SetReimburse" />
+        <TransactionsSearchGrid Data="Model.ReimburseData" Categories="Model.Categories" OnSelect="Model.SetReimburse" />
     </BodyTemplate>
 </HxModal>

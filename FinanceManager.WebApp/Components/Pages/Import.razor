@@ -76,13 +76,17 @@
 
 <HxModal @ref="Model.PreviewModal" Title="Preview transactions" Size="ModalSize.ExtraLarge">
     <BodyTemplate>
-        <TransactionsPreview Transactions="Model.ImportedTransactions" />
+        <TransactionsPreviewGrid Transactions="Model.ImportedTransactions" />
     </BodyTemplate>
 </HxModal>
 
 <HxModal @ref="Model.SuccessModal" ShowCloseButton="false" Centered="true" OnClosed="Model.Reset">
     <BodyTemplate>
-        <ImportSuccess Transactions="Model.ImportedTransactions" />
+        <HxIcon Icon="@BootstrapIcon.CheckCircle" CssClass="import-success-icon" />
+        <span class="import-success-message">
+            Successfully imported @Model.ImportedTransactions?.Count transactions;
+            including @Model.TransfersCount transfers.
+        </span>
     </BodyTemplate>
     <FooterTemplate>
         @if (Model.TransfersCount > 0)
