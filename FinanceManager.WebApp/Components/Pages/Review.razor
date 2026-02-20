@@ -82,7 +82,7 @@
         {
             Model.Validation.SetSuccess($"Auto assigned {assignedCount} transactions");
         }
-        else if (Model.IsFirstAutoAssign)
+        else if (Model.Data.HasResults && Model.IsFirstAutoAssign)
         {
             Model.Validation.SetInfo("Not enough information to assign categories");
             Model.IsFirstAutoAssign = false;
@@ -99,7 +99,7 @@
     Review and correct transactions to help the automatic categorisation get smarter and more accurate.
 </HxAlert>
 
-@if (Model.Data.Result is not null)
+@if (Model.Data.HasResults && Model.Data.Result is not null)
 {
     <div class="text-muted d-flex">
         <span class="align-self-end">

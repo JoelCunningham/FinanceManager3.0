@@ -14,6 +14,7 @@ public class DataGridModel<Q, T>(int pageSize = 15) where Q : PagedQuery, new() 
     public Func<Q, Task<PagedResult<T>>>? GetDataFunc { get; set; }
     public Action? UpdateViewState { get; set; }
 
+    public bool HasResults => Result is not null && Result.TotalItems > 0;
     public GridDataProviderDelegate<T> GetGridData => GetGridDataAsync;
 
     public async Task UpdateAsync()
