@@ -1,0 +1,22 @@
+.transfer-modal ::deep .transfer-form {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.transfer-modal ::deep .hx-form-group {
+    flex: 0 0 auto;
+    margin-bottom: 0.25rem;
+}
+
+    .transfer-modal ::deep .hx-form-group:nth-child(2n+1) {
+        width: calc(50% - 1rem);
+        margin-right: 1rem;
+    }
+
+    .transfer-modal ::deep .hx-form-group:nth-child(2n) {
+        width: 50%;
+    }
+
+    .transfer-modal ::deep .hx-form-group.full-width {
+        width: 100%;
+    }

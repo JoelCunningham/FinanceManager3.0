@@ -1,56 +1,9 @@
 ﻿@page "/Transfers"
 
-@inject TransferService TransferService
-@inject IHxMessengerService Messenger
-
-@code {
-    private TransfersPageModel Model = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        Model.UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
-        Model.Data.GetDataFunc = async (query) => await TransferService.GetPagedAsync(query);
-    }
-
-    private async Task SeparateTransfer(TransferSummary transfer)
-    {
-        try
-        {
-            await TransferService.ConvertToTransactionAsync(transfer.Id);
-            Model.Validation.SetSuccess("Transfer separated successfully.");
-            await Model.Data.UpdateAsync();
-        }
-        catch (Exception)
-        {
-            Model.Validation.SetError("Could not remove transfer. Please try again.");
-        }
-    }
-
-    private async Task SeparateFromDetails()
-    {
-        if (Model.SelectedTransfer != null)
-        {
-            await SeparateTransfer(Model.SelectedTransfer);
-            await Model.DetailsModal.HideAsync();
-        }
-    }
-}
-
 <PageTitle>Transfers</PageTitle>
 
 <h1 class="page-heading">Transfers</h1>
 
-<TransfersGrid @bind-Data="Model.Data" Accounts="Model.UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="Model.OpenDetailsModal" />
+<TransfersGrid @bind-Data="Data" Accounts="UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="OpenDetailsModal" />
 
-<HxModal @ref="Model.DetailsModal" Title="Transaction details" Size="ModalSize.Large">
-    <BodyTemplate>
-        @if (Model.SelectedTransfer is not null)
-        {
-            <TransferDetails Transfer="Model.SelectedTransfer" />
-        }
-    </BodyTemplate>
-    <FooterTemplate>
-        <HxButton Color="ThemeColor.Primary" OnClick="SeparateFromDetails">Separate</HxButton>
-        <HxButton Color="ThemeColor.Secondary" OnClick="() => Model.DetailsModal.HideAsync()">Return</HxButton>
-    </FooterTemplate>
-</HxModal>
+<TransferModal @ref="TransferModal" Transfer="SelectedTransfer" SeparateFromDetails="SeparateFromDetails" />

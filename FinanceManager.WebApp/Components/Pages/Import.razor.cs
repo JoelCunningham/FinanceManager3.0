@@ -1,12 +1,12 @@
-﻿using FinanceManager.Application.DTOs;
+﻿namespace FinanceManager.WebApp.Components.Pages;
+
+using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Services;
 using FinanceManager.WebApp.Components.Features.Import;
 using FinanceManager.WebApp.Models.Base;
 using Havit.Blazor.Components.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-
-namespace FinanceManager.WebApp.Components.Pages;
 
 public partial class Import : ComponentBase
 {

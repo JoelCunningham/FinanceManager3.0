@@ -1,0 +1,36 @@
+@code {
+    private HxModal _modal = default!;
+
+    [Parameter] public TransferSummary Transfer { get; set; } = default!;
+
+    [Parameter] public EventCallback SeparateFromDetails { get; set; }
+
+    private string Source => Transfer.IsUserCreated ? "User created" : "Automatically created";
+
+    public async Task ShowAsync() => await _modal.ShowAsync();
+
+    public async Task HideAsync() => await _modal.HideAsync();
+}
+
+<div class="transfer-modal">
+    <HxModal @ref="_modal" Title="Transfer details" Size="ModalSize.Large">
+        <BodyTemplate>
+            <div class="transfer-form">
+                <HxFormState Enabled="false">
+                    <HxInputText Label="From Bank" @bind-Value="Transfer.From.Bank" />
+                    <HxInputText Label="To Bank" @bind-Value="Transfer.To.Bank" />
+                    <HxInputText Label="From Account" @bind-Value="Transfer.From.Account" />
+                    <HxInputText Label="To Account" @bind-Value="Transfer.To.Account" />
+                    <HxInputDate Label="Date" @bind-Value="Transfer.Date" CalendarIcon="BootstrapIcon.Calendar" />
+                    <HxInputNumber Label="Amount" @bind-Value="Transfer.Amount" InputGroupStartText="$" Decimals="2" />
+                    <HxInputText Label="Source" @bind-Value:get="Source" @bind-Value:set="(v) => { }" />
+                    <HxInputTextArea Label="Description" @bind-Value="Transfer.Description" CssClass="full-width" />
+                </HxFormState>
+            </div>
+        </BodyTemplate>
+        <FooterTemplate>
+            <HxButton Color="ThemeColor.Primary" OnClick="SeparateFromDetails">Separate</HxButton>
+            <HxButton Color="ThemeColor.Secondary" OnClick="() => _modal.HideAsync()">Return</HxButton>
+        </FooterTemplate>
+    </HxModal>
+</div>
