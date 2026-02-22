@@ -10,7 +10,7 @@ public class ValidationModel
     public string? Message { get; set; }
     public List<ValidationItem> Items { get; set; } = [];
 
-    public void ClearValidation()
+    public void Clear()
     {
         Items = [];
         Message = null;

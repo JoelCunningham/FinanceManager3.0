@@ -66,7 +66,7 @@ public class ReviewPageModel
 
     public bool ValidateGroup(ReviewGroup group)
     {
-        Validation.ClearValidation();
+        Validation.Clear();
         foreach (var transaction in group.Transactions)
         {
             if (transaction.Category is null && group.Transfers is null)

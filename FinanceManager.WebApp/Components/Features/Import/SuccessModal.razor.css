@@ -1,0 +1,12 @@
+﻿.success-modal ::deep .import-success-icon {
+    color: green;
+    display: flex;
+    font-size: 6rem;
+    justify-content: center;
+    margin: 1rem 1rem 1.25rem 1rem;
+}
+
+.success-modal ::deep .import-success-message {
+    display: flex;
+    justify-content: center
+}

@@ -1,0 +1,39 @@
+﻿@inject NavigationManager NavigationManager
+
+@code {
+    private HxModal _modal = default!;
+
+    [Parameter] public IReadOnlyList<ParsedTransaction> Transactions { get; set; } = [];
+
+    public async Task ShowAsync() => await _modal.ShowAsync();
+
+    public async Task HideAsync() => await _modal.HideAsync();
+
+    private Task<GridDataProviderResult<ParsedTransaction>> GetGridData(GridDataProviderRequest<ParsedTransaction> request)
+    {
+        return Task.FromResult(request.ApplyTo(Transactions));
+    }
+}
+
+<HxModal @ref="_modal" Title="Preview transactions" Size="ModalSize.ExtraLarge">
+    <BodyTemplate>
+        <HxGrid TItem="ParsedTransaction" DataProvider="GetGridData" Responsive="true" Hover="true" PageSize="10">
+            <Columns>
+                <HxGridColumn HeaderText="Account"
+                              ItemTextSelector="@(t => t.AccountNumber)"
+                              SortKeySelector="@(t => t.AccountNumber)" />
+                <HxGridColumn HeaderText="Date"
+                              ItemTextSelector="@(t => t.Date.ToShortDateString())"
+                              SortKeySelector="@(t => t.Date)"
+                              IsDefaultSortColumn="true" />
+                <HxGridColumn HeaderText="Description"
+                              ItemTextSelector="@(t => t.Description)" />
+                <HxGridColumn HeaderText="Amount"
+                              ItemTextSelector="@(t => t.Amount.ToString("C"))"
+                              SortKeySelector="@(t => t.Amount)"
+                              ItemCssClass="text-end"
+                              HeaderCssClass="text-end" />
+            </Columns>
+        </HxGrid>
+    </BodyTemplate>
+</HxModal>

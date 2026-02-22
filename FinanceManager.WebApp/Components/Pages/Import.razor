@@ -1,105 +1,28 @@
 ﻿@page "/Import"
 
-@inject ImportService ImportService
-@inject ParserService ParserService
-@inject NavigationManager NavigationManager
-@inject IHxMessengerService Messenger
-
-@code {
-    private ImportPageModel Model = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        Model.Validation.Messenger = Messenger;
-        Model.AvailableParsers = ParserService.GetAvailableParsers().ToList();
-    }
-
-    private async Task ParseFile(IBrowserFile file)
-    {
-        if (Model.SelectedParser is null || file is null) return;
-        try
-        {
-            await using var stream = file.OpenReadStream();
-            var bankName = Model.SelectedParser.BankName;
-            var fileExtension = Path.GetExtension(file.Name);
-
-            var results = (await ImportService.ImportAsync(stream, bankName, fileExtension)).ToList();
-            if (results.Count == 0) throw new ArgumentNullException();
-
-            Model.ImportedTransactions = [.. results];
-            Model.Validation.SetSuccess($"{results.Count} new tranasctions found.", true);
-        }
-        catch (Exception exception)
-        {
-            Model.ImportedTransactions = null;
-            Model.Validation.SetError(Model.GetUploadErrorMessage(exception), true);
-        }
-    }
-
-    private async Task ImportTransactions()
-    {
-        if (Model.ImportedTransactions is null) return;
-        try
-        {
-            await ImportService.SaveAsync(Model.ImportedTransactions);
-            await Model.SuccessModal.ShowAsync();
-        }
-        catch
-        {
-            Model.Validation.SetError("An unexpected error occurred. Please try again.");
-        }
-    }
-}
-
 <PageTitle>Import Transactions</PageTitle>
 
 <h1 class="page-heading">Import transactions</h1>
 
-<div class="d-flex flex-column gap-3">
-    @if (Model.AvailableParsers is not null && Model.AvailableParsers.Any())
+<div class="import-form">
+    @if (ShowBankSelection)
     {
-        <BankSelectList AvailableParsers="Model.AvailableParsers" @bind-SelectedBank="Model.SelectedParser" @bind-SelectedBank:after="Model.BankChanged" />
+        <BankSelectList AvailableParsers="AvailableParsers" @bind-SelectedBank="SelectedParser" @bind-SelectedBank:after="BankChanged" />
     }
-    @if (Model.SelectedParser is not null)
+    @if (ShowFileUpload)
     {
-        <TransactionFileUpload SupportedExtensions="@Model.SupportedExtensions" ValidationModel="Model.Validation" OnFileUploaded="ParseFile" />
+        <TransactionFileUpload SupportedExtensions="@SupportedExtensions" ValidationModel="Validation" OnFileUploaded="ParseFile" />
     }
-    @if (Model.ImportedTransactions is not null)
+    @if (ShowActionButtons)
     {
-        <div class="ms-auto">
-            <HxButton Color="ThemeColor.Secondary" OnClick="Model.Reset">Cancel</HxButton>
-            <HxButton Color="ThemeColor.Info" OnClick="Model.PreviewModal.ShowAsync">Preview</HxButton>
+        <div class="action-buttons">
+            <HxButton Color="ThemeColor.Secondary" OnClick="Reset">Cancel</HxButton>
+            <HxButton Color="ThemeColor.Info" OnClick="PreviewModal.ShowAsync">Preview</HxButton>
             <HxSubmit Color="ThemeColor.Primary" OnClick="ImportTransactions">Import</HxSubmit>
         </div>
     }
 </div>
 
-<HxModal @ref="Model.PreviewModal" Title="Preview transactions" Size="ModalSize.ExtraLarge">
-    <BodyTemplate>
-        <TransactionsPreviewGrid Transactions="Model.ImportedTransactions" />
-    </BodyTemplate>
-</HxModal>
+<PreviewModal @ref="PreviewModal" Transactions="ImportedTransactions" />
 
-<HxModal @ref="Model.SuccessModal" ShowCloseButton="false" Centered="true" OnClosed="Model.Reset">
-    <BodyTemplate>
-        <HxIcon Icon="@BootstrapIcon.CheckCircle" CssClass="import-success-icon" />
-        <span class="import-success-message">
-            Successfully imported @Model.ImportedTransactions?.Count transactions;
-            including @Model.TransfersCount transfers.
-        </span>
-    </BodyTemplate>
-    <FooterTemplate>
-        @if (Model.TransfersCount > 0)
-        {
-            <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Transfers"))" Color="ThemeColor.Secondary">
-                View transfers
-            </HxButton>
-        }
-        @if (Model.TransfersCount < Model.ImportedTransactions?.Count)
-        {
-            <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Review"))" Color="ThemeColor.Primary">
-                Review transactions
-            </HxButton>
-        }
-    </FooterTemplate>
-</HxModal>
+<SuccessModal @ref="SuccessModal" Transactions="ImportedTransactions" OnClose="Reset" />

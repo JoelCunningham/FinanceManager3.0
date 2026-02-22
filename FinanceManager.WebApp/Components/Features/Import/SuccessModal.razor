@@ -1,0 +1,40 @@
+﻿@inject NavigationManager NavigationManager
+
+@code {
+    private HxModal _modal = default!;
+
+    [Parameter] public IReadOnlyList<ParsedTransaction> Transactions { get; set; } = [];
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private int TransfersCount => Transactions.Count(t => t.IsInternalTransfer);
+
+    public async Task ShowAsync() => await _modal.ShowAsync();
+
+    public async Task HideAsync() => await _modal.HideAsync();
+}
+
+<div class="success-modal">
+    <HxModal @ref="_modal" ShowCloseButton="false" Centered="true" OnClosed="OnClose">
+        <BodyTemplate>
+            <HxIcon Icon="@BootstrapIcon.CheckCircle" CssClass="import-success-icon" />
+            <span class="import-success-message">
+                Successfully imported @Transactions?.Count transactions; including @TransfersCount transfers.
+            </span>
+        </BodyTemplate>
+        <FooterTemplate>
+            @if (TransfersCount > 0)
+            {
+                <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Transfers"))" Color="ThemeColor.Secondary">
+                    View transfers
+                </HxButton>
+            }
+            @if (TransfersCount < Transactions?.Count)
+            {
+                <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Review"))" Color="ThemeColor.Primary">
+                    Review transactions
+                </HxButton>
+            }
+        </FooterTemplate>
+    </HxModal>
+</div>
