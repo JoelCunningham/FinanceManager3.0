@@ -22,3 +22,7 @@ div {
         text-align-last: center;
         margin-right: -40px;
     }
+
+    div ::deep div {
+        width: 100%
+    }

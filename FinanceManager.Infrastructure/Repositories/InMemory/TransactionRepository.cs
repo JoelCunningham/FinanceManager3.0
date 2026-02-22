@@ -86,6 +86,19 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
                     (t.Record.AccountNumber != null && t.Record.AccountNumber.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase)));
             }
 
+            // Category filter
+            if (request.FilterCategory != null)
+            {
+                if (request.FilterCategory.Id != Guid.Empty)
+                {
+                    query = query.Where(t => t.CategoryId == request.FilterCategory.Id);
+                }
+                else
+                {
+                    query = query.Where(t => t.CategoryId == null);
+                }
+            }
+
             // Reviewed filter
             if (request.FilterStatus == ReviewStatus.Reviewed)
             {

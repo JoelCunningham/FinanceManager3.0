@@ -3,22 +3,36 @@
 
     [Parameter] public EventCallback<Category?> ValueChanged { get; set; }
 
+    [Parameter] public Expression<Func<Category?>>? ValueExpression { get; set; }
+
     [Parameter] public IEnumerable<Category> Data { get; set; } = [];
+
+    [Parameter] public string? Label { get; set; }
+
+    [Parameter] public bool Nullable { get; set; } = false;
 
     [Parameter] public bool IsAutoCategorised { get; set; } = false;
 
     [Parameter] public bool HasError { get; set; } = false;
 
-    private HxSelect<Category, Category> Select = new();
+    private Expression<Func<Category?>> CurrentValueExpression => ValueExpression ?? (() => Value);
+
+    private static readonly Category UncategorisedCategory = new()
+    {
+        Id = Guid.Empty,
+        Name = "- Uncategorised -",
+        Group = new CategoryGroup { Name = string.Empty, Id = Guid.Empty }
+    };
 
     private IEnumerable<Category> GroupedData()
     {
-        return Data.GroupBy(c => c.Group).OrderBy(g => g.Key.Name).SelectMany(g =>
+        var grouped = Data.GroupBy(c => c.Group).OrderBy(g => g.Key.Name).SelectMany(g =>
         {
-            var header = new Category { Id = new Guid(), Name = $"- {g.Key.Name} -", Group = g.Key };
-            var categories = g.OrderBy(c => c.Name);
-            return new[] { header }.Concat(categories);
+            var header = new Category { Id = Guid.Empty, Name = $"- {g.Key.Name} -", Group = g.Key };
+            return new[] { header }.Concat(g.OrderBy(c => c.Name));
         });
+
+        return Nullable ? new[] { UncategorisedCategory }.Concat(grouped) : grouped;
     }
 }
 
@@ -27,18 +41,20 @@
     {
         <HxIcon Icon="BootstrapIcon.Stars" />
     }
-    <HxSelect @bind-Value="Value"
-              @bind-Value:after="() => ValueChanged.InvokeAsync(Value)"
+    <HxSelect Value="Value"
+              ValueChanged="(v) => ValueChanged.InvokeAsync(v)"
+              ValueExpression="CurrentValueExpression"
+              Label="@Label"
               CssClass="@(IsAutoCategorised ? "auto-categorised" : "")"
               InputCssClass="@(HasError ? "is-invalid" : "")"
               Data="GroupedData()"
               TItem="Category"
               TValue="Category"
-              Nullable="false"
+              Nullable="Nullable"
               AutoSort="false"
-              NullText="Select category"
+              NullText="@(Nullable ? "- Any -" : "Select category")"
               TextSelector="@(c => c.Name)"
               ValueSelector="@(c => c)"
-              ItemDisabledSelector="@(c => c.Id == Guid.Empty)">
+              ItemDisabledSelector="@(c => c.Id == Guid.Empty && c.Name != "- Uncategorised -")">
     </HxSelect>
 </div>

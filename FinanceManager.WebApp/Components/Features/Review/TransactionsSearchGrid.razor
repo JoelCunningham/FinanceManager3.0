@@ -18,7 +18,7 @@
     </CommandsTemplate>
 
     <FilterTemplate Context="query">
-        <HxSelect Label="Category" @bind-Value="query.FilterCategory" Data="Categories" Nullable="true" NullText="- Any -" TextSelector="@(c => c.Name)" ValueSelector="@(c => c)" />
+        <CategoryInput Label="Category" @bind-Value="query.FilterCategory" Data="Categories" Nullable />
         <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />
         <HxInputDate Label="Date to" @bind-Value="query.FilterDateTo" MinDate="query.FilterDateFrom" MaxDate="DateTime.Today" CalendarIcon="BootstrapIcon.Calendar" />
         @if (!IsTransferMode)
@@ -36,11 +36,11 @@
                 <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col"><ItemTemplate Context="transaction"><span title="@transaction.Description">@transaction.Description</span></ItemTemplate></HxGridColumn>
                 @if (!IsTransferMode)
                 {
-                    <HxGridColumn HeaderText="Amount" SortString="Amount" SortKeySelector="@(t => t.Amount)" ItemTextSelector="@(t => t.Amount.ToString("C"))" />
+                    <HxGridColumn HeaderText="Amount" SortString="Amount" SortKeySelector="@(t => t.Amount)" ItemTextSelector="@(t => t.Amount.ToString("C"))" HeaderCssClass="text-end" ItemCssClass="text-end" />
                 }
                 else
                 {
-                    <HxGridColumn HeaderText="Amount" ItemTextSelector="@(t => t.Amount.ToString("C"))" />
+                    <HxGridColumn HeaderText="Amount" ItemTextSelector="@(t => t.Amount.ToString("C"))" HeaderCssClass="text-end" ItemCssClass="text-end" />
                 }
             </Columns>
         </HxGrid>
