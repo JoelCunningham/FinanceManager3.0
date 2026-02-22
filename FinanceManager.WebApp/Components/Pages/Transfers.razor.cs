@@ -3,7 +3,7 @@
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Services;
 using FinanceManager.WebApp.Components.Features.Transfers;
-using FinanceManager.WebApp.Models.Base;
+using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
 
 public partial class Transfers : ComponentBase

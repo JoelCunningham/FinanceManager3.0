@@ -1,4 +1,4 @@
-﻿namespace FinanceManager.WebApp.Models.Base;
+﻿namespace FinanceManager.WebApp.Models;
 
 using FinanceManager.Application.DTOs;
 using Havit.Blazor.Components.Web.Bootstrap;

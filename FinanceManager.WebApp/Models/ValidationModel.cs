@@ -1,7 +1,7 @@
-﻿using Havit.Blazor.Components.Web;
-using Havit.Blazor.Components.Web.Bootstrap;
+﻿namespace FinanceManager.WebApp.Models;
 
-namespace FinanceManager.WebApp.Models.Base;
+using Havit.Blazor.Components.Web;
+using Havit.Blazor.Components.Web.Bootstrap;
 
 public class ValidationModel
 {

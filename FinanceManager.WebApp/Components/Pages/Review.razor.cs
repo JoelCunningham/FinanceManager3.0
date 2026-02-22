@@ -3,7 +3,7 @@
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Services;
 using FinanceManager.Domain.Entities;
-using FinanceManager.WebApp.Models.Base;
+using FinanceManager.WebApp.Models;
 using Havit.Blazor.Components.Web;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
