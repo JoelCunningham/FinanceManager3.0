@@ -10,6 +10,13 @@ public class ValidationModel
     public string? Message { get; set; }
     public List<ValidationItem> Items { get; set; } = [];
 
+    private MessengerMessage SuccessMessage => new()
+    {
+        Text = Message ?? string.Empty,
+        CssClass = "bg-success text-white",
+        AutohideDelay = 5000
+    };
+
     public void Clear()
     {
         Items = [];
@@ -87,7 +94,7 @@ public class ValidationModel
                 break;
 
             case ValidationType.Success:
-                Messenger.AddInformation(Message);
+                Messenger.AddMessage(SuccessMessage);
                 break;
 
             default:
