@@ -1,0 +1,27 @@
+﻿@typeparam TItem where TItem : class
+
+@code {
+    [Parameter] public DataGridModel<FilterQuery, TItem> Data { get; set; } = new();
+
+    [Parameter] public RenderFragment<FilterQuery> FilterTemplate { get; set; } = default!;
+
+    [Parameter] public RenderFragment DataTemplate { get; set; } = default!;
+}
+
+<HxListLayout TFilterModel="FilterQuery" FilterModel="Data.Query" FilterModelChanged="Data.HandleFilterChanged">
+    <SearchTemplate>
+        <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Data.Query.SearchTerm" @bind-Value:after="Data.UpdateAsync" />
+    </SearchTemplate>
+
+    <CommandsTemplate>
+        <HxButton Text="Clear filters" Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="Data.HandleFilterCleared" />
+    </CommandsTemplate>
+
+    <FilterTemplate Context="query">
+        @FilterTemplate(query)
+    </FilterTemplate>
+
+    <DataTemplate>
+        @DataTemplate
+    </DataTemplate>
+</HxListLayout>

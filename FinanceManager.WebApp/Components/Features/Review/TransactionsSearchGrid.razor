@@ -8,15 +8,7 @@
     [Parameter] public bool IsTransferMode { get; set; } = false;
 }
 
-<HxListLayout TFilterModel="FilterQuery" FilterModel="Data.Query" FilterModelChanged="Data.HandleFilterChanged">
-    <SearchTemplate>
-        <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Data.Query.SearchTerm" @bind-Value:after="Data.UpdateAsync" />
-    </SearchTemplate>
-
-    <CommandsTemplate>
-        <HxButton Text="Clear filters" Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="Data.HandleFilterCleared" />
-    </CommandsTemplate>
-
+<ListLayout TItem="TransactionSummary" Data="Data">
     <FilterTemplate Context="query">
         <CategoryInput Label="Category" @bind-Value="query.FilterCategory" Data="Categories" Nullable />
         <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />
@@ -45,4 +37,4 @@
             </Columns>
         </HxGrid>
     </DataTemplate>
-</HxListLayout>
+</ListLayout>

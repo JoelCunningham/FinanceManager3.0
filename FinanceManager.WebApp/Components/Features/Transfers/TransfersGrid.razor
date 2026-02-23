@@ -11,15 +11,7 @@
 }
 
 <div class="tranfers-grid">
-    <HxListLayout TFilterModel="FilterQuery" FilterModel="Data.Query" FilterModelChanged="Data.HandleFilterChanged">
-        <SearchTemplate>
-            <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Data.Query.SearchTerm" @bind-Value:after="Data.UpdateAsync" />
-        </SearchTemplate>
-
-        <CommandsTemplate>
-            <HxButton Text="Clear filters" Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="Data.HandleFilterCleared" />
-        </CommandsTemplate>
-
+    <ListLayout TItem="TransferSummary" Data="Data">
         <FilterTemplate Context="query">
             <HxSelect Label="Account from" @bind-Value="query.FilterAccountFrom" Data="Accounts" Nullable="true" NullText="- Any -" />
             <HxSelect Label="Account to" @bind-Value="query.FilterAccountTo" Data="Accounts" Nullable="true" NullText="- Any -" />
@@ -33,7 +25,6 @@
         <DataTemplate>
             <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" PageSize="Data.Query.PageSize" PreserveSelection="false" SelectionEnabled="false" Responsive="false" Hover="true">
                 <Columns>
-
                     <HxGridColumn HeaderText="Type" ItemCssClass="text-center" HeaderCssClass="text-center">
                         <ItemTemplate Context="transfer">
                             @if (transfer.IsUserCreated)
@@ -63,5 +54,5 @@
                 </Columns>
             </HxGrid>
         </DataTemplate>
-    </HxListLayout>
+    </ListLayout>
 </div>
