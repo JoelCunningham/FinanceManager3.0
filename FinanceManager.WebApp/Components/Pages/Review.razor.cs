@@ -3,9 +3,9 @@
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Services;
 using FinanceManager.Domain.Entities;
+using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
 using Havit.Blazor.Components.Web;
-using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
 
 public partial class Review : ComponentBase
@@ -25,11 +25,9 @@ public partial class Review : ComponentBase
     public ReviewTransaction? CurrentTransaction { get; set; }
 
     public List<Category> Categories { get; set; } = [];
-    public List<Category> IncomeCategories => [.. Categories.Where(c => c.Group.IsIncome)];
-    public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
 
-    public HxModal TransferModal { get; set; } = new();
-    public HxModal ReimburseModal { get; set; } = new();
+    public FindTransferModal TransferModal { get; set; } = new();
+    public FindReimburseModal ReimburseModal { get; set; } = new();
 
     public bool IsFirstAutoAssign { get; set; } = true;
     public bool IsAutoAssignEnabled { get; set; } = true;

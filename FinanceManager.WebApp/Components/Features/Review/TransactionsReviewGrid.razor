@@ -1,0 +1,68 @@
+@code {
+    [Parameter] public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new();
+
+    [Parameter] public IEnumerable<Category> Categories { get; set; } = [];
+
+    [Parameter] public ValidationModel Validation { get; set; } = new();
+
+    [Parameter] public EventCallback<(ReviewTransaction, Category?)> SetCategory { get; set; }
+
+    [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction, decimal)> SetAmount { get; set; }
+
+    [Parameter] public EventCallback<ReviewGroup> SaveGroup { get; set; }
+
+    [Parameter] public EventCallback<ReviewGroup> OnFindTransfer { get; set; }
+
+    [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction)> OnFindReimbursement { get; set; }
+
+    [Parameter] public bool IsAutoAssignEnabled { get; set; }
+
+    [Parameter] public EventCallback<bool> IsAutoAssignEnabledChanged { get; set; }
+
+    [Parameter] public string CategoryKey { get; set; } = string.Empty;
+
+    [Parameter] public string AmountKey { get; set; } = string.Empty;
+
+    public List<Category> IncomeCategories => [.. Categories.Where(c => c.Group.IsIncome)];
+
+    public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
+}
+
+<ListLayout TItem="ReviewGroup" Data="Data">
+    <AdditionalCommands>
+        <HxCheckbox @bind-Value="IsAutoAssignEnabled" @bind-Value:after="() => IsAutoAssignEnabledChanged.InvokeAsync(IsAutoAssignEnabled)" Text="Auto assign categories" />
+    </AdditionalCommands>
+
+    <FilterTemplate Context="query">
+        <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />
+        <HxInputDate Label="Date to" @bind-Value="query.FilterDateTo" MinDate="query.FilterDateFrom" MaxDate="DateTime.Today" CalendarIcon="BootstrapIcon.Calendar" />
+        <HxInputNumber Label="Min amount" @bind-Value="query.FilterAmountMin" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" max="@query.FilterAmountMax" />
+        <HxInputNumber Label="Max amount" @bind-Value="query.FilterAmountMax" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" min="@query.FilterAmountMin" />
+    </FilterTemplate>
+
+    <DataTemplate>
+        <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" TItem="ReviewGroup" PageSize="Data.Query.PageSize" SelectionEnabled="false" Responsive="false" TableContainerCssClass="grid-invisible">
+            <Columns>
+                <HxGridColumn>
+                    <ItemTemplate Context="group">
+                        <TransactionsReviewRow TransactionGroup="group"
+                                               Categories="group.IsIncome ? IncomeCategories : ExpenseCategories"
+                                               ErrorCategoryIds="Validation.GetValidationItemIds(CategoryKey)"
+                                               ErrorAmountIds="Validation.GetValidationItemIds(AmountKey)"
+                                               OnCategoryChange="args => SetCategory.InvokeAsync((args.Item1, args.Item2))"
+                                               OnAmountChange="args => SetAmount.InvokeAsync((group, args.Item1, args.Item2))"
+                                               OnSave="() => SaveGroup.InvokeAsync(group)"
+                                               OnFindTransfer="() => OnFindTransfer.InvokeAsync(group)"
+                                               OnFindReimbursement="(t) => OnFindReimbursement.InvokeAsync((group, t))" />
+                    </ItemTemplate>
+                </HxGridColumn>
+            </Columns>
+            <EmptyDataTemplate>
+                <HxAlert Color="ThemeColor.Success">
+                    <HxIcon Icon="@BootstrapIcon.CheckCircleFill" />
+                    You are up to date! All transactions have been reviewed.
+                </HxAlert>
+            </EmptyDataTemplate>
+        </HxGrid>
+    </DataTemplate>
+</ListLayout>

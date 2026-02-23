@@ -4,7 +4,7 @@
 
 <h1 class="page-heading">Import transactions</h1>
 
-<div class="import-form">
+<div class="d-flex flex-column gap-3">
     @if (ShowBankSelection)
     {
         <BankSelectList AvailableParsers="AvailableParsers" @bind-SelectedBank="SelectedParser" @bind-SelectedBank:after="BankChanged" />
@@ -15,11 +15,7 @@
     }
     @if (ShowActionButtons)
     {
-        <div class="action-buttons">
-            <HxButton Color="ThemeColor.Secondary" OnClick="Reset">Cancel</HxButton>
-            <HxButton Color="ThemeColor.Info" OnClick="PreviewModal.ShowAsync">Preview</HxButton>
-            <HxSubmit Color="ThemeColor.Primary" OnClick="ImportTransactions">Import</HxSubmit>
-        </div>
+        <ActionButtons ImportTransactions="ImportTransactions" Reset="Reset" ShowPreview="PreviewModal.ShowAsync" />
     }
 </div>
 
