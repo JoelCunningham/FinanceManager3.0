@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Havit.Blazor.Components.Web.Bootstrap" Version="4.22.0" />
+    <PackageReference Include="Havit.Blazor.Components.Web.ECharts" Version="4.22.0" />
   </ItemGroup>
 
   <ItemGroup>
