@@ -1,4 +1,6 @@
 ﻿@inject TransactionService TransactionService
+@inject CategoryService CategoryService
+@inject BudgetService BudgetService
 
 @code
 {
@@ -35,10 +37,16 @@
 
     private Dictionary<string, object?> EChartParameters => BuildEChartParameters();
 
-    private IEnumerable<TransactionSummary> Transactions = [];
+    private IReadOnlyList<TransactionSummary> Transactions { get; set; } = [];
+    private IReadOnlyList<Category> Categories { get; set; } = [];
+
+    private double[]? BudgetSeriesData { get; set; }
+    private double[]? BudgetIncomeSeriesData { get; set; }
+    private double[]? BudgetExpenseSeriesData { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        Categories = [.. (await CategoryService.GetCategories())];
         await ReloadAsync();
     }
 
@@ -54,6 +62,10 @@
         LoadError = null;
         ChartOption = null;
 
+        BudgetSeriesData = null;
+        BudgetIncomeSeriesData = null;
+        BudgetExpenseSeriesData = null;
+
         try
         {
             if (Query.FilterDateFrom is null || Query.FilterDateTo is null)
@@ -61,9 +73,50 @@
                 return;
             }
 
-            Transactions = await TransactionService.GetAllAsync<TransactionSummary>(Query);
+            Transactions = (await TransactionService.GetAllAsync<TransactionSummary>(Query)).ToList();
 
-            ChartOption = BuildMonthlyStackedCategoryChart(Transactions, Query.FilterDateFrom.Value, Query.FilterDateTo.Value, Mode, TopCategories);
+            var months = GetMonths(Query.FilterDateFrom.Value, Query.FilterDateTo.Value);
+
+            if (Mode == GraphMode.Net)
+            {
+                var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
+                var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
+
+                // Net mode: show two budget lines.
+                // - Income budget is positive.
+                // - Expense budget is negative (so it overlays the net axis meaningfully).
+                BudgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(
+                    months,
+                    incomeCategories,
+                    entry => entry.Amount);
+
+                BudgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(
+                    months,
+                    expenseCategories,
+                    entry => -entry.Amount);
+            }
+            else
+            {
+                // Income/Expense mode: keep a single "Budget" line.
+                var relevantCategories = Mode == GraphMode.Income
+                    ? Categories.Where(c => c.Group.IsIncome).ToList()
+                    : Categories.Where(c => !c.Group.IsIncome).ToList();
+
+                BudgetSeriesData = await BuildMonthlyBudgetSeriesAsync(
+                    months,
+                    relevantCategories,
+                    entry => TransformBudgetAmount(entry, Mode));
+            }
+
+            ChartOption = BuildMonthlyStackedCategoryChart(
+                Transactions,
+                months,
+                Query.FilterDateTo.Value,
+                Mode,
+                TopCategories,
+                BudgetSeriesData,
+                BudgetIncomeSeriesData,
+                BudgetExpenseSeriesData);
         }
         catch (Exception ex)
         {
@@ -76,18 +129,8 @@
         }
     }
 
-    private static object? BuildMonthlyStackedCategoryChart(
-        IEnumerable<TransactionSummary> transactions,
-        DateTime dateFrom,
-        DateTime dateTo,
-        GraphMode mode,
-        int topCategories)
+    private static IReadOnlyList<DateTime> GetMonths(DateTime dateFrom, DateTime dateTo)
     {
-        if (transactions.Count() == 0)
-        {
-            return null;
-        }
-
         var start = new DateTime(dateFrom.Year, dateFrom.Month, 1);
         var end = new DateTime(dateTo.Year, dateTo.Month, 1);
 
@@ -96,6 +139,65 @@
         {
             months.Add(d);
         }
+
+        return months;
+    }
+
+    private async Task<double[]?> BuildMonthlyBudgetSeriesAsync(
+        IReadOnlyList<DateTime> months,
+        IReadOnlyList<Category> relevantCategories,
+        Func<BudgetEntry, decimal> amountSelector)
+    {
+        if (relevantCategories.Count == 0 || months.Count == 0)
+        {
+            return null;
+        }
+
+        var data = new double[months.Count];
+
+        for (var i = 0; i < months.Count; i++)
+        {
+            var monthStart = DateOnly.FromDateTime(months[i]);
+
+            // Uses existing BudgetService method.
+            var entries = await BudgetService.GetBudgets(monthStart, relevantCategories, TransactionLevel.Month);
+
+            var monthBudget = entries.Sum(amountSelector);
+            data[i] = (double)monthBudget;
+        }
+
+        return data;
+    }
+
+    private static decimal TransformBudgetAmount(BudgetEntry entry, GraphMode mode)
+    {
+        var isIncome = entry.Category.Group.IsIncome;
+
+        return mode switch
+        {
+            GraphMode.Expense => isIncome ? 0m : entry.Amount,
+            GraphMode.Income => isIncome ? entry.Amount : 0m,
+            GraphMode.Net => isIncome ? entry.Amount : -entry.Amount,
+            _ => entry.Amount
+        };
+    }
+
+    private static object? BuildMonthlyStackedCategoryChart(
+        IReadOnlyList<TransactionSummary> transactions,
+        IReadOnlyList<DateTime> months,
+        DateTime dateTo,
+        GraphMode mode,
+        int topCategories,
+        double[]? budgetSeriesData,
+        double[]? budgetIncomeSeriesData,
+        double[]? budgetExpenseSeriesData)
+    {
+        if (transactions.Count == 0 || months.Count == 0)
+        {
+            return null;
+        }
+
+        var start = months[0];
 
         static string MonthLabel(DateTime d) => d.ToString("yyyy-MM");
 
@@ -173,7 +275,6 @@
         }
 
         var xAxisLabels = months.Select(MonthLabel).ToArray();
-
         var series = new List<object>();
 
         foreach (var c in categories)
@@ -198,6 +299,57 @@
                 emphasis = new { focus = "series" },
                 data = otherValues.Select(v => (double)v).ToArray()
             });
+        }
+
+        // Budget lines
+        if (mode == GraphMode.Net)
+        {
+            if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == months.Count)
+            {
+                series.Add(new
+                {
+                    name = "Budget (Income)",
+                    type = "line",
+                    smooth = true,
+                    symbol = "circle",
+                    symbolSize = 7,
+                    z = 20,
+                    lineStyle = new { width = 3 },
+                    data = budgetIncomeSeriesData
+                });
+            }
+
+            if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == months.Count)
+            {
+                series.Add(new
+                {
+                    name = "Budget (Expense)",
+                    type = "line",
+                    smooth = true,
+                    symbol = "circle",
+                    symbolSize = 7,
+                    z = 20,
+                    lineStyle = new { width = 3, type = "dashed" },
+                    data = budgetExpenseSeriesData
+                });
+            }
+        }
+        else
+        {
+            if (budgetSeriesData is not null && budgetSeriesData.Length == months.Count)
+            {
+                series.Add(new
+                {
+                    name = "Budget",
+                    type = "line",
+                    smooth = true,
+                    symbol = "circle",
+                    symbolSize = 8,
+                    z = 10,
+                    lineStyle = new { width = 3 },
+                    data = budgetSeriesData
+                });
+            }
         }
 
         var titleText = mode switch
@@ -226,7 +378,6 @@
 
         var chartType = typeof(HxEChart);
 
-        // Try to find the correct parameter name for the ECharts option object.
         var optionParameterName =
             FindFirstExistingProperty(chartType, "Option")
             ?? FindFirstExistingProperty(chartType, "Options")
@@ -238,7 +389,6 @@
             parameters[optionParameterName] = ChartOption;
         }
 
-        // Most Havit components support AdditionalAttributes (CaptureUnmatchedValues).
         if (chartType.GetProperty("AdditionalAttributes", BindingFlags.Instance | BindingFlags.Public) is not null)
         {
             parameters["AdditionalAttributes"] = new Dictionary<string, object?>
@@ -321,13 +471,6 @@
     {
         <div style="height: 460px; width: 100%;">
             <DynamicComponent Type="@typeof(HxEChart)" Parameters="EChartParameters" />
-        </div>
-    }
-
-    @foreach (var transaction in Transactions.Where(t => t.Category is not null))
-    {
-        <div>
-            @transaction.Date.ToString("yyyy-MM-dd"): @transaction.Description - @transaction.Amount.ToString("C") - @(transaction.Category?.Name ?? "Uncategorised")
         </div>
     }
 </div>
