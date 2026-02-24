@@ -26,6 +26,28 @@ public class TransactionService(
         };
     }
 
+    public async Task<IReadOnlyList<T>> GetAllAsync<T>(FilterQuery query, int pageSize = 500) where T : ITransactionConvertible<T>
+    {
+        var results = new List<T>();
+        var page = 1;
+
+        while (true)
+        {
+            var pageQuery = query with { Page = page, PageSize = pageSize };
+            var pageResult = await GetPagedAsync<T>(pageQuery);
+
+            if (pageResult.Items.Count == 0) break;
+
+            results.AddRange(pageResult.Items);
+
+            if (results.Count >= pageResult.TotalItems) break;
+
+            page++;
+        }
+
+        return results;
+    }
+
     public async Task SaveTransactionGroupAsync(ReviewGroup group)
     {
         if (group.Transactions.Count == 0)

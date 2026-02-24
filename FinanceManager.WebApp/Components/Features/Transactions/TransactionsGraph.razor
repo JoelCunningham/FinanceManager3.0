@@ -1,4 +1,324 @@
-﻿@code {
+﻿@inject TransactionService TransactionService
 
+@code
+{
+    private enum GraphMode
+    {
+        Expense,
+        Income,
+        Net
+    }
+
+    private static readonly GraphMode[] GraphModes = Enum.GetValues<GraphMode>();
+
+    private FilterQuery Query { get; set; } = new()
+    {
+        FilterDateFrom = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-11),
+        FilterDateTo = DateTime.Today,
+        FilterStatus = ReviewStatus.Reviewed
+    };
+
+    private GraphMode Mode { get; set; } = GraphMode.Expense;
+
+    private bool ReviewedOnly
+    {
+        get => Query.FilterStatus == ReviewStatus.Reviewed;
+        set => Query.FilterStatus = value ? ReviewStatus.Reviewed : ReviewStatus.All;
+    }
+
+    private int TopCategories { get; set; } = 10;
+
+    private bool IsLoading { get; set; }
+    private string? LoadError { get; set; }
+
+    private object? ChartOption { get; set; }
+
+    private Dictionary<string, object?> EChartParameters => BuildEChartParameters();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task OnModeChanged(GraphMode mode)
+    {
+        Mode = mode;
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        IsLoading = true;
+        LoadError = null;
+        ChartOption = null;
+
+        try
+        {
+            if (Query.FilterDateFrom is null || Query.FilterDateTo is null)
+            {
+                return;
+            }
+
+            var transactions = await TransactionService.GetAllAsync<TransactionSummary>(Query);
+
+            ChartOption = BuildMonthlyStackedCategoryChart(transactions, Query.FilterDateFrom.Value, Query.FilterDateTo.Value, Mode, TopCategories);
+        }
+        catch (Exception ex)
+        {
+            LoadError = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private static object? BuildMonthlyStackedCategoryChart(
+        IReadOnlyList<TransactionSummary> transactions,
+        DateTime dateFrom,
+        DateTime dateTo,
+        GraphMode mode,
+        int topCategories)
+    {
+        if (transactions.Count == 0)
+        {
+            return null;
+        }
+
+        var start = new DateTime(dateFrom.Year, dateFrom.Month, 1);
+        var end = new DateTime(dateTo.Year, dateTo.Month, 1);
+
+        var months = new List<DateTime>();
+        for (var d = start; d <= end; d = d.AddMonths(1))
+        {
+            months.Add(d);
+        }
+
+        static string MonthLabel(DateTime d) => d.ToString("yyyy-MM");
+
+        decimal TransformAmount(decimal amount, GraphMode graphMode) => graphMode switch
+        {
+            GraphMode.Expense => amount < 0 ? Math.Abs(amount) : 0m,
+            GraphMode.Income => amount > 0 ? amount : 0m,
+            GraphMode.Net => amount,
+            _ => amount
+        };
+
+        var points = transactions
+            .Where(t => t.Date >= start && t.Date <= dateTo)
+            .Select(t => new
+            {
+                Month = new DateTime(t.Date.Year, t.Date.Month, 1),
+                Category = t.Category?.Name ?? "Uncategorised",
+                Value = TransformAmount(t.Amount, mode)
+            })
+            .Where(p => p.Value != 0m)
+            .ToList();
+
+        if (points.Count == 0)
+        {
+            return null;
+        }
+
+        var totalsByCategory = points
+            .GroupBy(p => p.Category)
+            .Select(g => new { Category = g.Key, Total = g.Sum(x => Math.Abs(x.Value)) })
+            .OrderByDescending(x => x.Total)
+            .ToList();
+
+        topCategories = Math.Clamp(topCategories, 1, 30);
+
+        var selectedCategories = totalsByCategory
+            .Take(topCategories)
+            .Select(x => x.Category)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var categories = totalsByCategory
+            .Where(x => selectedCategories.Contains(x.Category))
+            .Select(x => x.Category)
+            .ToList();
+
+        var hasOther = totalsByCategory.Count > categories.Count;
+
+        var monthIndex = months
+            .Select((m, i) => (m, i))
+            .ToDictionary(x => x.m, x => x.i);
+
+        var valuesByCategory = new Dictionary<string, decimal[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var c in categories)
+        {
+            valuesByCategory[c] = new decimal[months.Count];
+        }
+
+        decimal[]? otherValues = hasOther ? new decimal[months.Count] : null;
+
+        foreach (var p in points)
+        {
+            if (!monthIndex.TryGetValue(p.Month, out var i))
+            {
+                continue;
+            }
+
+            if (valuesByCategory.TryGetValue(p.Category, out var arr))
+            {
+                arr[i] += p.Value;
+            }
+            else if (otherValues is not null)
+            {
+                otherValues[i] += p.Value;
+            }
+        }
+
+        var xAxisLabels = months.Select(MonthLabel).ToArray();
+
+        var series = new List<object>();
+
+        foreach (var c in categories)
+        {
+            series.Add(new
+            {
+                name = c,
+                type = "bar",
+                stack = "total",
+                emphasis = new { focus = "series" },
+                data = valuesByCategory[c].Select(v => (double)v).ToArray()
+            });
+        }
+
+        if (otherValues is not null)
+        {
+            series.Add(new
+            {
+                name = "Other",
+                type = "bar",
+                stack = "total",
+                emphasis = new { focus = "series" },
+                data = otherValues.Select(v => (double)v).ToArray()
+            });
+        }
+
+        var titleText = mode switch
+        {
+            GraphMode.Expense => "Expenses by category",
+            GraphMode.Income => "Income by category",
+            GraphMode.Net => "Net by category",
+            _ => "Transactions by category"
+        };
+
+        return new
+        {
+            title = new { text = titleText },
+            tooltip = new { trigger = "axis" },
+            legend = new { type = "scroll" },
+            grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
+            xAxis = new { type = "category", data = xAxisLabels },
+            yAxis = new { type = "value" },
+            series
+        };
+    }
+
+    private Dictionary<string, object?> BuildEChartParameters()
+    {
+        var parameters = new Dictionary<string, object?>();
+
+        var chartType = typeof(HxEChart);
+
+        // Try to find the correct parameter name for the ECharts option object.
+        var optionParameterName =
+            FindFirstExistingProperty(chartType, "Option")
+            ?? FindFirstExistingProperty(chartType, "Options")
+            ?? FindFirstExistingProperty(chartType, "EChartOption")
+            ?? FindFirstExistingProperty(chartType, "EChartOptions");
+
+        if (!string.IsNullOrWhiteSpace(optionParameterName) && ChartOption is not null)
+        {
+            parameters[optionParameterName] = ChartOption;
+        }
+
+        // Most Havit components support AdditionalAttributes (CaptureUnmatchedValues).
+        if (chartType.GetProperty("AdditionalAttributes", BindingFlags.Instance | BindingFlags.Public) is not null)
+        {
+            parameters["AdditionalAttributes"] = new Dictionary<string, object?>
+            {
+                ["style"] = "height: 100%; width: 100%;"
+            };
+        }
+
+        return parameters;
+    }
+
+    private static string? FindFirstExistingProperty(Type type, params string[] propertyNames)
+        => propertyNames.FirstOrDefault(p => type.GetProperty(p, BindingFlags.Instance | BindingFlags.Public) is not null);
 }
 
+<div class="d-flex flex-column gap-3">
+    <HxAlert Color="ThemeColor.Info">
+        Transactions by category over time (monthly).
+    </HxAlert>
+
+    <div class="d-flex flex-wrap gap-3 align-items-end">
+        <HxInputDate Label="Date from"
+                     @bind-Value="Query.FilterDateFrom"
+                     MaxDate="Query.FilterDateTo ?? DateTime.Today"
+                     CalendarIcon="BootstrapIcon.Calendar"
+                     @bind-Value:after="ReloadAsync" />
+
+        <HxInputDate Label="Date to"
+                     @bind-Value="Query.FilterDateTo"
+                     MinDate="Query.FilterDateFrom"
+                     MaxDate="DateTime.Today"
+                     CalendarIcon="BootstrapIcon.Calendar"
+                     @bind-Value:after="ReloadAsync" />
+
+        <HxSelect Label="Mode"
+                  Value="Mode"
+                  ValueChanged="OnModeChanged"
+                  ValueExpression="() => Mode"
+                  Data="GraphModes"
+                  TItem="GraphMode"
+                  TValue="GraphMode"
+                  Nullable="false"
+                  AutoSort="false"
+                  TextSelector="m => m.ToString()"
+                  ValueSelector="m => m" />
+
+        <HxCheckbox @bind-Value="ReviewedOnly" @bind-Value:after="ReloadAsync" Text="Reviewed only" />
+
+        <HxInputNumber Label="Top categories"
+                       @bind-Value="TopCategories"
+                       Type="InputType.Number"
+                       Decimals="0"
+                       step="1"
+                       min="1"
+                       max="30"
+                       @bind-Value:after="ReloadAsync" />
+
+        <HxButton Text="Refresh" Icon="BootstrapIcon.ArrowClockwise" OnClick="ReloadAsync" />
+    </div>
+
+    @if (IsLoading)
+    {
+        <HxAlert Color="ThemeColor.Light">
+            Loading chart…
+        </HxAlert>
+    }
+    else if (!string.IsNullOrWhiteSpace(LoadError))
+    {
+        <HxAlert Color="ThemeColor.Danger">
+            @LoadError
+        </HxAlert>
+    }
+    else if (ChartOption is null)
+    {
+        <HxAlert Color="ThemeColor.Secondary">
+            No data to display.
+        </HxAlert>
+    }
+    else
+    {
+        <div style="height: 460px; width: 100%;">
+            <DynamicComponent Type="@typeof(HxEChart)" Parameters="EChartParameters" />
+        </div>
+    }
+</div>
