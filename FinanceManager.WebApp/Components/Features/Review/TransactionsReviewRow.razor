@@ -10,7 +10,7 @@
     [Parameter] public EventCallback OnSave { get; set; }
 
     [Parameter] public EventCallback<(ReviewTransaction, Category?)> OnCategoryChange { get; set; }
-    
+
     [Parameter] public EventCallback<(ReviewTransaction, decimal)> OnAmountChange { get; set; }
 
     [Parameter] public EventCallback<ReviewTransaction> OnFindReimbursement { get; set; }
@@ -40,8 +40,11 @@ else
     <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave">
         @foreach (var transaction in TransactionGroup.Transactions)
         {
-            <ReviewRowEntry>
-                <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.Id)" />
+            <ReviewRowEntry Label="@(transaction.Reimburses is null ? null : "Reimburses")">
+                @if (transaction.Reimburses is null)
+                {
+                    <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.Id)" />
+                }
                 <HxInputDate @bind-Value="transaction.Date" CalendarIcon="BootstrapIcon.Calendar" MaxDate="@TransactionGroup.InitalTransaction.Date" />
                 <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
                 @if (transaction.Id == TransactionGroup.InitalTransaction.Id)
@@ -61,7 +64,10 @@ else
                     {
                         <HxContextMenuItem OnClick="() => TransactionGroup.Unsplit(transaction)">Unsplit</HxContextMenuItem>
                     }
-                    <HxContextMenuItem OnClick="() => OnFindReimbursement.InvokeAsync(transaction)">Reimburse existing</HxContextMenuItem>
+                    @if (transaction.Amount > 0)
+                    {
+                        <HxContextMenuItem OnClick="() => OnFindReimbursement.InvokeAsync(transaction)">Reimburse existing</HxContextMenuItem>
+                    }
                     @if (TransactionGroup.Transactions.Count == 1)
                     {
                         <HxContextMenuItem OnClick="OnFindTransfer">Change to transfer</HxContextMenuItem>
@@ -70,10 +76,11 @@ else
             </ReviewRowEntry>
             @if (transaction.Reimburses is not null)
             {
-                <ReviewRowEntry Label="Reimburses">
+                <ReviewRowEntry>
+                    <CategoryInput @bind-Value="transaction.Reimburses.Category" Data="[transaction.Reimburses.Category]" Enabled="false" />
                     <HxInputDate @bind-Value="transaction.Reimburses.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
                     <HxInputText @bind-Value="transaction.Reimburses.Description" title="@transaction.Reimburses.Description" Enabled="false" />
-                    <HxInputNumber @bind-Value="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+                    <HxInputNumber @bind-Value="transaction.Reimburses.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
                     <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.XLg" OnClick="() => transaction.Reimburses = null" />
                 </ReviewRowEntry>
             }

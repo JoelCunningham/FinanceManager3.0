@@ -156,7 +156,7 @@ public partial class Review : ComponentBase
         Validation.Clear();
         foreach (var transaction in group.Transactions)
         {
-            if (transaction.Category is null && group.Transfers is null)
+            if (transaction.Category is null && group.Transfers is null && transaction.Reimburses is null)
             {
                 Validation.SetError(transaction.Id, CategoryKey, "A category is required");
             }

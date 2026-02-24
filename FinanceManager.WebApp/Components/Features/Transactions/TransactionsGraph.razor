@@ -35,6 +35,8 @@
 
     private Dictionary<string, object?> EChartParameters => BuildEChartParameters();
 
+    private IEnumerable<TransactionSummary> Transactions = [];
+
     protected override async Task OnInitializedAsync()
     {
         await ReloadAsync();
@@ -59,9 +61,9 @@
                 return;
             }
 
-            var transactions = await TransactionService.GetAllAsync<TransactionSummary>(Query);
+            Transactions = await TransactionService.GetAllAsync<TransactionSummary>(Query);
 
-            ChartOption = BuildMonthlyStackedCategoryChart(transactions, Query.FilterDateFrom.Value, Query.FilterDateTo.Value, Mode, TopCategories);
+            ChartOption = BuildMonthlyStackedCategoryChart(Transactions, Query.FilterDateFrom.Value, Query.FilterDateTo.Value, Mode, TopCategories);
         }
         catch (Exception ex)
         {
@@ -75,13 +77,13 @@
     }
 
     private static object? BuildMonthlyStackedCategoryChart(
-        IReadOnlyList<TransactionSummary> transactions,
+        IEnumerable<TransactionSummary> transactions,
         DateTime dateFrom,
         DateTime dateTo,
         GraphMode mode,
         int topCategories)
     {
-        if (transactions.Count == 0)
+        if (transactions.Count() == 0)
         {
             return null;
         }
@@ -319,6 +321,13 @@
     {
         <div style="height: 460px; width: 100%;">
             <DynamicComponent Type="@typeof(HxEChart)" Parameters="EChartParameters" />
+        </div>
+    }
+
+    @foreach (var transaction in Transactions.Where(t => t.Category is not null))
+    {
+        <div>
+            @transaction.Date.ToString("yyyy-MM-dd"): @transaction.Description - @transaction.Amount.ToString("C") - @(transaction.Category?.Name ?? "Uncategorised")
         </div>
     }
 </div>

@@ -13,7 +13,7 @@ namespace FinanceManager.Application.DTOs
 
         public static TransactionSummary FromTransaction(Transaction transaction)
         {
-            var amount = transaction.Amount - (transaction.Reimbursements?.Sum(r => r.Amount) ?? 0);
+            var amount = transaction.Amount + (transaction.Reimbursements?.Sum(r => r.Amount) ?? 0);
 
             return new TransactionSummary
             {

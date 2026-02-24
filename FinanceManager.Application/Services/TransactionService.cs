@@ -127,7 +127,6 @@ public class TransactionService(
 
             transaction.Reimbursements ??= [];
             transaction.Reimbursements.Add(reimbursement);
-            transaction.IsReviewed = false;
 
             await TransactionRepository.UpdateAsync(transaction);
 
