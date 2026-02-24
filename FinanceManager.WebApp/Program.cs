@@ -20,6 +20,7 @@ builder.Services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
 builder.Services.AddSingleton<IReimbursementRepository, ReimbursementRepository>();
 builder.Services.AddSingleton<ICategoryRepository, CategoryRepository>();
 builder.Services.AddSingleton<IMachineLearningRepository, MachineLearningRepository>();
+builder.Services.AddSingleton<IBudgetEntryRepository, BudgetEntryRepository>();
 
 // Parsers
 builder.Services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();
@@ -31,6 +32,7 @@ builder.Services.AddScoped<TransferService>();
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<ImportService>();
 builder.Services.AddScoped<CategorisationService>();
+builder.Services.AddScoped<BudgetService>();
 builder.Services.AddSingleton<ParserService>();
 
 var app = builder.Build();
