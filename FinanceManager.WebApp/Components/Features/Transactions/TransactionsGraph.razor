@@ -1,67 +1,7 @@
 ﻿@code {
-    private static readonly TransactionsGraphMode[] GraphModes = Enum.GetValues<TransactionsGraphMode>();
-
-    [Parameter] public DateTime? DateFrom { get; set; }
-    [Parameter] public EventCallback<DateTime?> DateFromChanged { get; set; }
-
-    [Parameter] public DateTime? DateTo { get; set; }
-    [Parameter] public EventCallback<DateTime?> DateToChanged { get; set; }
-
-    [Parameter] public TransactionsGraphMode Mode { get; set; }
-    [Parameter] public EventCallback<TransactionsGraphMode> ModeChanged { get; set; }
-
-    [Parameter] public bool ReviewedOnly { get; set; }
-    [Parameter] public EventCallback<bool> ReviewedOnlyChanged { get; set; }
-
-    [Parameter] public int TopCategories { get; set; } = 10;
-    [Parameter] public EventCallback<int> TopCategoriesChanged { get; set; }
-
-    [Parameter] public bool IsLoading { get; set; }
-    [Parameter] public string? LoadError { get; set; }
     [Parameter] public object? ChartOption { get; set; }
 
-    [Parameter] public Func<Task>? ReloadAsync { get; set; }
-
     private Dictionary<string, object?> EChartParameters => BuildEChartParameters();
-
-    private async Task ReloadAsyncSafe()
-    {
-        if (ReloadAsync is not null)
-        {
-            await ReloadAsync();
-        }
-    }
-
-    private async Task OnDateFromChanged()
-    {
-        await DateFromChanged.InvokeAsync(DateFrom);
-        await ReloadAsyncSafe();
-    }
-
-    private async Task OnDateToChanged()
-    {
-        await DateToChanged.InvokeAsync(DateTo);
-        await ReloadAsyncSafe();
-    }
-
-    private async Task OnModeChanged(TransactionsGraphMode mode)
-    {
-        Mode = mode;
-        await ModeChanged.InvokeAsync(mode);
-        await ReloadAsyncSafe();
-    }
-
-    private async Task OnReviewedOnlyChanged()
-    {
-        await ReviewedOnlyChanged.InvokeAsync(ReviewedOnly);
-        await ReloadAsyncSafe();
-    }
-
-    private async Task OnTopCategoriesChanged()
-    {
-        await TopCategoriesChanged.InvokeAsync(TopCategories);
-        await ReloadAsyncSafe();
-    }
 
     private Dictionary<string, object?> BuildEChartParameters()
     {
@@ -95,75 +35,6 @@
         => propertyNames.FirstOrDefault(p => type.GetProperty(p, BindingFlags.Instance | BindingFlags.Public) is not null);
 }
 
-<div class="d-flex flex-column gap-3">
-    <HxAlert Color="ThemeColor.Info">
-        Transactions by category over time (monthly).
-    </HxAlert>
-
-    <div class="d-flex flex-wrap gap-3 align-items-end">
-        <HxInputDate Label="Date from"
-                     @bind-Value="DateFrom"
-                     MaxDate="DateTo ?? DateTime.Today"
-                     CalendarIcon="BootstrapIcon.Calendar"
-                     @bind-Value:after="OnDateFromChanged" />
-
-        <HxInputDate Label="Date to"
-                     @bind-Value="DateTo"
-                     MinDate="DateFrom"
-                     MaxDate="DateTime.Today"
-                     CalendarIcon="BootstrapIcon.Calendar"
-                     @bind-Value:after="OnDateToChanged" />
-
-        <HxSelect Label="Mode"
-                  Value="Mode"
-                  ValueChanged="OnModeChanged"
-                  ValueExpression="() => Mode"
-                  Data="GraphModes"
-                  TItem="TransactionsGraphMode"
-                  TValue="TransactionsGraphMode"
-                  Nullable="false"
-                  AutoSort="false"
-                  TextSelector="m => m.ToString()"
-                  ValueSelector="m => m" />
-
-        <HxCheckbox @bind-Value="ReviewedOnly"
-                    @bind-Value:after="OnReviewedOnlyChanged"
-                    Text="Reviewed only" />
-
-        <HxInputNumber Label="Top categories"
-                       @bind-Value="TopCategories"
-                       @bind-Value:after="OnTopCategoriesChanged"
-                       Type="InputType.Number"
-                       Decimals="0"
-                       step="1"
-                       min="1"
-                       max="30" />
-
-        <HxButton Text="Refresh" Icon="BootstrapIcon.ArrowClockwise" OnClick="ReloadAsyncSafe" />
-    </div>
-
-    @if (IsLoading)
-    {
-        <HxAlert Color="ThemeColor.Light">
-            Loading chart…
-        </HxAlert>
-    }
-    else if (!string.IsNullOrWhiteSpace(LoadError))
-    {
-        <HxAlert Color="ThemeColor.Danger">
-            @LoadError
-        </HxAlert>
-    }
-    else if (ChartOption is null)
-    {
-        <HxAlert Color="ThemeColor.Secondary">
-            No data to display.
-        </HxAlert>
-    }
-    else
-    {
-        <div style="height: 460px; width: 100%;">
-            <DynamicComponent Type="@typeof(HxEChart)" Parameters="EChartParameters" />
-        </div>
-    }
+<div class="graph">
+    <DynamicComponent Type="@typeof(HxEChart)" Parameters="EChartParameters" />
 </div>

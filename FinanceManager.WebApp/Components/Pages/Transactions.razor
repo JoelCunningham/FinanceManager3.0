@@ -4,12 +4,24 @@
 
 <h1 class="page-heading">Transactions</h1>
 
-<TransactionsGraph @bind-DateFrom="DateFrom"
-                   @bind-DateTo="DateTo"
-                   @bind-Mode="Mode"
-                   @bind-ReviewedOnly="ReviewedOnly"
-                   @bind-TopCategories="TopCategories"
-                   IsLoading="IsLoading"
-                   LoadError="@LoadError"
-                   ChartOption="ChartOption"
-                   ReloadAsync="ReloadAsync" />
+<div class="transaction-graph">
+    <HxAlert Color="ThemeColor.Info">
+        Transactions by category over time (monthly).
+    </HxAlert>
+
+    <GraphActions AvailableMonths="AvailableMonths"
+                  @bind-MonthFrom="MonthFrom"
+                  @bind-MonthTo="MonthTo"
+                  @bind-Mode="Mode"
+                  ReloadAsync="ReloadAsync" />
+
+    @if (ChartOption is null)
+    {
+        <HxAlert Color="ThemeColor.Secondary">No data to display.</HxAlert>
+    }
+    else
+    {
+        <TransactionsGraph ChartOption="ChartOption" />
+    }
+</div>
+

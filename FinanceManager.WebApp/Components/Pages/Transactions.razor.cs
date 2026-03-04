@@ -13,41 +13,45 @@ public partial class Transactions : ComponentBase
     [Inject] public CategoryService CategoryService { get; set; } = default!;
     [Inject] public BudgetService BudgetService { get; set; } = default!;
 
+    public object? ChartOption { get; set; }
+    public List<Category> Categories { get; set; } = [];
+    public TransactionsGraphMode Mode { get; set; } = TransactionsGraphMode.Expense;
+    public List<TransactionSummary> TransactionSummaries { get; set; } = [];
+    public IReadOnlyList<DateTime> AvailableMonths { get; } = BuildAvailableMonths(10);
+
     public FilterQuery Query { get; set; } = new()
     {
-        FilterDateFrom = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-11),
+        FilterDateFrom = CurrentMonth.AddMonths(-11),
         FilterDateTo = DateTime.Today,
         FilterStatus = ReviewStatus.Reviewed
     };
 
-    public DateTime? DateFrom
+    public DateTime MonthFrom
     {
-        get => Query.FilterDateFrom;
-        set => Query.FilterDateFrom = value;
+        get => _monthFrom;
+        set
+        {
+            _monthFrom = NormalizeMonth(value);
+            if (_monthTo < _monthFrom) _monthTo = _monthFrom;
+        }
     }
 
-    public DateTime? DateTo
+    public DateTime MonthTo
     {
-        get => Query.FilterDateTo;
-        set => Query.FilterDateTo = value;
+        get => _monthTo;
+        set
+        {
+            _monthTo = NormalizeMonth(value);
+            if (_monthTo < _monthFrom) _monthFrom = _monthTo;
+        }
     }
 
-    public TransactionsGraphMode Mode { get; set; } = TransactionsGraphMode.Expense;
+    private DateTime _monthFrom = CurrentMonth.AddMonths(-11);
+    private DateTime _monthTo = CurrentMonth;
 
-    public bool ReviewedOnly
-    {
-        get => Query.FilterStatus == ReviewStatus.Reviewed;
-        set => Query.FilterStatus = value ? ReviewStatus.Reviewed : ReviewStatus.All;
-    }
-
-    public int TopCategories { get; set; } = 10;
-
-    public bool IsLoading { get; set; }
-    public string? LoadError { get; set; }
-    public object? ChartOption { get; set; }
-
-    public IReadOnlyList<TransactionSummary> TransactionSummaries { get; set; } = [];
-    public IReadOnlyList<Category> Categories { get; set; } = [];
+    private static readonly DateTime CurrentMonth = NormalizeMonth(DateTime.Today);
+    private static DateTime EndOfMonth(DateTime monthStart) => NormalizeMonth(monthStart).AddMonths(1).AddTicks(-1);
+    private static DateTime NormalizeMonth(DateTime value) => new(value.Year, value.Month, 1);
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,67 +61,63 @@ public partial class Transactions : ComponentBase
 
     public async Task ReloadAsync()
     {
-        IsLoading = true;
-        LoadError = null;
         ChartOption = null;
 
-        try
+        var months = GetMonths(MonthFrom, MonthTo);
+        var monthToEnd = EndOfMonth(MonthTo);
+
+        Query.FilterDateFrom = MonthFrom;
+        Query.FilterDateTo = monthToEnd > DateTime.Today ? DateTime.Today : monthToEnd;
+
+        TransactionSummaries = [.. (await TransactionService.GetAllAsync<TransactionSummary>(Query))];
+
+        var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
+        var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
+
+        double[]? budgetSeriesData = null;
+        double[]? budgetIncomeSeriesData = null;
+        double[]? budgetExpenseSeriesData = null;
+
+        if (Mode == TransactionsGraphMode.Net)
         {
-            if (DateFrom is null || DateTo is null)
-            {
-                return;
-            }
-
-            TransactionSummaries = [.. (await TransactionService.GetAllAsync<TransactionSummary>(Query))];
-
-            var months = GetMonths(DateFrom.Value, DateTo.Value);
-
-            double[]? budgetSeriesData = null;
-            double[]? budgetIncomeSeriesData = null;
-            double[]? budgetExpenseSeriesData = null;
-
-            if (Mode == TransactionsGraphMode.Net)
-            {
-                var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
-                var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
-
-                budgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(months, incomeCategories, entry => entry.Amount);
-                budgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(months, expenseCategories, entry => -entry.Amount);
-            }
-            else
-            {
-                var relevantCategories = Mode == TransactionsGraphMode.Income
-                    ? Categories.Where(c => c.Group.IsIncome).ToList()
-                    : Categories.Where(c => !c.Group.IsIncome).ToList();
-
-                budgetSeriesData = await BuildMonthlyBudgetSeriesAsync(months, relevantCategories, entry => TransformBudgetAmount(entry, Mode));
-            }
-
-            ChartOption = BuildMonthlyStackedCategoryChart(
-                TransactionSummaries,
-                months,
-                DateTo.Value,
-                Mode,
-                TopCategories,
-                budgetSeriesData,
-                budgetIncomeSeriesData,
-                budgetExpenseSeriesData);
+            budgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(months, incomeCategories, static entry => entry.Amount);
+            budgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(months, expenseCategories, static entry => -entry.Amount);
         }
-        catch (Exception ex)
+        else
         {
-            LoadError = ex.Message;
+            var relevantCategories = Mode == TransactionsGraphMode.Income ? incomeCategories : expenseCategories;
+            budgetSeriesData = await BuildMonthlyBudgetSeriesAsync(months, relevantCategories, static entry => entry.Amount);
         }
-        finally
+
+        ChartOption = BuildMonthlyStackedCategoryChart(
+            TransactionSummaries,
+            months,
+            Mode,
+            budgetSeriesData,
+            budgetIncomeSeriesData,
+            budgetExpenseSeriesData);
+
+        StateHasChanged();
+    }
+
+    private static List<DateTime> BuildAvailableMonths(int yearsBack)
+    {
+        var current = NormalizeMonth(DateTime.Today);
+        var start = current.AddYears(-yearsBack);
+
+        var months = new List<DateTime>();
+        for (var d = start; d <= current; d = d.AddMonths(1))
         {
-            IsLoading = false;
-            StateHasChanged();
+            months.Add(d);
         }
+
+        return months;
     }
 
     private static List<DateTime> GetMonths(DateTime dateFrom, DateTime dateTo)
     {
-        var start = new DateTime(dateFrom.Year, dateFrom.Month, 1);
-        var end = new DateTime(dateTo.Year, dateTo.Month, 1);
+        var start = NormalizeMonth(dateFrom);
+        var end = NormalizeMonth(dateTo);
 
         var months = new List<DateTime>();
         for (var d = start; d <= end; d = d.AddMonths(1))
@@ -128,12 +128,12 @@ public partial class Transactions : ComponentBase
         return months;
     }
 
-    private async Task<double[]?> BuildMonthlyBudgetSeriesAsync(List<DateTime> months, List<Category> categories, Func<BudgetEntry, decimal> amountSelector)
+    private async Task<double[]?> BuildMonthlyBudgetSeriesAsync(
+        List<DateTime> months,
+        List<Category> categories,
+        Func<BudgetEntry, decimal> amountSelector)
     {
-        if (categories.Count == 0 || months.Count == 0)
-        {
-            return null;
-        }
+        if (categories.Count == 0 || months.Count == 0) return null;
 
         var data = new double[months.Count];
 
@@ -149,185 +149,105 @@ public partial class Transactions : ComponentBase
         return data;
     }
 
-    private static decimal TransformBudgetAmount(BudgetEntry entry, TransactionsGraphMode mode)
-    {
-        var isIncome = entry.Category.Group.IsIncome;
-
-        return mode switch
-        {
-            TransactionsGraphMode.Expense => isIncome ? 0m : entry.Amount,
-            TransactionsGraphMode.Income => isIncome ? entry.Amount : 0m,
-            TransactionsGraphMode.Net => isIncome ? entry.Amount : -entry.Amount,
-            _ => entry.Amount
-        };
-    }
-
     private static object? BuildMonthlyStackedCategoryChart(
-        IReadOnlyList<TransactionSummary> transactions,
+        List<TransactionSummary> transactions,
         List<DateTime> months,
-        DateTime dateTo,
         TransactionsGraphMode mode,
-        int topCategories,
         double[]? budgetSeriesData,
         double[]? budgetIncomeSeriesData,
         double[]? budgetExpenseSeriesData)
     {
-        if (transactions.Count == 0 || months.Count == 0)
+        if (transactions.Count == 0 || months.Count == 0) return null;
+
+        var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        var monthIndex = months.Select((m, i) => (m, i)).ToDictionary(x => x.m, x => x.i);
+
+        foreach (var t in transactions)
         {
-            return null;
+            var month = new DateTime(t.Date.Year, t.Date.Month, 1);
+            if (!monthIndex.ContainsKey(month)) continue;
+
+            if (mode == TransactionsGraphMode.Income && t.Amount <= 0m) continue;
+            if (mode == TransactionsGraphMode.Expense && t.Amount >= 0m) continue;
+
+            var category = t.Category?.Name ?? "Uncategorised";
+            var amount = mode == TransactionsGraphMode.Expense ? Math.Abs(t.Amount) : t.Amount;
+
+            totals[category] = totals.TryGetValue(category, out var current)
+                ? current + Math.Abs(amount)
+                : Math.Abs(amount);
         }
 
-        var start = months[0];
+        if (totals.Count == 0) return null;
 
-        static string MonthLabel(DateTime d) => d.ToString("yyyy-MM");
-
-        static decimal TransformAmount(decimal amount, TransactionsGraphMode graphMode) => graphMode switch
-        {
-            TransactionsGraphMode.Expense => amount < 0 ? Math.Abs(amount) : 0m,
-            TransactionsGraphMode.Income => amount > 0 ? amount : 0m,
-            TransactionsGraphMode.Net => amount,
-            _ => amount
-        };
-
-        var points = transactions
-            .Where(t => t.Date >= start && t.Date <= dateTo)
-            .Select(t => new
-            {
-                Month = new DateTime(t.Date.Year, t.Date.Month, 1),
-                Category = t.Category?.Name ?? "Uncategorised",
-                Value = TransformAmount(t.Amount, mode)
-            })
-            .Where(p => p.Value != 0m)
-            .ToList();
-
-        if (points.Count == 0)
-        {
-            return null;
-        }
-
-        var totalsByCategory = points
-            .GroupBy(p => p.Category)
-            .Select(g => new { Category = g.Key, Total = g.Sum(x => Math.Abs(x.Value)) })
-            .OrderByDescending(x => x.Total)
-            .ToList();
-
-        topCategories = Math.Clamp(topCategories, 1, 30);
-
-        var selectedCategories = totalsByCategory
-            .Take(topCategories)
-            .Select(x => x.Category)
+        var categories = totals
+            .OrderByDescending(kvp => kvp.Value)
+            .Select(kvp => kvp.Key)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var categories = totalsByCategory
-            .Where(x => selectedCategories.Contains(x.Category))
-            .Select(x => x.Category)
+        var categoryNames = totals
+            .Where(kvp => categories.Contains(kvp.Key))
+            .OrderByDescending(kvp => kvp.Value)
+            .Select(kvp => kvp.Key)
             .ToList();
 
-        var hasOther = totalsByCategory.Count > categories.Count;
-
-        var monthIndex = months
-            .Select((m, i) => (m, i))
-            .ToDictionary(x => x.m, x => x.i);
-
-        var valuesByCategory = new Dictionary<string, decimal[]>(StringComparer.OrdinalIgnoreCase);
-        foreach (var c in categories)
+        var amountsByCategory = new Dictionary<string, decimal[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in categoryNames)
         {
-            valuesByCategory[c] = new decimal[months.Count];
+            amountsByCategory[name] = new decimal[months.Count];
         }
+        var otherValues = totals.Count > categoryNames.Count ? new decimal[months.Count] : null;
 
-        decimal[]? otherValues = hasOther ? new decimal[months.Count] : null;
-
-        foreach (var p in points)
+        foreach (var t in transactions)
         {
-            if (!monthIndex.TryGetValue(p.Month, out var i))
-            {
-                continue;
-            }
+            if (mode == TransactionsGraphMode.Income && t.Amount <= 0m) continue;
+            if (mode == TransactionsGraphMode.Expense && t.Amount >= 0m) continue;
 
-            if (valuesByCategory.TryGetValue(p.Category, out var arr))
+            var month = new DateTime(t.Date.Year, t.Date.Month, 1);
+            if (!monthIndex.TryGetValue(month, out var i)) continue;
+
+            var amount = mode == TransactionsGraphMode.Expense ? Math.Abs(t.Amount) : t.Amount;
+            var category = t.Category?.Name ?? "Uncategorised";
+
+            if (amountsByCategory.TryGetValue(category, out var arr))
             {
-                arr[i] += p.Value;
+                arr[i] += amount;
             }
             else
             {
-                otherValues?[i] += p.Value;
+                otherValues?[i] += amount;
             }
         }
 
-        var xAxisLabels = months.Select(MonthLabel).ToArray();
         var series = new List<object>();
 
-        foreach (var c in categories)
+        foreach (var name in categoryNames)
         {
-            series.Add(new
-            {
-                name = c,
-                type = "bar",
-                stack = "total",
-                emphasis = new { focus = "series" },
-                data = valuesByCategory[c].Select(v => (double)v).ToArray()
-            });
+            series.Add(CreateBarSeries(name, amountsByCategory[name]));
         }
 
         if (otherValues is not null)
         {
-            series.Add(new
-            {
-                name = "Other",
-                type = "bar",
-                stack = "total",
-                emphasis = new { focus = "series" },
-                data = otherValues.Select(v => (double)v).ToArray()
-            });
+            series.Add(CreateBarSeries("Other", otherValues));
         }
 
         if (mode == TransactionsGraphMode.Net)
         {
             if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == months.Count)
             {
-                series.Add(new
-                {
-                    name = "Budget (Income)",
-                    type = "line",
-                    smooth = true,
-                    symbol = "circle",
-                    symbolSize = 7,
-                    z = 20,
-                    lineStyle = new { width = 3 },
-                    data = budgetIncomeSeriesData
-                });
+                series.Add(CreateLineSeries("Budget (Income)", budgetIncomeSeriesData, 7));
             }
 
             if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == months.Count)
             {
-                series.Add(new
-                {
-                    name = "Budget (Expense)",
-                    type = "line",
-                    smooth = true,
-                    symbol = "circle",
-                    symbolSize = 7,
-                    z = 20,
-                    lineStyle = new { width = 3, type = "dashed" },
-                    data = budgetExpenseSeriesData
-                });
+                series.Add(CreateLineSeries("Budget (Expense)", budgetExpenseSeriesData, 7));
             }
         }
         else
         {
             if (budgetSeriesData is not null && budgetSeriesData.Length == months.Count)
             {
-                series.Add(new
-                {
-                    name = "Budget",
-                    type = "line",
-                    smooth = true,
-                    symbol = "circle",
-                    symbolSize = 8,
-                    z = 10,
-                    lineStyle = new { width = 3 },
-                    data = budgetSeriesData
-                });
+                series.Add(CreateLineSeries("Budget", budgetSeriesData, 8));
             }
         }
 
@@ -338,6 +258,8 @@ public partial class Transactions : ComponentBase
             TransactionsGraphMode.Net => "Net by category",
             _ => "Transactions by category"
         };
+
+        var xAxisLabels = months.Select(m => m.ToString("yyyy-MM")).ToArray();
 
         return new
         {
@@ -350,4 +272,25 @@ public partial class Transactions : ComponentBase
             series
         };
     }
+
+    static object CreateBarSeries(string name, decimal[] values) => new
+    {
+        name,
+        type = "bar",
+        stack = "total",
+        emphasis = new { focus = "series" },
+        data = values.Select(v => (double)v).ToArray()
+    };
+
+    static object CreateLineSeries(string name, double[] data, int symbolSize) => new
+    {
+        name,
+        type = "line",
+        smooth = true,
+        symbol = "circle",
+        symbolSize,
+        z = 20,
+        lineStyle = new { width = 3 },
+        data
+    };
 }

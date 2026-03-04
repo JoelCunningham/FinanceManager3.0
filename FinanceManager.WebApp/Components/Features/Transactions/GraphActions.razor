@@ -1,0 +1,188 @@
+﻿@code {
+    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+
+    [Parameter] public DateTime MonthFrom { get; set; }
+    [Parameter] public EventCallback<DateTime> MonthFromChanged { get; set; }
+
+    [Parameter] public DateTime MonthTo { get; set; }
+    [Parameter] public EventCallback<DateTime> MonthToChanged { get; set; }
+
+    [Parameter] public TransactionsGraphMode Mode { get; set; }
+    [Parameter] public EventCallback<TransactionsGraphMode> ModeChanged { get; set; }
+
+    [Parameter] public Func<Task> ReloadAsync { get; set; } = () => Task.CompletedTask;
+
+    private DateTime FromInternal;
+    private DateTime ToInternal;
+
+    private IReadOnlyList<int> AvailableYears => AvailableMonths.Select(m => m.Year).Distinct().OrderBy(y => y).ToList();
+
+    private IReadOnlyList<int> GetAvailableMonthsForYear(int year)
+    {
+        var months = AvailableMonths.Where(m => m.Year == year).Select(m => m.Month).Distinct().OrderBy(m => m).ToList();
+        return months.Count > 0 ? months : Enumerable.Range(1, 12).ToList();
+    }
+
+    private IReadOnlyList<int> AvailableToMonths => GetAvailableMonthsForYear(ToInternal.Year);
+    private IReadOnlyList<int> AvailableFromMonths => GetAvailableMonthsForYear(FromInternal.Year);
+
+    private static readonly TransactionsGraphMode[] GraphModes = Enum.GetValues<TransactionsGraphMode>();
+
+    private static string FormatMonthNumber(int month) => new DateTime(2000, month, 1).ToString("MMM");
+
+    protected override void OnParametersSet()
+    {
+        ToInternal = new DateTime(MonthTo.Year, MonthTo.Month, 1);
+        FromInternal = new DateTime(MonthFrom.Year, MonthFrom.Month, 1);
+
+        NormalizeRange();
+    }
+
+    private void NormalizeRange()
+    {
+        if (AvailableYears.Count == 0) return;
+
+        if (!AvailableYears.Contains(ToInternal.Year))
+        {
+            ToInternal = new DateTime(AvailableYears.Last(), 12, 1);
+        }
+        if (!AvailableYears.Contains(FromInternal.Year))
+        {
+            FromInternal = new DateTime(AvailableYears.First(), 1, 1);
+        }
+
+        if (FromInternal > ToInternal) ToInternal = FromInternal;
+
+        ClampMonthToAvailable(ref ToInternal);
+        ClampMonthToAvailable(ref FromInternal);
+    }
+
+    private void ClampMonthToAvailable(ref DateTime date)
+    {
+        var months = GetAvailableMonthsForYear(date.Year);
+        if (!months.Contains(date.Month))
+        {
+            var month = months.First();
+            date = new DateTime(date.Year, month, 1);
+        }
+    }
+
+    private int FromYear
+    {
+        get => FromInternal.Year;
+        set => _ = UpdateFromAsync(value, FromInternal.Month);
+    }
+
+    private int FromMonth
+    {
+        get => FromInternal.Month;
+        set => _ = UpdateFromAsync(FromInternal.Year, value);
+    }
+
+    private int ToYear
+    {
+        get => ToInternal.Year;
+        set => _ = UpdateToAsync(value, ToInternal.Month);
+    }
+
+    private int ToMonth
+    {
+        get => ToInternal.Month;
+        set => _ = UpdateToAsync(ToInternal.Year, value);
+    }
+
+    private async Task UpdateToAsync(int year, int month)
+    {
+        ToInternal = new DateTime(year, month, 1);
+
+        ClampMonthToAvailable(ref ToInternal);
+
+        if (ToInternal < FromInternal)
+            FromInternal = ToInternal;
+
+        await MonthFromChanged.InvokeAsync(FromInternal);
+        await MonthToChanged.InvokeAsync(ToInternal);
+
+        await ReloadAsync();
+    }
+
+    private async Task UpdateFromAsync(int year, int month)
+    {
+        FromInternal = new DateTime(year, month, 1);
+
+        ClampMonthToAvailable(ref FromInternal);
+
+        if (FromInternal > ToInternal) ToInternal = FromInternal;
+
+        await MonthFromChanged.InvokeAsync(FromInternal);
+        await MonthToChanged.InvokeAsync(ToInternal);
+
+        await ReloadAsync();
+    }
+
+    private async Task OnModeChanged(TransactionsGraphMode mode)
+    {
+        await ModeChanged.InvokeAsync(mode);
+        await ReloadAsync();
+    }
+}
+
+<div class="graph-actions">
+    <HxButtonGroup>
+        <HxSelect Label="From month"
+                  @bind-Value="FromMonth"
+                  Data="AvailableFromMonths"
+                  TItem="int"
+                  TValue="int"
+                  Nullable="false"
+                  AutoSort="false"
+                  TextSelector="FormatMonthNumber"
+                  ValueSelector="m => m" />
+
+        <HxSelect Label="From year"
+                  @bind-Value="FromYear"
+                  Data="AvailableYears"
+                  TItem="int"
+                  TValue="int"
+                  Nullable="false"
+                  AutoSort="false"
+                  TextSelector="y => y.ToString()"
+                  ValueSelector="y => y" />
+    </HxButtonGroup>
+
+    <HxButtonGroup>
+        <HxSelect Label="To month"
+                  @bind-Value="ToMonth"
+                  Data="AvailableToMonths"
+                  TItem="int"
+                  TValue="int"
+                  Nullable="false"
+                  AutoSort="false"
+                  TextSelector="FormatMonthNumber"
+                  ValueSelector="m => m" />
+
+        <HxSelect Label="To year"
+                  @bind-Value="ToYear"
+                  Data="AvailableYears"
+                  TItem="int"
+                  TValue="int"
+                  Nullable="false"
+                  AutoSort="false"
+                  TextSelector="y => y.ToString()"
+                  ValueSelector="y => y" />
+    </HxButtonGroup>
+
+    <HxSelect Label="Mode"
+              Value="Mode"
+              ValueChanged="OnModeChanged"
+              ValueExpression="() => Mode"
+              Data="GraphModes"
+              TItem="TransactionsGraphMode"
+              TValue="TransactionsGraphMode"
+              Nullable="false"
+              AutoSort="false"
+              TextSelector="m => m.ToString()"
+              ValueSelector="m => m" />
+
+    <HxButton Text="Refresh" Icon="BootstrapIcon.ArrowClockwise" OnClick="ReloadAsync" />
+</div>
