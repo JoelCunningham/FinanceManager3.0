@@ -1,375 +1,66 @@
-﻿@inject TransactionService TransactionService
-@inject CategoryService CategoryService
-@inject BudgetService BudgetService
+﻿@code {
+    private static readonly TransactionsGraphMode[] GraphModes = Enum.GetValues<TransactionsGraphMode>();
 
-@code
-{
-    private enum GraphMode
-    {
-        Expense,
-        Income,
-        Net
-    }
+    [Parameter] public DateTime? DateFrom { get; set; }
+    [Parameter] public EventCallback<DateTime?> DateFromChanged { get; set; }
 
-    private static readonly GraphMode[] GraphModes = Enum.GetValues<GraphMode>();
+    [Parameter] public DateTime? DateTo { get; set; }
+    [Parameter] public EventCallback<DateTime?> DateToChanged { get; set; }
 
-    private FilterQuery Query { get; set; } = new()
-    {
-        FilterDateFrom = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-11),
-        FilterDateTo = DateTime.Today,
-        FilterStatus = ReviewStatus.Reviewed
-    };
+    [Parameter] public TransactionsGraphMode Mode { get; set; }
+    [Parameter] public EventCallback<TransactionsGraphMode> ModeChanged { get; set; }
 
-    private GraphMode Mode { get; set; } = GraphMode.Expense;
+    [Parameter] public bool ReviewedOnly { get; set; }
+    [Parameter] public EventCallback<bool> ReviewedOnlyChanged { get; set; }
 
-    private bool ReviewedOnly
-    {
-        get => Query.FilterStatus == ReviewStatus.Reviewed;
-        set => Query.FilterStatus = value ? ReviewStatus.Reviewed : ReviewStatus.All;
-    }
+    [Parameter] public int TopCategories { get; set; } = 10;
+    [Parameter] public EventCallback<int> TopCategoriesChanged { get; set; }
 
-    private int TopCategories { get; set; } = 10;
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public string? LoadError { get; set; }
+    [Parameter] public object? ChartOption { get; set; }
 
-    private bool IsLoading { get; set; }
-    private string? LoadError { get; set; }
-
-    private object? ChartOption { get; set; }
+    [Parameter] public Func<Task>? ReloadAsync { get; set; }
 
     private Dictionary<string, object?> EChartParameters => BuildEChartParameters();
 
-    private IReadOnlyList<TransactionSummary> Transactions { get; set; } = [];
-    private IReadOnlyList<Category> Categories { get; set; } = [];
-
-    private double[]? BudgetSeriesData { get; set; }
-    private double[]? BudgetIncomeSeriesData { get; set; }
-    private double[]? BudgetExpenseSeriesData { get; set; }
-
-    protected override async Task OnInitializedAsync()
+    private async Task ReloadAsyncSafe()
     {
-        Categories = [.. (await CategoryService.GetCategories())];
-        await ReloadAsync();
+        if (ReloadAsync is not null)
+        {
+            await ReloadAsync();
+        }
     }
 
-    private async Task OnModeChanged(GraphMode mode)
+    private async Task OnDateFromChanged()
+    {
+        await DateFromChanged.InvokeAsync(DateFrom);
+        await ReloadAsyncSafe();
+    }
+
+    private async Task OnDateToChanged()
+    {
+        await DateToChanged.InvokeAsync(DateTo);
+        await ReloadAsyncSafe();
+    }
+
+    private async Task OnModeChanged(TransactionsGraphMode mode)
     {
         Mode = mode;
-        await ReloadAsync();
+        await ModeChanged.InvokeAsync(mode);
+        await ReloadAsyncSafe();
     }
 
-    private async Task ReloadAsync()
+    private async Task OnReviewedOnlyChanged()
     {
-        IsLoading = true;
-        LoadError = null;
-        ChartOption = null;
-
-        BudgetSeriesData = null;
-        BudgetIncomeSeriesData = null;
-        BudgetExpenseSeriesData = null;
-
-        try
-        {
-            if (Query.FilterDateFrom is null || Query.FilterDateTo is null)
-            {
-                return;
-            }
-
-            Transactions = (await TransactionService.GetAllAsync<TransactionSummary>(Query)).ToList();
-
-            var months = GetMonths(Query.FilterDateFrom.Value, Query.FilterDateTo.Value);
-
-            if (Mode == GraphMode.Net)
-            {
-                var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
-                var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
-
-                // Net mode: show two budget lines.
-                // - Income budget is positive.
-                // - Expense budget is negative (so it overlays the net axis meaningfully).
-                BudgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(
-                    months,
-                    incomeCategories,
-                    entry => entry.Amount);
-
-                BudgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(
-                    months,
-                    expenseCategories,
-                    entry => -entry.Amount);
-            }
-            else
-            {
-                // Income/Expense mode: keep a single "Budget" line.
-                var relevantCategories = Mode == GraphMode.Income
-                    ? Categories.Where(c => c.Group.IsIncome).ToList()
-                    : Categories.Where(c => !c.Group.IsIncome).ToList();
-
-                BudgetSeriesData = await BuildMonthlyBudgetSeriesAsync(
-                    months,
-                    relevantCategories,
-                    entry => TransformBudgetAmount(entry, Mode));
-            }
-
-            ChartOption = BuildMonthlyStackedCategoryChart(
-                Transactions,
-                months,
-                Query.FilterDateTo.Value,
-                Mode,
-                TopCategories,
-                BudgetSeriesData,
-                BudgetIncomeSeriesData,
-                BudgetExpenseSeriesData);
-        }
-        catch (Exception ex)
-        {
-            LoadError = ex.Message;
-        }
-        finally
-        {
-            IsLoading = false;
-            StateHasChanged();
-        }
+        await ReviewedOnlyChanged.InvokeAsync(ReviewedOnly);
+        await ReloadAsyncSafe();
     }
 
-    private static IReadOnlyList<DateTime> GetMonths(DateTime dateFrom, DateTime dateTo)
+    private async Task OnTopCategoriesChanged()
     {
-        var start = new DateTime(dateFrom.Year, dateFrom.Month, 1);
-        var end = new DateTime(dateTo.Year, dateTo.Month, 1);
-
-        var months = new List<DateTime>();
-        for (var d = start; d <= end; d = d.AddMonths(1))
-        {
-            months.Add(d);
-        }
-
-        return months;
-    }
-
-    private async Task<double[]?> BuildMonthlyBudgetSeriesAsync(
-        IReadOnlyList<DateTime> months,
-        IReadOnlyList<Category> relevantCategories,
-        Func<BudgetEntry, decimal> amountSelector)
-    {
-        if (relevantCategories.Count == 0 || months.Count == 0)
-        {
-            return null;
-        }
-
-        var data = new double[months.Count];
-
-        for (var i = 0; i < months.Count; i++)
-        {
-            var monthStart = DateOnly.FromDateTime(months[i]);
-
-            // Uses existing BudgetService method.
-            var entries = await BudgetService.GetBudgets(monthStart, relevantCategories, TransactionLevel.Month);
-
-            var monthBudget = entries.Sum(amountSelector);
-            data[i] = (double)monthBudget;
-        }
-
-        return data;
-    }
-
-    private static decimal TransformBudgetAmount(BudgetEntry entry, GraphMode mode)
-    {
-        var isIncome = entry.Category.Group.IsIncome;
-
-        return mode switch
-        {
-            GraphMode.Expense => isIncome ? 0m : entry.Amount,
-            GraphMode.Income => isIncome ? entry.Amount : 0m,
-            GraphMode.Net => isIncome ? entry.Amount : -entry.Amount,
-            _ => entry.Amount
-        };
-    }
-
-    private static object? BuildMonthlyStackedCategoryChart(
-        IReadOnlyList<TransactionSummary> transactions,
-        IReadOnlyList<DateTime> months,
-        DateTime dateTo,
-        GraphMode mode,
-        int topCategories,
-        double[]? budgetSeriesData,
-        double[]? budgetIncomeSeriesData,
-        double[]? budgetExpenseSeriesData)
-    {
-        if (transactions.Count == 0 || months.Count == 0)
-        {
-            return null;
-        }
-
-        var start = months[0];
-
-        static string MonthLabel(DateTime d) => d.ToString("yyyy-MM");
-
-        decimal TransformAmount(decimal amount, GraphMode graphMode) => graphMode switch
-        {
-            GraphMode.Expense => amount < 0 ? Math.Abs(amount) : 0m,
-            GraphMode.Income => amount > 0 ? amount : 0m,
-            GraphMode.Net => amount,
-            _ => amount
-        };
-
-        var points = transactions
-            .Where(t => t.Date >= start && t.Date <= dateTo)
-            .Select(t => new
-            {
-                Month = new DateTime(t.Date.Year, t.Date.Month, 1),
-                Category = t.Category?.Name ?? "Uncategorised",
-                Value = TransformAmount(t.Amount, mode)
-            })
-            .Where(p => p.Value != 0m)
-            .ToList();
-
-        if (points.Count == 0)
-        {
-            return null;
-        }
-
-        var totalsByCategory = points
-            .GroupBy(p => p.Category)
-            .Select(g => new { Category = g.Key, Total = g.Sum(x => Math.Abs(x.Value)) })
-            .OrderByDescending(x => x.Total)
-            .ToList();
-
-        topCategories = Math.Clamp(topCategories, 1, 30);
-
-        var selectedCategories = totalsByCategory
-            .Take(topCategories)
-            .Select(x => x.Category)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var categories = totalsByCategory
-            .Where(x => selectedCategories.Contains(x.Category))
-            .Select(x => x.Category)
-            .ToList();
-
-        var hasOther = totalsByCategory.Count > categories.Count;
-
-        var monthIndex = months
-            .Select((m, i) => (m, i))
-            .ToDictionary(x => x.m, x => x.i);
-
-        var valuesByCategory = new Dictionary<string, decimal[]>(StringComparer.OrdinalIgnoreCase);
-        foreach (var c in categories)
-        {
-            valuesByCategory[c] = new decimal[months.Count];
-        }
-
-        decimal[]? otherValues = hasOther ? new decimal[months.Count] : null;
-
-        foreach (var p in points)
-        {
-            if (!monthIndex.TryGetValue(p.Month, out var i))
-            {
-                continue;
-            }
-
-            if (valuesByCategory.TryGetValue(p.Category, out var arr))
-            {
-                arr[i] += p.Value;
-            }
-            else if (otherValues is not null)
-            {
-                otherValues[i] += p.Value;
-            }
-        }
-
-        var xAxisLabels = months.Select(MonthLabel).ToArray();
-        var series = new List<object>();
-
-        foreach (var c in categories)
-        {
-            series.Add(new
-            {
-                name = c,
-                type = "bar",
-                stack = "total",
-                emphasis = new { focus = "series" },
-                data = valuesByCategory[c].Select(v => (double)v).ToArray()
-            });
-        }
-
-        if (otherValues is not null)
-        {
-            series.Add(new
-            {
-                name = "Other",
-                type = "bar",
-                stack = "total",
-                emphasis = new { focus = "series" },
-                data = otherValues.Select(v => (double)v).ToArray()
-            });
-        }
-
-        // Budget lines
-        if (mode == GraphMode.Net)
-        {
-            if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == months.Count)
-            {
-                series.Add(new
-                {
-                    name = "Budget (Income)",
-                    type = "line",
-                    smooth = true,
-                    symbol = "circle",
-                    symbolSize = 7,
-                    z = 20,
-                    lineStyle = new { width = 3 },
-                    data = budgetIncomeSeriesData
-                });
-            }
-
-            if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == months.Count)
-            {
-                series.Add(new
-                {
-                    name = "Budget (Expense)",
-                    type = "line",
-                    smooth = true,
-                    symbol = "circle",
-                    symbolSize = 7,
-                    z = 20,
-                    lineStyle = new { width = 3, type = "dashed" },
-                    data = budgetExpenseSeriesData
-                });
-            }
-        }
-        else
-        {
-            if (budgetSeriesData is not null && budgetSeriesData.Length == months.Count)
-            {
-                series.Add(new
-                {
-                    name = "Budget",
-                    type = "line",
-                    smooth = true,
-                    symbol = "circle",
-                    symbolSize = 8,
-                    z = 10,
-                    lineStyle = new { width = 3 },
-                    data = budgetSeriesData
-                });
-            }
-        }
-
-        var titleText = mode switch
-        {
-            GraphMode.Expense => "Expenses by category",
-            GraphMode.Income => "Income by category",
-            GraphMode.Net => "Net by category",
-            _ => "Transactions by category"
-        };
-
-        return new
-        {
-            title = new { text = titleText },
-            tooltip = new { trigger = "axis" },
-            legend = new { type = "scroll" },
-            grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
-            xAxis = new { type = "category", data = xAxisLabels },
-            yAxis = new { type = "value" },
-            series
-        };
+        await TopCategoriesChanged.InvokeAsync(TopCategories);
+        await ReloadAsyncSafe();
     }
 
     private Dictionary<string, object?> BuildEChartParameters()
@@ -411,42 +102,44 @@
 
     <div class="d-flex flex-wrap gap-3 align-items-end">
         <HxInputDate Label="Date from"
-                     @bind-Value="Query.FilterDateFrom"
-                     MaxDate="Query.FilterDateTo ?? DateTime.Today"
+                     @bind-Value="DateFrom"
+                     MaxDate="DateTo ?? DateTime.Today"
                      CalendarIcon="BootstrapIcon.Calendar"
-                     @bind-Value:after="ReloadAsync" />
+                     @bind-Value:after="OnDateFromChanged" />
 
         <HxInputDate Label="Date to"
-                     @bind-Value="Query.FilterDateTo"
-                     MinDate="Query.FilterDateFrom"
+                     @bind-Value="DateTo"
+                     MinDate="DateFrom"
                      MaxDate="DateTime.Today"
                      CalendarIcon="BootstrapIcon.Calendar"
-                     @bind-Value:after="ReloadAsync" />
+                     @bind-Value:after="OnDateToChanged" />
 
         <HxSelect Label="Mode"
                   Value="Mode"
                   ValueChanged="OnModeChanged"
                   ValueExpression="() => Mode"
                   Data="GraphModes"
-                  TItem="GraphMode"
-                  TValue="GraphMode"
+                  TItem="TransactionsGraphMode"
+                  TValue="TransactionsGraphMode"
                   Nullable="false"
                   AutoSort="false"
                   TextSelector="m => m.ToString()"
                   ValueSelector="m => m" />
 
-        <HxCheckbox @bind-Value="ReviewedOnly" @bind-Value:after="ReloadAsync" Text="Reviewed only" />
+        <HxCheckbox @bind-Value="ReviewedOnly"
+                    @bind-Value:after="OnReviewedOnlyChanged"
+                    Text="Reviewed only" />
 
         <HxInputNumber Label="Top categories"
                        @bind-Value="TopCategories"
+                       @bind-Value:after="OnTopCategoriesChanged"
                        Type="InputType.Number"
                        Decimals="0"
                        step="1"
                        min="1"
-                       max="30"
-                       @bind-Value:after="ReloadAsync" />
+                       max="30" />
 
-        <HxButton Text="Refresh" Icon="BootstrapIcon.ArrowClockwise" OnClick="ReloadAsync" />
+        <HxButton Text="Refresh" Icon="BootstrapIcon.ArrowClockwise" OnClick="ReloadAsyncSafe" />
     </div>
 
     @if (IsLoading)

@@ -4,4 +4,12 @@
 
 <h1 class="page-heading">Transactions</h1>
 
-<TransactionsGraph />
+<TransactionsGraph @bind-DateFrom="DateFrom"
+                   @bind-DateTo="DateTo"
+                   @bind-Mode="Mode"
+                   @bind-ReviewedOnly="ReviewedOnly"
+                   @bind-TopCategories="TopCategories"
+                   IsLoading="IsLoading"
+                   LoadError="@LoadError"
+                   ChartOption="ChartOption"
+                   ReloadAsync="ReloadAsync" />
