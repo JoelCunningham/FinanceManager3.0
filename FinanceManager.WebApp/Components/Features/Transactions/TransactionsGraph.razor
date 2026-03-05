@@ -1,40 +1,7 @@
 ﻿@code {
     [Parameter] public object? ChartOption { get; set; }
-
-    private Dictionary<string, object?> EChartParameters => BuildEChartParameters();
-
-    private Dictionary<string, object?> BuildEChartParameters()
-    {
-        var parameters = new Dictionary<string, object?>();
-
-        var chartType = typeof(HxEChart);
-
-        var optionParameterName =
-            FindFirstExistingProperty(chartType, "Option")
-            ?? FindFirstExistingProperty(chartType, "Options")
-            ?? FindFirstExistingProperty(chartType, "EChartOption")
-            ?? FindFirstExistingProperty(chartType, "EChartOptions");
-
-        if (!string.IsNullOrWhiteSpace(optionParameterName) && ChartOption is not null)
-        {
-            parameters[optionParameterName] = ChartOption;
-        }
-
-        if (chartType.GetProperty("AdditionalAttributes", BindingFlags.Instance | BindingFlags.Public) is not null)
-        {
-            parameters["AdditionalAttributes"] = new Dictionary<string, object?>
-            {
-                ["style"] = "height: 100%; width: 100%;"
-            };
-        }
-
-        return parameters;
-    }
-
-    private static string? FindFirstExistingProperty(Type type, params string[] propertyNames)
-        => propertyNames.FirstOrDefault(p => type.GetProperty(p, BindingFlags.Instance | BindingFlags.Public) is not null);
 }
 
 <div class="graph">
-    <DynamicComponent Type="@typeof(HxEChart)" Parameters="EChartParameters" />
+    <HxEChart Options="ChartOption" AutoResize="true" />
 </div>
