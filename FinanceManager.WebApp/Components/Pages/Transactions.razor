@@ -15,13 +15,6 @@
                   @bind-Mode="Mode"
                   ReloadAsync="ReloadAsync" />
 
-    @if (ChartOption is null)
-    {
-        <HxAlert Color="ThemeColor.Secondary">No data to display.</HxAlert>
-    }
-    else
-    {
-        <TransactionsGraph ChartOption="ChartOption" />
-    }
+    <Chart Options="ChartOption" />
 </div>
 

@@ -1,0 +1,14 @@
+﻿@code {
+    [Parameter] public object? Options { get; set; }
+}
+
+<div class="chart">
+    @if (Options is null)
+    {
+        <HxAlert Color="ThemeColor.Secondary">No data to display.</HxAlert>
+    }
+    else
+    {
+        <HxEChart Options="Options" AutoResize="true" />
+    }
+</div>

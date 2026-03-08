@@ -69,7 +69,7 @@ public partial class Transactions : ComponentBase
         Query.FilterDateFrom = MonthFrom;
         Query.FilterDateTo = monthToEnd > DateTime.Today ? DateTime.Today : monthToEnd;
 
-        TransactionSummaries = [.. (await TransactionService.GetAllAsync<TransactionSummary>(Query))];
+        TransactionSummaries = [.. await TransactionService.GetAllAsync<TransactionSummary>(Query)];
 
         var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
         var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
