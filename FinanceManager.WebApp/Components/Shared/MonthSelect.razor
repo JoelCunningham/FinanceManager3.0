@@ -7,43 +7,88 @@
     [Parameter] public string MonthLabel { get; set; } = "Month";
     [Parameter] public string YearLabel { get; set; } = "Year";
 
+    private const int YearsBackFallback = 10;
+    private static readonly IReadOnlyList<int> AllMonths = [.. Enumerable.Range(1, 12)];
+
     private DateTime _valueInternal;
 
-    private IReadOnlyList<int> AvailableYears => GetAvailableYears(AvailableMonths);
-    private IReadOnlyList<int> AvailableMonthsForYear => GetAvailableMonthsForYear(AvailableMonths, _valueInternal.Year);
+    private IReadOnlyList<DateTime>? _availableMonthsRef;
+    private List<int> _availableYears = [];
+    private Dictionary<int, List<int>> _monthsByYear = [];
 
+    private static DateTime Normalize(DateTime value) => new(value.Year, value.Month, 1);
     private static string FormatMonthNumber(int month) => new DateTime(2000, month, 1).ToString("MMM");
+
+    private IReadOnlyList<int> AvailableYears =>
+        _availableYears.Count > 0
+            ? _availableYears
+            : [.. Enumerable.Range(DateTime.Today.Year - YearsBackFallback, YearsBackFallback + 1)];
+
+    private IReadOnlyList<int> AvailableMonthsForYear => GetMonthsForYear(_valueInternal.Year);
 
     protected override void OnParametersSet()
     {
-        _valueInternal = new DateTime(Value.Year, Value.Month, 1);
+        _valueInternal = Normalize(Value);
+
+        if (!ReferenceEquals(_availableMonthsRef, AvailableMonths))
+        {
+            _availableMonthsRef = AvailableMonths;
+            RebuildLookups(AvailableMonths);
+        }
+
         NormalizeInternal();
     }
 
-    private static IReadOnlyList<int> GetAvailableYears(IReadOnlyList<DateTime> availableMonths, int yearsBackFallback = 10)
+    private void RebuildLookups(IReadOnlyList<DateTime> availableMonths)
     {
-        if (availableMonths.Count > 0)
+        _availableYears = [];
+        _monthsByYear = [];
+
+        if (availableMonths.Count == 0) return;
+
+        foreach (var m in availableMonths.Select(Normalize))
         {
-            return availableMonths.Select(m => m.Year).Distinct().OrderBy(y => y).ToList();
+            if (!_monthsByYear.TryGetValue(m.Year, out var months))
+            {
+                months = [];
+                _monthsByYear[m.Year] = months;
+            }
+
+            if (!months.Contains(m.Month))
+            {
+                months.Add(m.Month);
+            }
         }
-        return Enumerable.Range(DateTime.Today.Year - yearsBackFallback, yearsBackFallback + 1).ToList();
+
+        foreach (var months in _monthsByYear.Values)
+        {
+            months.Sort();
+        }
+
+        _availableYears = [.. _monthsByYear.Keys.Order()];
     }
 
-    private static IReadOnlyList<int> GetAvailableMonthsForYear(IReadOnlyList<DateTime> availableMonths, int year)
+    private IReadOnlyList<int> GetMonthsForYear(int year)
     {
-        return availableMonths.Where(m => m.Year == year).Select(m => m.Month).Distinct().OrderBy(m => m).ToList();
+        if (_monthsByYear.TryGetValue(year, out var months) && months.Count > 0)
+        {
+            return months;
+        }
+
+        return AllMonths;
     }
 
     private void NormalizeInternal()
     {
-        if (AvailableYears.Count == 0) return;
+        var years = AvailableYears;
+        if (years.Count == 0) return;
 
-        if (!AvailableYears.Contains(_valueInternal.Year))
+        if (!years.Contains(_valueInternal.Year))
         {
-            _valueInternal = new DateTime(AvailableYears.Last(), _valueInternal.Month, 1);
+            _valueInternal = new DateTime(years.Last(), _valueInternal.Month, 1);
         }
 
-        var months = GetAvailableMonthsForYear(AvailableMonths, _valueInternal.Year);
+        var months = GetMonthsForYear(_valueInternal.Year);
         if (!months.Contains(_valueInternal.Month))
         {
             _valueInternal = new DateTime(_valueInternal.Year, months.Last(), 1);
@@ -70,7 +115,7 @@
             year = years.Last();
         }
 
-        var months = GetAvailableMonthsForYear(AvailableMonths, year);
+        var months = GetMonthsForYear(year);
         if (!months.Contains(month))
         {
             month = months.Last();

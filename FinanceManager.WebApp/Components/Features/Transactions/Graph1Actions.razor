@@ -1,0 +1,33 @@
+﻿@code
+{
+    [Parameter, EditorRequired] public ChartModel Chart { get; set; } = default!;
+
+    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+
+    [Parameter] public DateTime MonthFrom { get; set; }
+    [Parameter] public EventCallback<DateTime> MonthFromChanged { get; set; }
+
+    [Parameter] public DateTime MonthTo { get; set; }
+    [Parameter] public EventCallback<DateTime> MonthToChanged { get; set; }
+
+    private static readonly TransactionsGraphMode[] GraphModes = Enum.GetValues<TransactionsGraphMode>();
+
+    private async Task OnFromChangedAsync(DateTime from)
+    {
+        await MonthFromChanged.InvokeAsync(from);
+        await Chart.RefreshAsync();
+    }
+
+    private async Task OnToChangedAsync(DateTime to)
+    {
+        await MonthToChanged.InvokeAsync(to);
+        await Chart.RefreshAsync();
+    }
+}
+
+<GraphActions Modes="GraphModes" Chart="Chart">
+    <MonthSelectors>
+        <MonthSelect AvailableMonths="AvailableMonths" Value="MonthFrom" ValueChanged="OnFromChangedAsync" MonthLabel="From month" YearLabel="From year" />
+        <MonthSelect AvailableMonths="AvailableMonths" Value="MonthTo" ValueChanged="OnToChangedAsync" MonthLabel="To month" YearLabel="To year" />
+    </MonthSelectors>
+</GraphActions>

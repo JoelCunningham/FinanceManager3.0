@@ -1,0 +1,27 @@
+﻿@code
+{
+    [Parameter, EditorRequired] public ChartModel Chart { get; set; } = default!;
+
+    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+
+    [Parameter] public DateTime Period { get; set; }
+    [Parameter] public EventCallback<DateTime> PeriodChanged { get; set; }
+
+    private static readonly TransactionsGraphMode[] SupportedModes =
+    [
+        TransactionsGraphMode.Expense,
+        TransactionsGraphMode.Income
+    ];
+
+    private async Task OnPeriodChangedAsync(DateTime period)
+    {
+        await PeriodChanged.InvokeAsync(period);
+        await Chart.RefreshAsync();
+    }
+}
+
+<GraphActions Modes="SupportedModes" Chart="Chart">
+    <MonthSelectors>
+        <MonthSelect AvailableMonths="AvailableMonths" Value="Period" ValueChanged="OnPeriodChangedAsync" MonthLabel="Month" YearLabel="Year" />
+    </MonthSelectors>
+</GraphActions>

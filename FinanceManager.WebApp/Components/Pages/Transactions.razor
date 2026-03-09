@@ -8,26 +8,15 @@
     <HxTabPanel>
         <HxTab Title="Spend over time">
             <Content>
-                <GraphActions AvailableMonths="AvailableMonths"
-                              @bind-MonthFrom="MonthFrom"
-                              @bind-MonthTo="MonthTo"
-                              @bind-Mode="Chart1Mode"
-                              IsGroupLevel="Chart1DrilldownGroupId is not null"
-                              ResetLevelAsync="ClearChart1DrilldownAsync"
-                              ReloadAsync="ReloadAsync" />
-                <Chart Options="Chart1Options" OnItemClick="OnChart1ItemClickedAsync" />
+                <Graph1Actions AvailableMonths="AvailableMonths" Chart="Chart1" @bind-MonthFrom="Chart1MonthFrom" @bind-MonthTo="Chart1MonthTo" />
+                <Chart Options="Chart1.Options" OnItemClick="Chart1.OnDrilldownClickAsync" />
             </Content>
         </HxTab>
 
         <HxTab Title="Spend by cateogry">
             <Content>
-                <GroupBudgetActions AvailableMonths="AvailableMonths"
-                                    @bind-Period="Chart2Period"
-                                    @bind-Mode="Chart2Mode"
-                                    IsGroupLevel="Chart2DrilldownGroupId is not null"
-                                    ResetLevelAsync="ClearChart2DrilldownAsync"
-                                    ReloadAsync="ReloadChart2Async" />
-                <Chart Options="Chart2Options" OnItemClick="OnChart2ItemClickedAsync" />
+                <Graph2Actions AvailableMonths="AvailableMonths" Chart="Chart2" @bind-Period="Chart2Period" />
+                <Chart Options="Chart2.Options" OnItemClick="Chart2.OnDrilldownClickAsync" />
             </Content>
         </HxTab>
 

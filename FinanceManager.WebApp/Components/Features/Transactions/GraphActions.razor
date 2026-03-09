@@ -1,84 +1,38 @@
-﻿@using FinanceManager.WebApp.Components.Shared
+﻿@code
+{
+    [Parameter] public ChartModel Chart { get; set; } = default!;
 
-@code {
-    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+    [Parameter] public RenderFragment? MonthSelectors { get; set; }
 
-    [Parameter] public DateTime MonthFrom { get; set; }
-    [Parameter] public EventCallback<DateTime> MonthFromChanged { get; set; }
+    [Parameter] public IReadOnlyList<TransactionsGraphMode> Modes { get; set; } = [];
 
-    [Parameter] public DateTime MonthTo { get; set; }
-    [Parameter] public EventCallback<DateTime> MonthToChanged { get; set; }
-
-    [Parameter] public TransactionsGraphMode Mode { get; set; }
-    [Parameter] public EventCallback<TransactionsGraphMode> ModeChanged { get; set; }
-
-    [Parameter] public bool IsGroupLevel { get; set; }
-
-    [Parameter] public Func<Task> ResetLevelAsync { get; set; } = () => Task.CompletedTask;
-
-    [Parameter] public Func<Task> ReloadAsync { get; set; } = () => Task.CompletedTask;
-
-    private static readonly TransactionsGraphMode[] GraphModes = Enum.GetValues<TransactionsGraphMode>();
-
-    private async Task OnFromChangedAsync(DateTime from)
+    private async Task OnModeChangedAsync(TransactionsGraphMode mode)
     {
-        await MonthFromChanged.InvokeAsync(from);
-        if (from > MonthTo)
-        {
-            await MonthToChanged.InvokeAsync(from);
-
-        }
-        await ReloadAsync();
-    }
-
-    private async Task OnToChangedAsync(DateTime to)
-    {
-        await MonthToChanged.InvokeAsync(to);
-        if (to < MonthFrom)
-        {
-            await MonthFromChanged.InvokeAsync(to);
-
-        }
-        await ReloadAsync();
-    }
-
-    private async Task OnModeChanged(TransactionsGraphMode mode)
-    {
-        await ModeChanged.InvokeAsync(mode);
-        await ReloadAsync();
+        Chart.Mode = mode;
+        await Chart.RefreshAsync();
     }
 }
 
 <div class="graph-actions">
-    <MonthSelect AvailableMonths="AvailableMonths"
-                 Value="MonthFrom"
-                 ValueChanged="OnFromChangedAsync"
-                 MonthLabel="From month"
-                 YearLabel="From year" />
-
-    <MonthSelect AvailableMonths="AvailableMonths"
-                 Value="MonthTo"
-                 ValueChanged="OnToChangedAsync"
-                 MonthLabel="To month"
-                 YearLabel="To year" />
+    @MonthSelectors
 
     <HxSelect Label="Mode"
-              Value="Mode"
-              ValueChanged="OnModeChanged"
-              ValueExpression="() => Mode"
-              Data="GraphModes"
+              Value="Chart.Mode"
+              ValueChanged="OnModeChangedAsync"
+              ValueExpression="() => Chart.Mode"
+              Data="Modes"
               TItem="TransactionsGraphMode"
               TValue="TransactionsGraphMode"
               Nullable="false"
               AutoSort="false"
-              Enabled="!IsGroupLevel"
+              Enabled="!Chart.IsCategoryLevel"
               TextSelector="m => m.ToString()"
               ValueSelector="m => m" />
 
-    @if (IsGroupLevel)
+    @if (Chart.IsCategoryLevel)
     {
         <div class="mt-2">
-            <HxButton Text="Back to groups" Icon="BootstrapIcon.ArrowLeft" OnClick="ResetLevelAsync" />
+            <HxButton Text="Back to groups" Icon="BootstrapIcon.ArrowLeft" OnClick="Chart.ClearDrilldownAsync" />
         </div>
     }
 </div>
