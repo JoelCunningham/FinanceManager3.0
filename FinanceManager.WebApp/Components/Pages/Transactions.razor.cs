@@ -21,6 +21,7 @@ public partial class Transactions : ComponentBase
 
     public object? Chart1Options { get; set; }
     public TransactionsGraphMode Chart1Mode { get; set; } = TransactionsGraphMode.Expense;
+    public Guid? Chart1DrilldownGroupId { get; set; }
 
     public object? Chart2Options { get; set; }
     public TransactionsGraphRange Chart2Range { get; set; } = TransactionsGraphRange.Month;
@@ -82,8 +83,29 @@ public partial class Transactions : ComponentBase
 
         TransactionSummaries = [.. await TransactionService.GetAllAsync<TransactionSummary>(Query)];
 
+        var drilldownGroupId = Chart1DrilldownGroupId;
+
+        var chartTransactions = TransactionSummaries;
+        if (drilldownGroupId is Guid groupId)
+        {
+            chartTransactions = [.. chartTransactions.Where(t => t.Category?.GroupId == groupId)];
+        }
+
         var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
         var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
+
+        // If we're drilled into a group, only budget that group's categories.
+        if (drilldownGroupId is Guid drilledId)
+        {
+            incomeCategories = [.. incomeCategories.Where(c => c.GroupId == drilledId)];
+            expenseCategories = [.. expenseCategories.Where(c => c.GroupId == drilledId)];
+        }
+
+        var groupIdByName = CategoryGroups.ToDictionary(g => g.Name, g => g.Id, StringComparer.OrdinalIgnoreCase);
+
+        var drilldownGroupName = drilldownGroupId is Guid drilledGroupId
+            ? CategoryGroups.FirstOrDefault(g => g.Id == drilledGroupId)?.Name
+            : null;
 
         double[]? budgetSeriesData = null;
         double[]? budgetIncomeSeriesData = null;
@@ -91,8 +113,32 @@ public partial class Transactions : ComponentBase
 
         if (Chart1Mode == TransactionsGraphMode.Net)
         {
-            budgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(months, incomeCategories, false);
-            budgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(months, expenseCategories, true);
+            if (drilldownGroupId is null)
+            {
+                budgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(months, incomeCategories, false);
+                budgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(months, expenseCategories, true);
+            }
+            else
+            {
+                // In drilldown, only show the relevant side (income OR expense) if possible.
+                var drilledGroup = drilldownGroupId is Guid id
+                    ? CategoryGroups.FirstOrDefault(g => g.Id == id)
+                    : null;
+
+                if (drilledGroup?.IsIncome == true)
+                {
+                    budgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(months, incomeCategories, false);
+                }
+                else if (drilledGroup?.IsIncome == false)
+                {
+                    budgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(months, expenseCategories, true);
+                }
+                else
+                {
+                    budgetIncomeSeriesData = await BuildMonthlyBudgetSeriesAsync(months, incomeCategories, false);
+                    budgetExpenseSeriesData = await BuildMonthlyBudgetSeriesAsync(months, expenseCategories, true);
+                }
+            }
         }
         else
         {
@@ -101,14 +147,37 @@ public partial class Transactions : ComponentBase
         }
 
         Chart1Options = BuildMonthlyStackedCategoryChart(
-            TransactionSummaries,
+            chartTransactions,
             months,
             Chart1Mode,
             budgetSeriesData,
             budgetIncomeSeriesData,
-            budgetExpenseSeriesData);
+            budgetExpenseSeriesData,
+            isCategoryDrilldown: drilldownGroupId is not null,
+            groupIdByName: groupIdByName,
+            drilldownGroupName: drilldownGroupName);
 
         StateHasChanged();
+    }
+
+    private async Task OnChart1ItemClickedAsync(string? key)
+    {
+        // If already drilled down, first click takes you back to groups (same pattern as Chart2).
+        if (Chart1DrilldownGroupId is not null)
+        {
+            await ClearChart1DrilldownAsync();
+        }
+
+        if (!Guid.TryParse(key, out var groupId)) return;
+        Chart1DrilldownGroupId = groupId;
+
+        await ReloadAsync();
+    }
+
+    private async Task ClearChart1DrilldownAsync()
+    {
+        Chart1DrilldownGroupId = null;
+        await ReloadAsync();
     }
 
     public async Task ReloadChart2Async()
@@ -302,7 +371,7 @@ public partial class Transactions : ComponentBase
                 },
                 new
                 {
-                    name = "Remaining budget",  
+                    name = "Remaining budget",
                     type = "bar",
                     stack = "total",
                     emphasis = new { focus = "series" },
@@ -315,7 +384,7 @@ public partial class Transactions : ComponentBase
                     type = "bar",
                     stack = "total",
                     emphasis = new { focus = "series" },
-                    itemStyle = new { color = "#dc3545" },       
+                    itemStyle = new { color = "#dc3545" },
                     data = BuildSeriesData(overspendValues)
                 }
             }
@@ -377,7 +446,10 @@ public partial class Transactions : ComponentBase
         TransactionsGraphMode mode,
         double[]? budgetSeriesData,
         double[]? budgetIncomeSeriesData,
-        double[]? budgetExpenseSeriesData)
+        double[]? budgetExpenseSeriesData,
+        bool isCategoryDrilldown,
+        Dictionary<string, Guid> groupIdByName,
+        string? drilldownGroupName)
     {
         if (months.Count == 0) return null;
         if (transactions.Count == 0 && budgetSeriesData == null && budgetIncomeSeriesData == null && budgetExpenseSeriesData == null) return null;
@@ -393,7 +465,7 @@ public partial class Transactions : ComponentBase
             if (mode == TransactionsGraphMode.Income && t.Amount <= 0m) continue;
             if (mode == TransactionsGraphMode.Expense && t.Amount >= 0m) continue;
 
-            var category = GetChart1CategoryLabel(t);
+            var category = GetChart1Label(t, isCategoryDrilldown);
             var amount = mode == TransactionsGraphMode.Expense ? Math.Abs(t.Amount) : t.Amount;
 
             totals[category] = totals.TryGetValue(category, out var current)
@@ -401,13 +473,7 @@ public partial class Transactions : ComponentBase
                 : Math.Abs(amount);
         }
 
-        var categories = totals
-            .OrderByDescending(kvp => kvp.Value)
-            .Select(kvp => kvp.Key)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
         var categoryNames = totals
-            .Where(kvp => categories.Contains(kvp.Key))
             .OrderByDescending(kvp => kvp.Value)
             .Select(kvp => kvp.Key)
             .ToList();
@@ -418,8 +484,6 @@ public partial class Transactions : ComponentBase
             amountsByCategory[name] = new decimal[months.Count];
         }
 
-        var otherValues = totals.Count > categoryNames.Count ? new decimal[months.Count] : null;
-
         foreach (var t in transactions)
         {
             if (mode == TransactionsGraphMode.Income && t.Amount <= 0m) continue;
@@ -429,15 +493,11 @@ public partial class Transactions : ComponentBase
             if (!monthIndex.TryGetValue(month, out var i)) continue;
 
             var amount = mode == TransactionsGraphMode.Expense ? Math.Abs(t.Amount) : t.Amount;
-            var category = GetChart1CategoryLabel(t);
+            var category = GetChart1Label(t, isCategoryDrilldown);
 
             if (amountsByCategory.TryGetValue(category, out var arr))
             {
                 arr[i] += amount;
-            }
-            else
-            {
-                otherValues?[i] += amount;
             }
         }
 
@@ -445,40 +505,46 @@ public partial class Transactions : ComponentBase
 
         foreach (var name in categoryNames)
         {
-            series.Add(CreateBarSeries(name, amountsByCategory[name]));
+            // Only group-level series are clickable (they carry a key).
+            var key = isCategoryDrilldown
+                ? null
+                : (groupIdByName.TryGetValue(name, out var id) ? id.ToString() : null);
+
+            series.Add(CreateBarSeries(name, amountsByCategory[name], key));
         }
 
-        if (otherValues is not null)
-        {
-            series.Add(CreateBarSeries("Other", otherValues));
-        }
+        var groupBudgetPrefix = isCategoryDrilldown ? (drilldownGroupName ?? "Group") : null;
+        var budgetName = groupBudgetPrefix is null ? "Budget" : $"{groupBudgetPrefix} Budget";
+        var incomeBudgetName = groupBudgetPrefix is null ? "Budget (Income)" : $"{groupBudgetPrefix} Budget";
+        var expenseBudgetName = groupBudgetPrefix is null ? "Budget (Expense)" : $"{groupBudgetPrefix} Budget";
 
         if (mode == TransactionsGraphMode.Net)
         {
             if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == months.Count)
             {
-                series.Add(CreateLineSeries("Budget (Income)", budgetIncomeSeriesData, 7));
+                series.Add(CreateLineSeries(incomeBudgetName, budgetIncomeSeriesData, 7));
             }
 
             if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == months.Count)
             {
-                series.Add(CreateLineSeries("Budget (Expense)", budgetExpenseSeriesData, 7));
+                series.Add(CreateLineSeries(expenseBudgetName, budgetExpenseSeriesData, 7));
             }
         }
         else
         {
             if (budgetSeriesData is not null && budgetSeriesData.Length == months.Count)
             {
-                series.Add(CreateLineSeries("Budget", budgetSeriesData, 8));
+                series.Add(CreateLineSeries(budgetName, budgetSeriesData, 8));
             }
         }
 
-        var titleText = mode switch
+        var titleText = (mode, isCategoryDrilldown) switch
         {
-            TransactionsGraphMode.Expense => "Expenses by category",
-            TransactionsGraphMode.Income => "Income by category",
-            TransactionsGraphMode.Net => "Net by category",
-            _ => "Transactions by category"
+            (TransactionsGraphMode.Expense, false) => "Expenses by group",
+            (TransactionsGraphMode.Income, false) => "Income by group",
+            (TransactionsGraphMode.Net, false) => "Net by group",
+            (_, true) => $"{drilldownGroupName ?? "Group"} by category",
+            _ => "Transactions"
         };
 
         var xAxisLabels = months.Select(m => m.ToString("yyyy-MM")).ToArray();
@@ -495,24 +561,27 @@ public partial class Transactions : ComponentBase
         };
     }
 
-    private static string GetChart1CategoryLabel(TransactionSummary t)
+    private static string GetChart1Label(TransactionSummary t, bool isCategoryDrilldown)
     {
-        var categoryName = t.Category?.Name;
-        if (string.IsNullOrWhiteSpace(categoryName)) return "Uncategorised";
+        if (isCategoryDrilldown)
+        {
+            var categoryName = t.Category?.Name;
+            return string.IsNullOrWhiteSpace(categoryName) ? "Uncategorised" : categoryName;
+        }
 
         var groupName = t.Category?.Group?.Name;
-        if (string.IsNullOrWhiteSpace(groupName)) return categoryName;
-
-        return $"{groupName} - {categoryName}";
+        return string.IsNullOrWhiteSpace(groupName) ? "Uncategorised" : groupName;
     }
 
-    static object CreateBarSeries(string name, decimal[] values) => new
+    static object CreateBarSeries(string name, decimal[] values, string? key) => new
     {
         name,
         type = "bar",
         stack = "total",
         emphasis = new { focus = "series" },
-        data = values.Select(v => (double)v).ToArray()
+        data = key is null
+            ? values.Select(v => (object)(double)v).ToArray()
+            : values.Select(v => (object)new { value = (double)v, key }).ToArray()
     };
 
     static object CreateLineSeries(string name, double[] data, int symbolSize) => new

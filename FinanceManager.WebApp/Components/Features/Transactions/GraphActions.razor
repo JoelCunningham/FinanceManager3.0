@@ -12,6 +12,10 @@
     [Parameter] public TransactionsGraphMode Mode { get; set; }
     [Parameter] public EventCallback<TransactionsGraphMode> ModeChanged { get; set; }
 
+    [Parameter] public bool IsGroupLevel { get; set; }
+
+    [Parameter] public Func<Task> ResetLevelAsync { get; set; } = () => Task.CompletedTask;
+
     [Parameter] public Func<Task> ReloadAsync { get; set; } = () => Task.CompletedTask;
 
     private static readonly TransactionsGraphMode[] GraphModes = Enum.GetValues<TransactionsGraphMode>();
@@ -67,6 +71,14 @@
               TValue="TransactionsGraphMode"
               Nullable="false"
               AutoSort="false"
+              Enabled="!IsGroupLevel"
               TextSelector="m => m.ToString()"
               ValueSelector="m => m" />
+
+    @if (IsGroupLevel)
+    {
+        <div class="mt-2">
+            <HxButton Text="Back to groups" Icon="BootstrapIcon.ArrowLeft" OnClick="ResetLevelAsync" />
+        </div>
+    }
 </div>

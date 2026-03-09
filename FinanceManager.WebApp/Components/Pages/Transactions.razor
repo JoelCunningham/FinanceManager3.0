@@ -12,8 +12,10 @@
                               @bind-MonthFrom="MonthFrom"
                               @bind-MonthTo="MonthTo"
                               @bind-Mode="Chart1Mode"
+                              IsGroupLevel="Chart1DrilldownGroupId is not null"
+                              ResetLevelAsync="ClearChart1DrilldownAsync"
                               ReloadAsync="ReloadAsync" />
-                <Chart Options="Chart1Options" />
+                <Chart Options="Chart1Options" OnItemClick="OnChart1ItemClickedAsync" />
             </Content>
         </HxTab>
 
