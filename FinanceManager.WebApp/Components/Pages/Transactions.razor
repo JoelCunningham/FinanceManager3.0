@@ -5,16 +5,32 @@
 <h1 class="page-heading">Transactions</h1>
 
 <div class="transaction-graph">
-    <HxAlert Color="ThemeColor.Info">
-        Transactions by category over time (monthly).
-    </HxAlert>
+    <HxTabPanel>
+        <HxTab Title="Spend over time">
+            <Content>
+                <GraphActions AvailableMonths="AvailableMonths"
+                              @bind-MonthFrom="MonthFrom"
+                              @bind-MonthTo="MonthTo"
+                              @bind-Mode="Chart1Mode"
+                              ReloadAsync="ReloadAsync" />
+                <Chart Options="Chart1Options" />
+            </Content>
+        </HxTab>
 
-    <GraphActions AvailableMonths="AvailableMonths"
-                  @bind-MonthFrom="MonthFrom"
-                  @bind-MonthTo="MonthTo"
-                  @bind-Mode="Mode"
-                  ReloadAsync="ReloadAsync" />
+        <HxTab Title="Spend by cateogry">
+            <Content>
+                <GroupBudgetActions AvailableMonths="AvailableMonths"
+                                    @bind-Period="Chart2Period"
+                                    @bind-Mode="Chart2Mode"
+                                    IsGroupLevel="Chart2DrilldownGroupId is not null"
+                                    ResetLevelAsync="ClearChart2DrilldownAsync"
+                                    ReloadAsync="ReloadChart2Async" />
+                <Chart Options="Chart2Options" OnItemClick="OnChart2ItemClickedAsync" />
+            </Content>
+        </HxTab>
 
-    <Chart Options="ChartOption" />
+        <HxTab Title="Chart 3">
+            <Content>This is the third tab.</Content>
+        </HxTab>
+    </HxTabPanel>
 </div>
-

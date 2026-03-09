@@ -1,0 +1,105 @@
+﻿@code {
+    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+
+    [Parameter] public DateTime Value { get; set; }
+    [Parameter] public EventCallback<DateTime> ValueChanged { get; set; }
+
+    [Parameter] public string MonthLabel { get; set; } = "Month";
+    [Parameter] public string YearLabel { get; set; } = "Year";
+
+    private DateTime _valueInternal;
+
+    private IReadOnlyList<int> AvailableYears => GetAvailableYears(AvailableMonths);
+    private IReadOnlyList<int> AvailableMonthsForYear => GetAvailableMonthsForYear(AvailableMonths, _valueInternal.Year);
+
+    private static string FormatMonthNumber(int month) => new DateTime(2000, month, 1).ToString("MMM");
+
+    protected override void OnParametersSet()
+    {
+        _valueInternal = new DateTime(Value.Year, Value.Month, 1);
+        NormalizeInternal();
+    }
+
+    private static IReadOnlyList<int> GetAvailableYears(IReadOnlyList<DateTime> availableMonths, int yearsBackFallback = 10)
+    {
+        if (availableMonths.Count > 0)
+        {
+            return availableMonths.Select(m => m.Year).Distinct().OrderBy(y => y).ToList();
+        }
+        return Enumerable.Range(DateTime.Today.Year - yearsBackFallback, yearsBackFallback + 1).ToList();
+    }
+
+    private static IReadOnlyList<int> GetAvailableMonthsForYear(IReadOnlyList<DateTime> availableMonths, int year)
+    {
+        return availableMonths.Where(m => m.Year == year).Select(m => m.Month).Distinct().OrderBy(m => m).ToList();
+    }
+
+    private void NormalizeInternal()
+    {
+        if (AvailableYears.Count == 0) return;
+
+        if (!AvailableYears.Contains(_valueInternal.Year))
+        {
+            _valueInternal = new DateTime(AvailableYears.Last(), _valueInternal.Month, 1);
+        }
+
+        var months = GetAvailableMonthsForYear(AvailableMonths, _valueInternal.Year);
+        if (!months.Contains(_valueInternal.Month))
+        {
+            _valueInternal = new DateTime(_valueInternal.Year, months.Last(), 1);
+        }
+    }
+
+    private int SelectedYear
+    {
+        get => _valueInternal.Year;
+        set => _ = UpdateAsync(value, _valueInternal.Month);
+    }
+
+    private int SelectedMonth
+    {
+        get => _valueInternal.Month;
+        set => _ = UpdateAsync(_valueInternal.Year, value);
+    }
+
+    private async Task UpdateAsync(int year, int month)
+    {
+        var years = AvailableYears;
+        if (years.Count > 0 && !years.Contains(year))
+        {
+            year = years.Last();
+        }
+
+        var months = GetAvailableMonthsForYear(AvailableMonths, year);
+        if (!months.Contains(month))
+        {
+            month = months.Last();
+        }
+
+        _valueInternal = new DateTime(year, month, 1);
+
+        await ValueChanged.InvokeAsync(_valueInternal);
+    }
+}
+
+<HxButtonGroup>
+    <HxSelect Label="@MonthLabel"
+              @bind-Value="SelectedMonth"
+              Data="AvailableMonthsForYear"
+              TItem="int"
+              TValue="int"
+              Nullable="false"
+              AutoSort="false"
+              TextSelector="FormatMonthNumber"
+              ValueSelector="m => m" />
+
+    <HxSelect Label="@YearLabel"
+              @bind-Value="SelectedYear"
+              Data="AvailableYears"
+              TItem="int"
+              TValue="int"
+              Nullable="false"
+              AutoSort="false"
+              TextSelector="y => y.ToString()"
+              ValueSelector="y => y" />
+</HxButtonGroup>

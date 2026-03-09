@@ -1,8 +1,36 @@
-﻿@code {
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@code {
     [Parameter] public object? Options { get; set; }
+
+    [Parameter] public EventCallback<string?> OnItemClick { get; set; }
+
+    [JSInvokable] public Task NotifyChartClicked(string? key) => OnItemClick.InvokeAsync(key);
+
+    private ElementReference _wrapper;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<Chart>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!OnItemClick.HasDelegate || Options is null) return;
+
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/EChartsExtentions.js");
+        _dotNetRef ??= DotNetObjectReference.Create(this);
+
+        await _module.InvokeVoidAsync("attachClickHandler", _wrapper, _dotNetRef);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _dotNetRef?.Dispose();
+        _dotNetRef = null;
+        _module = null;
+    }
 }
 
-<div class="chart">
+<div class="chart" @ref="_wrapper">
     @if (Options is null)
     {
         <HxAlert Color="ThemeColor.Secondary">No data to display.</HxAlert>

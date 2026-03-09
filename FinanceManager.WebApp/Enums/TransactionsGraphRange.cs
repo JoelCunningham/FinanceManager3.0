@@ -3,6 +3,7 @@
 public enum TransactionsGraphRange
 {
     Week,
+    Fortnight,
     Month,
     Year
 }
