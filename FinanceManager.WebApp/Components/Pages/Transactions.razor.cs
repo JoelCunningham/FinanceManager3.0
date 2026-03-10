@@ -54,7 +54,7 @@ public partial class Transactions : ComponentBase
     {
         Chart1.RefreshAsync = ReloadChart1Async;
         Chart2.RefreshAsync = ReloadChart2Async;
-        Categories = [.. await CategoryService.GetCategories()];
+        Categories = [.. await CategoryService.GetCategoriesAsync()];
 
         await Chart1.RefreshAsync();
         await Chart2.RefreshAsync();

@@ -45,7 +45,7 @@ public partial class Review : ComponentBase
         TransferData.GetDataFunc = GetTransferData;
         ReimburseData.GetDataFunc = GetReimburseData;
 
-        Categories = [.. (await CategoryService.GetCategories())];
+        Categories = [.. await CategoryService.GetCategoriesAsync()];
     }
 
     private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)

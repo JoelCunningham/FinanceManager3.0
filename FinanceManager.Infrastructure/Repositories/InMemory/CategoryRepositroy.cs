@@ -14,9 +14,14 @@ public class CategoryRepository : ICategoryRepository
         _categories = [.. GetDefaultCategories()];
     }
 
-    public async Task<IEnumerable<Category>> GetAllAsync()
+    public Task<IEnumerable<Category>> GetAllAsync()
     {
-        return [.. _categories];
+        return Task.FromResult<IEnumerable<Category>>([.. _categories]);
+    }
+
+    public Task<IEnumerable<CategoryGroup>> GetAllGroupsAsync()
+    {
+        return Task.FromResult<IEnumerable<CategoryGroup>>([.. _categoryGroups]);
     }
 
     private IEnumerable<Category> GetDefaultCategories()
@@ -79,10 +84,10 @@ public class CategoryRepository : ICategoryRepository
             CreateCategory("Dining Out", "Food"),
             CreateCategory("Coffee", "Food"),
 
-            CreateCategory("EFTs", "Investment"),
-            CreateCategory("Stocks", "Investment"),
-            CreateCategory("Real Estate", "Investment"),
-            CreateCategory("Superannuation", "Investment"),
+            CreateCategory("EFTs", "Investing"),
+            CreateCategory("Stocks", "Investing"),
+            CreateCategory("Real Estate", "Investing"),
+            CreateCategory("Superannuation", "Investing"),
 
             CreateCategory("Mortgage", "Housing"),
             CreateCategory("Rent", "Housing"),
@@ -110,20 +115,19 @@ public class CategoryRepository : ICategoryRepository
 
     private Category CreateCategory(string name, string groupName)
     {
-        var group = GetGroup(groupName);
-        return new() { Id = Guid.NewGuid(), Name = name, Group = group, GroupId = group.Id };
-    }
-
-    private CategoryGroup GetGroup(string name)
-    {
-        return _categoryGroups.Find(g => g.Name == name) ?? throw new InvalidOperationException($"Group with name '{name}' not found.");
+        var group = _categoryGroups.Find(g => g.Name == groupName);
+        if (group is not null)
+        {
+            return new() { Id = Guid.NewGuid(), Name = name, Group = group, GroupId = group.Id };
+        }
+        throw new NotImplementedException();
     }
 
     private static IEnumerable<CategoryGroup> GetDefaultCategoryGroups()
     {
         return
         [
-            new() { Id = Guid.NewGuid(), Name = "Employment", IsIncome = true},
+            new() { Id = Guid.NewGuid(), Name = "Employment", IsIncome = true },
             new() { Id = Guid.NewGuid(), Name = "Investment", IsIncome = true },
             new() { Id = Guid.NewGuid(), Name = "Support", IsIncome = true },
             new() { Id = Guid.NewGuid(), Name = "Health" },
@@ -132,7 +136,7 @@ public class CategoryRepository : ICategoryRepository
             new() { Id = Guid.NewGuid(), Name = "Utilities" },
             new() { Id = Guid.NewGuid(), Name = "Transportation" },
             new() { Id = Guid.NewGuid(), Name = "Food" },
-            new() { Id = Guid.NewGuid(), Name = "Investment" },
+            new() { Id = Guid.NewGuid(), Name = "Investing" },
             new() { Id = Guid.NewGuid(), Name = "Housing" },
             new() { Id = Guid.NewGuid(), Name = "Personal" },
             new() { Id = Guid.NewGuid(), Name = "Financial" },
