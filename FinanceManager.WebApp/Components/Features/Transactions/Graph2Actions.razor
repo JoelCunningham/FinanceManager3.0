@@ -1,10 +1,13 @@
-﻿@code
+﻿@using FinanceManager.Domain.Enums
+
+@code
 {
     [Parameter, EditorRequired] public ChartModel Chart { get; set; } = default!;
 
     [Parameter] public IReadOnlyList<DateOnly> AvailableMonths { get; set; } = [];
 
     [Parameter] public DateOnly Period { get; set; }
+
     [Parameter] public EventCallback<DateOnly> PeriodChanged { get; set; }
 
     private static readonly TransactionsGraphMode[] SupportedModes =
@@ -13,15 +16,62 @@
         TransactionsGraphMode.Income
     ];
 
+    private static readonly BudgetScope[] SupportedScopes =
+    [
+        BudgetScope.Weekly,
+        BudgetScope.Fortnightly,
+        BudgetScope.Monthly
+    ];
+
     private async Task OnPeriodChangedAsync(DateOnly period)
     {
         await PeriodChanged.InvokeAsync(period);
         await Chart.RefreshAsync();
     }
+
+    private async Task OnScopeChangedAsync(BudgetScope scope)
+    {
+        Chart.Scope = scope;
+        await Chart.RefreshAsync();
+    }
 }
 
 <GraphActions Modes="SupportedModes" Chart="Chart">
-    <MonthSelectors>
-        <MonthSelect AvailableMonths="AvailableMonths" Value="Period" ValueChanged="OnPeriodChangedAsync" MonthLabel="Month" YearLabel="Year" />
-    </MonthSelectors>
+    <Actions>
+        <HxSelect Label="Scope"
+                  Value="Chart.Scope"
+                  ValueChanged="OnScopeChangedAsync"
+                  ValueExpression="() => Chart.Scope"
+                  Data="SupportedScopes"
+                  TItem="BudgetScope"
+                  TValue="BudgetScope"
+                  Nullable="false"
+                  AutoSort="false"
+                  Enabled="!Chart.IsCategoryLevel"
+                  TextSelector="s => s.ToString()"
+                  ValueSelector="s => s" />
+
+        @if (Chart.Scope == BudgetScope.Monthly)
+        {
+            <MonthSelect AvailableMonths="AvailableMonths"
+                         Value="Period"
+                         ValueChanged="OnPeriodChangedAsync"
+                         MonthLabel="Month"
+                         YearLabel="Year" />
+        }
+        else if (Chart.Scope == BudgetScope.Weekly)
+        {
+            <WeekSelect Value="Period"
+                        ValueChanged="OnPeriodChangedAsync"
+                        WeekLabel="Week"
+                        YearLabel="Year" />
+        }
+        else if (Chart.Scope == BudgetScope.Fortnightly)
+        {
+            <FortnightSelect Value="Period"
+                             ValueChanged="OnPeriodChangedAsync"
+                             FortnightLabel="Fortnight"
+                             YearLabel="Year" />
+        }
+    </Actions>
 </GraphActions>

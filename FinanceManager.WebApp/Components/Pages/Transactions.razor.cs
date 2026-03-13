@@ -73,10 +73,10 @@ public partial class Transactions : ComponentBase
 
     private static string ScopeToText(BudgetScope scope) => scope switch
     {
-        BudgetScope.Weekly => "Week",
-        BudgetScope.Fortnightly => "Fortnight",
-        BudgetScope.Monthly => "Month",
-        _ => "Unknown"
+        BudgetScope.Weekly => "week",
+        BudgetScope.Fortnightly => "fortnight",
+        BudgetScope.Monthly => "month",
+        _ => "unknown"
     };
 
     private async Task ReloadChart1Async()
@@ -147,13 +147,12 @@ public partial class Transactions : ComponentBase
     {
         Chart2.Options = null;
 
-        var rangeStart = Normalize(Chart2Period);
-        var rangeEnd = EndOfMonth(rangeStart);
+        var (rangeStart, rangeEnd) = GetChart2Range(Chart2Period, Chart2.Scope);
 
         var query = new FilterQuery
         {
             FilterDateFrom = rangeStart.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = rangeEnd.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = rangeEnd > Today ? DateTime.Today : rangeEnd.ToDateTime(TimeOnly.MinValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 
@@ -174,6 +173,17 @@ public partial class Transactions : ComponentBase
         Chart2.Options = BuildChart2(chartTransactions, budgetEntries, Chart2.Mode, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
 
         StateHasChanged();
+    }
+
+    private static (DateOnly Start, DateOnly End) GetChart2Range(DateOnly anchor, BudgetScope scope)
+    {
+        return scope switch
+        {
+            BudgetScope.Weekly => (anchor, anchor.AddDays(6)),
+            BudgetScope.Fortnightly => (anchor, anchor.AddDays(13)),
+            BudgetScope.Monthly => (Normalize(anchor), EndOfMonth(Normalize(anchor))),
+            _ => (Normalize(anchor), EndOfMonth(Normalize(anchor)))
+        };
     }
 
     private static object? BuildChart1(

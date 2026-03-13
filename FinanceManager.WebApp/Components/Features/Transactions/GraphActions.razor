@@ -2,7 +2,7 @@
 {
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public RenderFragment? MonthSelectors { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
 
     [Parameter] public IReadOnlyList<TransactionsGraphMode> Modes { get; set; } = [];
 
@@ -14,7 +14,7 @@
 }
 
 <div class="graph-actions">
-    @MonthSelectors
+    @Actions
 
     <HxSelect Label="Mode"
               Value="Chart.Mode"
