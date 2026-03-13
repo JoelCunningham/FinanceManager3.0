@@ -1,0 +1,78 @@
+﻿namespace FinanceManager.Infrastructure.Repositories.InMemory;
+
+using FinanceManager.Application.Interfaces;
+using FinanceManager.Domain.Entities;
+using FinanceManager.Domain.Enums;
+
+public class BudgetPeriodRepository : IBudgetPeriodRepository
+{
+    private readonly List<BudgetPeriod> _budgetPeriods = [];
+
+    public BudgetPeriodRepository()
+    {
+       SeedTestBudgetPeriods().GetAwaiter().GetResult();
+    }
+
+    public async Task<BudgetPeriod?> GetCurrentAsync()
+    {
+        return _budgetPeriods.FirstOrDefault(p =>
+            p.StartDate <= DateOnly.FromDateTime(DateTime.Now) &&
+            p.EndDate >= DateOnly.FromDateTime(DateTime.Now)
+        );
+    }
+
+    public async Task<IEnumerable<BudgetPeriod>> GetByRangeAsync(DateOnly startDate, DateOnly endDate)
+    {
+        return _budgetPeriods.Where(p => p.StartDate <= endDate && p.EndDate >= startDate);
+    }
+
+    public async Task CreateAsync(DateOnly startDate, DateOnly endDate, BudgetScope level)
+    {
+        //Normalise dates
+        startDate = level switch
+        {
+            BudgetScope.Weekly => startDate.AddDays(-(int)startDate.DayOfWeek),
+            BudgetScope.Fortnightly => startDate.AddDays(-(int)startDate.DayOfWeek - (startDate.DayOfYear % 14)),
+            BudgetScope.Monthly => new DateOnly(startDate.Year, startDate.Month, 1),
+            _ => throw new ArgumentOutOfRangeException(nameof(level), "Invalid budget level")
+        };
+        endDate = level switch
+        {
+            BudgetScope.Weekly => endDate.AddDays(6 - (int)endDate.DayOfWeek),
+            BudgetScope.Fortnightly => endDate.AddDays(13 - (int)endDate.DayOfWeek + (endDate.DayOfYear % 14)),
+            BudgetScope.Monthly => new DateOnly(endDate.Year, endDate.Month, DateTime.DaysInMonth(endDate.Year, endDate.Month)),
+            _ => throw new ArgumentOutOfRangeException(nameof(level), "Invalid budget level")
+        };
+
+        // Validate period is valid
+        if (startDate >= endDate) throw new ArgumentException("Start date must be before end date");
+
+        // Validate period does not overlap with existing periods
+        var overlappingPeriod = _budgetPeriods.FirstOrDefault(p => p.StartDate <= endDate && p.EndDate >= startDate);
+        if (overlappingPeriod != null) throw new InvalidOperationException("Budget period overlaps with existing period");
+
+        var budgetPeriod = new BudgetPeriod
+        {
+            Id = Guid.NewGuid(),
+            StartDate = startDate,
+            EndDate = endDate,
+            Scope = level
+        };
+        _budgetPeriods.Add(budgetPeriod);
+    }
+
+    private async Task SeedTestBudgetPeriods()
+    {
+        await CreateAsync(
+            DateOnly.FromDateTime(DateTime.Now.AddMonths(-12)), 
+            DateOnly.FromDateTime(DateTime.Now), 
+            BudgetScope.Monthly
+        );
+
+        await CreateAsync(
+            DateOnly.FromDateTime(DateTime.Now.AddMonths(1)), 
+            DateOnly.FromDateTime(DateTime.Now.AddMonths(1)), 
+            BudgetScope.Weekly
+        );
+    }
+}

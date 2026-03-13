@@ -4,16 +4,15 @@ using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 
-public class BudgetEntryRepository(ICategoryRepository CategoryRepository) : IBudgetEntryRepository
+public class BudgetEntryRepository : IBudgetEntryRepository
 {
     private readonly List<BudgetEntry> _budgetEntries = [];
+    private readonly ICategoryRepository CategoryRepository;
 
-    public BudgetEntryRepository(ICategoryRepository categoryRepository, bool seed = true) : this(categoryRepository)
+    public BudgetEntryRepository(ICategoryRepository categoryRepository)
     {
-        if (seed)
-        {
-            SeedDefaultBudgetEntries();
-        }
+        CategoryRepository = categoryRepository;
+        SeedDefaultBudgetEntries();
     }
 
     public async Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Category> categories)
@@ -30,7 +29,16 @@ public class BudgetEntryRepository(ICategoryRepository CategoryRepository) : IBu
     {
         var categories = CategoryRepository.GetAllAsync().GetAwaiter().GetResult().ToList();
 
-        for (var i = 0; i > -12; i--) {
+        var period = new BudgetPeriod
+        {
+            Id = Guid.NewGuid(),
+            Scope = BudgetScope.Monthly,
+            StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-12)),
+            EndDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(12))
+        };
+
+        for (var i = 0; i > -12; i--)
+        {
             var salary = categories.First(c => c.Name == "Salary");
             _budgetEntries.Add(new BudgetEntry
             {
@@ -38,7 +46,7 @@ public class BudgetEntryRepository(ICategoryRepository CategoryRepository) : IBu
                 CategoryId = salary.Id,
                 Category = salary,
                 Amount = 4564.85m,
-                Period = BudgetPeriod.Monthly,
+                Period = period,
                 StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
             });
 
@@ -49,7 +57,7 @@ public class BudgetEntryRepository(ICategoryRepository CategoryRepository) : IBu
                 CategoryId = sport.Id,
                 Category = sport,
                 Amount = 50,
-                Period = BudgetPeriod.Weekly,
+                Period = period,
                 StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
             });
 
@@ -60,7 +68,7 @@ public class BudgetEntryRepository(ICategoryRepository CategoryRepository) : IBu
                 CategoryId = diningout.Id,
                 Category = diningout,
                 Amount = 100,
-                Period = BudgetPeriod.Weekly,
+                Period = period,
                 StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
             });
 
@@ -71,7 +79,7 @@ public class BudgetEntryRepository(ICategoryRepository CategoryRepository) : IBu
                 CategoryId = cosmetics.Id,
                 Category = cosmetics,
                 Amount = 50,
-                Period = BudgetPeriod.Weekly,
+                Period = period,
                 StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
             });
         }
@@ -83,7 +91,7 @@ public class BudgetEntryRepository(ICategoryRepository CategoryRepository) : IBu
             CategoryId = presents.Id,
             Category = presents,
             Amount = 250,
-            Period = BudgetPeriod.Weekly,
+            Period = period,
             StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-2))
         });
     }

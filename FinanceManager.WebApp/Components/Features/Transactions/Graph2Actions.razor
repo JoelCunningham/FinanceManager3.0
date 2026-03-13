@@ -2,10 +2,10 @@
 {
     [Parameter, EditorRequired] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+    [Parameter] public IReadOnlyList<DateOnly> AvailableMonths { get; set; } = [];
 
-    [Parameter] public DateTime Period { get; set; }
-    [Parameter] public EventCallback<DateTime> PeriodChanged { get; set; }
+    [Parameter] public DateOnly Period { get; set; }
+    [Parameter] public EventCallback<DateOnly> PeriodChanged { get; set; }
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -13,7 +13,7 @@
         TransactionsGraphMode.Income
     ];
 
-    private async Task OnPeriodChangedAsync(DateTime period)
+    private async Task OnPeriodChangedAsync(DateOnly period)
     {
         await PeriodChanged.InvokeAsync(period);
         await Chart.RefreshAsync();

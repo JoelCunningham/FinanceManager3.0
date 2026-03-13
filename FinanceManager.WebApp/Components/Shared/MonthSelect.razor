@@ -1,8 +1,8 @@
 ﻿@code {
-    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+    [Parameter] public IReadOnlyList<DateOnly> AvailableMonths { get; set; } = [];
 
-    [Parameter] public DateTime Value { get; set; }
-    [Parameter] public EventCallback<DateTime> ValueChanged { get; set; }
+    [Parameter] public DateOnly Value { get; set; }
+    [Parameter] public EventCallback<DateOnly> ValueChanged { get; set; }
 
     [Parameter] public string MonthLabel { get; set; } = "Month";
     [Parameter] public string YearLabel { get; set; } = "Year";
@@ -10,14 +10,14 @@
     private const int YearsBackFallback = 10;
     private static readonly IReadOnlyList<int> AllMonths = [.. Enumerable.Range(1, 12)];
 
-    private DateTime _valueInternal;
+    private DateOnly _valueInternal;
 
-    private IReadOnlyList<DateTime>? _availableMonthsRef;
+    private IReadOnlyList<DateOnly>? _availableMonthsRef;
     private List<int> _availableYears = [];
     private Dictionary<int, List<int>> _monthsByYear = [];
 
-    private static DateTime Normalize(DateTime value) => new(value.Year, value.Month, 1);
-    private static string FormatMonthNumber(int month) => new DateTime(2000, month, 1).ToString("MMM");
+    private static DateOnly Normalize(DateOnly value) => new(value.Year, value.Month, 1);
+    private static string FormatMonthNumber(int month) => new DateOnly(2000, month, 1).ToString("MMM");
 
     private IReadOnlyList<int> AvailableYears =>
         _availableYears.Count > 0
@@ -39,7 +39,7 @@
         NormalizeInternal();
     }
 
-    private void RebuildLookups(IReadOnlyList<DateTime> availableMonths)
+    private void RebuildLookups(IReadOnlyList<DateOnly> availableMonths)
     {
         _availableYears = [];
         _monthsByYear = [];
@@ -85,13 +85,13 @@
 
         if (!years.Contains(_valueInternal.Year))
         {
-            _valueInternal = new DateTime(years.Last(), _valueInternal.Month, 1);
+            _valueInternal = new DateOnly(years.Last(), _valueInternal.Month, 1);
         }
 
         var months = GetMonthsForYear(_valueInternal.Year);
         if (!months.Contains(_valueInternal.Month))
         {
-            _valueInternal = new DateTime(_valueInternal.Year, months.Last(), 1);
+            _valueInternal = new DateOnly(_valueInternal.Year, months.Last(), 1);
         }
     }
 
@@ -121,7 +121,7 @@
             month = months.Last();
         }
 
-        _valueInternal = new DateTime(year, month, 1);
+        _valueInternal = new DateOnly(year, month, 1);
 
         await ValueChanged.InvokeAsync(_valueInternal);
     }

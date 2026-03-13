@@ -21,6 +21,7 @@ builder.Services.AddSingleton<IReimbursementRepository, ReimbursementRepository>
 builder.Services.AddSingleton<ICategoryRepository, CategoryRepository>();
 builder.Services.AddSingleton<IMachineLearningRepository, MachineLearningRepository>();
 builder.Services.AddSingleton<IBudgetEntryRepository, BudgetEntryRepository>();
+builder.Services.AddSingleton<IBudgetPeriodRepository, BudgetPeriodRepository>();
 
 // Parsers
 builder.Services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();

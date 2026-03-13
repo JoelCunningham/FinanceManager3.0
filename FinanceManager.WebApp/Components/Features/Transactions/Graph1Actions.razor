@@ -2,23 +2,23 @@
 {
     [Parameter, EditorRequired] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public IReadOnlyList<DateTime> AvailableMonths { get; set; } = [];
+    [Parameter] public IReadOnlyList<DateOnly> AvailableMonths { get; set; } = [];
 
-    [Parameter] public DateTime MonthFrom { get; set; }
-    [Parameter] public EventCallback<DateTime> MonthFromChanged { get; set; }
+    [Parameter] public DateOnly MonthFrom { get; set; }
+    [Parameter] public EventCallback<DateOnly> MonthFromChanged { get; set; }
 
-    [Parameter] public DateTime MonthTo { get; set; }
-    [Parameter] public EventCallback<DateTime> MonthToChanged { get; set; }
+    [Parameter] public DateOnly MonthTo { get; set; }
+    [Parameter] public EventCallback<DateOnly> MonthToChanged { get; set; }
 
     private static readonly TransactionsGraphMode[] GraphModes = Enum.GetValues<TransactionsGraphMode>();
 
-    private async Task OnFromChangedAsync(DateTime from)
+    private async Task OnFromChangedAsync(DateOnly from)
     {
         await MonthFromChanged.InvokeAsync(from);
         await Chart.RefreshAsync();
     }
 
-    private async Task OnToChangedAsync(DateTime to)
+    private async Task OnToChangedAsync(DateOnly to)
     {
         await MonthToChanged.InvokeAsync(to);
         await Chart.RefreshAsync();

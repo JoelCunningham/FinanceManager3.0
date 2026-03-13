@@ -1,7 +1,8 @@
 ﻿namespace FinanceManager.Domain.Enums;
 
-public enum BudgetPeriod
+public enum BudgetScope
 {
     Weekly,
+    Fortnightly,
     Monthly,
 }

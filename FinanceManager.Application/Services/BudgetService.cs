@@ -4,7 +4,7 @@ using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 
-public class BudgetService(IBudgetEntryRepository BudgetEntryRepository)
+public class BudgetService(IBudgetEntryRepository BudgetEntryRepository, IBudgetPeriodRepository BudgetPeriodRepository)
 {
     public async Task<IEnumerable<BudgetEntry>> GetBudget(DateOnly startDate, DateOnly endDate, IEnumerable<Category> categories)
     {
@@ -42,5 +42,24 @@ public class BudgetService(IBudgetEntryRepository BudgetEntryRepository)
         }
 
         return budgetEntries;
+    }
+
+    public async Task<BudgetScope?> GetCurrentScope()
+    {
+        var currentPeriod = await BudgetPeriodRepository.GetCurrentAsync();
+        if (currentPeriod is null)
+        {
+            return null;
+        }
+        else
+        {
+            return currentPeriod.Scope;
+        }
+    }
+
+    public async Task<BudgetScope> GetGreatestScopeInPeriod(DateOnly startDate, DateOnly endDate)
+    {
+        var periods = await BudgetPeriodRepository.GetByRangeAsync(startDate, endDate);
+        return periods.Max(p => p.Scope);
     }
 }

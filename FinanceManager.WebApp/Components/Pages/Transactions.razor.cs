@@ -3,6 +3,7 @@
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Services;
 using FinanceManager.Domain.Entities;
+using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
@@ -13,17 +14,19 @@ public partial class Transactions : ComponentBase
     [Inject] public CategoryService CategoryService { get; set; } = default!;
     [Inject] public TransactionService TransactionService { get; set; } = default!;
 
-    public IReadOnlyList<DateTime> AvailableMonths { get; } = BuildAvailableMonths(10);
+    public IReadOnlyList<DateOnly> AvailableMonths { get; } = BuildAvailableMonths(10);
     public List<Category> Categories { get; set; } = [];
     private IReadOnlyList<CategoryGroup> CategoryGroups => [.. Categories.Select(c => c.Group).DistinctBy(g => g.Id).OrderBy(g => g.Name)];
 
     public ChartModel Chart1 { get; set; } = new();
     public ChartModel Chart2 { get; set; } = new();
 
-    public static DateTime Normalize(DateTime value) => new(value.Year, value.Month, 1);
-    public static DateTime EndOfMonth(DateTime monthStart) => Normalize(monthStart).AddMonths(1).AddTicks(-1);
+    public BudgetScope GreatestScopeInPeriod { get; set; }
 
-    public DateTime Chart1MonthFrom
+    public static DateOnly Normalize(DateOnly value) => new(value.Year, value.Month, 1);
+    public static DateOnly EndOfMonth(DateOnly monthStart) => Normalize(monthStart).AddMonths(1).AddDays(-1);
+
+    public DateOnly Chart1MonthFrom
     {
         get => _monthFrom;
         set
@@ -32,7 +35,7 @@ public partial class Transactions : ComponentBase
             if (_monthTo < _monthFrom) _monthTo = _monthFrom;
         }
     }
-    public DateTime Chart1MonthTo
+    public DateOnly Chart1MonthTo
     {
         get => _monthTo;
         set
@@ -41,24 +44,40 @@ public partial class Transactions : ComponentBase
             if (_monthTo < _monthFrom) _monthFrom = _monthTo;
         }
     }
-    public DateTime Chart2Period { get; set; } = DateTime.Today;
+    public DateOnly Chart2Period { get; set; } = Today;
 
-    private DateTime _monthFrom = CurrentMonth.AddMonths(-11);
-    private DateTime _monthTo = CurrentMonth;
+    private DateOnly _monthFrom = CurrentMonth.AddMonths(-11);
+    private DateOnly _monthTo = CurrentMonth;
 
     private const string UncategorisedLabel = "Uncategorised";
 
-    private static readonly DateTime CurrentMonth = Normalize(DateTime.Today);
+    private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
+    private static readonly DateOnly CurrentMonth = Normalize(Today);
 
     protected override async Task OnInitializedAsync()
     {
         Chart1.RefreshAsync = ReloadChart1Async;
         Chart2.RefreshAsync = ReloadChart2Async;
+
         Categories = [.. await CategoryService.GetCategoriesAsync()];
+
+        var currentScope = await BudgetService.GetCurrentScope() ?? BudgetScope.Monthly;
+        Chart1.Scope = currentScope;
+        Chart2.Scope = currentScope;
+
+        GreatestScopeInPeriod = await BudgetService.GetGreatestScopeInPeriod(Chart1MonthTo, Chart1MonthFrom);
 
         await Chart1.RefreshAsync();
         await Chart2.RefreshAsync();
     }
+
+    private static string ScopeToText(BudgetScope scope) => scope switch
+    {
+        BudgetScope.Weekly => "Week",
+        BudgetScope.Fortnightly => "Fortnight",
+        BudgetScope.Monthly => "Month",
+        _ => "Unknown"
+    };
 
     private async Task ReloadChart1Async()
     {
@@ -68,8 +87,8 @@ public partial class Transactions : ComponentBase
         var monthToEnd = EndOfMonth(Chart1MonthTo);
         var query = new FilterQuery
         {
-            FilterDateFrom = Chart1MonthFrom,
-            FilterDateTo = monthToEnd > DateTime.Today ? DateTime.Today : monthToEnd,
+            FilterDateFrom = Chart1MonthFrom.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = monthToEnd > Today ? DateTime.Today : monthToEnd.ToDateTime(TimeOnly.MinValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 
@@ -128,13 +147,13 @@ public partial class Transactions : ComponentBase
     {
         Chart2.Options = null;
 
-        var rangeStart = Normalize(Chart2Period.Date);
+        var rangeStart = Normalize(Chart2Period);
         var rangeEnd = EndOfMonth(rangeStart);
 
         var query = new FilterQuery
         {
-            FilterDateFrom = rangeStart,
-            FilterDateTo = rangeEnd,
+            FilterDateFrom = rangeStart.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = rangeEnd.ToDateTime(TimeOnly.MinValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 
@@ -150,7 +169,7 @@ public partial class Transactions : ComponentBase
         var chartTransactions = ApplyGroupFilter(transactions, drilldownGroupId, t => t.Category?.GroupId);
         relevantCategories = ApplyGroupFilter(relevantCategories, drilldownGroupId, c => c.GroupId);
 
-        var budgetEntries = (await BudgetService.GetBudget(DateOnly.FromDateTime(rangeStart), DateOnly.FromDateTime(rangeEnd), relevantCategories)).ToList();
+        var budgetEntries = (await BudgetService.GetBudget(rangeStart, rangeEnd, relevantCategories)).ToList();
 
         Chart2.Options = BuildChart2(chartTransactions, budgetEntries, Chart2.Mode, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
 
@@ -159,7 +178,7 @@ public partial class Transactions : ComponentBase
 
     private static object? BuildChart1(
         List<TransactionSummary> transactions,
-        List<DateTime> months,
+        List<DateOnly> months,
         TransactionsGraphMode mode,
         double[]? budgetSeriesData,
         double[]? budgetIncomeSeriesData,
@@ -176,7 +195,7 @@ public partial class Transactions : ComponentBase
 
         foreach (var t in transactions)
         {
-            var month = new DateTime(t.Date.Year, t.Date.Month, 1);
+            var month = new DateOnly(t.Date.Year, t.Date.Month, 1);
             if (!monthIndex.ContainsKey(month)) continue;
 
             if (!IsTransactionInMode(t, mode, excludeNet: false)) continue;
@@ -204,7 +223,7 @@ public partial class Transactions : ComponentBase
         {
             if (!IsTransactionInMode(t, mode, excludeNet: false)) continue;
 
-            var month = new DateTime(t.Date.Year, t.Date.Month, 1);
+            var month = new DateOnly(t.Date.Year, t.Date.Month, 1);
             if (!monthIndex.TryGetValue(month, out var i)) continue;
 
             var amount = GetChartStackAmount(t, mode);
@@ -388,7 +407,7 @@ public partial class Transactions : ComponentBase
         };
     }
 
-    private async Task<double[]?> BuildChart1BudgetSeriesAsync(List<DateTime> months, List<Category> categories, bool isExpense)
+    private async Task<double[]?> BuildChart1BudgetSeriesAsync(List<DateOnly> months, List<Category> categories, bool isExpense)
     {
         if (categories.Count == 0 || months.Count == 0) return null;
 
@@ -397,8 +416,8 @@ public partial class Transactions : ComponentBase
         for (var i = 0; i < months.Count; i++)
         {
             var monthStart = months[i];
-            var start = DateOnly.FromDateTime(monthStart);
-            var end = DateOnly.FromDateTime(EndOfMonth(monthStart));
+            var start = monthStart;
+            var end = EndOfMonth(monthStart);
 
             var entries = await BudgetService.GetBudget(start, end, categories);
             if (!entries.Any()) continue;
@@ -485,14 +504,14 @@ public partial class Transactions : ComponentBase
         data
     };
 
-    public static List<DateTime> GetMonths(DateTime from, DateTime to)
+    private static List<DateOnly> GetMonths(DateOnly from, DateOnly to)
     {
         var start = Normalize(from);
         var end = Normalize(to);
 
         if (end < start) return [];
 
-        var months = new List<DateTime>();
+        var months = new List<DateOnly>();
         for (var d = start; d <= end; d = d.AddMonths(1))
         {
             months.Add(d);
@@ -501,13 +520,13 @@ public partial class Transactions : ComponentBase
         return months;
     }
 
-    public static IReadOnlyList<DateTime> BuildAvailableMonths(int yearsBack, int yearsForward = 1)
+    private static List<DateOnly> BuildAvailableMonths(int yearsBack, int yearsForward = 1)
     {
-        var current = Normalize(DateTime.Today);
+        var current = Normalize(Today);
         var start = current.AddYears(-yearsBack);
         var end = current.AddYears(yearsForward);
 
-        var months = new List<DateTime>();
+        var months = new List<DateOnly>();
         for (var d = start; d <= end; d = d.AddMonths(1))
         {
             months.Add(d);
