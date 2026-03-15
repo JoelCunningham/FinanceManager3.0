@@ -13,7 +13,7 @@ public class BudgetEntry : IEntity
     public required Category Category { get; set; }
 
     public decimal Amount { get; set; }
-    public DateOnly StartDate { get; set; }
+    public int PeriodPosition { get; set; }
 
     public string? Notes { get; set; }
 }

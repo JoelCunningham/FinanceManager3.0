@@ -9,6 +9,29 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     private readonly List<BudgetEntry> _budgetEntries = [];
     private readonly ICategoryRepository CategoryRepository;
 
+    private static DateOnly StartDateFromBudgetEntry(BudgetEntry budgetEntry)
+    {
+        return budgetEntry.Period.Scope switch
+        {
+            Scope.Weekly => budgetEntry.Period.StartDate.AddDays(7 * budgetEntry.PeriodPosition),
+            Scope.Fortnightly => budgetEntry.Period.StartDate.AddDays(14 * budgetEntry.PeriodPosition),
+            Scope.Monthly => budgetEntry.Period.StartDate.AddMonths(1 * budgetEntry.PeriodPosition),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    private static DateOnly EndDateFromBudgetEntry(BudgetEntry budgetEntry)
+    {
+        var startDate = StartDateFromBudgetEntry(budgetEntry);
+        return budgetEntry.Period.Scope switch
+        {
+            Scope.Weekly => startDate.AddDays(7).AddDays(-1),
+            Scope.Fortnightly => startDate.AddDays(14).AddDays(-1),
+            Scope.Monthly => startDate.AddMonths(1).AddDays(-1),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
     public BudgetEntryRepository(ICategoryRepository categoryRepository)
     {
         CategoryRepository = categoryRepository;
@@ -19,11 +42,11 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     {
         var categoryIds = categories.Select(c => c.Id).ToHashSet();
 
-        var entires = _budgetEntries.Where(b =>
+        return _budgetEntries.Where(b =>
             categoryIds.Contains(b.CategoryId) &&
-            b.StartDate >= startDate &&
-            b.StartDate <= endDate).ToList();
-        return entires;
+            EndDateFromBudgetEntry(b) >= startDate &&
+            StartDateFromBudgetEntry(b) <= endDate
+        );
     }
 
     private void SeedDefaultBudgetEntries()
@@ -34,11 +57,12 @@ public class BudgetEntryRepository : IBudgetEntryRepository
         {
             Id = Guid.NewGuid(),
             Scope = Scope.Monthly,
-            StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-12)),
-            EndDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(12))
+            StartDate = new DateOnly(DateTime.Now.AddMonths(-12).Year, DateTime.Now.AddMonths(-12).Month, 1),
+            EndDate = new DateOnly(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month,
+                         DateTime.DaysInMonth(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month)),
         };
 
-        for (var i = 0; i > -12; i--)
+        for (var i = 0; i <= 12; i++)
         {
             var salary = categories.First(c => c.Name == "Salary");
             _budgetEntries.Add(new BudgetEntry
@@ -48,7 +72,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 Category = salary,
                 Amount = 4564.85m,
                 Period = period,
-                StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
+                PeriodPosition = i,
             });
 
             var sport = categories.First(c => c.Name == "Sport");
@@ -59,7 +83,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 Category = sport,
                 Amount = 50,
                 Period = period,
-                StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
+                PeriodPosition = i,
             });
 
             var diningout = categories.First(c => c.Name == "Dining Out");
@@ -70,7 +94,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 Category = diningout,
                 Amount = 100,
                 Period = period,
-                StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
+                PeriodPosition = i,
             });
 
             var cosmetics = categories.First(c => c.Name == "Cosmetics");
@@ -81,7 +105,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 Category = cosmetics,
                 Amount = 50,
                 Period = period,
-                StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(i))
+                PeriodPosition = i,
             });
         }
 
@@ -93,7 +117,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
             Category = presents,
             Amount = 250,
             Period = period,
-            StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-2))
+            PeriodPosition = 10,
         });
     }
 }
