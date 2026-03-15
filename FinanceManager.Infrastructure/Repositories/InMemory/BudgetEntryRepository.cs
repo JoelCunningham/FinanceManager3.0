@@ -29,10 +29,10 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     {
         var categories = CategoryRepository.GetAllAsync().GetAwaiter().GetResult().ToList();
 
-        var period = new BudgetPeriod
+        var period = new BudgetScope
         {
             Id = Guid.NewGuid(),
-            Scope = BudgetScope.Monthly,
+            Scope = Scope.Monthly,
             StartDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(-12)),
             EndDate = DateOnly.FromDateTime(DateTime.Now.AddMonths(12))
         };

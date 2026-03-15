@@ -6,14 +6,14 @@ using FinanceManager.Domain.Enums;
 
 public class BudgetPeriodRepository : IBudgetPeriodRepository
 {
-    private readonly List<BudgetPeriod> _budgetPeriods = [];
+    private readonly List<BudgetScope> _budgetPeriods = [];
 
     public BudgetPeriodRepository()
     {
        SeedTestBudgetPeriods().GetAwaiter().GetResult();
     }
 
-    public async Task<BudgetPeriod?> GetCurrentAsync()
+    public async Task<BudgetScope?> GetCurrentAsync()
     {
         return _budgetPeriods.FirstOrDefault(p =>
             p.StartDate <= DateOnly.FromDateTime(DateTime.Now) &&
@@ -21,26 +21,26 @@ public class BudgetPeriodRepository : IBudgetPeriodRepository
         );
     }
 
-    public async Task<IEnumerable<BudgetPeriod>> GetByRangeAsync(DateOnly startDate, DateOnly endDate)
+    public async Task<IEnumerable<BudgetScope>> GetByRangeAsync(DateOnly startDate, DateOnly endDate)
     {
         return _budgetPeriods.Where(p => p.StartDate <= endDate && p.EndDate >= startDate);
     }
 
-    public async Task CreateAsync(DateOnly startDate, DateOnly endDate, BudgetScope level)
+    public async Task CreateAsync(DateOnly startDate, DateOnly endDate, Scope level)
     {
         //Normalise dates
         startDate = level switch
         {
-            BudgetScope.Weekly => startDate.AddDays(-(int)startDate.DayOfWeek),
-            BudgetScope.Fortnightly => startDate.AddDays(-(int)startDate.DayOfWeek - (startDate.DayOfYear % 14)),
-            BudgetScope.Monthly => new DateOnly(startDate.Year, startDate.Month, 1),
+            Scope.Weekly => startDate.AddDays(-(int)startDate.DayOfWeek),
+            Scope.Fortnightly => startDate.AddDays(-(int)startDate.DayOfWeek - (startDate.DayOfYear % 14)),
+            Scope.Monthly => new DateOnly(startDate.Year, startDate.Month, 1),
             _ => throw new ArgumentOutOfRangeException(nameof(level), "Invalid budget level")
         };
         endDate = level switch
         {
-            BudgetScope.Weekly => endDate.AddDays(6 - (int)endDate.DayOfWeek),
-            BudgetScope.Fortnightly => endDate.AddDays(13 - (int)endDate.DayOfWeek + (endDate.DayOfYear % 14)),
-            BudgetScope.Monthly => new DateOnly(endDate.Year, endDate.Month, DateTime.DaysInMonth(endDate.Year, endDate.Month)),
+            Scope.Weekly => endDate.AddDays(6 - (int)endDate.DayOfWeek),
+            Scope.Fortnightly => endDate.AddDays(13 - (int)endDate.DayOfWeek + (endDate.DayOfYear % 14)),
+            Scope.Monthly => new DateOnly(endDate.Year, endDate.Month, DateTime.DaysInMonth(endDate.Year, endDate.Month)),
             _ => throw new ArgumentOutOfRangeException(nameof(level), "Invalid budget level")
         };
 
@@ -51,7 +51,7 @@ public class BudgetPeriodRepository : IBudgetPeriodRepository
         var overlappingPeriod = _budgetPeriods.FirstOrDefault(p => p.StartDate <= endDate && p.EndDate >= startDate);
         if (overlappingPeriod != null) throw new InvalidOperationException("Budget period overlaps with existing period");
 
-        var budgetPeriod = new BudgetPeriod
+        var budgetPeriod = new BudgetScope
         {
             Id = Guid.NewGuid(),
             StartDate = startDate,
@@ -66,13 +66,13 @@ public class BudgetPeriodRepository : IBudgetPeriodRepository
         await CreateAsync(
             DateOnly.FromDateTime(DateTime.Now.AddMonths(-12)), 
             DateOnly.FromDateTime(DateTime.Now), 
-            BudgetScope.Monthly
+            Scope.Monthly
         );
 
         await CreateAsync(
             DateOnly.FromDateTime(DateTime.Now.AddMonths(1)), 
             DateOnly.FromDateTime(DateTime.Now.AddMonths(1)), 
-            BudgetScope.Weekly
+            Scope.Weekly
         );
     }
 }

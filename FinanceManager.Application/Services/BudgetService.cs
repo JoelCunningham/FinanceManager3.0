@@ -44,7 +44,7 @@ public class BudgetService(IBudgetEntryRepository BudgetEntryRepository, IBudget
         return budgetEntries;
     }
 
-    public async Task<BudgetScope?> GetCurrentScope()
+    public async Task<Scope?> GetCurrentScope()
     {
         var currentPeriod = await BudgetPeriodRepository.GetCurrentAsync();
         if (currentPeriod is null)
@@ -57,7 +57,7 @@ public class BudgetService(IBudgetEntryRepository BudgetEntryRepository, IBudget
         }
     }
 
-    public async Task<BudgetScope> GetGreatestScopeInPeriod(DateOnly startDate, DateOnly endDate)
+    public async Task<Scope> GetGreatestScopeInPeriod(DateOnly startDate, DateOnly endDate)
     {
         var periods = await BudgetPeriodRepository.GetByRangeAsync(startDate, endDate);
         return periods.Max(p => p.Scope);

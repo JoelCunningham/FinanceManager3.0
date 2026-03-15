@@ -35,6 +35,7 @@ builder.Services.AddScoped<ImportService>();
 builder.Services.AddScoped<CategorisationService>();
 builder.Services.AddScoped<BudgetService>();
 builder.Services.AddSingleton<ParserService>();
+builder.Services.AddScoped<DateService>();
 
 var app = builder.Build();
 

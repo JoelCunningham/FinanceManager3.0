@@ -1,6 +1,6 @@
 ﻿namespace FinanceManager.Domain.Enums;
 
-public enum BudgetScope
+public enum Scope
 {
     Weekly,
     Fortnightly,

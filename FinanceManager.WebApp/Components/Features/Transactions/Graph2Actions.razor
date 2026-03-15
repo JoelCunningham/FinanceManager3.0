@@ -10,17 +10,19 @@
 
     [Parameter] public EventCallback<DateOnly> PeriodChanged { get; set; }
 
+    private BudgetPeriod NewPeriod => new(Chart.Scope, Period);
+
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
         TransactionsGraphMode.Expense,
         TransactionsGraphMode.Income
     ];
 
-    private static readonly BudgetScope[] SupportedScopes =
+    private static readonly Scope[] SupportedScopes =
     [
-        BudgetScope.Weekly,
-        BudgetScope.Fortnightly,
-        BudgetScope.Monthly
+        Scope.Weekly,
+        Scope.Fortnightly,
+        Scope.Monthly
     ];
 
     private async Task OnPeriodChangedAsync(DateOnly period)
@@ -29,7 +31,13 @@
         await Chart.RefreshAsync();
     }
 
-    private async Task OnScopeChangedAsync(BudgetScope scope)
+    private async Task NewOnPeriodChangedAsync(BudgetPeriod period)
+    {
+        await PeriodChanged.InvokeAsync(period.StartDate);
+        await Chart.RefreshAsync();
+    }
+
+    private async Task OnScopeChangedAsync(Scope scope)
     {
         Chart.Scope = scope;
         await Chart.RefreshAsync();
@@ -43,15 +51,15 @@
                   ValueChanged="OnScopeChangedAsync"
                   ValueExpression="() => Chart.Scope"
                   Data="SupportedScopes"
-                  TItem="BudgetScope"
-                  TValue="BudgetScope"
+                  TItem="Scope"
+                  TValue="Scope"
                   Nullable="false"
                   AutoSort="false"
                   Enabled="!Chart.IsCategoryLevel"
                   TextSelector="s => s.ToString()"
                   ValueSelector="s => s" />
 
-        @if (Chart.Scope == BudgetScope.Monthly)
+        @if (Chart.Scope == Scope.Monthly)
         {
             <MonthSelect AvailableMonths="AvailableMonths"
                          Value="Period"
@@ -59,19 +67,13 @@
                          MonthLabel="Month"
                          YearLabel="Year" />
         }
-        else if (Chart.Scope == BudgetScope.Weekly)
+        else if (Chart.Scope == Scope.Weekly)
         {
-            <WeekSelect Value="Period"
-                        ValueChanged="OnPeriodChangedAsync"
-                        WeekLabel="Week"
-                        YearLabel="Year" />
+            <WeekSelect Value="NewPeriod" ValueChanged="NewOnPeriodChangedAsync" />
         }
-        else if (Chart.Scope == BudgetScope.Fortnightly)
+        else if (Chart.Scope == Scope.Fortnightly)
         {
-            <FortnightSelect Value="Period"
-                             ValueChanged="OnPeriodChangedAsync"
-                             FortnightLabel="Fortnight"
-                             YearLabel="Year" />
+            <FortnightSelect Value="NewPeriod" ValueChanged="NewOnPeriodChangedAsync" />
         }
     </Actions>
 </GraphActions>

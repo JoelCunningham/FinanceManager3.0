@@ -1,127 +1,62 @@
-﻿@using System.Globalization
+﻿@inject DateService DateService
+
 @code
 {
-    [Parameter] public DateOnly Value { get; set; }
-    [Parameter] public EventCallback<DateOnly> ValueChanged { get; set; }
+    [Parameter] public required BudgetPeriod Value { get; set; }
+    [Parameter] public EventCallback<BudgetPeriod> ValueChanged { get; set; }
 
-    [Parameter] public string FortnightLabel { get; set; } = "Fortnight";
-    [Parameter] public string YearLabel { get; set; } = "Year";
+    private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
+    private IEnumerable<BudgetPeriod> FortnightOptions = [];
 
-    private const int YearsBackFallback = 10;
-    private static readonly int[] FortnightNumbers = [.. Enumerable.Range(1, 27)];
-
-    private DateOnly _valueInternal;
+    private int SelectedYear { get; set; }
 
     protected override void OnParametersSet()
     {
-        _valueInternal = StartOfFortnight(Value);
+        SelectedYear = ISOWeek.GetYear(Value.StartDate.ToDateTime(TimeOnly.MinValue));
+        FortnightOptions = DateService.GetFortnights(SelectedYear);
     }
 
-    private IReadOnlyList<int> AvailableYears =>
-        [.. Enumerable.Range(DateTime.Today.Year - YearsBackFallback, YearsBackFallback + 2)];
+    private async Task FortnightChangedAsync(BudgetPeriod period) => await ValueChanged.InvokeAsync(period);
 
-    private int SelectedYear
+    private async Task YearChanged(int year)
     {
-        get => GetFortnightYear(_valueInternal);
-        set => _ = UpdateAsync(value, SelectedFortnight);
+        SelectedYear = year;
+        FortnightOptions = DateService.GetFortnights(year);
+
+        var currentFortnightIndex = DateService.GetFortnightIndex(Value.StartDate);
+        var targetDateTime = ISOWeek.ToDateTime(year, ((currentFortnightIndex - 1) * 2) + 1, DayOfWeek.Monday);
+        var targetDate = DateOnly.FromDateTime(targetDateTime);
+
+        Value = FortnightOptions.FirstOrDefault(p => p.StartDate <= targetDate && p.EndDate >= targetDate) ?? FortnightOptions.First();
+
+        await ValueChanged.InvokeAsync(Value);
     }
 
-    private int SelectedFortnight
+    private static string FormatFortnight(BudgetPeriod period)
     {
-        get => GetFortnightNumber(_valueInternal);
-        set => _ = UpdateAsync(SelectedYear, value);
-    }
-
-    private async Task UpdateAsync(int year, int fortnight)
-    {
-        if (fortnight < 1) fortnight = 1;
-        if (fortnight > 27) fortnight = 27;
-
-        var start = GetFortnightStart(year, fortnight);
-
-        // Clamp: if computed anchor spills into a different year in our definition, pull back.
-        if (GetFortnightYear(start) != year)
-        {
-            start = GetFortnightStart(year, 26);
-            if (GetFortnightYear(start) != year)
-            {
-                start = GetFortnightStart(year, 25);
-            }
-        }
-
-        _valueInternal = start;
-        await ValueChanged.InvokeAsync(_valueInternal);
-    }
-
-    private static string FormatFortnight(int year, int fortnight)
-    {
-        return $"F{fortnight:00} {GetFortnightStart(year, fortnight).ToString("dd/MM")} - {GetFortnightEnd(year, fortnight).ToString("dd/MM")}";
-    }
-
-    private static DateOnly StartOfIsoWeek(DateOnly date)
-    {
-        var dow = (int)date.DayOfWeek;
-        var isoDow = dow == 0 ? 7 : dow;
-        return date.AddDays(1 - isoDow);
-    }
-
-    private static DateOnly GetIsoWeek1Start(int year)
-    {
-        // ISO week 1 is the week of the 4th of January
-        var jan4 = new DateOnly(year, 1, 4);
-        return StartOfIsoWeek(jan4);
-    }
-
-    private static DateOnly GetFortnightStart(int year, int fortnight)
-    {
-        var week1Start = GetIsoWeek1Start(year);
-        return week1Start.AddDays((fortnight - 1) * 14);
-    }
-
-    private static DateOnly GetFortnightEnd(int year, int fortnight)
-    {
-        var start = GetFortnightStart(year, fortnight);
-        return start.AddDays(13);
-    }
-
-    private static int GetFortnightYear(DateOnly date)
-    {
-        // Use the year of the ISO week-year anchor.
-        // Thursday determines ISO week-year.
-        var thursday = date.AddDays(4 - (((int)date.DayOfWeek == 0) ? 7 : (int)date.DayOfWeek));
-        return thursday.Year;
-    }
-
-    private static int GetFortnightNumber(DateOnly date)
-    {
-        var year = GetFortnightYear(date);
-        var start = GetIsoWeek1Start(year);
-        var days = date.DayNumber - start.DayNumber;
-        return (days / 14) + 1;
-    }
-
-    private static DateOnly StartOfFortnight(DateOnly date)
-    {
-        var year = GetFortnightYear(date);
-        var fortnight = GetFortnightNumber(date);
-        return GetFortnightStart(year, fortnight);
+        var start = DateService.GetFortnightIndex(period.StartDate);
+        return $"F{start:00} ({period.StartDate:dd/MM} - {period.EndDate:dd/MM})";
     }
 }
 
 <HxButtonGroup>
-    <HxSelect Label="@FortnightLabel"
-              @bind-Value="SelectedFortnight"
-              Data="FortnightNumbers"
-              TItem="int"
-              TValue="int"
+    <HxSelect Label="Fortnight"
+              Value="Value"
+              ValueChanged="FortnightChangedAsync"
+              ValueExpression="() => Value"
+              Data="FortnightOptions"
+              TItem="BudgetPeriod"
+              TValue="BudgetPeriod"
               Nullable="false"
               AutoSort="false"
-              TextSelector="f => FormatFortnight(SelectedYear, f)"
+              TextSelector="f => FormatFortnight(f)"
               ValueSelector="f => f" />
 
-    <HxSelect Label="@YearLabel"
-              @bind-Value="SelectedYear"
-              Data="AvailableYears"
+    <HxSelect Label="Year"
+              Value="SelectedYear"
+              ValueChanged="YearChanged"
+              ValueExpression="() => SelectedYear"
+              Data="YearOptions"
               TItem="int"
               TValue="int"
               Nullable="false"

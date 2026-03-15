@@ -6,7 +6,7 @@ using FinanceManager.WebApp.Enums;
 public sealed class ChartModel
 {
     public object? Options { get; set; }
-    public BudgetScope Scope { get; set; }
+    public Scope Scope { get; set; }
     public TransactionsGraphMode Mode { get; set; } = TransactionsGraphMode.Expense;
     public Guid? SelectedGroupId { get; set; }
     public Func<Task> RefreshAsync { get; set; } = () => Task.CompletedTask;

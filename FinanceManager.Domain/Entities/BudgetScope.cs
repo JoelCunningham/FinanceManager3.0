@@ -3,14 +3,14 @@
 using FinanceManager.Domain.Entities.Base;
 using FinanceManager.Domain.Enums;
 
-public class BudgetPeriod : IEntity
+public class BudgetScope : IEntity
 {
     public Guid Id { get; set; }
 
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
 
-    public BudgetScope Scope { get; set; }
+    public Scope Scope { get; set; }
 
     public ICollection<BudgetEntry> Entries { get; set; } = [];
 }

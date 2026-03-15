@@ -21,7 +21,7 @@ public partial class Transactions : ComponentBase
     public ChartModel Chart1 { get; set; } = new();
     public ChartModel Chart2 { get; set; } = new();
 
-    public BudgetScope GreatestScopeInPeriod { get; set; }
+    public Scope GreatestScopeInPeriod { get; set; }
 
     public static DateOnly Normalize(DateOnly value) => new(value.Year, value.Month, 1);
     public static DateOnly EndOfMonth(DateOnly monthStart) => Normalize(monthStart).AddMonths(1).AddDays(-1);
@@ -61,7 +61,7 @@ public partial class Transactions : ComponentBase
 
         Categories = [.. await CategoryService.GetCategoriesAsync()];
 
-        var currentScope = await BudgetService.GetCurrentScope() ?? BudgetScope.Monthly;
+        var currentScope = await BudgetService.GetCurrentScope() ?? Scope.Monthly;
         Chart1.Scope = currentScope;
         Chart2.Scope = currentScope;
 
@@ -71,11 +71,11 @@ public partial class Transactions : ComponentBase
         await Chart2.RefreshAsync();
     }
 
-    private static string ScopeToText(BudgetScope scope) => scope switch
+    private static string ScopeToText(Scope scope) => scope switch
     {
-        BudgetScope.Weekly => "week",
-        BudgetScope.Fortnightly => "fortnight",
-        BudgetScope.Monthly => "month",
+        Scope.Weekly => "week",
+        Scope.Fortnightly => "fortnight",
+        Scope.Monthly => "month",
         _ => "unknown"
     };
 
@@ -175,13 +175,13 @@ public partial class Transactions : ComponentBase
         StateHasChanged();
     }
 
-    private static (DateOnly Start, DateOnly End) GetChart2Range(DateOnly anchor, BudgetScope scope)
+    private static (DateOnly Start, DateOnly End) GetChart2Range(DateOnly anchor, Scope scope)
     {
         return scope switch
         {
-            BudgetScope.Weekly => (anchor, anchor.AddDays(6)),
-            BudgetScope.Fortnightly => (anchor, anchor.AddDays(13)),
-            BudgetScope.Monthly => (Normalize(anchor), EndOfMonth(Normalize(anchor))),
+            Scope.Weekly => (anchor, anchor.AddDays(6)),
+            Scope.Fortnightly => (anchor, anchor.AddDays(13)),
+            Scope.Monthly => (Normalize(anchor), EndOfMonth(Normalize(anchor))),
             _ => (Normalize(anchor), EndOfMonth(Normalize(anchor)))
         };
     }

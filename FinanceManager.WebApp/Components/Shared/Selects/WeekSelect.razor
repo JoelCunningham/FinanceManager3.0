@@ -1,107 +1,60 @@
-﻿@using System.Globalization
-@code
+﻿@code
 {
-    [Parameter] public DateOnly Value { get; set; }
-    [Parameter] public EventCallback<DateOnly> ValueChanged { get; set; }
+    [Parameter] public required BudgetPeriod Value { get; set; }
+    [Parameter] public EventCallback<BudgetPeriod> ValueChanged { get; set; }
 
-    [Parameter] public string WeekLabel { get; set; } = "Week";
-    [Parameter] public string YearLabel { get; set; } = "Year";
+    private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
+    private IEnumerable<BudgetPeriod> WeekOptions = [];
 
-    private const int YearsBackFallback = 10;
-
-    // ISO-8601 week years can have 52 or 53 weeks.
-    private static readonly int[] WeekNumbers = [.. Enumerable.Range(1, 53)];
-
-    private DateOnly _valueInternal;
+    private int SelectedYear { get; set; }
 
     protected override void OnParametersSet()
     {
-        // Keep internal value as a normalized week start (Monday).
-        _valueInternal = StartOfIsoWeek(Value);
+        SelectedYear = ISOWeek.GetYear(Value.StartDate.ToDateTime(TimeOnly.MinValue));
+        WeekOptions = DateService.GetWeeks(SelectedYear);
     }
 
-    private IReadOnlyList<int> AvailableYears =>
-        [.. Enumerable.Range(DateTime.Today.Year - YearsBackFallback, YearsBackFallback + 2)];
+    private async Task WeekChangedAsync(BudgetPeriod period) => await ValueChanged.InvokeAsync(period);
 
-    private int SelectedYear
+    private async Task YearChanged(int isoYear)
     {
-        get => GetIsoWeekYear(_valueInternal);
-        set => _ = UpdateAsync(value, SelectedWeek);
+        SelectedYear = isoYear;
+        WeekOptions = DateService.GetWeeks(isoYear);
+
+        var currentIsoWeek = DateService.GetWeekIndex(Value.StartDate);
+        var targetStartDt = ISOWeek.ToDateTime(isoYear, currentIsoWeek, DayOfWeek.Monday);
+        var targetStartDate = DateOnly.FromDateTime(targetStartDt);
+
+        Value = WeekOptions.FirstOrDefault(p => p.StartDate <= targetStartDate && p.EndDate >= targetStartDate) ?? WeekOptions.First();
+
+        await ValueChanged.InvokeAsync(Value);
     }
 
-    private int SelectedWeek
+    private static string FormatWeek(BudgetPeriod period)
     {
-        get => GetIsoWeek(_valueInternal);
-        set => _ = UpdateAsync(SelectedYear, value);
-    }
-
-    private async Task UpdateAsync(int isoYear, int isoWeek)
-    {
-        if (isoWeek < 1) isoWeek = 1;
-        if (isoWeek > 53) isoWeek = 53;
-
-        var start = GetIsoWeekStart(isoYear, isoWeek);
-
-        // If the week doesn't exist (e.g., week 53 in a 52-week year), clamp down.
-        if (GetIsoWeekYear(start) != isoYear || GetIsoWeek(start) != isoWeek)
-        {
-            start = GetIsoWeekStart(isoYear, 52);
-        }
-
-        _valueInternal = start;
-        await ValueChanged.InvokeAsync(_valueInternal);
-    }
-
-    private static string FormatWeek(int year, int week)
-    {
-        return $"W{week:00} {ISOWeek.ToDateTime(year, week, DayOfWeek.Monday).ToString("dd/MM")} - {ISOWeek.ToDateTime(year, week, DayOfWeek.Sunday).ToString("dd/MM")}";
-    }
-
-    private static DateOnly StartOfIsoWeek(DateOnly date)
-    {
-        // Monday = 1 ... Sunday = 7
-        var dow = (int)date.DayOfWeek;
-        var isoDow = dow == 0 ? 7 : dow;
-        return date.AddDays(1 - isoDow);
-    }
-
-    // ISO week helpers (no dependency on CultureInfo)
-    private static int GetIsoWeekYear(DateOnly date)
-    {
-        var thursday = date.AddDays(4 - (((int)date.DayOfWeek == 0) ? 7 : (int)date.DayOfWeek));
-        return thursday.Year;
-    }
-
-    private static int GetIsoWeek(DateOnly date)
-    {
-        var thursday = date.AddDays(4 - (((int)date.DayOfWeek == 0) ? 7 : (int)date.DayOfWeek));
-        var firstThursday = new DateOnly(thursday.Year, 1, 4);
-        var firstWeekStart = StartOfIsoWeek(firstThursday);
-        return ((thursday.DayNumber - firstWeekStart.DayNumber) / 7) + 1;
-    }
-
-    private static DateOnly GetIsoWeekStart(int isoYear, int isoWeek)
-    {
-        var jan4 = new DateOnly(isoYear, 1, 4);
-        var week1Start = StartOfIsoWeek(jan4);
-        return week1Start.AddDays((isoWeek - 1) * 7);
+        var start = DateService.GetWeekIndex(period.StartDate);
+        return $"W{start:00} ({period.StartDate:dd/MM} - {period.EndDate:dd/MM})";
     }
 }
 
 <HxButtonGroup>
-    <HxSelect Label="@WeekLabel"
-              @bind-Value="SelectedWeek"
-              Data="WeekNumbers"
-              TItem="int"
-              TValue="int"
+    <HxSelect Label="Week"
+              Value="Value"
+              ValueChanged="WeekChangedAsync"
+              ValueExpression="() => Value"
+              Data="WeekOptions"
+              TItem="BudgetPeriod"
+              TValue="BudgetPeriod"
               Nullable="false"
               AutoSort="false"
-              TextSelector="w => FormatWeek(SelectedYear, w)"
+              TextSelector="w => FormatWeek(w)"
               ValueSelector="w => w" />
 
-    <HxSelect Label="@YearLabel"
-              @bind-Value="SelectedYear"
-              Data="AvailableYears"
+    <HxSelect Label="Year"
+              Value="SelectedYear"
+              ValueChanged="YearChanged"
+              ValueExpression="() => SelectedYear"
+              Data="YearOptions"
               TItem="int"
               TValue="int"
               Nullable="false"
