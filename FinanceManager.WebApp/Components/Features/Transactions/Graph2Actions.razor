@@ -10,7 +10,7 @@
 
     [Parameter] public EventCallback<DateOnly> PeriodChanged { get; set; }
 
-    private BudgetPeriod NewPeriod => new(Chart.Scope, Period);
+    private ScopedPeriod NewPeriod => new(Chart.Scope, Period);
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -31,7 +31,7 @@
         await Chart.RefreshAsync();
     }
 
-    private async Task NewOnPeriodChangedAsync(BudgetPeriod period)
+    private async Task NewOnPeriodChangedAsync(ScopedPeriod period)
     {
         await PeriodChanged.InvokeAsync(period.StartDate);
         await Chart.RefreshAsync();

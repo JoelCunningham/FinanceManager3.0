@@ -12,7 +12,7 @@ public class DateService()
     public static int GetFortnightCount(int year) => (GetWeekCount(year) + 1) / WEEKS_IN_FORTNIGHT;
     public static int GetMonthCount() => MONTHS_IN_YEAR;
 
-    public static IEnumerable<BudgetPeriod> GetWeeks(int year)
+    public static IEnumerable<ScopedPeriod> GetWeeks(int year)
     {
         var isoWeek1 = GetIsoWeek1(year);
         var weeksInYear = GetWeekCount(year);
@@ -20,11 +20,11 @@ public class DateService()
         for (int weekNo = 1; weekNo <= weeksInYear; weekNo++)
         {
             var periodDate = isoWeek1.AddDays(DAYS_IN_WEEK * (weekNo - 1));
-            yield return new BudgetPeriod(Scope.Weekly, periodDate);
+            yield return new ScopedPeriod(Scope.Weekly, periodDate);
         }
     }
 
-    public static IEnumerable<BudgetPeriod> GetFortnights(int year)
+    public static IEnumerable<ScopedPeriod> GetFortnights(int year)
     {
         var weeksInYear = GetWeekCount(year);
 
@@ -33,16 +33,16 @@ public class DateService()
             var startDt = ISOWeek.ToDateTime(year, startIsoWeek, DayOfWeek.Monday);
             var startDate = DateOnly.FromDateTime(startDt);
 
-            yield return new BudgetPeriod(Scope.Fortnightly, startDate);
+            yield return new ScopedPeriod(Scope.Fortnightly, startDate);
         }
     }
 
-    public static IEnumerable<BudgetPeriod> GetMonths(int year)
+    public static IEnumerable<ScopedPeriod> GetMonths(int year)
     {
         for (int monthNo = 1; monthNo <= MONTHS_IN_YEAR; monthNo++)
         {
             var periodDate = new DateOnly(year, monthNo, 1);
-            yield return new BudgetPeriod(Scope.Monthly, periodDate);
+            yield return new ScopedPeriod(Scope.Monthly, periodDate);
         }
     }
 

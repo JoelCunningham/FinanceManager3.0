@@ -6,14 +6,14 @@ using FinanceManager.Domain.Enums;
 
 public class BudgetPeriodRepository : IBudgetPeriodRepository
 {
-    private readonly List<BudgetScope> _budgetPeriods = [];
+    private readonly List<BudgetPeriod> _budgetPeriods = [];
 
     public BudgetPeriodRepository()
     {
        SeedTestBudgetPeriods().GetAwaiter().GetResult();
     }
 
-    public async Task<BudgetScope?> GetCurrentAsync()
+    public async Task<BudgetPeriod?> GetCurrentAsync()
     {
         return _budgetPeriods.FirstOrDefault(p =>
             p.StartDate <= DateOnly.FromDateTime(DateTime.Now) &&
@@ -21,7 +21,7 @@ public class BudgetPeriodRepository : IBudgetPeriodRepository
         );
     }
 
-    public async Task<IEnumerable<BudgetScope>> GetByRangeAsync(DateOnly startDate, DateOnly endDate)
+    public async Task<IEnumerable<BudgetPeriod>> GetByRangeAsync(DateOnly startDate, DateOnly endDate)
     {
         return _budgetPeriods.Where(p => p.StartDate <= endDate && p.EndDate >= startDate);
     }
@@ -51,7 +51,7 @@ public class BudgetPeriodRepository : IBudgetPeriodRepository
         var overlappingPeriod = _budgetPeriods.FirstOrDefault(p => p.StartDate <= endDate && p.EndDate >= startDate);
         if (overlappingPeriod != null) throw new InvalidOperationException("Budget period overlaps with existing period");
 
-        var budgetPeriod = new BudgetScope
+        var budgetPeriod = new BudgetPeriod
         {
             Id = Guid.NewGuid(),
             StartDate = startDate,

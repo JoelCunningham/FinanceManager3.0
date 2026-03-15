@@ -3,9 +3,9 @@
 using FinanceManager.Domain.Enums;
 using System.Globalization;
 
-public record BudgetPeriod
+public record ScopedPeriod
 {
-    public BudgetPeriod(Scope scope, DateOnly containingDate, int length = 1)
+    public ScopedPeriod(Scope scope, DateOnly containingDate, int length = 1)
     {
         if (length < 1) throw new ArgumentOutOfRangeException(nameof(length), "Length must be at least 1.");
 

@@ -19,17 +19,18 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     {
         var categoryIds = categories.Select(c => c.Id).ToHashSet();
 
-        return _budgetEntries.Where(b =>
+        var entires = _budgetEntries.Where(b =>
             categoryIds.Contains(b.CategoryId) &&
             b.StartDate >= startDate &&
-            b.StartDate <= endDate);
+            b.StartDate <= endDate).ToList();
+        return entires;
     }
 
     private void SeedDefaultBudgetEntries()
     {
         var categories = CategoryRepository.GetAllAsync().GetAwaiter().GetResult().ToList();
 
-        var period = new BudgetScope
+        var period = new BudgetPeriod
         {
             Id = Guid.NewGuid(),
             Scope = Scope.Monthly,

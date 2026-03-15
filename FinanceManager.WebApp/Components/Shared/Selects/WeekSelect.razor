@@ -1,10 +1,10 @@
 ﻿@code
 {
-    [Parameter] public required BudgetPeriod Value { get; set; }
-    [Parameter] public EventCallback<BudgetPeriod> ValueChanged { get; set; }
+    [Parameter] public required ScopedPeriod Value { get; set; }
+    [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
 
     private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
-    private IEnumerable<BudgetPeriod> WeekOptions = [];
+    private IEnumerable<ScopedPeriod> WeekOptions = [];
 
     private int SelectedYear { get; set; }
 
@@ -14,7 +14,7 @@
         WeekOptions = DateService.GetWeeks(SelectedYear);
     }
 
-    private async Task WeekChangedAsync(BudgetPeriod period) => await ValueChanged.InvokeAsync(period);
+    private async Task WeekChangedAsync(ScopedPeriod period) => await ValueChanged.InvokeAsync(period);
 
     private async Task YearChanged(int isoYear)
     {
@@ -30,7 +30,7 @@
         await ValueChanged.InvokeAsync(Value);
     }
 
-    private static string FormatWeek(BudgetPeriod period)
+    private static string FormatWeek(ScopedPeriod period)
     {
         var start = DateService.GetWeekIndex(period.StartDate);
         return $"W{start:00} ({period.StartDate:dd/MM} - {period.EndDate:dd/MM})";
@@ -43,8 +43,8 @@
               ValueChanged="WeekChangedAsync"
               ValueExpression="() => Value"
               Data="WeekOptions"
-              TItem="BudgetPeriod"
-              TValue="BudgetPeriod"
+              TItem="ScopedPeriod"
+              TValue="ScopedPeriod"
               Nullable="false"
               AutoSort="false"
               TextSelector="w => FormatWeek(w)"

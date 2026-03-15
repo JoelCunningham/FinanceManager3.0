@@ -2,11 +2,11 @@
 
 @code
 {
-    [Parameter] public required BudgetPeriod Value { get; set; }
-    [Parameter] public EventCallback<BudgetPeriod> ValueChanged { get; set; }
+    [Parameter] public required ScopedPeriod Value { get; set; }
+    [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
 
     private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
-    private IEnumerable<BudgetPeriod> FortnightOptions = [];
+    private IEnumerable<ScopedPeriod> FortnightOptions = [];
 
     private int SelectedYear { get; set; }
 
@@ -16,7 +16,7 @@
         FortnightOptions = DateService.GetFortnights(SelectedYear);
     }
 
-    private async Task FortnightChangedAsync(BudgetPeriod period) => await ValueChanged.InvokeAsync(period);
+    private async Task FortnightChangedAsync(ScopedPeriod period) => await ValueChanged.InvokeAsync(period);
 
     private async Task YearChanged(int year)
     {
@@ -32,7 +32,7 @@
         await ValueChanged.InvokeAsync(Value);
     }
 
-    private static string FormatFortnight(BudgetPeriod period)
+    private static string FormatFortnight(ScopedPeriod period)
     {
         var start = DateService.GetFortnightIndex(period.StartDate);
         return $"F{start:00} ({period.StartDate:dd/MM} - {period.EndDate:dd/MM})";
@@ -45,8 +45,8 @@
               ValueChanged="FortnightChangedAsync"
               ValueExpression="() => Value"
               Data="FortnightOptions"
-              TItem="BudgetPeriod"
-              TValue="BudgetPeriod"
+              TItem="ScopedPeriod"
+              TValue="ScopedPeriod"
               Nullable="false"
               AutoSort="false"
               TextSelector="f => FormatFortnight(f)"
