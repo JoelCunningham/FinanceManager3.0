@@ -58,8 +58,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
             Id = Guid.NewGuid(),
             Scope = Scope.Monthly,
             StartDate = new DateOnly(DateTime.Now.AddMonths(-12).Year, DateTime.Now.AddMonths(-12).Month, 1),
-            EndDate = new DateOnly(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month,
-                         DateTime.DaysInMonth(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month)),
+            EndDate = new DateOnly(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month, DateTime.DaysInMonth(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month)),
         };
 
         for (var i = 0; i <= 12; i++)

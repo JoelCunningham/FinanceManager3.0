@@ -1,146 +1,135 @@
-﻿@code {
-    [Parameter] public IReadOnlyList<DateOnly> AvailableMonths { get; set; } = [];
+﻿@inject DateService DateService
 
-    [Parameter] public DateOnly Value { get; set; }
-    [Parameter] public EventCallback<DateOnly> ValueChanged { get; set; }
+@code
+{
+    [Parameter] public required ScopedPeriod Value { get; set; }
+    [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
+
+    [Parameter] public bool ChangeLength { get; set; }
+    [Parameter] public bool ChangeEndDate { get; set; }
 
     [Parameter] public string MonthLabel { get; set; } = "Month";
     [Parameter] public string YearLabel { get; set; } = "Year";
 
-    private const int YearsBackFallback = 10;
-    private static readonly IReadOnlyList<int> AllMonths = [.. Enumerable.Range(1, 12)];
+    private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
+    private IEnumerable<ScopedPeriod> MonthOptions = [];
 
-    private DateOnly _valueInternal;
-
-    private IReadOnlyList<DateOnly>? _availableMonthsRef;
-    private List<int> _availableYears = [];
-    private Dictionary<int, List<int>> _monthsByYear = [];
-
-    private static DateOnly Normalize(DateOnly value) => new(value.Year, value.Month, 1);
-    private static string FormatMonthNumber(int month) => new DateOnly(2000, month, 1).ToString("MMM");
-
-    private IReadOnlyList<int> AvailableYears =>
-        _availableYears.Count > 0
-            ? _availableYears
-            : [.. Enumerable.Range(DateTime.Today.Year - YearsBackFallback, YearsBackFallback + 1)];
-
-    private IReadOnlyList<int> AvailableMonthsForYear => GetMonthsForYear(_valueInternal.Year);
+    private int SelectedYear { get; set; }
+    private ScopedPeriod SelectedMonth { get; set; } = default!;
 
     protected override void OnParametersSet()
     {
-        _valueInternal = Normalize(Value);
-
-        if (!ReferenceEquals(_availableMonthsRef, AvailableMonths))
+        if (ChangeEndDate)
         {
-            _availableMonthsRef = AvailableMonths;
-            RebuildLookups(AvailableMonths);
+            SelectedYear = Value.EndDate.Year;
+            MonthOptions = DateService.GetMonths(SelectedYear);
+            SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.EndDate && m.EndDate >= Value.EndDate) ?? MonthOptions.First();
         }
-
-        NormalizeInternal();
+        else
+        {
+            SelectedYear = Value.StartDate.Year;
+            MonthOptions = DateService.GetMonths(SelectedYear);
+            SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.StartDate && m.EndDate >= Value.StartDate) ?? MonthOptions.First();
+        }
     }
 
-    private void RebuildLookups(IReadOnlyList<DateOnly> availableMonths)
+    private async Task MonthChangedAsync(ScopedPeriod period)
     {
-        _availableYears = [];
-        _monthsByYear = [];
+        SelectedMonth = period;
 
-        if (availableMonths.Count == 0) return;
-
-        foreach (var m in availableMonths.Select(Normalize))
+        if (ChangeEndDate)
         {
-            if (!_monthsByYear.TryGetValue(m.Year, out var months))
+            if (!ChangeLength)
             {
-                months = [];
-                _monthsByYear[m.Year] = months;
+                await ValueChanged.InvokeAsync(new ScopedPeriod(Value.Scope, period.EndDate, Value.Length));
+                return;
             }
 
-            if (!months.Contains(m.Month))
+            var startDate = Value.StartDate;
+            var targetEndDate = period.EndDate;
+
+            if (targetEndDate < startDate)
             {
-                months.Add(m.Month);
+                await ValueChanged.InvokeAsync(Value);
+                return;
             }
+
+            await ValueChanged.InvokeAsync(CreateWithStartAndEnd(Value.Scope, startDate, targetEndDate));
+            return;
         }
 
-        foreach (var months in _monthsByYear.Values)
+        if (!ChangeLength)
         {
-            months.Sort();
+            await ValueChanged.InvokeAsync(period);
         }
-
-        _availableYears = [.. _monthsByYear.Keys.Order()];
+        else
+        {
+            await ValueChanged.InvokeAsync(CreateWithStartAndEnd(Value.Scope, period.StartDate, Value.EndDate));
+        }
     }
 
-    private IReadOnlyList<int> GetMonthsForYear(int year)
+    private async Task YearChanged(int year)
     {
-        if (_monthsByYear.TryGetValue(year, out var months) && months.Count > 0)
-        {
-            return months;
-        }
+        SelectedYear = year;
+        MonthOptions = DateService.GetMonths(year);
 
-        return AllMonths;
+        var containingDate = ChangeEndDate ? Value.EndDate : Value.StartDate;
+        var currentMonthIndex = DateService.GetMonthIndex(containingDate);
+        var targetStartDate = new DateOnly(year, currentMonthIndex, 1);
+
+        var selectedMonth = MonthOptions.FirstOrDefault(p => p.StartDate <= targetStartDate && p.EndDate >= targetStartDate) ?? MonthOptions.First();
+        await MonthChangedAsync(selectedMonth);
     }
 
-    private void NormalizeInternal()
+    private ScopedPeriod CreateWithStartAndEnd(Scope scope, DateOnly startDate, DateOnly targetEndDate)
     {
-        var years = AvailableYears;
-        if (years.Count == 0) return;
+        if (targetEndDate < startDate) return new ScopedPeriod(scope, startDate, 1);
 
-        if (!years.Contains(_valueInternal.Year))
+        int length = 1;
+        DateOnly endDate;
+        do
         {
-            _valueInternal = new DateOnly(years.Last(), _valueInternal.Month, 1);
-        }
+            endDate = scope switch
+            {
+                Scope.Weekly => startDate.AddDays(7 * length - 1),
+                Scope.Fortnightly => startDate.AddDays(14 * length - 1),
+                Scope.Monthly => startDate.AddMonths(length).AddDays(-1),
+                _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
+            };
 
-        var months = GetMonthsForYear(_valueInternal.Year);
-        if (!months.Contains(_valueInternal.Month))
-        {
-            _valueInternal = new DateOnly(_valueInternal.Year, months.Last(), 1);
+            if (endDate >= targetEndDate)
+            {
+                break;
+            }
+
+            length++;
         }
+        while (length < 10_000);
+
+        return new ScopedPeriod(scope, startDate, length);
     }
 
-    private int SelectedYear
-    {
-        get => _valueInternal.Year;
-        set => _ = UpdateAsync(value, _valueInternal.Month);
-    }
-
-    private int SelectedMonth
-    {
-        get => _valueInternal.Month;
-        set => _ = UpdateAsync(_valueInternal.Year, value);
-    }
-
-    private async Task UpdateAsync(int year, int month)
-    {
-        var years = AvailableYears;
-        if (years.Count > 0 && !years.Contains(year))
-        {
-            year = years.Last();
-        }
-
-        var months = GetMonthsForYear(year);
-        if (!months.Contains(month))
-        {
-            month = months.Last();
-        }
-
-        _valueInternal = new DateOnly(year, month, 1);
-
-        await ValueChanged.InvokeAsync(_valueInternal);
-    }
+    private static string FormatMonth(ScopedPeriod period) => period.StartDate.ToString("MMM");
 }
 
 <HxButtonGroup>
     <HxSelect Label="@MonthLabel"
-              @bind-Value="SelectedMonth"
-              Data="AvailableMonthsForYear"
-              TItem="int"
-              TValue="int"
+              Value="SelectedMonth"
+              ValueChanged="MonthChangedAsync"
+              ValueExpression="() => SelectedMonth"
+              Data="MonthOptions"
+              TItem="ScopedPeriod"
+              TValue="ScopedPeriod"
               Nullable="false"
               AutoSort="false"
-              TextSelector="FormatMonthNumber"
+              TextSelector="m => FormatMonth(m)"
               ValueSelector="m => m" />
 
     <HxSelect Label="@YearLabel"
-              @bind-Value="SelectedYear"
-              Data="AvailableYears"
+              Value="SelectedYear"
+              ValueChanged="YearChanged"
+              ValueExpression="() => SelectedYear"
+              Data="YearOptions"
               TItem="int"
               TValue="int"
               Nullable="false"

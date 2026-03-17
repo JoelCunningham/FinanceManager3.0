@@ -8,21 +8,21 @@
     <HxTabPanel>
         <HxTab Title="Spend by cateogry">
             <Content>
-                @if (GreatestScopeInPeriod > Chart2.Scope)
+                @if (Chart2HasLargerScopedBudgets)
                 {
                     <HxAlert Color="ThemeColor.Info">
-                        This @ScopeToText(Chart2.Scope) has budgets with larger scopes.
-                        They will be averaged across the @ScopeToText(Chart2.Scope).
+                        This @Chart2.Period.ScopeText has budgets with larger scopes.
+                        They will be averaged across the @Chart2.Period.ScopeText.
                     </HxAlert>
                 }
-                <Graph2Actions AvailableMonths="AvailableMonths" Chart="Chart2" @bind-Period="Chart2Period" />
+                <Graph2Actions Chart="Chart2" @bind-Period="Chart2.Period" />
                 <Chart Options="Chart2.Options" OnItemClick="Chart2.OnDrilldownClickAsync" />
             </Content>
         </HxTab>
 
         <HxTab Title="Spend over time">
             <Content>
-                <Graph1Actions AvailableMonths="AvailableMonths" Chart="Chart1" @bind-MonthFrom="Chart1MonthFrom" @bind-MonthTo="Chart1MonthTo" />
+                <Graph1Actions Chart="Chart1" @bind-Period="Chart1.Period" />
                 <Chart Options="Chart1.Options" OnItemClick="Chart1.OnDrilldownClickAsync" />
             </Content>
         </HxTab>

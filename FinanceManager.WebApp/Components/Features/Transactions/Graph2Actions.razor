@@ -1,16 +1,9 @@
-﻿@using FinanceManager.Domain.Enums
-
-@code
+﻿@code
 {
-    [Parameter, EditorRequired] public ChartModel Chart { get; set; } = default!;
+    [Parameter] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public IReadOnlyList<DateOnly> AvailableMonths { get; set; } = [];
-
-    [Parameter] public DateOnly Period { get; set; }
-
-    [Parameter] public EventCallback<DateOnly> PeriodChanged { get; set; }
-
-    private ScopedPeriod NewPeriod => new(Chart.Scope, Period);
+    [Parameter] public ScopedPeriod Period { get; set; } = default!;
+    [Parameter] public EventCallback<ScopedPeriod> PeriodChanged { get; set; }
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -25,21 +18,19 @@
         Scope.Monthly
     ];
 
-    private async Task OnPeriodChangedAsync(DateOnly period)
+    private async Task OnPeriodChangedAsync(ScopedPeriod period)
     {
         await PeriodChanged.InvokeAsync(period);
         await Chart.RefreshAsync();
     }
 
-    private async Task NewOnPeriodChangedAsync(ScopedPeriod period)
-    {
-        await PeriodChanged.InvokeAsync(period.StartDate);
-        await Chart.RefreshAsync();
-    }
-
     private async Task OnScopeChangedAsync(Scope scope)
     {
-        Chart.Scope = scope;
+        var newPeriod = new ScopedPeriod(scope, Chart.Period.StartDate, Chart.Period.Length);
+
+        Chart.Period = newPeriod;
+        await PeriodChanged.InvokeAsync(newPeriod);
+
         await Chart.RefreshAsync();
     }
 }
@@ -47,9 +38,9 @@
 <GraphActions Modes="SupportedModes" Chart="Chart">
     <Actions>
         <HxSelect Label="Scope"
-                  Value="Chart.Scope"
+                  Value="Chart.Period.Scope"
                   ValueChanged="OnScopeChangedAsync"
-                  ValueExpression="() => Chart.Scope"
+                  ValueExpression="() => Chart.Period.Scope"
                   Data="SupportedScopes"
                   TItem="Scope"
                   TValue="Scope"
@@ -59,21 +50,17 @@
                   TextSelector="s => s.ToString()"
                   ValueSelector="s => s" />
 
-        @if (Chart.Scope == Scope.Monthly)
+        @if (Chart.Period.Scope == Scope.Monthly)
         {
-            <MonthSelect AvailableMonths="AvailableMonths"
-                         Value="Period"
-                         ValueChanged="OnPeriodChangedAsync"
-                         MonthLabel="Month"
-                         YearLabel="Year" />
+            <MonthSelect Value="Chart.Period" ValueChanged="OnPeriodChangedAsync" />
         }
-        else if (Chart.Scope == Scope.Weekly)
+        else if (Chart.Period.Scope == Scope.Weekly)
         {
-            <WeekSelect Value="NewPeriod" ValueChanged="NewOnPeriodChangedAsync" />
+            <WeekSelect Value="Chart.Period" ValueChanged="OnPeriodChangedAsync" />
         }
-        else if (Chart.Scope == Scope.Fortnightly)
+        else if (Chart.Period.Scope == Scope.Fortnightly)
         {
-            <FortnightSelect Value="NewPeriod" ValueChanged="NewOnPeriodChangedAsync" />
+            <FortnightSelect Value="Chart.Period" ValueChanged="OnPeriodChangedAsync" />
         }
     </Actions>
 </GraphActions>

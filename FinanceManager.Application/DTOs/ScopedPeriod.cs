@@ -5,6 +5,11 @@ using System.Globalization;
 
 public record ScopedPeriod
 {
+    public int Length { get; init; }
+    public Scope Scope { get; init; }
+    public DateOnly StartDate { get; init; }
+    public DateOnly EndDate { get; init; }
+
     public ScopedPeriod(Scope scope, DateOnly containingDate, int length = 1)
     {
         if (length < 1) throw new ArgumentOutOfRangeException(nameof(length), "Length must be at least 1.");
@@ -23,10 +28,36 @@ public record ScopedPeriod
             Scope.Monthly => StartDate.AddMonths(length).AddDays(-1),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
+        Length = length;
+        Scope = scope;
     }
 
-    public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
+    public string ScopeText => Scope switch
+    {
+        Scope.Weekly => "week",
+        Scope.Fortnightly => "fortnight",
+        Scope.Monthly => "month",
+        _ => "unknown"
+    };
+
+    public bool IsInPeriod(DateOnly date)
+    {
+        return date >= StartDate && date <= EndDate;
+    }
+
+    public IEnumerable<ScopedPeriod> GetPeriods()
+    {
+        for (int i = 0; i < Length; i++)
+        {
+            yield return Scope switch
+            {
+                Scope.Weekly => new ScopedPeriod(Scope, StartDate.AddDays(7 * i)),
+                Scope.Fortnightly => new ScopedPeriod(Scope, StartDate.AddDays(14 * i)),
+                Scope.Monthly => new ScopedPeriod(Scope, StartDate.AddMonths(i)),
+                _ => throw new ArgumentOutOfRangeException(nameof(Scope), "Invalid budget scope.")
+            };
+        }
+    }
 
     private static DateOnly GetWeekStart(DateOnly date)
     {

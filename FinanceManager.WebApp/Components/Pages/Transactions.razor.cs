@@ -14,85 +14,48 @@ public partial class Transactions : ComponentBase
     [Inject] public CategoryService CategoryService { get; set; } = default!;
     [Inject] public TransactionService TransactionService { get; set; } = default!;
 
-    public IReadOnlyList<DateOnly> AvailableMonths { get; } = BuildAvailableMonths(10);
     public List<Category> Categories { get; set; } = [];
     private IReadOnlyList<CategoryGroup> CategoryGroups => [.. Categories.Select(c => c.Group).DistinctBy(g => g.Id).OrderBy(g => g.Name)];
 
-    public ChartModel Chart1 { get; set; } = new();
-    public ChartModel Chart2 { get; set; } = new();
+    public ChartModel Chart1 { get; set; } = default!;
+    public ChartModel Chart2 { get; set; } = default!;
 
-    public Scope GreatestScopeInPeriod { get; set; }
-
-    public static DateOnly Normalize(DateOnly value) => new(value.Year, value.Month, 1);
-    public static DateOnly EndOfMonth(DateOnly monthStart) => Normalize(monthStart).AddMonths(1).AddDays(-1);
-
-    public DateOnly Chart1MonthFrom
-    {
-        get => _monthFrom;
-        set
-        {
-            _monthFrom = Normalize(value);
-            if (_monthTo < _monthFrom) _monthTo = _monthFrom;
-        }
-    }
-    public DateOnly Chart1MonthTo
-    {
-        get => _monthTo;
-        set
-        {
-            _monthTo = Normalize(value);
-            if (_monthTo < _monthFrom) _monthFrom = _monthTo;
-        }
-    }
-    public DateOnly Chart2Period { get; set; } = Today;
-
-    private DateOnly _monthFrom = CurrentMonth.AddMonths(-11);
-    private DateOnly _monthTo = CurrentMonth;
-
+    private bool Chart2HasLargerScopedBudgets { get; set; }
+    
     private const string UncategorisedLabel = "Uncategorised";
 
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
-    private static readonly DateOnly CurrentMonth = Normalize(Today);
 
     protected override async Task OnInitializedAsync()
     {
-        Chart1.RefreshAsync = ReloadChart1Async;
-        Chart2.RefreshAsync = ReloadChart2Async;
+        var currentScope = await BudgetService.GetCurrentScope() ?? Scope.Monthly;
+        var currentPeriod = new ScopedPeriod(currentScope, Today);
+
+        Chart1 = new(currentScope, Today, ReloadChart1Async);
+        Chart2 = new(currentScope, Today, ReloadChart2Async);
 
         Categories = [.. await CategoryService.GetCategoriesAsync()];
-
-        var currentScope = await BudgetService.GetCurrentScope() ?? Scope.Monthly;
-        Chart1.Scope = currentScope;
-        Chart2.Scope = currentScope;
-
-        GreatestScopeInPeriod = await BudgetService.GetGreatestScopeInPeriod(Chart1MonthTo, Chart1MonthFrom);
+        Chart2HasLargerScopedBudgets = (await GetGreatestScopeInPeriod(Chart2.Period)) > Chart2.Period.Scope;
 
         await Chart1.RefreshAsync();
         await Chart2.RefreshAsync();
     }
 
-    private static string ScopeToText(Scope scope) => scope switch
+    private async Task<Scope> GetGreatestScopeInPeriod(ScopedPeriod period)
     {
-        Scope.Weekly => "week",
-        Scope.Fortnightly => "fortnight",
-        Scope.Monthly => "month",
-        _ => "unknown"
-    };
+        return await BudgetService.GetGreatestScopeInPeriod(period);
+    }
 
     private async Task ReloadChart1Async()
     {
         Chart1.Options = null;
 
-        var months = GetMonths(Chart1MonthFrom, Chart1MonthTo);
-        var monthToEnd = EndOfMonth(Chart1MonthTo);
         var query = new FilterQuery
         {
-            FilterDateFrom = Chart1MonthFrom.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = monthToEnd > Today ? DateTime.Today : monthToEnd.ToDateTime(TimeOnly.MinValue),
+            FilterDateFrom = Chart1.Period.StartDate.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = Chart1.Period.EndDate.ToDateTime(TimeOnly.MinValue),
             FilterStatus = ReviewStatus.Reviewed
         };
-
-        var transactions = await TransactionService.GetAllAsync<TransactionSummary>(query);
 
         var drilldownGroupId = Chart1.SelectedGroupId;
         var (groupIdByName, drilldownGroupName, drilledGroup) = BuildGroupDrilldownMeta(drilldownGroupId);
@@ -100,7 +63,9 @@ public partial class Transactions : ComponentBase
         var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
         var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
 
+        var transactions = await TransactionService.GetAllAsync<TransactionSummary>(query);
         var chartTransactions = ApplyGroupFilter(transactions, drilldownGroupId, t => t.Category?.GroupId);
+
         incomeCategories = ApplyGroupFilter(incomeCategories, drilldownGroupId, c => c.GroupId);
         expenseCategories = ApplyGroupFilter(expenseCategories, drilldownGroupId, c => c.GroupId);
 
@@ -112,33 +77,33 @@ public partial class Transactions : ComponentBase
         {
             if (drilldownGroupId is null)
             {
-                budgetIncomeSeriesData = await BuildChart1BudgetSeriesAsync(months, incomeCategories, false);
-                budgetExpenseSeriesData = await BuildChart1BudgetSeriesAsync(months, expenseCategories, true);
+                budgetIncomeSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, incomeCategories, false);
+                budgetExpenseSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, expenseCategories, true);
             }
             else
             {
                 if (drilledGroup?.IsIncome == true)
                 {
-                    budgetIncomeSeriesData = await BuildChart1BudgetSeriesAsync(months, incomeCategories, false);
+                    budgetIncomeSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, incomeCategories, false);
                 }
                 else if (drilledGroup?.IsIncome == false)
                 {
-                    budgetExpenseSeriesData = await BuildChart1BudgetSeriesAsync(months, expenseCategories, true);
+                    budgetExpenseSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, expenseCategories, true);
                 }
                 else
                 {
-                    budgetIncomeSeriesData = await BuildChart1BudgetSeriesAsync(months, incomeCategories, false);
-                    budgetExpenseSeriesData = await BuildChart1BudgetSeriesAsync(months, expenseCategories, true);
+                    budgetIncomeSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, incomeCategories, false);
+                    budgetExpenseSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, expenseCategories, true);
                 }
             }
         }
         else
         {
             var relevantCategories = Chart1.Mode == TransactionsGraphMode.Income ? incomeCategories : expenseCategories;
-            budgetSeriesData = await BuildChart1BudgetSeriesAsync(months, relevantCategories, false);
+            budgetSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, relevantCategories, false);
         }
 
-        Chart1.Options = BuildChart1(chartTransactions, months, Chart1.Mode, budgetSeriesData, budgetIncomeSeriesData, budgetExpenseSeriesData, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
+        Chart1.Options = BuildChart1(chartTransactions, Chart1.Period, Chart1.Mode, budgetSeriesData, budgetIncomeSeriesData, budgetExpenseSeriesData, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
 
         StateHasChanged();
     }
@@ -147,12 +112,10 @@ public partial class Transactions : ComponentBase
     {
         Chart2.Options = null;
 
-        var (rangeStart, rangeEnd) = GetChart2Range(Chart2Period, Chart2.Scope);
-
         var query = new FilterQuery
         {
-            FilterDateFrom = rangeStart.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = rangeEnd > Today ? DateTime.Today : rangeEnd.ToDateTime(TimeOnly.MinValue),
+            FilterDateFrom = Chart2.Period.StartDate.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = Chart2.Period.EndDate.ToDateTime(TimeOnly.MinValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 
@@ -166,29 +129,18 @@ public partial class Transactions : ComponentBase
         var transactions = await TransactionService.GetAllAsync<TransactionSummary>(query);
 
         var chartTransactions = ApplyGroupFilter(transactions, drilldownGroupId, t => t.Category?.GroupId);
-        relevantCategories = ApplyGroupFilter(relevantCategories, drilldownGroupId, c => c.GroupId);
+        var filteredCategories = ApplyGroupFilter(relevantCategories, drilldownGroupId, c => c.GroupId);
 
-        var budgetEntries = (await BudgetService.GetBudget(rangeStart, rangeEnd, relevantCategories)).ToList();
+        var budgetEntries = (await BudgetService.GetBudget(Chart2.Period, filteredCategories)).ToList();
 
         Chart2.Options = BuildChart2(chartTransactions, budgetEntries, Chart2.Mode, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
 
         StateHasChanged();
     }
 
-    private static (DateOnly Start, DateOnly End) GetChart2Range(DateOnly anchor, Scope scope)
-    {
-        return scope switch
-        {
-            Scope.Weekly => (anchor, anchor.AddDays(6)),
-            Scope.Fortnightly => (anchor, anchor.AddDays(13)),
-            Scope.Monthly => (Normalize(anchor), EndOfMonth(Normalize(anchor))),
-            _ => (Normalize(anchor), EndOfMonth(Normalize(anchor)))
-        };
-    }
-
     private static object? BuildChart1(
         List<TransactionSummary> transactions,
-        List<DateOnly> months,
+        ScopedPeriod period,
         TransactionsGraphMode mode,
         double[]? budgetSeriesData,
         double[]? budgetIncomeSeriesData,
@@ -197,21 +149,20 @@ public partial class Transactions : ComponentBase
         Dictionary<string, Guid> groupIdByName,
         string? drilldownGroupName)
     {
-        if (months.Count == 0) return null;
         if (transactions.Count == 0 && budgetSeriesData == null && budgetIncomeSeriesData == null && budgetExpenseSeriesData == null) return null;
 
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-        var monthIndex = months.Select((m, i) => (m, i)).ToDictionary(x => x.m, x => x.i);
 
-        foreach (var t in transactions)
+        foreach (var transaction in transactions)
         {
-            var month = new DateOnly(t.Date.Year, t.Date.Month, 1);
-            if (!monthIndex.ContainsKey(month)) continue;
+            if (!period.IsInPeriod(DateOnly.FromDateTime(transaction.Date)))
+            {
+                continue;
+            }
+            if (!IsTransactionInMode(transaction, mode, false)) continue;
 
-            if (!IsTransactionInMode(t, mode, excludeNet: false)) continue;
-
-            var category = GetCategoryOrGroupLabel(t, isCategoryDrilldown);
-            var sortAmount = GetChartSortAmount(t, mode);
+            var category = GetCategoryOrGroupLabel(transaction, isCategoryDrilldown);
+            var sortAmount = GetChartSortAmount(transaction, mode);
 
             totals[category] = totals.TryGetValue(category, out var current)
                 ? current + sortAmount
@@ -226,22 +177,23 @@ public partial class Transactions : ComponentBase
         var amountsByCategory = new Dictionary<string, decimal[]>(StringComparer.OrdinalIgnoreCase);
         foreach (var name in categoryNames)
         {
-            amountsByCategory[name] = new decimal[months.Count];
+            amountsByCategory[name] = new decimal[period.Length];
         }
 
+        var months = period.GetPeriods().ToList();
         foreach (var t in transactions)
         {
             if (!IsTransactionInMode(t, mode, excludeNet: false)) continue;
-
-            var month = new DateOnly(t.Date.Year, t.Date.Month, 1);
-            if (!monthIndex.TryGetValue(month, out var i)) continue;
+            
+            var month = months.FirstOrDefault(m => m.IsInPeriod(DateOnly.FromDateTime(t.Date)));
+            var monthIndex = months.IndexOf(month!);
 
             var amount = GetChartStackAmount(t, mode);
             var category = GetCategoryOrGroupLabel(t, isCategoryDrilldown);
 
             if (amountsByCategory.TryGetValue(category, out var arr))
             {
-                arr[i] += amount;
+                arr[monthIndex] += amount;
             }
         }
 
@@ -263,19 +215,19 @@ public partial class Transactions : ComponentBase
 
         if (mode == TransactionsGraphMode.Net)
         {
-            if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == months.Count)
+            if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == period.Length)
             {
                 series.Add(CreateLineSeries(incomeBudgetName, budgetIncomeSeriesData, 7));
             }
 
-            if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == months.Count)
+            if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == period.Length)
             {
                 series.Add(CreateLineSeries(expenseBudgetName, budgetExpenseSeriesData, 7));
             }
         }
         else
         {
-            if (budgetSeriesData is not null && budgetSeriesData.Length == months.Count)
+            if (budgetSeriesData is not null && budgetSeriesData.Length == period.Length)
             {
                 series.Add(CreateLineSeries(budgetName, budgetSeriesData, 8));
             }
@@ -290,7 +242,7 @@ public partial class Transactions : ComponentBase
             _ => "Transactions"
         };
 
-        var xAxisLabels = months.Select(m => m.ToString("yyyy-MM")).ToArray();
+        var xAxisLabels = period.GetPeriods().Select(m => m.StartDate.ToString("yyyy-MM")).ToArray();
 
         return new
         {
@@ -417,19 +369,18 @@ public partial class Transactions : ComponentBase
         };
     }
 
-    private async Task<double[]?> BuildChart1BudgetSeriesAsync(List<DateOnly> months, List<Category> categories, bool isExpense)
+    private async Task<double[]?> BuildChart1BudgetSeriesAsync(ScopedPeriod period, List<Category> categories, bool isExpense)
     {
-        if (categories.Count == 0 || months.Count == 0) return null;
+        if (categories.Count == 0) return null;
 
-        var data = new double[months.Count];
+        var data = new double[period.Length];
+        var months = period.GetPeriods().ToList();
 
-        for (var i = 0; i < months.Count; i++)
+        for (var i = 0; i < period.Length; i++)
         {
-            var monthStart = months[i];
-            var start = monthStart;
-            var end = EndOfMonth(monthStart);
+            var month = months[i];
 
-            var entries = await BudgetService.GetBudget(start, end, categories);
+            var entries = await BudgetService.GetBudget(month, categories);
             if (!entries.Any()) continue;
 
             var monthBudget = entries.Sum(e => !isExpense ? e.Amount : -e.Amount);
@@ -513,35 +464,4 @@ public partial class Transactions : ComponentBase
         lineStyle = new { width = 3 },
         data
     };
-
-    private static List<DateOnly> GetMonths(DateOnly from, DateOnly to)
-    {
-        var start = Normalize(from);
-        var end = Normalize(to);
-
-        if (end < start) return [];
-
-        var months = new List<DateOnly>();
-        for (var d = start; d <= end; d = d.AddMonths(1))
-        {
-            months.Add(d);
-        }
-
-        return months;
-    }
-
-    private static List<DateOnly> BuildAvailableMonths(int yearsBack, int yearsForward = 1)
-    {
-        var current = Normalize(Today);
-        var start = current.AddYears(-yearsBack);
-        var end = current.AddYears(yearsForward);
-
-        var months = new List<DateOnly>();
-        for (var d = start; d <= end; d = d.AddMonths(1))
-        {
-            months.Add(d);
-        }
-
-        return months;
-    }
 }
