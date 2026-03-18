@@ -22,13 +22,13 @@
         if (ChangeEndDate)
         {
             SelectedYear = Value.EndDate.Year;
-            MonthOptions = DateService.GetMonths(SelectedYear);
+            MonthOptions = DateService.GetMonths(SelectedYear).ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.EndDate && m.EndDate >= Value.EndDate) ?? MonthOptions.First();
         }
         else
         {
             SelectedYear = Value.StartDate.Year;
-            MonthOptions = DateService.GetMonths(SelectedYear);
+            MonthOptions = DateService.GetMonths(SelectedYear).ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.StartDate && m.EndDate >= Value.StartDate) ?? MonthOptions.First();
         }
     }
@@ -74,14 +74,14 @@
         MonthOptions = DateService.GetMonths(year);
 
         var containingDate = ChangeEndDate ? Value.EndDate : Value.StartDate;
-        var currentMonthIndex = DateService.GetMonthIndex(containingDate);
+        var currentMonthIndex = DateHelper.GetMonthIndex(containingDate);
         var targetStartDate = new DateOnly(year, currentMonthIndex, 1);
 
         var selectedMonth = MonthOptions.FirstOrDefault(p => p.StartDate <= targetStartDate && p.EndDate >= targetStartDate) ?? MonthOptions.First();
         await MonthChangedAsync(selectedMonth);
     }
 
-    private ScopedPeriod CreateWithStartAndEnd(Scope scope, DateOnly startDate, DateOnly targetEndDate)
+    private ScopedPeriod CreateWithStartAndEnd(BudgetScope scope, DateOnly startDate, DateOnly targetEndDate)
     {
         if (targetEndDate < startDate) return new ScopedPeriod(scope, startDate, 1);
 
@@ -91,9 +91,9 @@
         {
             endDate = scope switch
             {
-                Scope.Weekly => startDate.AddDays(7 * length - 1),
-                Scope.Fortnightly => startDate.AddDays(14 * length - 1),
-                Scope.Monthly => startDate.AddMonths(length).AddDays(-1),
+                BudgetScope.Weekly => startDate.AddDays(7 * length - 1),
+                BudgetScope.Fortnightly => startDate.AddDays(14 * length - 1),
+                BudgetScope.Monthly => startDate.AddMonths(length).AddDays(-1),
                 _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
             };
 
@@ -111,7 +111,7 @@
 
     private static string FormatMonth(ScopedPeriod period) => period.StartDate.ToString("MMM");
 }
-
+                
 <HxButtonGroup>
     <HxSelect Label="@MonthLabel"
               Value="SelectedMonth"

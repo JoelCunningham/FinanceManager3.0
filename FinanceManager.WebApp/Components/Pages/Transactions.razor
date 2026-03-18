@@ -10,9 +10,9 @@
             <Content>
                 @if (Chart2HasLargerScopedBudgets)
                 {
-                    <HxAlert Color="ThemeColor.Info">
-                        This @Chart2.Period.ScopeText has budgets with larger scopes.
-                        They will be averaged across the @Chart2.Period.ScopeText.
+                    <HxAlert Color="ThemeColor.Warning">
+                        This @Chart2.Period.ScopeDescription has budgets with larger scopes.
+                        They will be averaged across the @Chart2.Period.ScopeDescription.
                     </HxAlert>
                 }
                 <Graph2Actions Chart="Chart2" @bind-Period="Chart2.Period" />

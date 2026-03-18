@@ -3,60 +3,63 @@
 using FinanceManager.Domain.Enums;
 using System.Globalization;
 
-public record ScopedPeriod
+public record ScopedPeriod : InnerPeriod
 {
     public int Length { get; init; }
-    public Scope Scope { get; init; }
-    public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
+    public BudgetScope Scope { get; init; }
+    public IEnumerable<InnerPeriod> InnerPeriods { get; init; }
+    public string ScopeDescription { get; init; }
 
-    public ScopedPeriod(Scope scope, DateOnly containingDate, int length = 1)
+    public ScopedPeriod(BudgetScope scope, DateOnly containingDate, int length = 1)
     {
         if (length < 1) throw new ArgumentOutOfRangeException(nameof(length), "Length must be at least 1.");
+        
+        Length = length;
+
+        Scope = scope;
+        ScopeDescription = scope switch
+        {
+            BudgetScope.Weekly => "week",
+            BudgetScope.Fortnightly => "fortnight",
+            BudgetScope.Monthly => "month",
+            _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
+        };
 
         StartDate = scope switch
         {
-            Scope.Weekly => GetWeekStart(containingDate),
-            Scope.Fortnightly => GetFortnightStart(containingDate),
-            Scope.Monthly => GetMonthStart(containingDate),
+            BudgetScope.Weekly => GetWeekStart(containingDate),
+            BudgetScope.Fortnightly => GetFortnightStart(containingDate),
+            BudgetScope.Monthly => GetMonthStart(containingDate),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
         EndDate = scope switch
         {
-            Scope.Weekly => StartDate.AddDays(7 * length - 1),
-            Scope.Fortnightly => StartDate.AddDays(14 * length - 1),
-            Scope.Monthly => StartDate.AddMonths(length).AddDays(-1),
+            BudgetScope.Weekly => StartDate.AddDays(7 * length - 1),
+            BudgetScope.Fortnightly => StartDate.AddDays(14 * length - 1),
+            BudgetScope.Monthly => StartDate.AddMonths(length).AddDays(-1),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
-        Length = length;
-        Scope = scope;
+
+        InnerPeriods = GetInnerPeriods();
     }
 
-    public string ScopeText => Scope switch
+    private List<InnerPeriod> GetInnerPeriods()
     {
-        Scope.Weekly => "week",
-        Scope.Fortnightly => "fortnight",
-        Scope.Monthly => "month",
-        _ => "unknown"
-    };
-
-    public bool IsInPeriod(DateOnly date)
-    {
-        return date >= StartDate && date <= EndDate;
-    }
-
-    public IEnumerable<ScopedPeriod> GetPeriods()
-    {
+        var innerPeriods = new List<InnerPeriod>();
+        var currentStart = StartDate;
         for (int i = 0; i < Length; i++)
         {
-            yield return Scope switch
+            var currentEnd = Scope switch
             {
-                Scope.Weekly => new ScopedPeriod(Scope, StartDate.AddDays(7 * i)),
-                Scope.Fortnightly => new ScopedPeriod(Scope, StartDate.AddDays(14 * i)),
-                Scope.Monthly => new ScopedPeriod(Scope, StartDate.AddMonths(i)),
+                BudgetScope.Weekly => currentStart.AddDays(6),
+                BudgetScope.Fortnightly => currentStart.AddDays(13),
+                BudgetScope.Monthly => currentStart.AddMonths(1).AddDays(-1),
                 _ => throw new ArgumentOutOfRangeException(nameof(Scope), "Invalid budget scope.")
             };
+            innerPeriods.Add(new InnerPeriod { StartDate = currentStart, EndDate = currentEnd });
+            currentStart = currentEnd.AddDays(1);
         }
+        return innerPeriods;
     }
 
     private static DateOnly GetWeekStart(DateOnly date)
@@ -79,4 +82,15 @@ public record ScopedPeriod
     }
 
     private static DateOnly GetMonthStart(DateOnly date) => new(date.Year, date.Month, 1);
+}
+
+public record InnerPeriod
+{
+    public DateOnly StartDate { get; init; }
+    public DateOnly EndDate { get; init; }
+
+    public bool IsInPeriod(DateOnly date)
+    {
+        return date >= StartDate && date <= EndDate;
+    }
 }

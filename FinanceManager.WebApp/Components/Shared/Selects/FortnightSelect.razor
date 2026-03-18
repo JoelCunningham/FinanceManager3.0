@@ -13,7 +13,8 @@
     protected override void OnParametersSet()
     {
         SelectedYear = ISOWeek.GetYear(Value.StartDate.ToDateTime(TimeOnly.MinValue));
-        FortnightOptions = DateService.GetFortnights(SelectedYear);
+        FortnightOptions = DateService.GetFortnights(SelectedYear).ToList();
+        Value = FortnightOptions.FirstOrDefault(p => p.StartDate <= Value.StartDate && p.EndDate >= Value.StartDate) ?? FortnightOptions.First();
     }
 
     private async Task FortnightChangedAsync(ScopedPeriod period) => await ValueChanged.InvokeAsync(period);
@@ -21,9 +22,9 @@
     private async Task YearChanged(int year)
     {
         SelectedYear = year;
-        FortnightOptions = DateService.GetFortnights(year);
+        FortnightOptions = DateService.GetFortnights(year).ToList();
 
-        var currentFortnightIndex = DateService.GetFortnightIndex(Value.StartDate);
+        var currentFortnightIndex = DateHelper.GetFortnightIndex(Value.StartDate);
         var targetDateTime = ISOWeek.ToDateTime(year, ((currentFortnightIndex - 1) * 2) + 1, DayOfWeek.Monday);
         var targetDate = DateOnly.FromDateTime(targetDateTime);
 
@@ -34,7 +35,7 @@
 
     private static string FormatFortnight(ScopedPeriod period)
     {
-        var start = DateService.GetFortnightIndex(period.StartDate);
+        var start = DateHelper.GetFortnightIndex(period.StartDate);
         return $"F{start:00} ({period.StartDate:dd/MM} - {period.EndDate:dd/MM})";
     }
 }

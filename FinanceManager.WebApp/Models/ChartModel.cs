@@ -4,10 +4,10 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Enums;
 
-public sealed class ChartModel(Scope scope, DateOnly containingDate, Func<Task> refreshAsync)
+public sealed class ChartModel(BudgetScope scope, DateOnly containingDate, Func<Task> refreshAsync, int length = 1)
 {
     public object? Options { get; set; }
-    public ScopedPeriod Period { get; set; } = new(scope, containingDate);
+    public ScopedPeriod Period { get; set; } = new(scope, containingDate, length);
 
     public TransactionsGraphMode Mode { get; set; } = TransactionsGraphMode.Expense;
     public Func<Task> RefreshAsync { get; set; } = refreshAsync;

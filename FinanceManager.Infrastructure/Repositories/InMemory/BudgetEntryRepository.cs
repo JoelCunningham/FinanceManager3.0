@@ -13,9 +13,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     {
         return budgetEntry.Period.Scope switch
         {
-            Scope.Weekly => budgetEntry.Period.StartDate.AddDays(7 * budgetEntry.PeriodPosition),
-            Scope.Fortnightly => budgetEntry.Period.StartDate.AddDays(14 * budgetEntry.PeriodPosition),
-            Scope.Monthly => budgetEntry.Period.StartDate.AddMonths(1 * budgetEntry.PeriodPosition),
+            BudgetScope.Weekly => budgetEntry.Period.StartDate.AddDays(7 * budgetEntry.PeriodPosition),
+            BudgetScope.Fortnightly => budgetEntry.Period.StartDate.AddDays(14 * budgetEntry.PeriodPosition),
+            BudgetScope.Monthly => budgetEntry.Period.StartDate.AddMonths(1 * budgetEntry.PeriodPosition),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -25,9 +25,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
         var startDate = StartDateFromBudgetEntry(budgetEntry);
         return budgetEntry.Period.Scope switch
         {
-            Scope.Weekly => startDate.AddDays(7).AddDays(-1),
-            Scope.Fortnightly => startDate.AddDays(14).AddDays(-1),
-            Scope.Monthly => startDate.AddMonths(1).AddDays(-1),
+            BudgetScope.Weekly => startDate.AddDays(7).AddDays(-1),
+            BudgetScope.Fortnightly => startDate.AddDays(14).AddDays(-1),
+            BudgetScope.Monthly => startDate.AddMonths(1).AddDays(-1),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -56,9 +56,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
         var period = new BudgetPeriod
         {
             Id = Guid.NewGuid(),
-            Scope = Scope.Monthly,
+            Scope = BudgetScope.Monthly,
             StartDate = new DateOnly(DateTime.Now.AddMonths(-12).Year, DateTime.Now.AddMonths(-12).Month, 1),
-            EndDate = new DateOnly(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month, DateTime.DaysInMonth(DateTime.Now.AddMonths(12).Year, DateTime.Now.AddMonths(12).Month)),
+            Length = 12
         };
 
         for (var i = 0; i <= 12; i++)
