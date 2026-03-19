@@ -1,16 +1,10 @@
 ﻿using FinanceManager.Application.Interfaces;
-using FinanceManager.Application.DTOs;
 
 namespace FinanceManager.Application.Services
 {
     public class ParserService(IEnumerable<ITransactionFileParser> parsers)
     {
         private readonly IEnumerable<ITransactionFileParser> _parsers = parsers;
-
-        public IReadOnlyList<ParserSummary> GetAvailableParsers()
-        {
-            return [.. ParserSummary.FromParsers(_parsers)];
-        }
 
         public ITransactionFileParser GetParser(string companyName, string fileExtension)
         {

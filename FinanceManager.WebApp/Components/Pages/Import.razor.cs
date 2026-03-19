@@ -1,7 +1,8 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Services;
+using FinanceManager.Application.UseCases;
+using FinanceManager.Application.UseCases.Import;
 using FinanceManager.WebApp.Components.Features.Import;
 using FinanceManager.WebApp.Models;
 using Havit.Blazor.Components.Web;
@@ -10,8 +11,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 public partial class Import : ComponentBase
 {
-    [Inject] public ImportService ImportService { get; set; } = default!;
-    [Inject] public ParserService ParserService { get; set; } = default!;
+    [Inject] public ImportWorkflow ImportWorkflow { get; set; } = default!;
     [Inject] public IHxMessengerService Messenger { get; set; } = default!;
 
     public ValidationModel Validation { get; set; } = new();
@@ -31,7 +31,7 @@ public partial class Import : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
-        AvailableParsers = [.. ParserService.GetAvailableParsers()];
+        AvailableParsers = ImportWorkflow.GetParsers();
     }
 
     protected void Reset()
@@ -50,47 +50,49 @@ public partial class Import : ComponentBase
     protected async Task ParseFile(IBrowserFile file)
     {
         if (SelectedParser is null || file is null) return;
-        try
+
+        await using var stream = file.OpenReadStream();
+        var bankName = SelectedParser.BankName;
+        var fileExtension = Path.GetExtension(file.Name);
+
+        var parseResult = await ImportWorkflow.PreviewAsync(stream, bankName, fileExtension);
+
+        if (parseResult.IsSuccess)
         {
-            await using var stream = file.OpenReadStream();
-            var bankName = SelectedParser.BankName;
-            var fileExtension = Path.GetExtension(file.Name);
-
-            var results = (await ImportService.ImportAsync(stream, bankName, fileExtension)).ToList();
-            if (results.Count == 0) throw new ArgumentNullException(nameof(file));
-
-            ImportedTransactions = [.. results];
-            Validation.SetSuccess($"{results.Count} new tranasctions found.", true);
+            ImportedTransactions = [.. parseResult.Transactions];
+            Validation.SetSuccess($"{parseResult.Transactions.Count} new tranasctions found.", true);
         }
-        catch (Exception exception)
+        else
         {
             ImportedTransactions = null;
-            Validation.SetError(GetUploadErrorMessage(exception), true);
+            Validation.SetError(GetPreviewErrorMessage(parseResult), true);
         }
     }
 
     protected async Task ImportTransactions()
     {
         if (ImportedTransactions is null) return;
-        try
+
+        var saveResult = await ImportWorkflow.SaveAsync(ImportedTransactions);
+
+        if (saveResult is not null)
         {
-            await ImportService.SaveAsync(ImportedTransactions);
+            Validation.SetSuccess($"Imported {saveResult.RecordsSaved} records ({saveResult.TransactionsSaved} transactions, {saveResult.TransfersSaved} transfers).", true);
             await SuccessModal.ShowAsync();
         }
-        catch
+        else
         {
             Validation.SetError("An unexpected error occurred. Please try again.");
         }
     }
 
-    private string GetUploadErrorMessage(Exception exception)
+    private string GetPreviewErrorMessage(ImportPreviewResult preview)
     {
         if (SelectedParser is null) return "Please select a bank first.";
-        return exception switch
+        return preview.FailureReason switch
         {
-            IOException => "The file you uploaded is too large. Please upload a file below 512KB.",
-            ArgumentNullException => "No new transactions were found in the uploaded file.",
-            KeyNotFoundException => "The type of the file you uploaded is not supported. Please upload a file of type: " + string.Join(", ", SelectedParser.SupportedExtensions),
+            ImportPreviewFailureReason.UnsupportedFileType => "The type of the file you uploaded is not supported. Please upload a file of type: " + string.Join(", ", SelectedParser.SupportedExtensions),
+            ImportPreviewFailureReason.NoNewTransactions => "No new transactions were found in the uploaded file.",
             _ => "Unable to import transactions from this file. Please check it is correct."
         };
     }
