@@ -16,8 +16,8 @@ public partial class Import : ComponentBase
 
     public ValidationModel Validation { get; set; } = new();
 
-    public IReadOnlyList<ParserSummary> AvailableParsers { get; set; } = [];
-    public ParserSummary? SelectedParser { get; set; }
+    public IReadOnlyList<BankParser> AvailableParsers { get; set; } = [];
+    public BankParser? SelectedParser { get; set; }
     public IReadOnlyList<ParsedTransaction>? ImportedTransactions { get; set; }
 
     public PreviewModal PreviewModal { get; set; } = new();
@@ -55,17 +55,17 @@ public partial class Import : ComponentBase
         var bankName = SelectedParser.BankName;
         var fileExtension = Path.GetExtension(file.Name);
 
-        var parseResult = await ImportWorkflow.PreviewAsync(stream, bankName, fileExtension);
+        var parseResult = await ImportWorkflow.ParseFileAsync(stream, bankName, fileExtension);
 
         if (parseResult.IsSuccess)
         {
             ImportedTransactions = [.. parseResult.Transactions];
-            Validation.SetSuccess($"{parseResult.Transactions.Count} new tranasctions found.", true);
+            Validation.SetSuccess($"{parseResult.Transactions.Count()} new tranasctions found.", true);
         }
         else
         {
             ImportedTransactions = null;
-            Validation.SetError(GetPreviewErrorMessage(parseResult), true);
+            Validation.SetError(parseResult.ErrorMessage!, true);
         }
     }
 
@@ -73,7 +73,7 @@ public partial class Import : ComponentBase
     {
         if (ImportedTransactions is null) return;
 
-        var saveResult = await ImportWorkflow.SaveAsync(ImportedTransactions);
+        var saveResult = await ImportWorkflow.SaveImportAsync(ImportedTransactions);
 
         if (saveResult is not null)
         {
@@ -84,16 +84,5 @@ public partial class Import : ComponentBase
         {
             Validation.SetError("An unexpected error occurred. Please try again.");
         }
-    }
-
-    private string GetPreviewErrorMessage(ImportPreviewResult preview)
-    {
-        if (SelectedParser is null) return "Please select a bank first.";
-        return preview.FailureReason switch
-        {
-            ImportPreviewFailureReason.UnsupportedFileType => "The type of the file you uploaded is not supported. Please upload a file of type: " + string.Join(", ", SelectedParser.SupportedExtensions),
-            ImportPreviewFailureReason.NoNewTransactions => "No new transactions were found in the uploaded file.",
-            _ => "Unable to import transactions from this file. Please check it is correct."
-        };
     }
 }

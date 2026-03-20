@@ -3,9 +3,9 @@ namespace FinanceManager.Application.UseCases;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases.Import;
 
-public sealed class ImportWorkflow(GetParsers getAvailableParsers, PreviewImport previewImport, SaveImport saveImport)
+public sealed class ImportWorkflow(GetParsers getParsers, ParseFile parseFile, SaveImport saveImport)
 {
-    public IReadOnlyList<ParserSummary> GetParsers() => getAvailableParsers.Execute();
-    public Task<ImportPreviewResult> PreviewAsync(Stream file, string bank, string extension) => previewImport.ExecuteAsync(file, bank, extension);
-    public Task<ImportSaveResult> SaveAsync(IEnumerable<ParsedTransaction> parsedTransactions) => saveImport.ExecuteAsync(parsedTransactions);
+    public IReadOnlyList<BankParser> GetParsers() => getParsers.Execute();
+    public Task<ParseFileResult> ParseFileAsync(Stream file, string bank, string extension) => parseFile.ExecuteAsync(file, bank, extension);
+    public Task<ImportSaveResult> SaveImportAsync(IEnumerable<ParsedTransaction> parsedTransactions) => saveImport.ExecuteAsync(parsedTransactions);
 }

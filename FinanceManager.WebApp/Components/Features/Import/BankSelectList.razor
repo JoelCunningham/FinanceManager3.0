@@ -1,14 +1,14 @@
 ﻿@code {
-    [Parameter] public IReadOnlyList<ParserSummary> AvailableParsers { get; set; } = [];
+    [Parameter] public IReadOnlyList<BankParser> AvailableParsers { get; set; } = [];
 
-    [Parameter] public ParserSummary? SelectedBank { get; set; }
+    [Parameter] public BankParser? SelectedBank { get; set; }
 
-    [Parameter] public EventCallback<ParserSummary?> SelectedBankChanged { get; set; }
+    [Parameter] public EventCallback<BankParser?> SelectedBankChanged { get; set; }
 }
 
 <HxRadioButtonList Label="Select your bank:"
-                   TItem="ParserSummary"
-                   TValue="ParserSummary"
+                   TItem="BankParser"
+                   TValue="BankParser"
                    Data="AvailableParsers"
                    Value="SelectedBank"
                    ValueChanged="SelectedBankChanged"

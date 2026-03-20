@@ -11,7 +11,7 @@ public static class DependencyInjection
     {
         // Import use cases
         services.AddScoped<GetParsers>();
-        services.AddScoped<PreviewImport>();
+        services.AddScoped<ParseFile>();
         services.AddScoped<SaveImport>();
         services.AddScoped<ImportWorkflow>();
 
@@ -21,7 +21,6 @@ public static class DependencyInjection
         services.AddScoped<CategorisationService>();
         services.AddScoped<BudgetService>();
         services.AddScoped<DateService>();
-        services.AddSingleton<ParserService>();
 
         return services;
     }

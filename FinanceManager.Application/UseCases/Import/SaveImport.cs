@@ -2,18 +2,29 @@ namespace FinanceManager.Application.UseCases.Import;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 
-public sealed record ImportSaveResult(
-    Guid ImportId,
-    int RecordsSaved,
-    int TransactionsSaved,
-    int TransfersSaved
-);
+public sealed class ImportSaveResult : UseCaseResult
+{
+    public ImportSaveResult() { }
+    public ImportSaveResult(Guid importId, int recordsSaved, int transactionsSaved, int transfersSaved)
+    {
+        ImportId = importId;
+        RecordsSaved = recordsSaved;
+        TransactionsSaved = transactionsSaved;
+        TransfersSaved = transfersSaved;
+    }
+
+    public Guid ImportId { get; init; }
+    public int RecordsSaved { get; init; }
+    public int TransactionsSaved { get; init; }
+    public int TransfersSaved { get; init; }
+}
 
 public sealed class SaveImport(IBankRecordRepository bankRecordRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IUnitOfWork unitOfWork)
 {
-    public async Task<ImportSaveResult?> ExecuteAsync(IEnumerable<ParsedTransaction> parsedTransactions)
+    public async Task<ImportSaveResult> ExecuteAsync(IEnumerable<ParsedTransaction> parsedTransactions)
     {
         var importId = Guid.NewGuid();
         await using var transaction = unitOfWork.BeginTransaction();
@@ -37,7 +48,7 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, ITran
         catch
         {
             await transaction.RollbackAsync();
-            return null;
+            return new ImportSaveResult { ErrorMessage = "An error occurred while saving the import." };
         }
     }
 }
