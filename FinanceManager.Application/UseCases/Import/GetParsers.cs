@@ -2,24 +2,28 @@ namespace FinanceManager.Application.UseCases.Import;
 
 using FinanceManager.Application.Interfaces;
 
-public sealed record BankParser(
-    string BankName,
-    IReadOnlyList<string> SupportedExtensions
-);
+public sealed class GetParsersResult : UseCaseResult
+{
+    public IReadOnlyList<BankParser> Parsers { get; init; } = [];
+}
 
 public sealed class GetParsers(IEnumerable<ITransactionFileParser> parsers)
 {
     private readonly IEnumerable<ITransactionFileParser> _parsers = parsers;
 
-    public IReadOnlyList<BankParser> Execute()
+    public GetParsersResult Execute()
     {
-        return [.._parsers
+        var bankParsers = _parsers
             .GroupBy(parser => parser.GetBankName(), StringComparer.OrdinalIgnoreCase)
             .Select(group => new BankParser(
                 group.Key,
-                [..group.SelectMany(p => p.GetFileExtensions()).Distinct(StringComparer.OrdinalIgnoreCase)]
+                [.. group.SelectMany(p => p.GetFileExtensions()).Distinct(StringComparer.OrdinalIgnoreCase)]
             ))
             .OrderBy(p => p.BankName)
-        ];
+            .ToList();
+
+        return new GetParsersResult { Parsers = bankParsers };
     }
 }
+
+public sealed record BankParser(string BankName, IReadOnlyList<string> SupportedExtensions);

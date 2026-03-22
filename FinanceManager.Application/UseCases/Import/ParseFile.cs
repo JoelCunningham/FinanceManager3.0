@@ -5,8 +5,6 @@ using FinanceManager.Application.Interfaces;
 
 public sealed class ParseFileResult : UseCaseResult
 {
-    public ParseFileResult() { }
-    public ParseFileResult(IEnumerable<ParsedTransaction> transactions) { Transactions = transactions; }
     public IEnumerable<ParsedTransaction> Transactions { get; init; } = [];
 }
 
@@ -38,7 +36,7 @@ public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IEnume
             return new ParseFileResult { ErrorMessage = "No new transactions were found in the uploaded file." };
         }
 
-        return new ParseFileResult(transactions);
+        return new ParseFileResult { Transactions = transactions };
     }
 
     private IEnumerable<string> GetExentionsForBank(string bank)

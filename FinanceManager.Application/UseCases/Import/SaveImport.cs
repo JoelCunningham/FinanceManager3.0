@@ -7,15 +7,6 @@ using FinanceManager.Application.Utilities;
 
 public sealed class ImportSaveResult : UseCaseResult
 {
-    public ImportSaveResult() { }
-    public ImportSaveResult(Guid importId, int recordsSaved, int transactionsSaved, int transfersSaved)
-    {
-        ImportId = importId;
-        RecordsSaved = recordsSaved;
-        TransactionsSaved = transactionsSaved;
-        TransfersSaved = transfersSaved;
-    }
-
     public Guid ImportId { get; init; }
     public int RecordsSaved { get; init; }
     public int TransactionsSaved { get; init; }
@@ -43,7 +34,13 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, ITran
 
             await transaction.CommitAsync();
 
-            return new ImportSaveResult(importId, records.Count, transactions.Count, transfers.Count);
+            return new ImportSaveResult
+            {
+                ImportId = importId,
+                TransactionsSaved = transactions.Count,
+                TransfersSaved = transfers.Count,
+                RecordsSaved = records.Count,
+            };
         }
         catch
         {

@@ -31,7 +31,7 @@ public partial class Import : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
-        AvailableParsers = ImportWorkflow.GetParsers();
+        AvailableParsers = ImportWorkflow.GetParsers().Parsers;
     }
 
     protected void Reset()
