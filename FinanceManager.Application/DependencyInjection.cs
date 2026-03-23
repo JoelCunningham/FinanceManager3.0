@@ -5,6 +5,7 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Transfers;
+using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Review;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,6 +30,14 @@ public static class DependencyInjection
         services.AddScoped<SeparateTransfer>();
         services.AddScoped<TransfersWorkflow>();
 
+        // Transaction use cases
+        services.AddScoped<GetTransactionsForRange>();
+        services.AddScoped<GetCategoriesForTransactions>();
+        services.AddScoped<GetBudgetPerMonthForCategories>();
+        services.AddScoped<GetBudgetPerLabel>();
+        services.AddScoped<GetBudgetScopes>();
+        services.AddScoped<TransactionsWorkflow>();
+
         // Review use cases
         services.AddScoped<GetReviewPage>();
         services.AddScoped<GetTransferCandidates>();
@@ -38,9 +47,6 @@ public static class DependencyInjection
         services.AddScoped<AutoAssignCategories>();
         services.AddScoped<ReviewWorkflow>();
 
-        services.AddScoped<CategoryService>();
-        services.AddScoped<TransactionService>();
-        services.AddScoped<BudgetService>();
         services.AddScoped<DateService>();
 
         return services;

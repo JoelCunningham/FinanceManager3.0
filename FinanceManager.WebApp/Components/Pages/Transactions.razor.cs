@@ -1,7 +1,7 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Services;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
@@ -11,9 +11,7 @@ using Microsoft.AspNetCore.Components;
 
 public partial class Transactions : ComponentBase
 {
-    [Inject] public BudgetService BudgetService { get; set; } = default!;
-    [Inject] public CategoryService CategoryService { get; set; } = default!;
-    [Inject] public TransactionService TransactionService { get; set; } = default!;
+    [Inject] public TransactionsWorkflow TransactionsWorkflow { get; set; } = default!;
 
     public List<Category> Categories { get; set; } = [];
     private IReadOnlyList<CategoryGroup> CategoryGroups => [.. Categories.Select(c => c.Group).DistinctBy(g => g.Id).OrderBy(g => g.Name)];
@@ -29,13 +27,14 @@ public partial class Transactions : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        var currentScope = await BudgetService.GetCurrentScope() ?? BudgetScope.Monthly;
+        var initialPeriod = new ScopedPeriod(BudgetScope.Monthly, Today.AddMonths(-5), DateConstants.MONTHS_IN_YEAR);
+        var currentScope = (await TransactionsWorkflow.GetBudgetScopesAsync(initialPeriod)).CurrentScope;
 
         Chart1 = new(currentScope, Today.AddMonths(-5), ReloadChart1Async, DateConstants.MONTHS_IN_YEAR);
         Chart2 = new(currentScope, Today, ReloadChart2Async);
 
-        Categories = [.. await CategoryService.GetCategoriesAsync()];
-        Chart2HasLargerScopedBudgets = (await BudgetService.GetGreatestScopeInPeriod(Chart2.Period)) > Chart2.Period.Scope;
+        Categories = [.. (await TransactionsWorkflow.GetCategoriesAsync()).Categories];
+        Chart2HasLargerScopedBudgets = (await TransactionsWorkflow.GetBudgetScopesAsync(Chart2.Period)).GreatestScopeInPeriod > Chart2.Period.Scope;
 
         await Chart1.RefreshAsync();
         await Chart2.RefreshAsync();
@@ -58,7 +57,7 @@ public partial class Transactions : ComponentBase
         var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
         var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
 
-        var transactions = await TransactionService.GetAllAsync<TransactionSummary>(query);
+        var transactions = (await TransactionsWorkflow.GetTransactionsAsync(query)).Transactions;
         var chartTransactions = ApplyGroupFilter(transactions, drilldownGroupId, t => t.Category?.GroupId);
 
         incomeCategories = ApplyGroupFilter(incomeCategories, drilldownGroupId, c => c.GroupId);
@@ -108,15 +107,15 @@ public partial class Transactions : ComponentBase
             ? Categories.Where(c => c.Group.IsIncome).ToList()
             : Categories.Where(c => !c.Group.IsIncome).ToList();
 
-        var transactions = await TransactionService.GetAllAsync<TransactionSummary>(query);
+        var transactions = (await TransactionsWorkflow.GetTransactionsAsync(query)).Transactions;
 
         var chartTransactions = ApplyGroupFilter(transactions, drilldownGroupId, t => t.Category?.GroupId);
         var filteredCategories = ApplyGroupFilter(relevantCategories, drilldownGroupId, c => c.GroupId);
 
-        var budgetSeriesData = await BudgetService.GetBudgetPerLabel(Chart2.Period.StartDate, Chart2.Period.EndDate, filteredCategories, drilldownGroupId is not null);
+        var budgetSeriesData = (await TransactionsWorkflow.GetBudgetPerLabelAsync(Chart2.Period.StartDate, Chart2.Period.EndDate, filteredCategories, drilldownGroupId is not null)).Totals; ;
 
         Chart2.Options = BuildChart2(chartTransactions, budgetSeriesData, Chart2.Mode, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
-        Chart2HasLargerScopedBudgets = (await BudgetService.GetGreatestScopeInPeriod(Chart2.Period)) > Chart2.Period.Scope;
+        Chart2HasLargerScopedBudgets = (await TransactionsWorkflow.GetBudgetScopesAsync(Chart2.Period)).GreatestScopeInPeriod > Chart2.Period.Scope;
 
         StateHasChanged();
     }
@@ -301,7 +300,7 @@ public partial class Transactions : ComponentBase
 
         var baseColor = "#009de0";
         var remainingColor = isIncome ? "#dc3545" : "#198754";
-        var overColor = isIncome ? "#198754" : "#dc3545" ;
+        var overColor = isIncome ? "#198754" : "#dc3545";
 
         return new
         {
@@ -357,11 +356,8 @@ public partial class Transactions : ComponentBase
     {
         if (categories.Count == 0) return null;
 
-        var budgets = (await BudgetService.GetBudgetPerMonth(period.StartDate, period.EndDate, categories))
-            .Select(b => (!isExpense ? b.Value : -b.Value))
-            .ToArray();
-
-        return budgets.All(d => d == 0) ? null : budgets;
+        var budgets = (await TransactionsWorkflow.GetBudgetPerMonthAsync(period, categories, isExpense)).Values;
+        return budgets.Length == 0 || budgets.All(d => d == 0) ? null : budgets;
     }
 
     private static List<T> ApplyGroupFilter<T>(IEnumerable<T> items, Guid? groupId, Func<T, Guid?> groupIdSelector)
