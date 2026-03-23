@@ -100,7 +100,7 @@
                                         <div class="min-width-0">
                                             <div class="d-flex align-items-center gap-2">
                                                 <div class="flex-shrink-0">
-                                                    @if (category.Group.IsIncome)
+                                                    @if (category.IsIncome)
                                                     {
                                                         <HxTooltip Text="Income">
                                                             <HxIcon Icon="BootstrapIcon.GraphUpArrow" CssClass="text-success" />
@@ -120,7 +120,7 @@
                                     </div>
 
                                     <div class="text-muted mt-3">
-                                        @category.Group.Name
+                                        @category.GroupName
                                     </div>
                                 </div>
                             </div>

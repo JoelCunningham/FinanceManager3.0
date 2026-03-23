@@ -2,6 +2,7 @@ namespace FinanceManager.Application;
 
 using FinanceManager.Application.Services;
 using FinanceManager.Application.UseCases;
+using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Import;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,10 @@ public static class DependencyInjection
         services.AddScoped<ParseFile>();
         services.AddScoped<SaveImport>();
         services.AddScoped<ImportWorkflow>();
+
+        // Categories use cases
+        services.AddScoped<GetCategoryList>();
+        services.AddScoped<GetCategoryGroupList>();
 
         services.AddScoped<CategoryService>();
         services.AddScoped<TransferService>();
