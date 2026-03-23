@@ -1,14 +1,13 @@
 namespace FinanceManager.Application.UseCases;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases.Transactions;
-using FinanceManager.Domain.Entities;
 
-public sealed class TransactionsWorkflow(GetTransactionsForRange getTransactionsForRange, GetCategoriesForTransactions getCategoriesForTransactions, GetBudgetPerMonthForCategories getBudgetPerMonthForCategories, GetBudgetPerLabel getBudgetPerLabel, GetBudgetScopes getBudgetScopes)
+public sealed class TransactionsWorkflow(GetCategoriesForTransactions getCategoriesForTransactions, GetBudgetScopes getBudgetScopes, GetChart1Data getChart1Data, GetChart2Data getChart2Data)
 {
-    public Task<GetTransactionsForRangeResult> GetTransactionsAsync(FilterQuery query) => getTransactionsForRange.ExecuteAsync(query);
     public Task<GetCategoriesForTransactionsResult> GetCategoriesAsync() => getCategoriesForTransactions.ExecuteAsync();
-    public Task<GetBudgetPerMonthForCategoriesResult> GetBudgetPerMonthAsync(ScopedPeriod period, List<Category> categories, bool asExpense) => getBudgetPerMonthForCategories.ExecuteAsync(period, categories, asExpense);
-    public Task<GetBudgetPerLabelResult> GetBudgetPerLabelAsync(DateOnly start, DateOnly end, List<Category> categories, bool isCategoryDrilldown) => getBudgetPerLabel.ExecuteAsync(start, end, categories, isCategoryDrilldown);
     public Task<GetBudgetScopesResult> GetBudgetScopesAsync(ScopedPeriod period) => getBudgetScopes.ExecuteAsync(period);
+    public Task<GetChart1DataResult> GetChart1DataAsync(ScopedPeriod period, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart1Data.ExecuteAsync(period, drilldownGroupId, mode);
+    public Task<GetChart2DataResult> GetChart2DataAsync(ScopedPeriod period, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart2Data.ExecuteAsync(period, drilldownGroupId, mode);
 }

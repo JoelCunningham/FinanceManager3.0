@@ -1,6 +1,7 @@
 namespace FinanceManager.Application;
 
 using FinanceManager.Application.Services;
+using FinanceManager.Application.Common;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Import;
@@ -31,11 +32,10 @@ public static class DependencyInjection
         services.AddScoped<TransfersWorkflow>();
 
         // Transaction use cases
-        services.AddScoped<GetTransactionsForRange>();
         services.AddScoped<GetCategoriesForTransactions>();
-        services.AddScoped<GetBudgetPerMonthForCategories>();
-        services.AddScoped<GetBudgetPerLabel>();
         services.AddScoped<GetBudgetScopes>();
+        services.AddScoped<GetChart1Data>();
+        services.AddScoped<GetChart2Data>();
         services.AddScoped<TransactionsWorkflow>();
 
         // Review use cases
@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.AddScoped<ReviewWorkflow>();
 
         services.AddScoped<DateService>();
+        services.AddScoped<TransactionHelper>();
 
         return services;
     }

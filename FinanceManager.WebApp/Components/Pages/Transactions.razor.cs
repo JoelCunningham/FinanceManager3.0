@@ -1,11 +1,11 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
-using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
 
@@ -43,48 +43,23 @@ public partial class Transactions : ComponentBase
     private async Task ReloadChart1Async()
     {
         Chart1.Options = null;
-
-        var query = new FilterQuery
-        {
-            FilterDateFrom = Chart1.Period.StartDate.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = Chart1.Period.EndDate.ToDateTime(TimeOnly.MinValue),
-            FilterStatus = ReviewStatus.Reviewed
-        };
-
         var drilldownGroupId = Chart1.SelectedGroupId;
-        var (groupIdByName, drilldownGroupName, drilledGroup) = BuildGroupDrilldownMeta(drilldownGroupId);
+        var (groupIdByName, drilldownGroupName, _) = BuildGroupDrilldownMeta(drilldownGroupId);
 
-        var incomeCategories = Categories.Where(c => c.Group.IsIncome).ToList();
-        var expenseCategories = Categories.Where(c => !c.Group.IsIncome).ToList();
+        var chartData = await TransactionsWorkflow.GetChart1DataAsync(Chart1.Period, drilldownGroupId, Chart1.Mode);
 
-        var transactions = (await TransactionsWorkflow.GetTransactionsAsync(query)).Transactions;
-        var chartTransactions = ApplyGroupFilter(transactions, drilldownGroupId, t => t.Category?.GroupId);
+        var chartTransactions = ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
 
-        incomeCategories = ApplyGroupFilter(incomeCategories, drilldownGroupId, c => c.GroupId);
-        expenseCategories = ApplyGroupFilter(expenseCategories, drilldownGroupId, c => c.GroupId);
-
-        decimal[]? budgetSeriesData = null;
-        decimal[]? budgetIncomeSeriesData = null;
-        decimal[]? budgetExpenseSeriesData = null;
-
-        if (Chart1.Mode == TransactionsGraphMode.Net)
-        {
-            if (drilldownGroupId is null || drilledGroup?.IsIncome != false)
-            {
-                budgetIncomeSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, incomeCategories, false);
-            }
-            if (drilldownGroupId is null || drilledGroup?.IsIncome != true)
-            {
-                budgetExpenseSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, expenseCategories, true);
-            }
-        }
-        else
-        {
-            var relevantCategories = Chart1.Mode == TransactionsGraphMode.Income ? incomeCategories : expenseCategories;
-            budgetSeriesData = await BuildChart1BudgetSeriesAsync(Chart1.Period, relevantCategories, false);
-        }
-
-        Chart1.Options = BuildChart1(chartTransactions, Chart1.Period, Chart1.Mode, budgetSeriesData, budgetIncomeSeriesData, budgetExpenseSeriesData, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
+        Chart1.Options = BuildChart1(
+            chartTransactions,
+            Chart1.Period,
+            Chart1.Mode,
+            chartData.BudgetSeries,
+            chartData.IncomeBudgetSeries,
+            chartData.ExpenseBudgetSeries,
+            drilldownGroupId is not null,
+            groupIdByName,
+            drilldownGroupName);
 
         StateHasChanged();
     }
@@ -92,30 +67,22 @@ public partial class Transactions : ComponentBase
     private async Task ReloadChart2Async()
     {
         Chart2.Options = null;
-
-        var query = new FilterQuery
-        {
-            FilterDateFrom = Chart2.Period.StartDate.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = Chart2.Period.EndDate.ToDateTime(TimeOnly.MinValue),
-            FilterStatus = ReviewStatus.Reviewed
-        };
-
         var drilldownGroupId = Chart2.SelectedGroupId;
         var (groupIdByName, drilldownGroupName, _) = BuildGroupDrilldownMeta(drilldownGroupId);
 
-        var relevantCategories = Chart2.Mode == TransactionsGraphMode.Income
-            ? Categories.Where(c => c.Group.IsIncome).ToList()
-            : Categories.Where(c => !c.Group.IsIncome).ToList();
+        var chartData = await TransactionsWorkflow.GetChart2DataAsync(Chart2.Period, drilldownGroupId, Chart2.Mode);
 
-        var transactions = (await TransactionsWorkflow.GetTransactionsAsync(query)).Transactions;
+        var chartTransactions = ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
 
-        var chartTransactions = ApplyGroupFilter(transactions, drilldownGroupId, t => t.Category?.GroupId);
-        var filteredCategories = ApplyGroupFilter(relevantCategories, drilldownGroupId, c => c.GroupId);
+        Chart2.Options = BuildChart2(
+            chartTransactions,
+            chartData.BudgetTotals,
+            Chart2.Mode,
+            drilldownGroupId is not null,
+            groupIdByName,
+            drilldownGroupName);
 
-        var budgetSeriesData = (await TransactionsWorkflow.GetBudgetPerLabelAsync(Chart2.Period.StartDate, Chart2.Period.EndDate, filteredCategories, drilldownGroupId is not null)).Totals; ;
-
-        Chart2.Options = BuildChart2(chartTransactions, budgetSeriesData, Chart2.Mode, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
-        Chart2HasLargerScopedBudgets = (await TransactionsWorkflow.GetBudgetScopesAsync(Chart2.Period)).GreatestScopeInPeriod > Chart2.Period.Scope;
+        Chart2HasLargerScopedBudgets = chartData.HasLargerScopedBudgets;
 
         StateHasChanged();
     }
@@ -350,14 +317,6 @@ public partial class Transactions : ComponentBase
                 }
             }
         };
-    }
-
-    private async Task<decimal[]?> BuildChart1BudgetSeriesAsync(ScopedPeriod period, List<Category> categories, bool isExpense)
-    {
-        if (categories.Count == 0) return null;
-
-        var budgets = (await TransactionsWorkflow.GetBudgetPerMonthAsync(period, categories, isExpense)).Values;
-        return budgets.Length == 0 || budgets.All(d => d == 0) ? null : budgets;
     }
 
     private static List<T> ApplyGroupFilter<T>(IEnumerable<T> items, Guid? groupId, Func<T, Guid?> groupIdSelector)

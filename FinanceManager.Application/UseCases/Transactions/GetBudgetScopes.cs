@@ -2,7 +2,6 @@ namespace FinanceManager.Application.UseCases.Transactions;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
-using FinanceManager.Application.Services;
 using FinanceManager.Domain.Enums;
 
 public sealed record GetBudgetScopesResult(BudgetScope CurrentScope, BudgetScope GreatestScopeInPeriod) : UseCaseResult;

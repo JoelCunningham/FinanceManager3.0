@@ -1,4 +1,4 @@
-﻿namespace FinanceManager.WebApp.Enums;
+﻿namespace FinanceManager.Application.Enums;
 
 public enum TransactionsGraphRange
 {
