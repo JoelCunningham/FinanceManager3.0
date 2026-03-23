@@ -5,6 +5,7 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Transfers;
+using FinanceManager.Application.UseCases.Review;
 using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
@@ -28,9 +29,16 @@ public static class DependencyInjection
         services.AddScoped<SeparateTransfer>();
         services.AddScoped<TransfersWorkflow>();
 
+        // Review use cases
+        services.AddScoped<GetReviewPage>();
+        services.AddScoped<GetTransferCandidates>();
+        services.AddScoped<GetReimbursementCandidates>();
+        services.AddScoped<SaveReview>();
+        services.AddScoped<SuggestCategory>();
+        services.AddScoped<ReviewWorkflow>();
+
         services.AddScoped<CategoryService>();
         services.AddScoped<TransactionService>();
-        services.AddScoped<CategorisationService>();
         services.AddScoped<BudgetService>();
         services.AddScoped<DateService>();
 

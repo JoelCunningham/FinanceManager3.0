@@ -1,7 +1,7 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Services;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
@@ -10,9 +10,7 @@ using Microsoft.AspNetCore.Components;
 
 public partial class Review : ComponentBase
 {
-    [Inject] public TransactionService TransactionService { get; set; } = default!;
-    [Inject] public CategoryService CategoryService { get; set; } = default!;
-    [Inject] public CategorisationService CategorisationService { get; set; } = default!;
+    [Inject] public ReviewWorkflow ReviewWorkflow { get; set; } = default!;
     [Inject] public IHxMessengerService Messenger { get; set; } = default!;
 
     public ValidationModel Validation { get; set; } = new();
@@ -45,45 +43,43 @@ public partial class Review : ComponentBase
         TransferData.GetDataFunc = GetTransferData;
         ReimburseData.GetDataFunc = GetReimburseData;
 
-        Categories = [.. await CategoryService.GetCategoriesAsync()];
+        var cateogryDto = (await ReviewWorkflow.GetCategoriesAsync()).Categories;
+        var groupDict = cateogryDto.GroupBy(c => c.GroupId).ToDictionary(g => g.Key, g => new CategoryGroup { Id = g.Key, Name = g.First().GroupName, IsIncome = g.First().IsIncome });
+        Categories = [.. cateogryDto.Select(c => new Category { Id = c.Id, Name = c.Name, GroupId = c.GroupId, Group = groupDict[c.GroupId] })];
     }
 
     private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)
     {
         query.FilterStatus = ReviewStatus.Unreviewed;
-        var result = await TransactionService.GetPagedAsync<ReviewGroup>(query);
+        var result = (await ReviewWorkflow.GetPageAsync(query)).Page;
         if (IsAutoAssignEnabled) await AutoAssign(result.Items);
         return result;
     }
 
     private async Task<PagedResult<TransactionSummary>> GetTransferData(FilterQuery query)
     {
-        query.FilterAmountMax = -CurrentGroup?.InitalTransaction.Amount;
-        query.FilterAmountMin = -CurrentGroup?.InitalTransaction.Amount;
-        return await TransactionService.GetPagedAsync<TransactionSummary>(query);
+        var amount = CurrentGroup?.InitalTransaction.Amount ?? 0;
+        return (await ReviewWorkflow.GetTransferCandidatesAsync(query, amount)).Page;
     }
 
     private async Task<PagedResult<TransactionSummary>> GetReimburseData(FilterQuery query)
     {
-        query.FilterStatus = ReviewStatus.Reviewed;
-        return await TransactionService.GetPagedAsync<TransactionSummary>(query);
+        return (await ReviewWorkflow.GetReimbursementCandidatesAsync(query)).Page;
     }
 
     private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
     {
         if (!ValidateGroup(group)) return;
-        try
+
+        var result = await ReviewWorkflow.SaveAsync(group);
+        if (result.IsSuccess)
         {
-            await TransactionService.SaveTransactionGroupAsync(group);
             await Data.UpdateAsync();
-            if (showMessage)
-            {
-                Validation.SetSuccess("Transaction saved successfully");
-            }
+            if (showMessage) Validation.SetSuccess("Transaction saved successfully");
         }
-        catch (Exception)
+        else
         {
-            Validation.SetError("An unexpected error occurred. Please try again");
+            Validation.SetError(result.ErrorMessage ?? "An unexpected error occurred. Please try again");
         }
     }
 
@@ -95,7 +91,8 @@ public partial class Review : ComponentBase
         {
             foreach (var transaction in group.Transactions)
             {
-                var category = await CategorisationService.SuggestCategory(transaction);
+                var suggested = (await ReviewWorkflow.SuggestCategoryAsync(transaction.Description)).CategoryId;
+                var category = Categories.FirstOrDefault(c => c.Id == suggested);
                 if (category is not null)
                 {
                     transaction.Category = category;
