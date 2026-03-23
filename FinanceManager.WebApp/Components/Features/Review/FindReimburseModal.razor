@@ -3,7 +3,7 @@
 
     [Parameter] public DataGridModel<FilterQuery, TransactionSummary> ReimburseData { get; set; } = new();
 
-    [Parameter] public IEnumerable<Category> Categories { get; set; } = [];
+    [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
 
     [Parameter] public EventCallback<TransactionSummary> SetReimburse { get; set; }
 

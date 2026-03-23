@@ -1,11 +1,11 @@
 @code {
-    [Parameter] public Category? Value { get; set; }
+    [Parameter] public CategorySummary? Value { get; set; }
 
-    [Parameter] public EventCallback<Category?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<CategorySummary?> ValueChanged { get; set; }
 
-    [Parameter] public Expression<Func<Category?>>? ValueExpression { get; set; }
+    [Parameter] public Expression<Func<CategorySummary?>>? ValueExpression { get; set; }
 
-    [Parameter] public IEnumerable<Category> Data { get; set; } = [];
+    [Parameter] public IEnumerable<CategorySummary> Data { get; set; } = [];
 
     [Parameter] public string? Label { get; set; }
 
@@ -17,20 +17,15 @@
 
     [Parameter] public bool Enabled { get; set; } = true;
 
-    private Expression<Func<Category?>> CurrentValueExpression => ValueExpression ?? (() => Value);
+    private Expression<Func<CategorySummary?>> CurrentValueExpression => ValueExpression ?? (() => Value);
 
-    private static readonly Category UncategorisedCategory = new()
-    {
-        Id = Guid.Empty,
-        Name = "- Uncategorised -",
-        Group = new CategoryGroup { Name = string.Empty, Id = Guid.Empty }
-    };
+    private static readonly CategorySummary UncategorisedCategory = new(Guid.Empty, "- Uncategorised -", Guid.Empty, string.Empty, true);
 
-    private IEnumerable<Category> GroupedData()
+    private IEnumerable<CategorySummary> GroupedData()
     {
-        var grouped = Data.GroupBy(c => c.Group).OrderBy(g => g.Key.Name).SelectMany(g =>
+        var grouped = Data.GroupBy(c => c.GroupName).OrderBy(g => g.Key).SelectMany(g =>
         {
-            var header = new Category { Id = Guid.Empty, Name = $"- {g.Key.Name} -", Group = g.Key };
+            var header = new CategorySummary(Guid.Empty, $"- {g.Key} -", Guid.Empty, string.Empty, true);
             return new[] { header }.Concat(g.OrderBy(c => c.Name));
         });
 
@@ -50,8 +45,8 @@
               CssClass="@(IsAutoCategorised ? "auto-categorised" : "")"
               InputCssClass="@(HasError ? "is-invalid" : "")"
               Data="GroupedData()"
-              TItem="Category"
-              TValue="Category"
+              TItem="CategorySummary"
+              TValue="CategorySummary"
               Nullable="Nullable"
               AutoSort="false"
               Enabled="Enabled"

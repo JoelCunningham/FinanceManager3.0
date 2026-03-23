@@ -58,14 +58,15 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         if (transaction.Amount == 0) throw new Exception(ErrorMessages.TransactionInvalidAmount);
         if (transaction.Category is null) throw new Exception(ErrorMessages.TransactionCategoryRequired);
 
-        var entity = transaction.ToTransaction();
-        entity.IsReviewed = true;
+        var categoryEntity = transaction.Category.ToCategory();
+        var transactionEntity = transaction.ToTransaction();
+        transactionEntity.IsReviewed = true;
 
         await using var operations = unitOfWork.BeginTransaction();
         try
         {
-            await transactionRepository.CreateOrUpdateAsync(entity);
-            await machineLearningRepository.SaveAsync(transaction.Category, transaction.Description);
+            await transactionRepository.CreateOrUpdateAsync(transactionEntity);
+            await machineLearningRepository.SaveAsync(categoryEntity, transaction.Description);
 
             await operations.CommitAsync();
         }

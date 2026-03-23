@@ -1,28 +1,28 @@
-﻿using FinanceManager.Application.DTOs.Base;
+﻿namespace FinanceManager.Application.DTOs;
+
+using FinanceManager.Application.DTOs.Base;
 using FinanceManager.Domain.Entities;
 
-namespace FinanceManager.Application.DTOs
+public class TransactionSummary : ITransactionConvertible<TransactionSummary>
 {
-    public class TransactionSummary : ITransactionConvertible<TransactionSummary>
+    public Guid Id { get; set; }
+    public CategorySummary? Category { get; set; }
+    public required string Description { get; set; }
+    public required decimal Amount { get; set; }
+    public required DateTime Date { get; set; }
+
+    public static TransactionSummary FromTransaction(Transaction transaction)
     {
-        public Guid Id { get; set; }
-        public Category? Category { get; set; }
-        public required string Description { get; set; }
-        public required decimal Amount { get; set; }
-        public required DateTime Date { get; set; }
+        var amount = transaction.Amount + (transaction.Reimbursements?.Sum(r => r.Amount) ?? 0);
+        var category = transaction.Category is not null ? CategorySummary.FromCategory(transaction.Category) : null;
 
-        public static TransactionSummary FromTransaction(Transaction transaction)
+        return new TransactionSummary
         {
-            var amount = transaction.Amount + (transaction.Reimbursements?.Sum(r => r.Amount) ?? 0);
-
-            return new TransactionSummary
-            {
-                Id = transaction.Id,
-                Category = transaction.Category,
-                Description = transaction.Description,
-                Amount = amount,
-                Date = transaction.Date
-            };
-        }
+            Id = transaction.Id,
+            Amount = amount,
+            Category = category,
+            Date = transaction.Date,
+            Description = transaction.Description,
+        };
     }
 }

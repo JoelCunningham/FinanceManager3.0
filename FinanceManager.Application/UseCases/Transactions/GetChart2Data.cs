@@ -3,16 +3,16 @@ namespace FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.Common;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Domain.Entities;
+using FinanceManager.Application.UseCases.Categories;
 
 public sealed record GetChart2DataResult(
     List<TransactionSummary> Transactions,
-    List<Category> RelevantCategories,
+    List<CategorySummary> RelevantCategories,
     IReadOnlyDictionary<string, decimal> BudgetTotals,
     bool HasLargerScopedBudgets
 ) : UseCaseResult;
 
-public sealed class GetChart2Data(TransactionHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategoriesForTransactions getCategoriesForTransactions)
+public sealed class GetChart2Data(TransactionHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategoryList getCategoryList)
 {
     public async Task<GetChart2DataResult> ExecuteAsync(ScopedPeriod period, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {
@@ -24,11 +24,11 @@ public sealed class GetChart2Data(TransactionHelper transactionHelper, GetBudget
         };
 
         var transactions = await transactionHelper.GetTransactionsForRange(query);
-        var categories = (await getCategoriesForTransactions.ExecuteAsync()).Categories;
+        var categories = (await getCategoryList.ExecuteAsync()).Categories;
 
         var relevantCategories = mode == TransactionsGraphMode.Income
-            ? categories.Where(c => c.Group.IsIncome).ToList()
-            : categories.Where(c => !c.Group.IsIncome).ToList();
+            ? categories.Where(c => c.IsIncome).ToList()
+            : categories.Where(c => !c.IsIncome).ToList();
 
         if (drilldownGroupId is Guid id)
         {

@@ -4,7 +4,6 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Constants;
-using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
@@ -13,13 +12,11 @@ public partial class Transactions : ComponentBase
 {
     [Inject] public TransactionsWorkflow TransactionsWorkflow { get; set; } = default!;
 
-    public List<Category> Categories { get; set; } = [];
-    private IReadOnlyList<CategoryGroup> CategoryGroups => [.. Categories.Select(c => c.Group).DistinctBy(g => g.Id).OrderBy(g => g.Name)];
-
     public ChartModel Chart1 { get; set; } = default!;
     public ChartModel Chart2 { get; set; } = default!;
 
     private bool Chart2HasLargerScopedBudgets { get; set; }
+    private List<CategoryGroupSummary> CategoryGroups { get; set; } = [];
 
     private const string UncategorisedLabel = "Uncategorised";
 
@@ -33,7 +30,7 @@ public partial class Transactions : ComponentBase
         Chart1 = new(currentScope, Today.AddMonths(-5), ReloadChart1Async, DateConstants.MONTHS_IN_YEAR);
         Chart2 = new(currentScope, Today, ReloadChart2Async);
 
-        Categories = [.. (await TransactionsWorkflow.GetCategoriesAsync()).Categories];
+        CategoryGroups = [.. (await TransactionsWorkflow.GetCategoryGroupsAsync()).Groups];
         Chart2HasLargerScopedBudgets = (await TransactionsWorkflow.GetBudgetScopesAsync(Chart2.Period)).GreatestScopeInPeriod > Chart2.Period.Scope;
 
         await Chart1.RefreshAsync();
@@ -324,7 +321,7 @@ public partial class Transactions : ComponentBase
         return groupId is Guid id ? [.. items.Where(x => groupIdSelector(x) == id)] : [.. items];
     }
 
-    private (Dictionary<string, Guid> GroupIdByName, string? DrilldownGroupName, CategoryGroup? DrilldownGroup) BuildGroupDrilldownMeta(Guid? drilldownGroupId)
+    private (Dictionary<string, Guid> GroupIdByName, string? DrilldownGroupName, CategoryGroupSummary? DrilldownGroup) BuildGroupDrilldownMeta(Guid? drilldownGroupId)
     {
         var groupIdByName = CategoryGroups.ToDictionary(g => g.Name, g => g.Id, StringComparer.OrdinalIgnoreCase);
         var drilledGroup = drilldownGroupId is Guid id ? CategoryGroups.FirstOrDefault(g => g.Id == id) : null;
@@ -361,7 +358,7 @@ public partial class Transactions : ComponentBase
             return string.IsNullOrWhiteSpace(categoryName) ? UncategorisedLabel : categoryName;
         }
 
-        var groupName = t.Category?.Group?.Name;
+        var groupName = t.Category?.GroupName;
         return string.IsNullOrWhiteSpace(groupName) ? UncategorisedLabel : groupName;
     }
 

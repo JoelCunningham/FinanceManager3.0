@@ -32,14 +32,6 @@ public static class DependencyInjection
         services.AddScoped<TransfersWorkflow>();
 
         // Transaction use cases
-        services.AddScoped<GetCategoriesForTransactions>();
-        services.AddScoped<GetBudgetScopes>();
-        services.AddScoped<GetChart1Data>();
-        services.AddScoped<GetChart2Data>();
-        services.AddScoped<TransactionsWorkflow>();
-
-        // Transaction use cases
-        services.AddScoped<GetCategoriesForTransactions>();
         services.AddScoped<GetBudgetScopes>();
         services.AddScoped<GetChart1Data>();
         services.AddScoped<GetChart2Data>();

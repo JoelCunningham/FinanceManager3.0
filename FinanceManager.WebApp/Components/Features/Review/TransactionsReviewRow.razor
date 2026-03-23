@@ -1,7 +1,7 @@
 @code {
     [Parameter] public ReviewGroup TransactionGroup { get; set; } = default!;
 
-    [Parameter] public IEnumerable<Category> Categories { get; set; } = [];
+    [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
 
     [Parameter] public IEnumerable<Guid> ErrorCategoryIds { get; set; } = [];
 
@@ -9,7 +9,7 @@
 
     [Parameter] public EventCallback OnSave { get; set; }
 
-    [Parameter] public EventCallback<(ReviewTransaction, Category?)> OnCategoryChange { get; set; }
+    [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> OnCategoryChange { get; set; }
 
     [Parameter] public EventCallback<(ReviewTransaction, decimal)> OnAmountChange { get; set; }
 

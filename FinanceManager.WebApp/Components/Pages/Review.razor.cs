@@ -2,7 +2,6 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases;
-using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
 using Havit.Blazor.Components.Web;
@@ -22,7 +21,7 @@ public partial class Review : ComponentBase
     public ReviewGroup? CurrentGroup { get; set; }
     public ReviewTransaction? CurrentTransaction { get; set; }
 
-    public List<Category> Categories { get; set; } = [];
+    public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
 
     public FindTransferModal TransferModal { get; set; } = new();
     public FindReimburseModal ReimburseModal { get; set; } = new();
@@ -43,9 +42,7 @@ public partial class Review : ComponentBase
         TransferData.GetDataFunc = GetTransferData;
         ReimburseData.GetDataFunc = GetReimburseData;
 
-        var cateogryDto = (await ReviewWorkflow.GetCategoriesAsync()).Categories;
-        var groupDict = cateogryDto.GroupBy(c => c.GroupId).ToDictionary(g => g.Key, g => new CategoryGroup { Id = g.Key, Name = g.First().GroupName, IsIncome = g.First().IsIncome });
-        Categories = [.. cateogryDto.Select(c => new Category { Id = c.Id, Name = c.Name, GroupId = c.GroupId, Group = groupDict[c.GroupId] })];
+        Categories = (await ReviewWorkflow.GetCategoriesAsync()).Categories;
     }
 
     private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)
@@ -122,7 +119,7 @@ public partial class Review : ComponentBase
         await TransferModal.HideAsync();
     }
 
-    public void SetCategory(ReviewTransaction transaction, Category? value)
+    public void SetCategory(ReviewTransaction transaction, CategorySummary? value)
     {
         Validation.ClearValidationItem(transaction.Id, CategoryKey);
         transaction.Category = value;

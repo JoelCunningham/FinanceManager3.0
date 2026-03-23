@@ -32,7 +32,7 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
         return results;
     }
 
-    public async Task<decimal[]> GetBudgetPerMonthForCategories(ScopedPeriod period, List<Category> categories, bool asExpense)
+    public async Task<decimal[]> GetBudgetPerMonthForCategories(ScopedPeriod period, List<CategorySummary> categories, bool asExpense)
     {
         if (categories.Count == 0) return [];
 
@@ -41,9 +41,9 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
         return [.. budgetsPerMonth.Select(b => !asExpense ? b.Value : -b.Value)];
     }
 
-    public async Task<Dictionary<string, decimal>> GetBudgetPerLabel(DateOnly start, DateOnly end, List<Category> categories, bool isCategoryDrilldown)
+    public async Task<Dictionary<string, decimal>> GetBudgetPerLabel(DateOnly start, DateOnly end, List<CategorySummary> categories, bool isCategoryDrilldown)
     {
-        var budgetsInPeriod = await budgetEntryRepository.GetByRangeAsync(start, end, categories);
+        var budgetsInPeriod = await budgetEntryRepository.GetByRangeAsync(start, end, categories.Select(c => c.Id).ToHashSet());
 
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 
@@ -68,7 +68,7 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
         return totals;
     }
 
-    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerMonth(DateOnly startDate, DateOnly endDate, IEnumerable<Category> categories)
+    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerMonth(DateOnly startDate, DateOnly endDate, IEnumerable<CategorySummary> categories)
     {
         var budgetsPerDay = await GetBudgetPerDay(startDate, endDate, categories);
         var budgetsPerMonth = budgetsPerDay
@@ -81,9 +81,9 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
         return budgetsPerMonth;
     }
 
-    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerDay(DateOnly startDate, DateOnly endDate, IEnumerable<Category> categories)
+    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerDay(DateOnly startDate, DateOnly endDate, IEnumerable<CategorySummary> categories)
     {
-        var budgetsInPeriod = await budgetEntryRepository.GetByRangeAsync(startDate, endDate, categories);
+        var budgetsInPeriod = await budgetEntryRepository.GetByRangeAsync(startDate, endDate, categories.Select(c => c.Id).ToHashSet());
 
         var currentDate = startDate;
         var amountPerDay = new Dictionary<DateOnly, decimal>();

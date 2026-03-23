@@ -120,12 +120,14 @@ public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
     public required string Description { get; set; }
     public required decimal Amount { get; set; }
     public required DateTime Date { get; set; }
-    public Category? Category { get; set; }
+    public CategorySummary? Category { get; set; }
     public TransactionSummary? Reimburses { get; set; }
     public bool IsAutoCategorised { get; set; }
 
     public static ReviewTransaction FromTransaction(Transaction transaction)
     {
+        var category = transaction.Category is not null ? CategorySummary.FromCategory(transaction.Category) : null;
+
         return new ReviewTransaction
         {
             Id = transaction.Id,
@@ -133,7 +135,7 @@ public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
             Description = transaction.Description,
             Amount = transaction.Amount,
             Date = transaction.Date,
-            Category = transaction.Category,
+            Category = category,
             Reimburses = null,
         };
     }
@@ -149,7 +151,7 @@ public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
             Amount = Amount,
             Date = Date,
             CategoryId = Category?.Id,
-            Category = Category,
+            Category = Category?.ToCategory(),
         };
     }
 }

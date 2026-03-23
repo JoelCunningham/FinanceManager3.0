@@ -1,11 +1,11 @@
 @code {
     [Parameter] public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new();
 
-    [Parameter] public IEnumerable<Category> Categories { get; set; } = [];
+    [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
 
     [Parameter] public ValidationModel Validation { get; set; } = new();
 
-    [Parameter] public EventCallback<(ReviewTransaction, Category?)> SetCategory { get; set; }
+    [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> SetCategory { get; set; }
 
     [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction, decimal)> SetAmount { get; set; }
 
@@ -23,9 +23,9 @@
 
     [Parameter] public string AmountKey { get; set; } = string.Empty;
 
-    public List<Category> IncomeCategories => [.. Categories.Where(c => c.Group.IsIncome)];
+    public List<CategorySummary> IncomeCategories => [.. Categories.Where(c => c.IsIncome)];
 
-    public List<Category> ExpenseCategories => [.. Categories.Where(c => !c.Group.IsIncome)];
+    public List<CategorySummary> ExpenseCategories => [.. Categories.Where(c => !c.IsIncome)];
 }
 
 <ListLayout TItem="ReviewGroup" Data="Data">

@@ -38,10 +38,8 @@ public class BudgetEntryRepository : IBudgetEntryRepository
         SeedDefaultBudgetEntries();
     }
 
-    public async Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Category> categories)
+    public async Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Guid> categoryIds)
     {
-        var categoryIds = categories.Select(c => c.Id).ToHashSet();
-
         return _budgetEntries.Where(b =>
             categoryIds.Contains(b.CategoryId) &&
             EndDateFromBudgetEntry(b) >= startDate &&

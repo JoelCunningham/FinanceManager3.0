@@ -8,7 +8,7 @@ public sealed record AutoCategoriseResult(int AssignedCount) : UseCaseResult;
 
 public sealed class AutoAssignCategories(ICategoryRepository categoryRepository, IMachineLearningRepository machineLearningRepository)
 {
-    public async Task<AutoCategoriseResult> ExecuteAsync(IEnumerable<ReviewGroup> groups, IEnumerable<Category> categories)
+    public async Task<AutoCategoriseResult> ExecuteAsync(IEnumerable<ReviewGroup> groups, IEnumerable<CategorySummary> categories)
     {
         int assignedCount = 0;
         var categoryDict = categories.ToDictionary(c => c.Id);

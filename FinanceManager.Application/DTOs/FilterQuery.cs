@@ -6,7 +6,7 @@ public record FilterQuery : PagedQuery
 {
     public string? SearchTerm { get; set; }
     public TransferSource FilterSource { get; set; } = TransferSource.All;
-    public Category? FilterCategory { get; set; }
+    public CategorySummary? FilterCategory { get; set; }
     public string? FilterAccountFrom { get; set; }
     public string? FilterAccountTo { get; set; }
     public DateTime? FilterDateFrom { get; set; }

@@ -3,18 +3,18 @@ namespace FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.Common;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Domain.Entities;
+using FinanceManager.Application.UseCases.Categories;
 
 public sealed record GetChart1DataResult(
     List<TransactionSummary> Transactions,
-    List<Category> IncomeCategories,
-    List<Category> ExpenseCategories,
+    List<CategorySummary> IncomeCategories,
+    List<CategorySummary> ExpenseCategories,
     decimal[]? BudgetSeries,
     decimal[]? IncomeBudgetSeries,
     decimal[]? ExpenseBudgetSeries
 ) : UseCaseResult;
 
-public sealed class GetChart1Data(TransactionHelper transactionHelper, GetCategoriesForTransactions getCategoriesForTransactions)
+public sealed class GetChart1Data(TransactionHelper transactionHelper, GetCategoryList getCategoryList)
 {
     public async Task<GetChart1DataResult> ExecuteAsync(ScopedPeriod period, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {
@@ -26,10 +26,10 @@ public sealed class GetChart1Data(TransactionHelper transactionHelper, GetCatego
         };
 
         var transactions = await transactionHelper.GetTransactionsForRange(query);
-        var categories = (await getCategoriesForTransactions.ExecuteAsync()).Categories;
+        var categories = (await getCategoryList.ExecuteAsync()).Categories;
 
-        var incomeCategories = categories.Where(c => c.Group.IsIncome).ToList();
-        var expenseCategories = categories.Where(c => !c.Group.IsIncome).ToList();
+        var incomeCategories = categories.Where(c => c.IsIncome).ToList();
+        var expenseCategories = categories.Where(c => !c.IsIncome).ToList();
 
         if (drilldownGroupId is Guid id)
         {

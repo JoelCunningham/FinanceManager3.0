@@ -1,7 +1,7 @@
 namespace FinanceManager.WebApp.Components.Pages;
 
+using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases;
-using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.WebApp.Models;
 using Havit.Blazor.Components.Web;
 using Microsoft.AspNetCore.Components;
@@ -13,19 +13,19 @@ public partial class Categories : ComponentBase
 
     public ValidationModel Validation { get; set; } = new();
 
-    public IReadOnlyList<CategoryDto> AllCategories { get; set; } = [];
-    public IReadOnlyList<CategoryGroupDto> CategoryGroups { get; set; } = [];
+    public IReadOnlyList<CategorySummary> AllCategories { get; set; } = [];
+    public IReadOnlyList<CategoryGroupSummary> CategoryGroups { get; set; } = [];
 
     private IReadOnlyDictionary<Guid, int> CategoryCountByGroupId { get; set; } = new Dictionary<Guid, int>();
 
     private string GroupSearch { get; set; } = string.Empty;
     private string CategorySearch { get; set; } = string.Empty;
 
-    private IEnumerable<CategoryGroupDto> FilteredGroups => CategoryGroups
+    private IEnumerable<CategoryGroupSummary> FilteredGroups => CategoryGroups
         .Where(g => string.IsNullOrWhiteSpace(GroupSearch) || g.Name.Contains(GroupSearch, StringComparison.OrdinalIgnoreCase))
         .OrderByDescending(g => g.IsIncome).ThenBy(g => g.Name);
 
-    private IEnumerable<CategoryDto> FilteredCategories => AllCategories
+    private IEnumerable<CategorySummary> FilteredCategories => AllCategories
         .Where(c => string.IsNullOrWhiteSpace(CategorySearch) || c.Name.Contains(CategorySearch, StringComparison.OrdinalIgnoreCase) || c.GroupName.Contains(CategorySearch, StringComparison.OrdinalIgnoreCase))
         .OrderByDescending(c => c.IsIncome).ThenBy(c => c.GroupName).ThenBy(c => c.Name);
 
@@ -36,7 +36,7 @@ public partial class Categories : ComponentBase
         Validation.Messenger = Messenger;
 
         var categoriesResult = await Workflow.GetCategoriesAsync();
-        CategoryGroups = (await Workflow.GetCategoryGroupsAsync()).Groups;
+        CategoryGroups = categoriesResult.Groups;
         AllCategories = categoriesResult.Categories;
         CategoryCountByGroupId = categoriesResult.CategoryCountByGroupId;
     }
