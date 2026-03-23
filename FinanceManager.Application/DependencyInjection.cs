@@ -4,6 +4,7 @@ using FinanceManager.Application.Services;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Import;
+using FinanceManager.Application.UseCases.Transfers;
 using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
@@ -19,9 +20,15 @@ public static class DependencyInjection
         // Categories use cases
         services.AddScoped<GetCategoryList>();
         services.AddScoped<GetCategoryGroupList>();
+        services.AddScoped<CategoriesWorkflow>();
+
+        // Transfers use cases
+        services.AddScoped<GetTransfersPage>();
+        services.AddScoped<GetUniqueAccounts>();
+        services.AddScoped<SeparateTransfer>();
+        services.AddScoped<TransfersWorkflow>();
 
         services.AddScoped<CategoryService>();
-        services.AddScoped<TransferService>();
         services.AddScoped<TransactionService>();
         services.AddScoped<CategorisationService>();
         services.AddScoped<BudgetService>();

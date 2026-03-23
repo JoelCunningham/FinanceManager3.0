@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 public partial class Import : ComponentBase
 {
-    [Inject] public ImportWorkflow ImportWorkflow { get; set; } = default!;
+    [Inject] public ImportWorkflow Workflow { get; set; } = default!;
     [Inject] public IHxMessengerService Messenger { get; set; } = default!;
 
     public ValidationModel Validation { get; set; } = new();
@@ -31,7 +31,7 @@ public partial class Import : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
-        AvailableParsers = ImportWorkflow.GetParsers().Parsers;
+        AvailableParsers = Workflow.GetParsers().Parsers;
     }
 
     protected void Reset()
@@ -55,12 +55,12 @@ public partial class Import : ComponentBase
         var bankName = SelectedParser.BankName;
         var fileExtension = Path.GetExtension(file.Name);
 
-        var parseResult = await ImportWorkflow.ParseFileAsync(stream, bankName, fileExtension);
+        var parseResult = await Workflow.ParseFileAsync(stream, bankName, fileExtension);
 
-        if (parseResult.IsSuccess)
+        if (parseResult.IsSuccess && parseResult.Transactions is not null)
         {
             ImportedTransactions = [.. parseResult.Transactions];
-            Validation.SetSuccess($"{parseResult.Transactions.Count()} new tranasctions found.", true);
+            Validation.SetSuccess($"{parseResult.Transactions.Count} new tranasctions found.", true);
         }
         else
         {
@@ -73,7 +73,7 @@ public partial class Import : ComponentBase
     {
         if (ImportedTransactions is null) return;
 
-        var saveResult = await ImportWorkflow.SaveImportAsync(ImportedTransactions);
+        var saveResult = await Workflow.SaveImportAsync(ImportedTransactions);
 
         if (saveResult is not null)
         {

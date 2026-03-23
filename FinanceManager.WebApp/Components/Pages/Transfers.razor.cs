@@ -1,37 +1,38 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Services;
+using FinanceManager.Application.UseCases;
+using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.WebApp.Components.Features.Transfers;
 using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
 
 public partial class Transfers : ComponentBase
 {
-    [Inject] public TransferService TransferService { get; set; } = default!;
+    [Inject] public TransfersWorkflow Workflow { get; set; } = default!;
 
-    public DataGridModel<FilterQuery, TransferSummary> Data { get; set; } = new(20);
+    public DataGridModel<FilterQuery, TransferDto> Data { get; set; } = new(20);
     public ValidationModel Validation { get; set; } = new();
 
-    public List<string> UniqueAccounts { get; set; } = [];
-    public TransferSummary? SelectedTransfer { get; set; }
+    public IReadOnlyList<string> UniqueAccounts { get; set; } = [];
+    public TransferDto? SelectedTransfer { get; set; }
     public TransferModal TransferModal { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        UniqueAccounts = await TransferService.GetUniqueAccountsAsync();
-        Data.GetDataFunc = async (query) => await TransferService.GetPagedAsync(query);
+        UniqueAccounts = (await Workflow.GetAccountsAsync()).Accounts;
+        Data.GetDataFunc = async (query) => (await Workflow.GetPageAsync(query)).Page;
     }
 
-    private async Task SeparateTransfer(TransferSummary transfer)
+    private async Task SeparateTransfer(TransferDto transfer)
     {
-        try
+        var result = await Workflow.SeparateAsync(transfer.Id);
+        if (result.IsSuccess)
         {
-            await TransferService.ConvertToTransactionAsync(transfer.Id);
             Validation.SetSuccess("Transfer separated successfully.");
             await Data.UpdateAsync();
         }
-        catch (Exception)
+        else
         {
             Validation.SetError("Could not remove transfer. Please try again.");
         }
@@ -46,7 +47,7 @@ public partial class Transfers : ComponentBase
         }
     }
 
-    public async Task OpenDetailsModal(TransferSummary transfer)
+    public async Task OpenDetailsModal(TransferDto transfer)
     {
         SelectedTransfer = transfer;
         await TransferModal.ShowAsync();

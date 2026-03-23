@@ -1,7 +1,7 @@
 @code {
     private HxModal _modal = default!;
 
-    [Parameter] public TransferSummary Transfer { get; set; } = default!;
+    [Parameter] public TransferDto Transfer { get; set; } = default!;
 
     [Parameter] public EventCallback SeparateFromDetails { get; set; }
 
@@ -17,14 +17,14 @@
         <BodyTemplate>
             <div class="transfer-form">
                 <HxFormState Enabled="false">
-                    <HxInputText Label="From Bank" @bind-Value="Transfer.From.Bank" />
-                    <HxInputText Label="To Bank" @bind-Value="Transfer.To.Bank" />
-                    <HxInputText Label="From Account" @bind-Value="Transfer.From.Account" />
-                    <HxInputText Label="To Account" @bind-Value="Transfer.To.Account" />
-                    <HxInputDate Label="Date" @bind-Value="Transfer.Date" CalendarIcon="BootstrapIcon.Calendar" />
-                    <HxInputNumber Label="Amount" @bind-Value="Transfer.Amount" InputGroupStartText="$" Decimals="2" />
-                    <HxInputText Label="Source" @bind-Value:get="Source" @bind-Value:set="(v) => { }" />
-                    <HxInputTextArea Label="Description" @bind-Value="Transfer.Description" CssClass="full-width" />
+                    <HxInputText Label="From Bank" Value="@Transfer.From.Bank" ValueExpression="@( () => Transfer.From.Bank )" />
+                    <HxInputText Label="To Bank" Value="@Transfer.To.Bank" ValueExpression="@( () => Transfer.To.Bank )" />
+                    <HxInputText Label="From Account" Value="@Transfer.From.Account" ValueExpression="@( () => Transfer.From.Account )" />
+                    <HxInputText Label="To Account" Value="@Transfer.To.Account" ValueExpression="@( () => Transfer.To.Account )" />
+                    <HxInputDate Label="Date" Value="@Transfer.Date" ValueExpression="@( () => Transfer.Date )" CalendarIcon="BootstrapIcon.Calendar" />
+                    <HxInputNumber Label="Amount" Value="@Transfer.Amount" ValueExpression="@( () => Transfer.Amount )" InputGroupStartText="$" Decimals="2" />
+                    <HxInputText Label="Source" Value="@Source" ValueExpression="@( () => Source )" />
+                    <HxInputTextArea Label="Description" Value="@Transfer.Description" ValueExpression="@( () => Transfer.Description )" CssClass="full-width" />
                 </HxFormState>
             </div>
         </BodyTemplate>
