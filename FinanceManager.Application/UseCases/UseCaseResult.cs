@@ -1,7 +1,6 @@
 ﻿namespace FinanceManager.Application.UseCases;
 
-public abstract class UseCaseResult
+public abstract record UseCaseResult(string? ErrorMessage = null)
 {
-    public string? ErrorMessage { get; init; }
     public bool IsSuccess => ErrorMessage == null;
 }
