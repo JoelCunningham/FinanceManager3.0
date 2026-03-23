@@ -52,7 +52,21 @@ public partial class Review : ComponentBase
     {
         query.FilterStatus = ReviewStatus.Unreviewed;
         var result = (await ReviewWorkflow.GetPageAsync(query)).Page;
-        if (IsAutoAssignEnabled) await AutoAssign(result.Items);
+
+        if (IsAutoAssignEnabled)
+        {
+            var autoAssignResult = await ReviewWorkflow.AutoCategoriseAsync(result.Items, Categories);
+            if (autoAssignResult.AssignedCount > 0)
+            {
+                Validation.SetSuccess($"Auto assigned {autoAssignResult.AssignedCount} transactions");
+            }
+            else if (Data.HasResults && IsFirstAutoAssign)
+            {
+                Validation.SetInfo("Not enough information to assign categories");
+                IsFirstAutoAssign = false;
+            }
+        }
+
         return result;
     }
 
@@ -69,47 +83,27 @@ public partial class Review : ComponentBase
 
     private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
     {
-        if (!ValidateGroup(group)) return;
+        Validation.Clear();
 
-        var result = await ReviewWorkflow.SaveAsync(group);
-        if (result.IsSuccess)
+        var validationResult = await ReviewWorkflow.ValidateGroupAsync(group);
+        if (!validationResult.IsValid)
+        {
+            foreach (var error in validationResult.Errors)
+            {
+                Validation.SetError(error.TransactionId, error.Key, error.Message);
+            }
+            return;
+        }
+
+        var saveResult = await ReviewWorkflow.SaveAsync(group);
+        if (saveResult.IsSuccess)
         {
             await Data.UpdateAsync();
             if (showMessage) Validation.SetSuccess("Transaction saved successfully");
         }
         else
         {
-            Validation.SetError(result.ErrorMessage ?? "An unexpected error occurred. Please try again");
-        }
-    }
-
-    private async Task AutoAssign(IEnumerable<ReviewGroup> groups)
-    {
-        var assignedCount = 0;
-
-        foreach (var group in groups)
-        {
-            foreach (var transaction in group.Transactions)
-            {
-                var suggested = (await ReviewWorkflow.SuggestCategoryAsync(transaction.Description)).CategoryId;
-                var category = Categories.FirstOrDefault(c => c.Id == suggested);
-                if (category is not null)
-                {
-                    transaction.Category = category;
-                    transaction.IsAutoCategorised = true;
-                    assignedCount++;
-                }
-            }
-        }
-
-        if (assignedCount > 0)
-        {
-            Validation.SetSuccess($"Auto assigned {assignedCount} transactions");
-        }
-        else if (Data.HasResults && IsFirstAutoAssign)
-        {
-            Validation.SetInfo("Not enough information to assign categories");
-            IsFirstAutoAssign = false;
+            Validation.SetError(saveResult.ErrorMessage ?? "An unexpected error occurred. Please try again");
         }
     }
 
@@ -146,23 +140,6 @@ public partial class Review : ComponentBase
         {
             Validation.SetError(transaction.Id, AmountKey, "Amount must be between 0 and the original amount");
         }
-    }
-
-    public bool ValidateGroup(ReviewGroup group)
-    {
-        Validation.Clear();
-        foreach (var transaction in group.Transactions)
-        {
-            if (transaction.Category is null && group.Transfers is null && transaction.Reimburses is null)
-            {
-                Validation.SetError(transaction.Id, CategoryKey, "A category is required");
-            }
-            if (transaction.Amount == 0)
-            {
-                Validation.SetError(transaction.Id, AmountKey, "Amount must not be zero");
-            }
-        }
-        return Validation.Type != ValidationType.Error;
     }
 
     public async Task OnFindReimbursement(ReviewGroup group, ReviewTransaction transaction)

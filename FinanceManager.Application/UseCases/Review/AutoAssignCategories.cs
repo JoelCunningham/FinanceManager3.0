@@ -1,28 +1,51 @@
 namespace FinanceManager.Application.UseCases.Review;
 
+using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 
-public sealed record SuggestCategoryResult(Guid? CategoryId = null) : UseCaseResult;
+public sealed record AutoCategoriseResult(int AssignedCount) : UseCaseResult;
 
-public sealed class SuggestCategory(ICategoryRepository categoryRepository, IMachineLearningRepository machineLearningRepository)
+public sealed class AutoAssignCategories(ICategoryRepository categoryRepository, IMachineLearningRepository machineLearningRepository)
 {
-    public async Task<SuggestCategoryResult> ExecuteAsync(string description)
+    public async Task<AutoCategoriseResult> ExecuteAsync(IEnumerable<ReviewGroup> groups, IEnumerable<Category> categories)
+    {
+        int assignedCount = 0;
+        var categoryDict = categories.ToDictionary(c => c.Id);
+
+        foreach (var group in groups)
+        {
+            foreach (var transaction in group.Transactions)
+            {
+                var suggested = await SuggestCategoryAsync(transaction.Description);
+                if (suggested is not null && categoryDict.TryGetValue(suggested.Value, out var category))
+                {
+                    transaction.Category = category;
+                    transaction.IsAutoCategorised = true;
+                    assignedCount++;
+                }
+            }
+        }
+
+        return new AutoCategoriseResult(assignedCount);
+    }
+
+    private async Task<Guid?> SuggestCategoryAsync(string description)
     {
         var normalisedDescription = machineLearningRepository.NormaliseDescription(description);
 
-        if (string.IsNullOrWhiteSpace(normalisedDescription)) return new SuggestCategoryResult();
+        if (string.IsNullOrWhiteSpace(normalisedDescription)) return null;
 
         var exactMatch = await machineLearningRepository.GetExactOrDefaultAsync(normalisedDescription);
-        if (exactMatch is not null) return new SuggestCategoryResult(exactMatch.Category.Id);
+        if (exactMatch is not null) return exactMatch.Category.Id;
 
         var allCategories = await categoryRepository.GetAllAsync();
         var allMemories = await machineLearningRepository.GetAllAsync();
 
         var similarCategory = SuggestBySimilarity(normalisedDescription, allCategories, allMemories);
-        if (similarCategory != null) return new SuggestCategoryResult(similarCategory.Id);
+        if (similarCategory != null) return similarCategory.Id;
 
-        return new SuggestCategoryResult();
+        return null;
     }
 
     private Category? SuggestBySimilarity(string description, IEnumerable<Category> categories, IEnumerable<MachineLearning> memories)
@@ -55,16 +78,13 @@ public sealed class SuggestCategory(ICategoryRepository categoryRepository, IMac
             var known = memory.NormalisedDescription;
             var knownTokens = known.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            // Shared words
             categoryScores[memory.Category.Id] += knownTokens.Intersect(descriptionTokens).Count();
 
-            // First word match
             if (knownTokens.FirstOrDefault() == firstDescriptionToken)
             {
                 categoryScores[memory.Category.Id] += 3;
             }
 
-            // Substring match
             if (known.Contains(description) || description.Contains(known))
             {
                 categoryScores[memory.Category.Id] += 2;

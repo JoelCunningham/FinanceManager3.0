@@ -34,7 +34,8 @@ public static class DependencyInjection
         services.AddScoped<GetTransferCandidates>();
         services.AddScoped<GetReimbursementCandidates>();
         services.AddScoped<SaveReview>();
-        services.AddScoped<SuggestCategory>();
+        services.AddScoped<ValidateReviewGroup>();
+        services.AddScoped<AutoAssignCategories>();
         services.AddScoped<ReviewWorkflow>();
 
         services.AddScoped<CategoryService>();
