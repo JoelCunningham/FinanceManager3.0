@@ -1,6 +1,4 @@
-﻿@inject DateService DateService
-
-@code
+﻿@code
 {
     [Parameter] public required ScopedPeriod Value { get; set; }
     [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
@@ -22,13 +20,13 @@
         if (ChangeEndDate)
         {
             SelectedYear = Value.EndDate.Year;
-            MonthOptions = DateService.GetMonths(SelectedYear).ToList();
+            MonthOptions = GetMonthPeriods.Execute(SelectedYear).Periods.ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.EndDate && m.EndDate >= Value.EndDate) ?? MonthOptions.First();
         }
         else
         {
             SelectedYear = Value.StartDate.Year;
-            MonthOptions = DateService.GetMonths(SelectedYear).ToList();
+            MonthOptions = GetMonthPeriods.Execute(SelectedYear).Periods.ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.StartDate && m.EndDate >= Value.StartDate) ?? MonthOptions.First();
         }
     }
@@ -71,7 +69,7 @@
     private async Task YearChanged(int year)
     {
         SelectedYear = year;
-        MonthOptions = DateService.GetMonths(year);
+        MonthOptions = GetMonthPeriods.Execute(year).Periods.ToList();
 
         var containingDate = ChangeEndDate ? Value.EndDate : Value.StartDate;
         var currentMonthIndex = DateHelper.GetMonthIndex(containingDate);

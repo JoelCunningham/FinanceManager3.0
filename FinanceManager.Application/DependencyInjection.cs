@@ -1,13 +1,13 @@
 namespace FinanceManager.Application;
 
-using FinanceManager.Application.Services;
 using FinanceManager.Application.Common;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.UseCases.Dates;
 using FinanceManager.Application.UseCases.Import;
-using FinanceManager.Application.UseCases.Transfers;
-using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Review;
+using FinanceManager.Application.UseCases.Transactions;
+using FinanceManager.Application.UseCases.Transfers;
 using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
@@ -38,6 +38,13 @@ public static class DependencyInjection
         services.AddScoped<GetChart2Data>();
         services.AddScoped<TransactionsWorkflow>();
 
+        // Transaction use cases
+        services.AddScoped<GetCategoriesForTransactions>();
+        services.AddScoped<GetBudgetScopes>();
+        services.AddScoped<GetChart1Data>();
+        services.AddScoped<GetChart2Data>();
+        services.AddScoped<TransactionsWorkflow>();
+
         // Review use cases
         services.AddScoped<GetReviewPage>();
         services.AddScoped<GetTransferCandidates>();
@@ -47,7 +54,11 @@ public static class DependencyInjection
         services.AddScoped<AutoAssignCategories>();
         services.AddScoped<ReviewWorkflow>();
 
-        services.AddScoped<DateService>();
+        // Date use cases
+        services.AddScoped<GetWeekPeriods>();
+        services.AddScoped<GetFortnightPeriods>();
+        services.AddScoped<GetMonthPeriods>();
+
         services.AddScoped<TransactionHelper>();
 
         return services;

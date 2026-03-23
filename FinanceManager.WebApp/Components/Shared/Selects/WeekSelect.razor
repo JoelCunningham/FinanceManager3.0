@@ -11,7 +11,7 @@
     protected override void OnParametersSet()
     {
         SelectedYear = ISOWeek.GetYear(Value.StartDate.ToDateTime(TimeOnly.MinValue));
-        WeekOptions = DateService.GetWeeks(SelectedYear).ToList();
+        WeekOptions = GetWeekPeriods.Execute(SelectedYear).Periods.ToList();
         Value = WeekOptions.FirstOrDefault(p => p.StartDate <= Value.StartDate && p.EndDate >= Value.StartDate) ?? WeekOptions.First();
     }
 
@@ -20,7 +20,7 @@
     private async Task YearChanged(int isoYear)
     {
         SelectedYear = isoYear;
-        WeekOptions = DateService.GetWeeks(isoYear).ToList();
+        WeekOptions = GetWeekPeriods.Execute(SelectedYear).Periods.ToList();
 
         var currentIsoWeek = DateHelper.GetWeekIndex(Value.StartDate);
         var targetStartDt = ISOWeek.ToDateTime(isoYear, currentIsoWeek, DayOfWeek.Monday);

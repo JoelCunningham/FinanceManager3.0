@@ -1,6 +1,4 @@
-﻿@inject DateService DateService
-
-@code
+﻿@code
 {
     [Parameter] public required ScopedPeriod Value { get; set; }
     [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
@@ -13,7 +11,7 @@
     protected override void OnParametersSet()
     {
         SelectedYear = ISOWeek.GetYear(Value.StartDate.ToDateTime(TimeOnly.MinValue));
-        FortnightOptions = DateService.GetFortnights(SelectedYear).ToList();
+        FortnightOptions = GetFortnightPeriods.Execute(SelectedYear).Periods.ToList();
         Value = FortnightOptions.FirstOrDefault(p => p.StartDate <= Value.StartDate && p.EndDate >= Value.StartDate) ?? FortnightOptions.First();
     }
 
@@ -22,7 +20,7 @@
     private async Task YearChanged(int year)
     {
         SelectedYear = year;
-        FortnightOptions = DateService.GetFortnights(year).ToList();
+        FortnightOptions = GetFortnightPeriods.Execute(SelectedYear).Periods.ToList();
 
         var currentFortnightIndex = DateHelper.GetFortnightIndex(Value.StartDate);
         var targetDateTime = ISOWeek.ToDateTime(year, ((currentFortnightIndex - 1) * 2) + 1, DayOfWeek.Monday);
