@@ -25,9 +25,8 @@ public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IEnume
 
         var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();
 
-        var records = parsed.Select(t => t.ToBankRecord(new Guid()));
-        var duplicates = await bankRecordRepository.GetDuplicatesAsync(records);
-        var duplicateIds = duplicates.Select(d => d.Id).ToHashSet();
+        var records = parsed.Select(t => t.ToBankRecord(new Guid())).ToList();
+        var duplicateIds = (await bankRecordRepository.GetDuplicatesAsync(records)).Select(d => d.Id).ToHashSet();
 
         var transactions = parsed.Where(p => !duplicateIds.Contains(p.Id)).ToList();
         if (transactions.Count == 0)
