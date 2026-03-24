@@ -1,9 +1,9 @@
 namespace FinanceManager.Application.UseCases.Dates;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Enums;
-using FinanceManager.Domain.Helpers;
 
 public sealed record GetWeekPeriodsResult(IEnumerable<ScopedPeriod> Periods) : UseCaseResult;
 

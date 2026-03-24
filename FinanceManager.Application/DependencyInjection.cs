@@ -1,6 +1,5 @@
 namespace FinanceManager.Application;
 
-using FinanceManager.Application.Common;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Dates;
@@ -8,6 +7,7 @@ using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
+using FinanceManager.Application.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection

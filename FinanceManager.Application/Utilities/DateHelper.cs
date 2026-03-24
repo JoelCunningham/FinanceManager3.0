@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using FinanceManager.Domain.Constants;
 
-namespace FinanceManager.Domain.Helpers;
+namespace FinanceManager.Application.Utilities;
 
 public class DateHelper
 {

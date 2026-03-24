@@ -3,7 +3,6 @@
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Entities.Base;
 using FinanceManager.Domain.Enums;
-using FinanceManager.Domain.Helpers;
 
 public class BudgetEntry : IEntity
 {

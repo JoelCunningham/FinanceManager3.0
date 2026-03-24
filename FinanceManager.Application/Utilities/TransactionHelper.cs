@@ -1,8 +1,7 @@
-﻿namespace FinanceManager.Application.Common;
+﻿namespace FinanceManager.Application.Utilities;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
-using FinanceManager.Domain.Entities;
 
 public class TransactionHelper(ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
 {

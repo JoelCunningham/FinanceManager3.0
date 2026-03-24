@@ -3,7 +3,6 @@ namespace FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
-using FinanceManager.Domain.Constants;
 
 public sealed record SaveReviewResult(string? ErrorMessage = null) : UseCaseResult(ErrorMessage);
 
@@ -13,11 +12,11 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
     {
         if (group.Transactions.Count == 0)
         {
-            return new SaveReviewResult(ErrorMessages.TransactionGroupEmpty);
+            return new SaveReviewResult("Transaction group must contain at least one transaction.");
         }
         if (group.Transfers is not null && group.Transactions.Count > 1)
         {
-            return new SaveReviewResult(ErrorMessages.TransferCannotBeSplit);
+            return new SaveReviewResult("Transfer transactions cannot be split.");
         }
 
         try
@@ -33,7 +32,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         }
         catch (Exception ex)
         {
-            return new SaveReviewResult(ex.Message ?? ErrorMessages.GenericError);
+            return new SaveReviewResult(ex.Message ?? "An unexpected error occurred. Please try again.");
         }
         return new SaveReviewResult();
     }
@@ -55,8 +54,8 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
 
     private async Task SaveTransactionAsync(ReviewTransaction transaction)
     {
-        if (transaction.Amount == 0) throw new Exception(ErrorMessages.TransactionInvalidAmount);
-        if (transaction.Category is null) throw new Exception(ErrorMessages.TransactionCategoryRequired);
+        if (transaction.Amount == 0) throw new Exception("Transaction must have a nonzero amount.");
+        if (transaction.Category is null) throw new Exception("Transaction must have a category.");
 
         var categoryEntity = transaction.Category.ToCategory();
         var transactionEntity = transaction.ToTransaction();
@@ -73,13 +72,13 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         catch
         {
             await operations.RollbackAsync();
-            throw new Exception(ErrorMessages.GenericError);
+            throw new Exception("An unexpected error occurred. Please try again.");
         }
     }
 
     private async Task AddReimbursementAsync(Guid transactionId, Guid reimbursementId)
     {
-        if (transactionId == reimbursementId) throw new Exception(ErrorMessages.ReimbursementInvalidId);
+        if (transactionId == reimbursementId) throw new Exception("Transaction IDs must be different.");
 
         await using var operations = unitOfWork.BeginTransaction();
         try
@@ -100,13 +99,13 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         catch
         {
             await operations.RollbackAsync();
-            throw new Exception(ErrorMessages.GenericError);
+            throw new Exception("An unexpected error occurred. Please try again.");
         }
     }
 
     private async Task ConvertToTransferAsync(Guid transactionIdA, Guid transactionIdB)
     {
-        if (transactionIdA == transactionIdB) throw new Exception(ErrorMessages.TransferInvalidId);
+        if (transactionIdA == transactionIdB) throw new Exception("Transaction IDs must be different.");
 
         await using var operations = unitOfWork.BeginTransaction();
         try
@@ -116,7 +115,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
 
             if (transactionA.Record.Transactions.Count > 1 || transactionB.Record.Transactions.Count > 1)
             {
-                throw new Exception(ErrorMessages.SplitCannotBeTransfer);
+                throw new Exception("Split transactions cannot be transfers.");
             }
 
             await transactionRepository.DeleteAsync(transactionA.Id);
@@ -131,7 +130,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         catch
         {
             await operations.RollbackAsync();
-            throw new Exception(ErrorMessages.GenericError);
+            throw new Exception("An unexpected error occurred. Please try again.");
         }
     }
 }

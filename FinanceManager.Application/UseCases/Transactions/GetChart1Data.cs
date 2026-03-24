@@ -1,9 +1,9 @@
 namespace FinanceManager.Application.UseCases.Transactions;
 
-using FinanceManager.Application.Common;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.Utilities;
 
 public sealed record GetChart1DataResult(
     List<TransactionSummary> Transactions,
