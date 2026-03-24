@@ -12,6 +12,7 @@ public enum TransactionSortBy
 {
     Date,
     Amount,
+    Category,
     FromAccount,
     ToAccount,
 }

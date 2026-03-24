@@ -143,6 +143,10 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
         {
             return request.SortBy switch
             {
+                TransactionSortBy.Category => request.SortDescending
+                    ? query.OrderByDescending(t => t.Category != null ? t.Category.Name : string.Empty)
+                    : query.OrderBy(t => t.Category != null ? t.Category.Name : string.Empty),
+
                 TransactionSortBy.Amount => request.SortDescending
                     ? query.OrderByDescending(t => t.Amount)
                     : query.OrderBy(t => t.Amount),

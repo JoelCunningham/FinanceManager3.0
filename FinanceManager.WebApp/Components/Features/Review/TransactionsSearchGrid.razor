@@ -6,6 +6,8 @@
     [Parameter] public EventCallback<TransactionSummary> OnSelect { get; set; }
 
     [Parameter] public bool IsTransferMode { get; set; } = false;
+
+    private string GetCategoryName(TransactionSummary transaction) => transaction.Category?.Name ?? "Uncategorised";
 }
 
 <ListLayout TItem="TransactionSummary" Data="Data">
@@ -23,7 +25,7 @@
     <DataTemplate>
         <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" TItem="TransactionSummary" PageSize="Data.Query.PageSize" PreserveSelection="false" Responsive="false" SelectedDataItemChanged="OnSelect">
             <Columns>
-                <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => t.Category.Name)" ItemTextSelector="@(t => t.Category?.Name ?? "Uncategorised")" />
+                <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => GetCategoryName(t))" ItemTextSelector="@(t => GetCategoryName(t))" />
                 <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
                 <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col"><ItemTemplate Context="transaction"><span title="@transaction.Description">@transaction.Description</span></ItemTemplate></HxGridColumn>
                 @if (!IsTransferMode)
