@@ -1,0 +1,20 @@
+@code {
+    [Parameter] public BudgetScope Scope { get; set; }
+    [Parameter] public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
+
+    [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
+    [Parameter] public EventCallback<BudgetEntry> OnEntryClicked { get; set; }
+    private string GridCssClass => Scope switch
+    {
+        BudgetScope.Monthly => "budget-grid budget-grid-12",
+        BudgetScope.Fortnightly => "budget-grid budget-grid-14",
+        _ => "budget-grid budget-grid-7"
+    };
+}
+
+<div class="@GridCssClass">
+    @foreach (var cell in Cells)
+    {
+        <BudgetGridCell Cell="cell" CurrentScope="Scope" OnCellClicked="OnCellClicked" OnEntryClicked="OnEntryClicked" />
+    }
+</div>

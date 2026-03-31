@@ -1,0 +1,53 @@
+@code {
+    private Havit.Blazor.Components.Web.Bootstrap.HxModal? _modal;
+
+    [Parameter] public string Title { get; set; } = string.Empty;
+
+    [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
+
+    [Parameter] public EditBudgetEntryModel? EditModel { get; set; }
+
+    [Parameter] public CategorySummary? SelectedCategory { get; set; }
+    [Parameter] public EventCallback<CategorySummary?> SelectedCategoryChanged { get; set; }
+
+    [Parameter] public bool IsEditing { get; set; }
+
+    [Parameter] public int MaxStartIndex { get; set; }
+    [Parameter] public int MaxSpan { get; set; }
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    public Task ShowAsync() => _modal?.ShowAsync() ?? Task.CompletedTask;
+    public Task HideAsync() => _modal?.HideAsync() ?? Task.CompletedTask;
+}
+
+<HxModal @ref="_modal" Title="@Title">
+    <BodyTemplate>
+        @if (EditModel is not null)
+        {
+            <div class="d-flex flex-column gap-2">
+                <HxInputNumber @bind-Value="EditModel.Amount" Label="Amount" />
+                <HxInputText @bind-Value="EditModel.Notes" Label="Notes" />
+
+                <CategoryInput Value="SelectedCategory"
+                               ValueChanged="SelectedCategoryChanged"
+                               Data="Categories"
+                               Label="Category"
+                               Nullable="false" />
+
+                <HxInputNumber @bind-Value="EditModel.StartCellIndex" Label="Start" Min="0" Max="MaxStartIndex" />
+                <HxInputNumber @bind-Value="EditModel.Span" Label="Span" Min="1" Max="MaxSpan" />
+            </div>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <HxButton Color="ThemeColor.Secondary" OnClick="OnCancel">Cancel</HxButton>
+        @if (IsEditing)
+        {
+            <HxButton Color="ThemeColor.Danger" OnClick="OnDelete">Delete</HxButton>
+        }
+        <HxButton Color="ThemeColor.Primary" OnClick="OnSave">Save</HxButton>
+    </FooterTemplate>
+</HxModal>

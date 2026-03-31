@@ -1,0 +1,18 @@
+@page "/Budget"
+
+<BudgetActions Period="GridPeriod" OnPrev="Prev" OnToday="Today" OnNext="Next" OnPeriodChanged="SetScope" />
+
+<BudgetGrid Scope="GridPeriod.Scope" Cells="Cells" OnCellClicked="OnCellClicked" OnEntryClicked="EditEntry" />
+
+<BudgetEntryModal @ref="_budgetEntryModal"
+                  Title="@EditModalTitle"
+                  Categories="Categories"
+                  EditModel="EditModel"
+                  SelectedCategory="SelectedCategory"
+                  SelectedCategoryChanged="OnSelectedCategoryChanged"
+                  IsEditing="IsEditing"
+                  MaxStartIndex="@(Math.Max(0, Cells.Count - 1))"
+                  MaxSpan="@(Math.Max(1, Cells.Count))"
+                  OnCancel="CloseEditModal"
+                  OnDelete="Delete"
+                  OnSave="Save" />

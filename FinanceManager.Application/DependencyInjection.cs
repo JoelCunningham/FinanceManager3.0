@@ -2,6 +2,7 @@ namespace FinanceManager.Application;
 
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.UseCases.Dates;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
@@ -45,6 +46,12 @@ public static class DependencyInjection
         services.AddScoped<ValidateReviewGroup>();
         services.AddScoped<AutoAssignCategories>();
         services.AddScoped<ReviewWorkflow>();
+
+        // Budget use cases
+        services.AddScoped<GetBudgetPage>();
+        services.AddScoped<SaveBudgetEntry>();
+        services.AddScoped<DeleteBudgetEntry>();
+        services.AddScoped<BudgetWorkflow>();
 
         // Date use cases
         services.AddScoped<GetWeekPeriods>();

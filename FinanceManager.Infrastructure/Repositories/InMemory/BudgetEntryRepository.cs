@@ -9,29 +9,6 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     private readonly List<BudgetEntry> _budgetEntries = [];
     private readonly ICategoryRepository CategoryRepository;
 
-    private static DateOnly StartDateFromBudgetEntry(BudgetEntry budgetEntry)
-    {
-        return budgetEntry.Period.Scope switch
-        {
-            BudgetScope.Weekly => budgetEntry.Period.StartDate.AddDays(7 * budgetEntry.PeriodPosition),
-            BudgetScope.Fortnightly => budgetEntry.Period.StartDate.AddDays(14 * budgetEntry.PeriodPosition),
-            BudgetScope.Monthly => budgetEntry.Period.StartDate.AddMonths(1 * budgetEntry.PeriodPosition),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-    }
-
-    private static DateOnly EndDateFromBudgetEntry(BudgetEntry budgetEntry)
-    {
-        var startDate = StartDateFromBudgetEntry(budgetEntry);
-        return budgetEntry.Period.Scope switch
-        {
-            BudgetScope.Weekly => startDate.AddDays(7).AddDays(-1),
-            BudgetScope.Fortnightly => startDate.AddDays(14).AddDays(-1),
-            BudgetScope.Monthly => startDate.AddMonths(1).AddDays(-1),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-    }
-
     public BudgetEntryRepository(ICategoryRepository categoryRepository)
     {
         CategoryRepository = categoryRepository;
@@ -42,9 +19,55 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     {
         return _budgetEntries.Where(b =>
             categoryIds.Contains(b.CategoryId) &&
-            EndDateFromBudgetEntry(b) >= startDate &&
-            StartDateFromBudgetEntry(b) <= endDate
+            b.EndDate >= startDate &&
+            b.StartDate <= endDate
         );
+    }
+
+    public async Task<BudgetEntry?> GetByIdAsync(Guid id)
+    {
+        return _budgetEntries.FirstOrDefault(e => e.Id == id);
+    }
+
+    public async Task CreateAsync(BudgetEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        if (entry.Id == Guid.Empty)
+        {
+            entry.Id = Guid.NewGuid();
+        }
+
+        if (_budgetEntries.Any(e => e.Id == entry.Id))
+        {
+            throw new InvalidOperationException("Budget entry already exists");
+        }
+
+        _budgetEntries.Add(entry);
+    }
+
+    public async Task UpdateAsync(BudgetEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        var index = _budgetEntries.FindIndex(e => e.Id == entry.Id);
+        if (index < 0)
+        {
+            throw new KeyNotFoundException("Budget entry not found");
+        }
+
+        _budgetEntries[index] = entry;
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var index = _budgetEntries.FindIndex(e => e.Id == id);
+        if (index < 0)
+        {
+            return;
+        }
+
+        _budgetEntries.RemoveAt(index);
     }
 
     private void SeedDefaultBudgetEntries()
@@ -56,10 +79,10 @@ public class BudgetEntryRepository : IBudgetEntryRepository
             Id = Guid.NewGuid(),
             Scope = BudgetScope.Monthly,
             StartDate = new DateOnly(DateTime.Now.AddMonths(-12).Year, DateTime.Now.AddMonths(-12).Month, 1),
-            Length = 12
+            Length = 16
         };
 
-        for (var i = 0; i <= 12; i++)
+        for (var i = 0; i <= 14; i++)
         {
             var salary = categories.First(c => c.Name == "Salary");
             _budgetEntries.Add(new BudgetEntry
@@ -116,5 +139,13 @@ public class BudgetEntryRepository : IBudgetEntryRepository
             Period = period,
             PeriodPosition = 10,
         });
+
+        var weeklyPeriod = new BudgetPeriod
+        {
+            Id = Guid.NewGuid(),
+            Scope = BudgetScope.Weekly,
+            StartDate = new DateOnly(DateTime.Now.AddMonths(-3).Year, DateTime.Now.AddMonths(-3).Month, 1),
+            Length = 12
+        };
     }
 }

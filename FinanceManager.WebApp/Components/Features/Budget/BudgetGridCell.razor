@@ -1,0 +1,49 @@
+@code {
+    [Parameter] public BudgetCell Cell { get; set; } = default!;
+    [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
+
+    [Parameter] public BudgetScope CurrentScope { get; set; }
+
+    [Parameter] public EventCallback<BudgetEntry> OnEntryClicked { get; set; }
+
+    private Task HandleCellClick() => OnCellClicked.InvokeAsync(Cell);
+    private Task HandleEntryClick(BudgetEntry entry) => OnEntryClicked.InvokeAsync(entry);
+
+    private string CellCssClass => Cell.ScopeType switch 
+    {
+        CellScopeType.Current => "budget-cell budget-cell-current",
+        CellScopeType.Other => "budget-cell budget-cell-past",
+        CellScopeType.Mixed => "budget-cell budget-cell-mixed",
+        CellScopeType.None => "budget-cell budget-cell-none",
+        _ => "budget-cell"
+    };
+
+    private string CellLabel => Cell.ScopeType switch
+    {
+        CellScopeType.Current => Cell.Label,
+        CellScopeType.Other => Cell.Label + " - " + ScopeToText(Cell.Scope),
+        CellScopeType.Mixed => Cell.Label + " - Mixed-Scoped",
+        CellScopeType.None => Cell.Label + " - Unscoped",
+        _ => "budget-cell"
+    };
+
+    private string ScopeToText(BudgetScope? scope) => scope switch
+    {
+        BudgetScope.Monthly => "Month-Scoped",
+        BudgetScope.Fortnightly => "Fortnight-Scoped",
+        BudgetScope.Weekly => "Week-Scoped",
+        _ => "Unknown"
+    };
+}
+
+<div class="@CellCssClass" @onclick="HandleCellClick">
+    <div class="budget-cell-header">@CellLabel</div>
+
+    @foreach (var item in Cell.Entries)
+    {
+        <div class="budget-entry" @onclick:stopPropagation="true" @onclick="() => HandleEntryClick(item)">
+            <div class="budget-entry-title">@item.Category.Name</div>
+            <div class="budget-entry-amount">@item.Amount.ToString("C")</div>
+        </div>
+    }
+</div>
