@@ -1,21 +1,22 @@
 ﻿namespace FinanceManager.Application.DTOs;
 
-using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 
-public sealed class BudgetCell(int index, string label)
+public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
 {
-    public int Index { get; } = index;
-    public string Label { get; } = label;
-    public CellScopeType ScopeType { get; set; } = CellScopeType.None;
-    public BudgetScope? Scope { get; set; } = null;
-    public List<BudgetEntry> Entries { get; set; } = [];
-}
+    public int Index { get; set; } = index;
+    public DateOnly StartDate { get; set; } = startDate;
+    public BudgetScope? Scope { get; set; } = scope;
+    public List<BudgetCellEntry> Entries { get; set; } = [];
 
-public enum CellScopeType
-{
-    Current,
-    Other,
-    Mixed,
-    None
+    public string Label => GetLabel();
+    private string GetLabel()
+    {
+        return Scope switch
+        {
+            BudgetScope.Monthly => StartDate.ToString("MMM"),
+            BudgetScope.Weekly or BudgetScope.Fortnightly => StartDate.ToString("ddd dd"),
+            _ => StartDate.ToString("dd/MM/yyyy")
+        };  
+    }
 }

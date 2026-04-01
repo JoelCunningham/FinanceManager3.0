@@ -1,29 +1,15 @@
 @code {
-    [Parameter] public ScopedPeriod Period { get; set; } = default!;
-    [Parameter] public EventCallback<ScopedPeriod> OnPeriodChanged { get; set; }
+    [Parameter] public BudgetPeriod? CurrentPeriod { get; set; } = default!;
 
     [Parameter] public EventCallback OnPrev { get; set; }
     [Parameter] public EventCallback OnToday { get; set; }
     [Parameter] public EventCallback OnNext { get; set; }
 
-    private string CurrentScopeLabel => Period.Scope switch
+    private string CurrentPeriodText => CurrentPeriod?.Scope switch
     {
-        BudgetScope.Weekly => "Week",
-        BudgetScope.Fortnightly => "Fortnight",
-        BudgetScope.Monthly => "Month",
-        _ => "Scope"
-    };
-
-    private async Task OnPeriodChangedHandler(BudgetScope newScope)
-    {
-        await OnPeriodChanged.InvokeAsync(new ScopedPeriod(newScope, Period.StartDate));
-    }
-
-    private string CurrentPeriodText => Period.Scope switch
-    {
-        BudgetScope.Weekly => $"Weeks of {Period.StartDate.Year}",
-        BudgetScope.Fortnightly => $"Fortnights of {Period.StartDate.Year}",
-        BudgetScope.Monthly => $"Months of {Period.StartDate.Year}",
+        BudgetScope.Weekly => $"Weeks of {CurrentPeriod.StartDate.Year}",
+        BudgetScope.Fortnightly => $"Fortnights of {CurrentPeriod.StartDate.Year}",
+        BudgetScope.Monthly => $"Months of {CurrentPeriod.StartDate.Year}",
         _ => "Current Period"
     };
 }
@@ -32,15 +18,6 @@
     <HxButton Color="ThemeColor.Secondary" OnClick="OnPrev">Prev</HxButton>
     <HxButton Color="ThemeColor.Secondary" OnClick="OnToday">Today</HxButton>
     <HxButton Color="ThemeColor.Secondary" OnClick="OnNext">Next</HxButton>
-
-    <HxDropdownButtonGroup>
-        <HxDropdownToggleButton Color="ThemeColor.Secondary">@CurrentScopeLabel</HxDropdownToggleButton>
-        <HxDropdownMenu>
-            <HxDropdownItemNavLink Text="Week" OnClick="() => OnPeriodChangedHandler(BudgetScope.Weekly)" />
-            <HxDropdownItemNavLink Text="Fortnight" OnClick="() => OnPeriodChangedHandler(BudgetScope.Fortnightly)" />
-            <HxDropdownItemNavLink Text="Month" OnClick="() => OnPeriodChangedHandler(BudgetScope.Monthly)" />
-        </HxDropdownMenu>
-    </HxDropdownButtonGroup>
 
     <p>@CurrentPeriodText</p>
 </div>

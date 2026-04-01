@@ -3,16 +3,12 @@
 
     [Parameter] public string Title { get; set; } = string.Empty;
 
-    [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
-
-    [Parameter] public EditBudgetEntryModel? EditModel { get; set; }
-
-    [Parameter] public CategorySummary? SelectedCategory { get; set; }
-    [Parameter] public EventCallback<CategorySummary?> SelectedCategoryChanged { get; set; }
-
     [Parameter] public bool IsEditing { get; set; }
 
-    [Parameter] public int MaxStartIndex { get; set; }
+    [Parameter] public BudgetCellEntry? CurrentEntry { get; set; }
+   
+    [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
+
     [Parameter] public int MaxSpan { get; set; }
 
     [Parameter] public EventCallback OnCancel { get; set; }
@@ -25,20 +21,15 @@
 
 <HxModal @ref="_modal" Title="@Title">
     <BodyTemplate>
-        @if (EditModel is not null)
+        @if (CurrentEntry is not null)
         {
             <div class="d-flex flex-column gap-2">
-                <HxInputNumber @bind-Value="EditModel.Amount" Label="Amount" />
-                <HxInputText @bind-Value="EditModel.Notes" Label="Notes" />
+                <HxInputNumber @bind-Value="CurrentEntry.Amount" Label="Amount" />
+                <HxInputText @bind-Value="CurrentEntry.Notes" Label="Notes" />
 
-                <CategoryInput Value="SelectedCategory"
-                               ValueChanged="SelectedCategoryChanged"
-                               Data="Categories"
-                               Label="Category"
-                               Nullable="false" />
-
-                <HxInputNumber @bind-Value="EditModel.StartCellIndex" Label="Start" Min="0" Max="MaxStartIndex" />
-                <HxInputNumber @bind-Value="EditModel.Span" Label="Span" Min="1" Max="MaxSpan" />
+                <CategoryInput @bind-Value="CurrentEntry.Category" Data="Categories" Label="Category" Nullable="false" />
+                <HxInputNumber @bind-Value="CurrentEntry.PeriodPosition" Label="Start" Min="0" Max="@(MaxSpan - 1)" />
+                <HxInputNumber @bind-Value="CurrentEntry.Length" Label="Span" Min="1" Max="@MaxSpan" />
             </div>
         }
     </BodyTemplate>

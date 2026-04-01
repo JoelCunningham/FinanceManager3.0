@@ -2,114 +2,94 @@ namespace FinanceManager.Application.UseCases.Budget;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 
 public sealed record GetBudgetPageResult(
+    BudgetPeriod? BudgetPeriod,
     IReadOnlyList<BudgetCell> Cells,
     IReadOnlyList<CategorySummary> Categories
 );
 
-public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository)
+public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetPeriodRepository budgetPeriodRepository)
 {
-    public async Task<GetBudgetPageResult> ExecuteAsync(ScopedPeriod period)
+    public async Task<GetBudgetPageResult> ExecuteAsync(int year)
     {
-        var categories = (await categoryRepository.GetAllAsync()).ToList();
-        var categoryIds = categories.Select(c => c.Id).ToArray();
+        var period = await budgetPeriodRepository.GetByYearAsync(year);
+        var categories = await categoryRepository.GetAllAsync();
+
         var categorySummaries = categories.Select(CategorySummary.FromCategory).ToList();
 
-        var entries = (await budgetEntryRepository.GetByRangeAsync(period.StartDate, period.EndDate, categoryIds)).ToList();
+        if (period == null)
+        {
+            return new GetBudgetPageResult(null, [], categorySummaries);
+        }
+        else
+        {
+            var cells = BuildCells(period);
+            var entries = (await budgetEntryRepository.GetByPeriodAsync(period.Id)).ToList();
+            var poplulatedCells = PopulateCells(cells, entries);       
 
-        var cells = BuildCells(period);
-        PopulateCells(period, cells, entries);
-
-        return new GetBudgetPageResult(cells, categorySummaries);
+            return new GetBudgetPageResult(period, poplulatedCells, categorySummaries);
+        }
     }
 
-    public static int GetCellIndexForEntry(ScopedPeriod period, BudgetEntry entry)
-    {
-        var innerPeriods = period.InnerPeriods.ToList();
-        var entryPeriod = innerPeriods.FirstOrDefault(p => entry.StartDate >= p.StartDate && entry.StartDate <= p.EndDate);
-        return entryPeriod is not null ? innerPeriods.IndexOf(entryPeriod) : -1;
-    }
-
-    private static List<BudgetCell> BuildCells(ScopedPeriod period)
+    private static List<BudgetCell> BuildCells(BudgetPeriod period)
     {
         var cells = new List<BudgetCell>();
 
         if (period.Scope == BudgetScope.Monthly)
         {
-            for (var i = 0; i < DateConstants.MONTHS_IN_YEAR; i++)
+            var monthsInYear = DateHelper.GetMonthCount();
+            for (var i = 0; i < monthsInYear; i++)
             {
-                var dt = period.StartDate.AddMonths(i);
-                cells.Add(new BudgetCell(i, dt.ToString("MMM")));
+                cells.Add(new BudgetCell(i, period.StartDate.AddMonths(i), BudgetScope.Monthly));
             }
         }
-        else if (period.Scope == BudgetScope.Weekly)
+
+        var firstWeekOfYear = DateHelper.GetIsoWeek1(period.Year);
+
+        if (period.Scope == BudgetScope.Weekly)
         {
-            for (var i = 0; i < DateConstants.DAYS_IN_WEEK; i++)
+            var weeksInYear = DateHelper.GetWeekCount(period.Year);
+            for (var i = 0; i < weeksInYear; i++)
             {
-                var dt = period.StartDate.AddDays(i);
-                cells.Add(new BudgetCell(i, dt.ToString("ddd dd")));
+                cells.Add(new BudgetCell(i, firstWeekOfYear.AddDays(i * DateConstants.DAYS_IN_WEEK), BudgetScope.Weekly));
             }
         }
-        else
+
+        if (period.Scope == BudgetScope.Fortnightly)
         {
-            for (var i = 0; i < DateConstants.DAYS_IN_FORTNIGHT; i++)
+            var fortnightsInYear = DateHelper.GetFortnightCount(period.Year);
+            for (var i = 0; i < fortnightsInYear; i++)
             {
-                var dt = period.StartDate.AddDays(i);
-                cells.Add(new BudgetCell(i, dt.ToString("ddd dd")));
+                cells.Add(new BudgetCell(i, firstWeekOfYear.AddDays(i * DateConstants.DAYS_IN_FORTNIGHT), BudgetScope.Fortnightly));
             }
         }
 
         return cells;
     }
 
-    private static void PopulateCells(ScopedPeriod period, List<BudgetCell> cells, IReadOnlyList<BudgetEntry> entries)
+    private static List<BudgetCell> PopulateCells(List<BudgetCell> cells, IReadOnlyList<BudgetEntry> entries)
     {
-        foreach (var cell in cells)
-        {
-            cell.Entries.Clear();
-            cell.ScopeType = CellScopeType.None;
-            cell.Scope = null;
-        }
-
         foreach (var entry in entries)
         {
-            var cellIndex = GetCellIndexForEntry(period, entry);
-            if (cellIndex < 0) continue;
-
-            cells[cellIndex].Entries.Add(entry);
-            UpdateCellScope(period, cells, entry, cellIndex);
+            for (var i = 0; i < entry.Length; i++)
+            {
+                cells[i + entry.PeriodPosition].Entries.Add(BudgetCellEntry.FromBudgetEntry(entry, i));
+            }
         }
 
         foreach (var cell in cells)
         {
             cell.Entries = [.. cell.Entries
-                .OrderByDescending(e => e.Category.Group?.IsIncome == true)
-                .ThenBy(e => e.Category.Group.Name)
-                .ThenBy(e => e.Category.Name)];
+                .OrderByDescending(e => e.Category?.IsIncome == true)
+                .ThenBy(e => e.Category?.GroupName)
+                .ThenBy(e => e.Category?.Name)];
         }
-    }
 
-    private static void UpdateCellScope(ScopedPeriod period, List<BudgetCell> cells, BudgetEntry entry, int cellIndex)
-    {
-        var entryScope = entry.Period.Scope == period.Scope
-            ? CellScopeType.Current
-            : CellScopeType.Other;
-
-        var currentScope = cells[cellIndex].ScopeType;
-
-        if (currentScope == CellScopeType.None)
-        {
-            cells[cellIndex].ScopeType = entryScope;
-            cells[cellIndex].Scope = entry.Period.Scope;
-        }
-        else if (currentScope != entryScope)
-        {
-            cells[cellIndex].ScopeType = CellScopeType.Mixed;
-            cells[cellIndex].Scope = null;
-        }
+        return cells;
     }
 }

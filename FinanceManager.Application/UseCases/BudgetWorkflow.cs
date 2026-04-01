@@ -2,13 +2,12 @@ namespace FinanceManager.Application.UseCases;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases.Budget;
-using FinanceManager.Domain.Entities;
 
 public sealed class BudgetWorkflow(GetBudgetPage getBudgetPage, SaveBudgetEntry saveBudgetEntry, DeleteBudgetEntry deleteBudgetEntry)
 {
-    public Task<GetBudgetPageResult> GetPageAsync(ScopedPeriod period) => getBudgetPage.ExecuteAsync(period);
+    public Task<GetBudgetPageResult> GetPageAsync(int year) => getBudgetPage.ExecuteAsync(year);
 
-    public Task SaveAsync(BudgetEntry entry, bool isEditing) => saveBudgetEntry.ExecuteAsync(entry, isEditing);
+    public Task SaveAsync(BudgetCellEntry entry, int year, bool isEditing) => saveBudgetEntry.ExecuteAsync(entry, year, isEditing);
 
     public Task DeleteAsync(Guid id) => deleteBudgetEntry.ExecuteAsync(id);
 }

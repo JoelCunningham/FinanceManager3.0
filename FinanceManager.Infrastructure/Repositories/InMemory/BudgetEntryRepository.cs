@@ -2,26 +2,29 @@
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
-using FinanceManager.Domain.Enums;
+using System.Globalization;
 
 public class BudgetEntryRepository : IBudgetEntryRepository
 {
     private readonly List<BudgetEntry> _budgetEntries = [];
     private readonly ICategoryRepository CategoryRepository;
+    private readonly IBudgetPeriodRepository BudgetPeriodRepository;
 
-    public BudgetEntryRepository(ICategoryRepository categoryRepository)
+    public BudgetEntryRepository(ICategoryRepository categoryRepository, IBudgetPeriodRepository budgetPeriodRepository)
     {
         CategoryRepository = categoryRepository;
+        BudgetPeriodRepository = budgetPeriodRepository;
         SeedDefaultBudgetEntries();
     }
 
     public async Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Guid> categoryIds)
     {
-        return _budgetEntries.Where(b =>
-            categoryIds.Contains(b.CategoryId) &&
-            b.EndDate >= startDate &&
-            b.StartDate <= endDate
-        );
+        return _budgetEntries.Where(b => categoryIds.Contains(b.CategoryId) && b.EndDate >= startDate && b.StartDate <= endDate);
+    }
+
+    public async Task<IEnumerable<BudgetEntry>> GetByPeriodAsync(Guid periodId)
+    {
+        return _budgetEntries.Where(b => b.PeriodId == periodId);
     }
 
     public async Task<BudgetEntry?> GetByIdAsync(Guid id)
@@ -31,13 +34,6 @@ public class BudgetEntryRepository : IBudgetEntryRepository
 
     public async Task CreateAsync(BudgetEntry entry)
     {
-        ArgumentNullException.ThrowIfNull(entry);
-
-        if (entry.Id == Guid.Empty)
-        {
-            entry.Id = Guid.NewGuid();
-        }
-
         if (_budgetEntries.Any(e => e.Id == entry.Id))
         {
             throw new InvalidOperationException("Budget entry already exists");
@@ -48,8 +44,6 @@ public class BudgetEntryRepository : IBudgetEntryRepository
 
     public async Task UpdateAsync(BudgetEntry entry)
     {
-        ArgumentNullException.ThrowIfNull(entry);
-
         var index = _budgetEntries.FindIndex(e => e.Id == entry.Id);
         if (index < 0)
         {
@@ -74,15 +68,11 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     {
         var categories = CategoryRepository.GetAllAsync().GetAwaiter().GetResult().ToList();
 
-        var period = new BudgetPeriod
-        {
-            Id = Guid.NewGuid(),
-            Scope = BudgetScope.Monthly,
-            StartDate = new DateOnly(DateTime.Now.AddMonths(-12).Year, DateTime.Now.AddMonths(-12).Month, 1),
-            Length = 16
-        };
+        var period2024 = BudgetPeriodRepository.GetByYearAsync(2024).GetAwaiter().GetResult();
+        var period2025 = BudgetPeriodRepository.GetByYearAsync(2025).GetAwaiter().GetResult();
+        var period2026 = BudgetPeriodRepository.GetByYearAsync(2026).GetAwaiter().GetResult();
 
-        for (var i = 0; i <= 14; i++)
+        if (period2026 != null)
         {
             var salary = categories.First(c => c.Name == "Salary");
             _budgetEntries.Add(new BudgetEntry
@@ -91,8 +81,10 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = salary.Id,
                 Category = salary,
                 Amount = 4564.85m,
-                Period = period,
-                PeriodPosition = i,
+                PeriodId = period2026.Id,
+                Period = period2026,
+                PeriodPosition = 0,
+                Length = 12
             });
 
             var sport = categories.First(c => c.Name == "Sport");
@@ -102,8 +94,10 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = sport.Id,
                 Category = sport,
                 Amount = 50,
-                Period = period,
-                PeriodPosition = i,
+                PeriodId= period2026.Id,
+                Period = period2026,
+                PeriodPosition = 2,
+                Length = 8
             });
 
             var diningout = categories.First(c => c.Name == "Dining Out");
@@ -113,39 +107,55 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = diningout.Id,
                 Category = diningout,
                 Amount = 100,
-                Period = period,
-                PeriodPosition = i,
+                PeriodId = period2026.Id,
+                Period = period2026,
+                PeriodPosition = 0,
+                Length = 12
             });
 
-            var cosmetics = categories.First(c => c.Name == "Cosmetics");
+            for (var i = 0; i <= 12; i++)
+            {
+                var cosmetics = categories.First(c => c.Name == "Cosmetics");
+                _budgetEntries.Add(new BudgetEntry
+                {
+                    Id = Guid.NewGuid(),
+                    CategoryId = cosmetics.Id,
+                    Category = cosmetics,
+                    Amount = 50,
+                    PeriodId = period2026.Id,
+                    Period = period2026,
+                    PeriodPosition = i,
+                });
+            }
+        }
+
+        if (period2025 != null)
+        {
+            var sport = categories.First(c => c.Name == "Sport");
             _budgetEntries.Add(new BudgetEntry
             {
                 Id = Guid.NewGuid(),
-                CategoryId = cosmetics.Id,
-                Category = cosmetics,
+                CategoryId = sport.Id,
+                Category = sport,
                 Amount = 50,
-                Period = period,
-                PeriodPosition = i,
+                PeriodId = period2025.Id,
+                Period = period2025,
+                PeriodPosition = 0,
+                Length = 24
+            });
+
+            var diningout = categories.First(c => c.Name == "Dining Out");
+            _budgetEntries.Add(new BudgetEntry
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = diningout.Id,
+                Category = diningout,
+                Amount = 100,
+                PeriodId = period2025.Id,
+                Period = period2025,
+                PeriodPosition = 2,
+                Length = 20
             });
         }
-
-        var presents = categories.First(c => c.Name == "Presents");
-        _budgetEntries.Add(new BudgetEntry
-        {
-            Id = Guid.NewGuid(),
-            CategoryId = presents.Id,
-            Category = presents,
-            Amount = 250,
-            Period = period,
-            PeriodPosition = 10,
-        });
-
-        var weeklyPeriod = new BudgetPeriod
-        {
-            Id = Guid.NewGuid(),
-            Scope = BudgetScope.Weekly,
-            StartDate = new DateOnly(DateTime.Now.AddMonths(-3).Year, DateTime.Now.AddMonths(-3).Month, 1),
-            Length = 12
-        };
     }
 }

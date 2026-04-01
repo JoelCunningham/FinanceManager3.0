@@ -14,9 +14,10 @@ public class BudgetEntry : IEntity
     public Guid CategoryId { get; set; }
     public required Category Category { get; set; }
 
-    public decimal Amount { get; set; }
+    public int Length { get; set; }
     public int PeriodPosition { get; set; }
 
+    public decimal Amount { get; set; }
     public string? Notes { get; set; }
 
     public DateOnly StartDate => Period.Scope switch

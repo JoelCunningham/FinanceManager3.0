@@ -24,6 +24,14 @@ public class CategoryRepository : ICategoryRepository
         return Task.FromResult<IEnumerable<CategoryGroup>>([.. _categoryGroups]);
     }
 
+    public Task<Category> GetByIdAsync(Guid id)
+    {
+        var category = _categories.FirstOrDefault(c => c.Id == id);
+        if (category is null) throw new KeyNotFoundException("Category not found");
+
+        return Task.FromResult(category);
+    }
+
     private IEnumerable<Category> GetDefaultCategories()
     {
         return

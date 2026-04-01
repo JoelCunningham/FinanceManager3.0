@@ -6,5 +6,6 @@ namespace FinanceManager.Application.Interfaces
     {
         Task<IEnumerable<Category>> GetAllAsync();
         Task<IEnumerable<CategoryGroup>> GetAllGroupsAsync();
+        Task<Category> GetByIdAsync(Guid id);
     }
 }
