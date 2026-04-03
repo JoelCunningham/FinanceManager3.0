@@ -1,7 +1,13 @@
 <Solution>
   <Folder Name="/Config/">
-    <File Path=".github/instructions/.instructions.md" />
     <File Path=".gitignore" />
+  </Folder>
+  <Folder Name="/Config/Copilot/">
+    <File Path=".github/copilot-instructions.md" />
+  </Folder>
+  <Folder Name="/Config/VSCode/">
+    <File Path=".vscode/launch.json" />
+    <File Path=".vscode/settings.json" />
   </Folder>
   <Folder Name="/Documentation/">
     <File Path="ARCHITECTURE.md" />

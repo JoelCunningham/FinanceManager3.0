@@ -24,11 +24,13 @@ Infrastructure ─┘
 **Purpose**: Contains core business entities and domain logic with no external dependencies.
 
 #### Responsibilities
+
 - Define core business entities
 - Enforce business rules and invariants
 - No knowledge of persistence, UI, or external services
 
 #### Dependencies
+
 This layer is completely independent
 
 ### Application Layer (FinanceManager.Application)
@@ -36,12 +38,14 @@ This layer is completely independent
 **Purpose**: Contains business logic, orchestrates workflows, and defines interfaces for external dependencies.
 
 #### Responsibilities
+
 - Implement use cases and business workflows
 - Define repository and service interfaces
 - Coordinate between domain entities
 - Transform data between layers using DTOs
 
 #### Dependencies
+
 - FinanceManager.Domain
 
 ### Infrastructure Layer (FinanceManager.Infrastructure)
@@ -49,12 +53,14 @@ This layer is completely independent
 **Purpose**: Implements interfaces defined in the Application layer for data access, external services, and cross-cutting concerns.
 
 #### Responsibilities
+
 - Implement data persistence (currently in-memory)
 - Parse transaction files from various banks
 - Integrate with external services
 - Handle infrastructure-specific concerns
 
 #### Dependencies
+
 - FinanceManager.Application
 - FinanceManager.Domain
 
@@ -63,36 +69,45 @@ This layer is completely independent
 **Purpose**: Blazor Server application providing the user interface.
 
 #### Responsibilities
+
 - Render UI components
 - Handle user interactions
 - Manage presentation state
 - Route user requests
 
 #### Dependencies
+
 - FinanceManager.Application
 - FinanceManager.Domain
 
 ## Design Patterns
 
 ### Repository Pattern
+
 Abstracts data access behind interfaces, allowing the application layer to remain independent of data storage implementation.
 
 ### Unit of Work Pattern
+
 Coordinates multiple repository operations into a single transaction to maintain data consistency.
 
 ### Service Layer Pattern
+
 Encapsulates business logic and orchestrates operations across multiple repositories.
 
 ### DTO Pattern
+
 Transfers data between layers without exposing domain entities to the presentation layer.
 
 ### Strategy Pattern
+
 Parser implementations allow different parsing strategies based on bank file format.
 
 ### Dependency Injection
+
 All dependencies are injected through constructors, promoting loose coupling and testability.
 
 ## Best Practices
+
 1. **Keep Domain Pure**: No external dependencies in the domain layer
 2. **Interface-Driven Development**: Define contracts in application layer
 3. **Dependency Injection**: Use DI for all dependencies
@@ -106,3 +121,4 @@ All dependencies are injected through constructors, promoting loose coupling and
 - [Clean Architecture by Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Microsoft .NET Application Architecture](https://dotnet.microsoft.com/learn/dotnet/architecture-guides)
 - [Blazor Server Documentation](https://learn.microsoft.com/en-us/aspnet/core/blazor/)
+- [Clean Architecture by Jason Taylor](https://cleanarchitecture.jasontaylor.dev/)

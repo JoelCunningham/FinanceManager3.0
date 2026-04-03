@@ -15,33 +15,36 @@ This document defines the coding standards and conventions for the Finance Manag
 1. **Follow Clean Architecture**: Respect layer boundaries and dependency rules
 2. **SOLID Principles**: Write maintainable, extensible code
 3. **DRY (Don't Repeat Yourself)**: Extract common functionality
-4. **KISS (Keep It Simple)**: Favor simplicity over cleverness
+4. **KISS (Keep It Simple)**: Favour simplicity over cleverness
 5. **Consistency**: Follow existing patterns in the codebase
 
 ## Naming Conventions
-| Element                          | Convention                           | Example                           |
-| -------------------------------- | ------------------------------------ | --------------------------------- |
-| Classes                          | PascalCase                           | `Transaction`, `ImportService`    |
-| Interfaces                       | PascalCase <br/> `I` prefix          | `ITransactionRepository`          |
-| Properties                       | PascalCase                           | `BankName`, `Amount`              |
-| Boolean properties               | PascalCase <br/> `Is/Has/Can` prefix | `IsReviewed`, `HasErrors`         |
-| Methods                          | PascalCase                           | `GetParser()`                     |
-| Async methods                    | PascalCase <br/> `Async` suffix      | `SaveAsync()`                     |
-| Method parameters                | camelCase                            | `transaction`, `bankName`         |
-| Primary constructor parameters   | PascalCase                           | `Service(IRepository Repository)` |
-| Blazor parameters                | PascalCase                           | `SelectedBank`                    |
-| Event callbacks                  | PascalCase <br/> `On` prefix         | `OnFileUploaded`                  |
-| CSS classes                      | kebab-case                           | `transaction-list`                |
-| HTML ids 					       | camelCase                            | `autoAssign`, `cateogryInput`     |                  |
+
+| Element                        | Convention                           | Example                           |
+| ------------------------------ | ------------------------------------ | --------------------------------- | --- |
+| Classes                        | PascalCase                           | `Transaction`, `ImportService`    |
+| Interfaces                     | PascalCase <br/> `I` prefix          | `ITransactionRepository`          |
+| Properties                     | PascalCase                           | `BankName`, `Amount`              |
+| Boolean properties             | PascalCase <br/> `Is/Has/Can` prefix | `IsReviewed`, `HasErrors`         |
+| Methods                        | PascalCase                           | `GetParser()`                     |
+| Async methods                  | PascalCase <br/> `Async` suffix      | `SaveAsync()`                     |
+| Method parameters              | camelCase                            | `transaction`, `bankName`         |
+| Primary constructor parameters | PascalCase                           | `Service(IRepository Repository)` |
+| Blazor parameters              | PascalCase                           | `SelectedBank`                    |
+| Event callbacks                | PascalCase <br/> `On` prefix         | `OnFileUploaded`                  |
+| CSS classes                    | kebab-case                           | `transaction-list`                |
+| HTML ids                       | camelCase                            | `autoAssign`, `categoryInput`     |     |
 
 ## C# Language Features
 
 ### Primary constructors:
+
 ```csharp
 public class ImportService(ParserService parserService) { }
 ```
 
 ### Use required properties
+
 ```csharp
 public sealed class Transaction : IEntity
 {
@@ -51,16 +54,19 @@ public sealed class Transaction : IEntity
 ```
 
 ### Use pattern matching
+
 ```csharp
 if (Model.SelectedBank is null) return;
 ```
 
 ### Use target-typed new
+
 ```csharp
 private ImportPageModel Model = new();
 ```
 
 ### Use file-scoped namespaces
+
 ```csharp
 namespace FinanceManager.Application.Services;
 
@@ -79,6 +85,7 @@ var count = results.Count;
 ## File Structures
 
 #### C# Class Structure
+
 ```csharp
 // 1. File-scoped namespace
 namepace FinanceManager.Application.Services;
@@ -91,16 +98,16 @@ public class TransactionService(ITransactionRepository transactionRepository)
 {
     // 4. Private fields
     private readonly ITransactionRepository Repository;
-    
+
     // 5. Public properties
     public int Count { get; private set; }
-    
+
     // 6. Public methods
     public async Task<Transaction> GetByIdAsync(Guid id)
     {
         return await Repository.GetByIdAsync(id);
     }
-    
+
     // 7. Private methods
     private void ValidateTransaction(Transaction transaction)
     {
@@ -110,6 +117,7 @@ public class TransactionService(ITransactionRepository transactionRepository)
 ```
 
 #### Blazor Component Structure
+
 ```razor
 @* 1. Page directive (if applicable) *@
 @page "/Import"
@@ -128,7 +136,7 @@ public class TransactionService(ITransactionRepository transactionRepository)
 
     @* 6. Private fields and properties *@
     private ImportPageModel Model = new();
-    
+
     @* 7. Lifecycle methods *@
     protected override async Task OnInitializedAsync()
     {
@@ -158,21 +166,33 @@ public class TransactionService(ITransactionRepository transactionRepository)
 ### Blazor
 
 #### Use [Parameter] inline with parameters
+
 ```razor
 [Parameter] public Bank? SelectedBank { get; set; }
 ```
 
-#### Do not use [EditorRequired] or required parameters in Blazor components
+#### Place [Parameter] binding directly below
+
 ```razor
-[Parameter, EditorRequired] public requied Bank? SelectedBank { get; set; }
+[Parameter] public Bank? SelectedBank { get; set; }
+[Parameter] public EventCallback<Bank?> SelectedBankChanged { get; set; }
+```
+
+#### Do not use [EditorRequired] or required parameters in Blazor components
+
+```razor
+[Parameter, EditorRequired] public required Bank? SelectedBank { get; set; }
 ```
 
 ### CSS
 
 #### Nest styles
+
 ```css
-.modal-body { 
-    .modal-content { }
-    .modal-header { }
+.modal-body {
+  .modal-content {
+  }
+  .modal-header {
+  }
 }
 ```
