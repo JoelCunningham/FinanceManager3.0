@@ -6,6 +6,12 @@
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/FinanceManager.WebApp/FinanceManager.WebApp.csproj"
+        },
+        {
+            "name": "Watch FinanceManager.WebApp (Hot Reload)",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "dotnet watch --project \"${workspaceFolder}/FinanceManager.WebApp/FinanceManager.WebApp.csproj\" run --launch-profile watch"
         }
     ]
 }

@@ -4,7 +4,7 @@
         "Color",
         "Havit",
         "Hsts",
-        "Math"
-    ],
-    "prettier.statusBar": false
+        "Math",
+        "onclick"
+    ]
 }
