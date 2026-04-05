@@ -30,7 +30,7 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
         {
             var cells = BuildCells(period);
             var entries = (await budgetEntryRepository.GetByPeriodAsync(period.Id)).ToList();
-            var poplulatedCells = PopulateCells(cells, entries);       
+            var poplulatedCells = PopulateCells(cells, entries);
 
             return new GetBudgetPageResult(period, poplulatedCells, categorySummaries);
         }
@@ -85,7 +85,8 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
         foreach (var cell in cells)
         {
             cell.Entries = [.. cell.Entries
-                .OrderByDescending(e => e.Category?.IsIncome == true)
+                .OrderBy(e => e.OverallPeriodPosition)
+                .ThenBy(e => e.Category?.IsIncome == true)
                 .ThenBy(e => e.Category?.GroupName)
                 .ThenBy(e => e.Category?.Name)];
         }

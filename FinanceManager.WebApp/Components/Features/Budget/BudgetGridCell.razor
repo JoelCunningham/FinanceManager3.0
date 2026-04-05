@@ -1,21 +1,13 @@
 @code {
     [Parameter] public BudgetCell Cell { get; set; } = default!;
+    [Parameter] public Guid? HoveredEntryId { get; set; }
 
     [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
     [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
+    [Parameter] public EventCallback<Guid?> OnEntryHoverChanged { get; set; }
 
     private Task HandleCellClick() => OnCellClicked.InvokeAsync(Cell);
-    private Task HandleEntryClick(BudgetCellEntry entry) => OnEntryClicked.InvokeAsync(entry);
 
-    private string EntryCssClass(BudgetCellEntry entry)
-    {
-        var classes = new List<string> { "budget-entry" };
-        if (entry.Category is not null)
-        {
-            classes.Add($"category-{entry.Category.Id}");
-        }
-        return string.Join(" ", classes);
-    }
 }
 
 <div class="budget-cell" @onclick="HandleCellClick">
@@ -23,12 +15,8 @@
 
     @foreach (var entry in Cell.Entries)
     {
-        if (entry.IsFirst || entry.IsStartOfRow)
-        {
-            <div class="budget-entry" @onclick:stopPropagation="true" @onclick="() => HandleEntryClick(entry)">
-                <div class="budget-entry-title">@entry.Category?.Name</div>
-                <div class="budget-entry-amount">@entry.Amount.ToString("C")</div>
-            </div>
-        }
+        <div class="budget-entry-slot">
+            <BudgetGridCellEntry Entry="entry" HoveredEntryId="HoveredEntryId" OnEntryClicked="OnEntryClicked" OnEntryHoverChanged="OnEntryHoverChanged" />
+        </div>
     }
 </div>

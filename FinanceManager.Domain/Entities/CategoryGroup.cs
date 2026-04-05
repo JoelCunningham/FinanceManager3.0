@@ -8,6 +8,7 @@ public sealed class CategoryGroup : IEntity
 
     public bool IsIncome { get; set; }
     public required string Name { get; set; }
+    public required string Colour { get; set; }
 
     public ICollection<Category>? Categories { get; set; }
 }

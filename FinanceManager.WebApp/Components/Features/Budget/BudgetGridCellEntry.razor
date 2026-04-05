@@ -1,0 +1,57 @@
+@code {
+    [Parameter] public BudgetCellEntry Entry { get; set; } = default!;
+    [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
+    [Parameter] public Guid? HoveredEntryId { get; set; }
+    [Parameter] public EventCallback<Guid?> OnEntryHoverChanged { get; set; }
+
+    private bool IsVisibleEntry => Entry.IsFirstInRow && Entry.Category is not null;
+    private bool IsHovered => Entry.EntityId is not null && Entry.EntityId == HoveredEntryId;
+
+    private static string GetEntryStyle(BudgetCellEntry entry)
+    {
+        var backgroundColour = entry.Category?.GroupColour;
+        var textColour = GetContrastTextColour(backgroundColour!);
+        return $"--entry-bg: {backgroundColour}; color: {textColour};";
+    }
+
+    private static string GetAccentStyle(BudgetCellEntry entry)
+    {
+        return $"--entry-accent: {entry.Category?.Colour};";
+    }
+
+    private static string GetContrastTextColour(string backgroundColour)
+    {
+        var value = backgroundColour[1..];
+        var r = int.Parse(value[..2], System.Globalization.NumberStyles.HexNumber);
+        var g = int.Parse(value.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+        var b = int.Parse(value.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+
+        var luminance = ((0.299 * r) + (0.587 * g) + (0.114 * b)) / 255;
+        return luminance > 0.6 ? "#000000" : "#FFFFFF";
+    }
+}
+
+@if (IsVisibleEntry)
+{
+    <div class="budget-entry budget-entry-@Entry.RowLength @(IsHovered ? "budget-entry-hovered" : string.Empty)" 
+        style="@GetEntryStyle(Entry)" 
+        @onclick:stopPropagation="true" 
+        @onmouseenter="() => OnEntryHoverChanged.InvokeAsync(Entry.EntityId)" 
+        @onmouseleave="() => OnEntryHoverChanged.InvokeAsync(null)" 
+        @onclick="() => OnEntryClicked.InvokeAsync(Entry)">
+        <div class="budget-entry-accent" style="@GetAccentStyle(Entry)"></div>
+        <div class="budget-entry-content">
+            <div class="budget-entry-title">@Entry.Category?.Name</div>
+            <div class="budget-entry-amount">@Entry.Amount.ToString("C")</div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="budget-entry budget-entry-hidden @(IsHovered ? "budget-entry-hovered" : string.Empty)">
+        <div class="budget-entry-content">
+            <div class="budget-entry-amount">@Entry.Amount.ToString("C")</div>
+            <div class="budget-entry-title">@Entry.Category?.Name</div>
+        </div>
+    </div>
+}

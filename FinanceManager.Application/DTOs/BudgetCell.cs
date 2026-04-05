@@ -15,8 +15,9 @@ public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
         return Scope switch
         {
             BudgetScope.Monthly => StartDate.ToString("MMM"),
-            BudgetScope.Weekly or BudgetScope.Fortnightly => StartDate.ToString("ddd dd"),
+            BudgetScope.Fortnightly => $"F{Index + 1:00} ({StartDate:dd/MM})",
+            BudgetScope.Weekly => $"W{Index + 1:00} ({StartDate:dd/MM})",
             _ => StartDate.ToString("dd/MM/yyyy")
-        };  
+        };
     }
 }

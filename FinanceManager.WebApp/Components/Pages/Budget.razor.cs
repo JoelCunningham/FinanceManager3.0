@@ -49,7 +49,7 @@ public partial class Budget : ComponentBase
     public async Task CreateEntry(BudgetCell cell)
     {
         Validation.Clear();
-        CurrentEntry = new BudgetCellEntry { PeriodPosition = cell.Index };
+        CurrentEntry = new BudgetCellEntry { OverallPeriodPosition = cell.Index };
         IsEditing = false;
         await InvokeBudgetEntryModalAsync("ShowAsync");
     }

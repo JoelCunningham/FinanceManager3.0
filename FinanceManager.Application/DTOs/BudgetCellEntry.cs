@@ -5,18 +5,23 @@ using FinanceManager.Domain.Entities;
 public sealed class BudgetCellEntry()
 {
     public Guid? EntityId { get; set; }
-    public int Index { get; set; }
     public CategorySummary? Category { get; set; }
     public decimal Amount { get; set; }
     public string? Notes { get; set; }
-    public int PeriodPosition { get; set; }
-    public int Length { get; set; }
+    public int Index { get; set; }
+
+    public int OverallPeriodPosition { get; set; }
+    public int OverallLength { get; set; }
+
+    public int PeriodPosition => OverallPeriodPosition + Index;
 
     public bool IsFirst => Index == 0;
-    public bool IsLast => Index == Length - 1;
+    public bool IsStartOfRow => PeriodPosition % ROW_LENGTH == 0;
+    public bool IsFirstInRow => IsFirst || IsStartOfRow;
 
-    public bool IsStartOfRow => Index % 4 == 0;
-    public bool IsEndOfRow => (Index + 1) % 4 == 0;
+    public int RowLength => Math.Min(ROW_LENGTH - (PeriodPosition % ROW_LENGTH), OverallLength - Index);
+
+    private const int ROW_LENGTH = 4;
 
     public static BudgetCellEntry FromBudgetEntry(BudgetEntry entry, int index)
     {
@@ -26,9 +31,9 @@ public sealed class BudgetCellEntry()
             Category = CategorySummary.FromCategory(entry.Category),
             Amount = entry.Amount,
             Notes = entry.Notes,
-            PeriodPosition = entry.PeriodPosition,
-            Length = entry.Length,
-           Index = index,
+            OverallPeriodPosition = entry.PeriodPosition,
+            OverallLength = entry.Length,
+            Index = index,
         };
     }
 
@@ -45,8 +50,8 @@ public sealed class BudgetCellEntry()
             Notes = Notes,
             PeriodId = period.Id,
             Period = period,
-            PeriodPosition = PeriodPosition,
-            Length = Length
+            PeriodPosition = OverallPeriodPosition,
+            Length = OverallLength
         };
     }
 }

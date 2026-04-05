@@ -28,8 +28,8 @@
                 <HxInputText @bind-Value="CurrentEntry.Notes" Label="Notes" />
 
                 <CategoryInput @bind-Value="CurrentEntry.Category" Data="Categories" Label="Category" Nullable="false" />
-                <HxInputNumber @bind-Value="CurrentEntry.PeriodPosition" Label="Start" Min="0" Max="@(MaxSpan - 1)" />
-                <HxInputNumber @bind-Value="CurrentEntry.Length" Label="Span" Min="1" Max="@MaxSpan" />
+                <HxInputNumber @bind-Value="CurrentEntry.OverallPeriodPosition" Label="Start" Min="0" Max="@(MaxSpan - 1)" />
+                <HxInputNumber @bind-Value="CurrentEntry.OverallLength" Label="Span" Min="1" Max="@MaxSpan" />
             </div>
         }
     </BodyTemplate>

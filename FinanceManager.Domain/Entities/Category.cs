@@ -10,4 +10,5 @@ public sealed class Category : IEntity
     public required CategoryGroup Group { get; set; }
 
     public required string Name { get; set; }
+    public required string Colour { get; set; }
 }

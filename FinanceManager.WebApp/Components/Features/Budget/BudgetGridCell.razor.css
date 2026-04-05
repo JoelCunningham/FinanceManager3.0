@@ -1,65 +1,31 @@
 .budget-cell {
-    border: 1px solid rgba(0,0,0,.12);
+    border: 1px solid rgba(0, 0, 0, .12);
     border-radius: .5rem;
     min-height: 7.5rem;
     padding: .5rem;
-    background: var(--bs-gray-200);
+    background: var(--bs-gray-100);
     cursor: pointer;
     display: flex;
     flex-direction: column;
-
-    &.budget-cell-current {
-        background: var(--bs-body-bg);
-    }
-
-    &.budget-cell-mixed {
-        background: var(--bs-body-bg);
-    }
-
-    &.budget-cell-other {
-        background: var(--bs-body-bg);
-    }
+    padding-bottom: 2rem;
 
     .budget-cell-header {
         position: sticky;
         top: 0;
         padding-bottom: .25rem;
         margin-bottom: .35rem;
-        font-size: .8rem;
         font-weight: 600;
         opacity: .85;
         user-select: none;
+        text-align: center;
     }
 
-    .budget-entry {
-        border: 1px solid rgba(13,110,253,.35);
-        background: rgba(13,110,253,.08);
-        border-radius: .4rem;
-        padding: .25rem .4rem;
-        margin-bottom: .35rem;
-        overflow: hidden;
-
-        .budget-entry-title {
-            font-size: .8rem;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .budget-entry-amount {
-            font-size: .8rem;
-            opacity: .85;
-        }
-
-        &:hover {
-            border-color: rgba(13,110,253,.6);
-            background: rgba(13,110,253,.12);
-        }
+    .budget-entry-slot {
+        display: contents;
     }
 
-    &:hover {
-        border-color: rgba(0,0,0,.25);
-        box-shadow: 0 .125rem .25rem rgba(0,0,0,.06);
+    &:hover:not(:has(.budget-entry-slot:hover)) {
+        transition-duration: .3s;
+        background-color: var(--bs-gray-200);
     }
 }

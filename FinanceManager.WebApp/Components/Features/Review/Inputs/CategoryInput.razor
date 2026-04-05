@@ -19,13 +19,13 @@
 
     private Expression<Func<CategorySummary?>> CurrentValueExpression => ValueExpression ?? (() => Value);
 
-    private static readonly CategorySummary UncategorisedCategory = new(Guid.Empty, "- Uncategorised -", Guid.Empty, string.Empty, true);
+    private static readonly CategorySummary UncategorisedCategory = new(Guid.Empty, "- Uncategorised -", "", Guid.Empty, string.Empty, "", true);
 
     private IEnumerable<CategorySummary> GroupedData()
     {
         var grouped = Data.GroupBy(c => c.GroupName).OrderBy(g => g.Key).SelectMany(g =>
         {
-            var header = new CategorySummary(Guid.Empty, $"- {g.Key} -", Guid.Empty, string.Empty, true);
+            var header = new CategorySummary(Guid.Empty, $"- {g.Key} -", "", Guid.Empty, string.Empty, "", true);
             return new[] { header }.Concat(g.OrderBy(c => c.Name));
         });
 
@@ -39,20 +39,20 @@
         <HxIcon Icon="BootstrapIcon.Stars" />
     }
     <HxSelect Value="Value"
-              ValueChanged="(v) => ValueChanged.InvokeAsync(v)"
-              ValueExpression="CurrentValueExpression"
-              Label="@Label"
-              CssClass="@(IsAutoCategorised ? "auto-categorised" : "")"
-              InputCssClass="@(HasError ? "is-invalid" : "")"
-              Data="GroupedData()"
-              TItem="CategorySummary"
-              TValue="CategorySummary"
-              Nullable="Nullable"
-              AutoSort="false"
-              Enabled="Enabled"
-              NullText="@(Nullable ? "- Any -" : "Select category")"
-              TextSelector="@(c => c.Name)"
-              ValueSelector="@(c => c)"
-              ItemDisabledSelector="@(c => c.Id == Guid.Empty && c.Name != "- Uncategorised -")">
+        ValueChanged="(v) => ValueChanged.InvokeAsync(v)"
+        ValueExpression="CurrentValueExpression"
+        Label="@Label"
+        CssClass="@(IsAutoCategorised ? "auto-categorised" : "")"
+        InputCssClass="@(HasError ? "is-invalid" : "")"
+        Data="GroupedData()"
+        TItem="CategorySummary"
+        TValue="CategorySummary"
+        Nullable="Nullable"
+        AutoSort="false"
+        Enabled="Enabled"
+        NullText="@(Nullable ? "- Any -" : "Select category")"
+        TextSelector="@(c => c.Name)"
+        ValueSelector="@(c => c)"
+        ItemDisabledSelector="@(c => c.Id == Guid.Empty && c.Name != "- Uncategorised -")">
     </HxSelect>
 </div>

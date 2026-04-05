@@ -5,6 +5,8 @@
     [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
     [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
 
+    private Guid? HoveredEntryId { get; set; }
+
     private string GridCssClass => Scope switch
     {
         BudgetScope.Monthly => "budget-grid budget-grid-month",
@@ -12,6 +14,12 @@
         BudgetScope.Weekly => "budget-grid budget-grid-week",
         _ => "budget-grid"
     };
+
+    private Task HandleEntryHoverChanged(Guid? entryId)
+    {
+        HoveredEntryId = entryId;
+        return Task.CompletedTask;
+    }
 }
 
 @if (Scope is not null)
@@ -19,7 +27,7 @@
     <div class="@GridCssClass">
         @foreach (var cell in Cells)
         {
-            <BudgetGridCell Cell="cell" OnCellClicked="OnCellClicked" OnEntryClicked="OnEntryClicked" />
+            <BudgetGridCell Cell="cell" HoveredEntryId="HoveredEntryId" OnCellClicked="OnCellClicked" OnEntryClicked="OnEntryClicked" OnEntryHoverChanged="HandleEntryHoverChanged" />
         }
     </div>
 }

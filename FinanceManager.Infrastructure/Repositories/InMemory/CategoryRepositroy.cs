@@ -45,7 +45,7 @@ public class CategoryRepository : ICategoryRepository
             CreateCategory("Rental Income", "Investment"),
 
             CreateCategory("Allowance", "Support"),
-            CreateCategory("Umemployment", "Support"),
+            CreateCategory("Unemployment", "Support"),
             CreateCategory("Pension", "Support"),
 
             CreateCategory("Doctor", "Health"),
@@ -64,7 +64,7 @@ public class CategoryRepository : ICategoryRepository
             CreateCategory("Fees", "Education"),
 
             CreateCategory("Games", "Recreation"),
-            CreateCategory("Activites", "Recreation"),
+            CreateCategory("Activities", "Recreation"),
             CreateCategory("Alcohol", "Recreation"),
             CreateCategory("Books", "Recreation"),
             CreateCategory("Streaming Services", "Recreation"),
@@ -126,7 +126,14 @@ public class CategoryRepository : ICategoryRepository
         var group = _categoryGroups.Find(g => g.Name == groupName);
         if (group is not null)
         {
-            return new() { Id = Guid.NewGuid(), Name = name, Group = group, GroupId = group.Id };
+            return new()
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Group = group,
+                GroupId = group.Id,
+                Colour = GetRandomColour()
+            };
         }
         throw new NotImplementedException();
     }
@@ -135,20 +142,26 @@ public class CategoryRepository : ICategoryRepository
     {
         return
         [
-            new() { Id = Guid.NewGuid(), Name = "Employment", IsIncome = true },
-            new() { Id = Guid.NewGuid(), Name = "Investment", IsIncome = true },
-            new() { Id = Guid.NewGuid(), Name = "Support", IsIncome = true },
-            new() { Id = Guid.NewGuid(), Name = "Health" },
-            new() { Id = Guid.NewGuid(), Name = "Education" },
-            new() { Id = Guid.NewGuid(), Name = "Recreation" },
-            new() { Id = Guid.NewGuid(), Name = "Utilities" },
-            new() { Id = Guid.NewGuid(), Name = "Transportation" },
-            new() { Id = Guid.NewGuid(), Name = "Food" },
-            new() { Id = Guid.NewGuid(), Name = "Investing" },
-            new() { Id = Guid.NewGuid(), Name = "Housing" },
-            new() { Id = Guid.NewGuid(), Name = "Personal" },
-            new() { Id = Guid.NewGuid(), Name = "Financial" },
-            new() { Id = Guid.NewGuid(), Name = "Gifts" },
+            new() { Id = Guid.NewGuid(), Name = "Employment", IsIncome = true, Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Investment", IsIncome = true, Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Support", IsIncome = true, Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Health", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Education", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Recreation", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Utilities", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Transportation", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Food", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Investing", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Housing", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Personal", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Financial", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Gifts", Colour = GetRandomColour() },
         ];
+    }
+
+    private static string GetRandomColour()
+    {
+        var random = new Random();
+        return String.Format("#{0:X6}", random.Next(0x1000000));
     }
 }
