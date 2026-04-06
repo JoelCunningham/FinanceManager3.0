@@ -4,20 +4,12 @@
     [Parameter] public EventCallback OnPrev { get; set; }
     [Parameter] public EventCallback OnToday { get; set; }
     [Parameter] public EventCallback OnNext { get; set; }
-
-    private string CurrentPeriodText => CurrentPeriod?.Scope switch
-    {
-        BudgetScope.Weekly => $"Weeks of {CurrentPeriod.StartDate.Year}",
-        BudgetScope.Fortnightly => $"Fortnights of {CurrentPeriod.StartDate.Year}",
-        BudgetScope.Monthly => $"Months of {CurrentPeriod.StartDate.Year}",
-        _ => "Current Period"
-    };
 }
 
-<div class="graph-actions">
+<div class="graph-actions mb-2">
+    <h1>@(CurrentPeriod?.Year.ToString() ?? "TODO get year")</h1>
+
     <HxButton Color="ThemeColor.Secondary" OnClick="OnPrev">Prev</HxButton>
     <HxButton Color="ThemeColor.Secondary" OnClick="OnToday">Today</HxButton>
     <HxButton Color="ThemeColor.Secondary" OnClick="OnNext">Next</HxButton>
-
-    <p>@CurrentPeriodText</p>
 </div>

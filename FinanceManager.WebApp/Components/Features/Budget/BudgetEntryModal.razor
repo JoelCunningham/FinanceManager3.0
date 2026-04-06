@@ -1,37 +1,124 @@
 @code {
-    private Havit.Blazor.Components.Web.Bootstrap.HxModal? _modal;
-
-    [Parameter] public string Title { get; set; } = string.Empty;
-
     [Parameter] public bool IsEditing { get; set; }
 
-    [Parameter] public BudgetCellEntry? CurrentEntry { get; set; }
-   
+    [Parameter] public BudgetCellEntry? Entry { get; set; }
     [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
-
-    [Parameter] public int MaxSpan { get; set; }
+    [Parameter] public BudgetPeriod? CurrentPeriod { get; set; }
 
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
-
+    
     public Task ShowAsync() => _modal?.ShowAsync() ?? Task.CompletedTask;
     public Task HideAsync() => _modal?.HideAsync() ?? Task.CompletedTask;
+
+    private Havit.Blazor.Components.Web.Bootstrap.HxModal? _modal;
+
+    private int _startPeriodPosition = 0;
+    private int _endPeriodPosition = 0;
+
+    private int StartPeriodPosition
+    {
+        get => _startPeriodPosition;
+        set => SetPeriodRange(value, _endPeriodPosition);
+    }
+
+    private int EndPeriodPosition
+    {
+        get => _endPeriodPosition;
+        set => SetPeriodRange(_startPeriodPosition, value);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Entry is not null)
+        {
+            SetPeriodRange(Entry.OverallPeriodPosition, Entry.OverallPeriodPosition + Entry.OverallLength - 1);
+        }
+    }
+
+    private void SetPeriodRange(int startPeriodPosition, int endPeriodPosition)
+    {
+        if (Entry is null || CurrentPeriod is null) return;
+
+        var maxPeriodPosition = CurrentPeriod.Scope switch
+        {
+            BudgetScope.Monthly => DateHelper.GetMonthCount() - 1,
+            BudgetScope.Fortnightly => DateHelper.GetFortnightCount(CurrentPeriod.Year) - 1,
+            BudgetScope.Weekly => DateHelper.GetWeekCount(CurrentPeriod.Year) - 1,
+            _ => 0
+        };
+
+        _startPeriodPosition = Math.Clamp(Math.Min(startPeriodPosition, endPeriodPosition), 0, maxPeriodPosition);
+        _endPeriodPosition = Math.Clamp(Math.Max(startPeriodPosition, endPeriodPosition), _startPeriodPosition, maxPeriodPosition);
+      
+        Entry.OverallPeriodPosition = _startPeriodPosition;
+        Entry.OverallLength = _endPeriodPosition - _startPeriodPosition + 1;
+    }
+
+    private IEnumerable<KeyValuePair<string, int>> GetPeriodPositionOptions()
+    {
+        if (CurrentPeriod is null) return [];
+
+        return CurrentPeriod.Scope switch
+        {
+            BudgetScope.Monthly => GetMonthlyPeriodPositionOptions(),
+            BudgetScope.Fortnightly => GetSequentialOptions("F", DateHelper.GetFortnightCount(CurrentPeriod.Year)),
+            BudgetScope.Weekly => GetSequentialOptions("W", DateHelper.GetWeekCount(CurrentPeriod.Year)),
+            _ => []
+        };
+    }
+
+    private static IEnumerable<KeyValuePair<string, int>> GetMonthlyPeriodPositionOptions()
+    {
+        var monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames
+            .Where(monthName => !string.IsNullOrWhiteSpace(monthName))
+            .Take(12)
+            .ToArray();
+
+        return monthNames
+            .Select((monthName, index) => new KeyValuePair<string, int>(monthName, index));
+    }
+
+    private static IEnumerable<KeyValuePair<string, int>> GetSequentialOptions(string prefix, int periodsCount)
+    {
+        return Enumerable.Range(0, periodsCount)
+            .Select(index => new KeyValuePair<string, int>($"{prefix}{index + 1:00}", index));
+    }
 }
 
-<HxModal @ref="_modal" Title="@Title">
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit budget entry" : "Create budget entry")">
     <BodyTemplate>
-        @if (CurrentEntry is not null)
-        {
-            <div class="d-flex flex-column gap-2">
-                <HxInputNumber @bind-Value="CurrentEntry.Amount" Label="Amount" />
-                <HxInputText @bind-Value="CurrentEntry.Notes" Label="Notes" />
+        <div class="d-flex flex-column gap-2">
+            @if (Entry is not null && CurrentPeriod is not null)
+            {
+                <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" Nullable="false" />
+                <HxInputNumber @bind-Value="Entry.Amount" Label="Amount" />
 
-                <CategoryInput @bind-Value="CurrentEntry.Category" Data="Categories" Label="Category" Nullable="false" />
-                <HxInputNumber @bind-Value="CurrentEntry.OverallPeriodPosition" Label="Start" Min="0" Max="@(MaxSpan - 1)" />
-                <HxInputNumber @bind-Value="CurrentEntry.OverallLength" Label="Span" Min="1" Max="@MaxSpan" />
-            </div>
-        }
+                <div class="d-flex gap-3">
+                        <HxSelect @bind-Value="StartPeriodPosition"
+                                  Label="Start"
+                                  Data="GetPeriodPositionOptions()"
+                                  TItem="KeyValuePair<string, int>"
+                                  TValue="int"
+                                  Nullable="false"
+                                  AutoSort="false"
+                                  TextSelector="option => option.Key"
+                                  ValueSelector="option => option.Value" />
+                        <HxSelect @bind-Value="EndPeriodPosition"
+                                  Label="End"
+                                  Data="GetPeriodPositionOptions()"
+                                  TItem="KeyValuePair<string, int>"
+                                  TValue="int"
+                                  Nullable="false"
+                                  AutoSort="false"
+                                  TextSelector="option => option.Key"
+                                  ValueSelector="option => option.Value" />
+                </div>
+
+                <HxInputTextArea @bind-Value="Entry.Notes" Label="Notes" />
+            }
+        </div>
     </BodyTemplate>
     <FooterTemplate>
         <HxButton Color="ThemeColor.Secondary" OnClick="OnCancel">Cancel</HxButton>

@@ -1,14 +1,14 @@
 @page "/Budget"
 
-<BudgetActions CurrentPeriod="CurrentPeriod" OnPrev="Prev" OnToday="Today" OnNext="Next"/>
+<BudgetActions CurrentPeriod="CurrentPeriod" OnPrev="Prev" OnToday="Today" OnNext="Next" />
 
 <BudgetGrid Scope="CurrentPeriod?.Scope" Cells="Cells" OnCellClicked="CreateEntry" OnEntryClicked="EditEntry" />
 
-<BudgetEntryModal @ref="_budgetEntryModal"
-                  Title="@(IsEditing ? "Edit Budget Entry" : "New Budget Entry")"
-                  Categories="Categories"
-                  IsEditing="IsEditing"
-                  MaxSpan="@(Math.Max(1, Cells.Count))"
-                  OnCancel="CloseEditModal"
-                  OnDelete="Delete"
+<BudgetEntryModal @ref="_budgetEntryModal" 
+                  Entry="CurrentEntry" 
+                  CurrentPeriod="CurrentPeriod"
+                  IsEditing="IsEditing" 
+                  Categories="Categories" 
+                  OnCancel="CloseEditModal" 
+                  OnDelete="Delete" 
                   OnSave="Save" />

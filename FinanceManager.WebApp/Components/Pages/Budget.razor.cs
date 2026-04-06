@@ -31,6 +31,13 @@ public partial class Budget : ComponentBase
         await ReloadAsync(DateTime.Now.Year);
     }
 
+    public async Task Prev() => await ReloadAsync(CurrentYear - 1);
+    public async Task Next() => await ReloadAsync(CurrentYear + 1);
+    public async Task Today() => await ReloadAsync(DateTime.Now.Year);
+
+    public async Task OpenEditModal() => await InvokeBudgetEntryModalAsync("ShowAsync");
+    public async Task CloseEditModal() => await InvokeBudgetEntryModalAsync("HideAsync");
+
     private async Task ReloadAsync(int year)
     {
         var page = await Workflow.GetPageAsync(year);
@@ -40,45 +47,20 @@ public partial class Budget : ComponentBase
         CurrentPeriod = page.BudgetPeriod;
     }
 
-    public async Task Prev() => await ReloadAsync(CurrentYear - 1);
-
-    public async Task Next() => await ReloadAsync(CurrentYear + 1);
-
-    public async Task Today() => await ReloadAsync(DateTime.Now.Year);
-
     public async Task CreateEntry(BudgetCell cell)
     {
         Validation.Clear();
-        CurrentEntry = new BudgetCellEntry { OverallPeriodPosition = cell.Index };
+        CurrentEntry = new BudgetCellEntry { OverallPeriodPosition = cell.Index, OverallLength = 1 };
         IsEditing = false;
-        await InvokeBudgetEntryModalAsync("ShowAsync");
+        await OpenEditModal();
     }
 
     public async Task EditEntry(BudgetCellEntry entry)
     {
         Validation.Clear();
-
-        //TODO fix so that multiple can be edited
         CurrentEntry = entry;
         IsEditing = true;
-
-        await InvokeBudgetEntryModalAsync("ShowAsync");
-    }
-
-    public async Task CloseEditModal()
-    {
-        await InvokeBudgetEntryModalAsync("HideAsync");
-    }
-
-    private Task InvokeBudgetEntryModalAsync(string method)
-    {
-        if (_budgetEntryModal is null) return Task.CompletedTask;
-        return method switch
-        {
-            "ShowAsync" => ((dynamic)_budgetEntryModal).ShowAsync(),
-            "HideAsync" => ((dynamic)_budgetEntryModal).HideAsync(),
-            _ => Task.CompletedTask
-        };
+        await OpenEditModal();
     }
 
     public async Task Save()
@@ -135,5 +117,16 @@ public partial class Budget : ComponentBase
         {
             Validation.SetError(ex.Message);
         }
+    }
+
+    private Task InvokeBudgetEntryModalAsync(string method)
+    {
+        if (_budgetEntryModal is null) return Task.CompletedTask;
+        return method switch
+        {
+            "ShowAsync" => ((dynamic)_budgetEntryModal).ShowAsync(),
+            "HideAsync" => ((dynamic)_budgetEntryModal).HideAsync(),
+            _ => Task.CompletedTask
+        };
     }
 }
