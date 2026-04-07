@@ -9,15 +9,11 @@ public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
     public BudgetScope? Scope { get; set; } = scope;
     public List<BudgetCellEntry> Entries { get; set; } = [];
 
-    public string Label => GetLabel();
-    private string GetLabel()
+    public string Label => Scope switch
     {
-        return Scope switch
-        {
-            BudgetScope.Monthly => StartDate.ToString("MMM"),
-            BudgetScope.Fortnightly => $"F{Index + 1:00} ({StartDate:dd/MM})",
-            BudgetScope.Weekly => $"W{Index + 1:00} ({StartDate:dd/MM})",
-            _ => StartDate.ToString("dd/MM/yyyy")
-        };
-    }
+        BudgetScope.Monthly => StartDate.ToString("MMM"),
+        BudgetScope.Fortnightly => $"F{Index + 1:00} ({StartDate:dd/MM})",
+        BudgetScope.Weekly => $"W{Index + 1:00} ({StartDate:dd/MM})",
+        _ => StartDate.ToString("dd/MM/yyyy")
+    };
 }

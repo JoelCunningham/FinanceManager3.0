@@ -1,0 +1,12 @@
+.graph-actions {
+    margin-bottom: 1rem;
+
+    .graph-actions-buttons {
+        display: flex;
+        gap: .5rem;
+
+        select {
+            margin-left: 1rem;
+        }
+    }
+}

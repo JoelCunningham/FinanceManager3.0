@@ -1,6 +1,7 @@
 namespace FinanceManager.Application.UseCases.Budget;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Constants;
@@ -15,7 +16,7 @@ public sealed record GetBudgetPageResult(
 
 public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetPeriodRepository budgetPeriodRepository)
 {
-    public async Task<GetBudgetPageResult> ExecuteAsync(int year)
+    public async Task<GetBudgetPageResult> ExecuteAsync(int year, BudgetGridMode mode = BudgetGridMode.Net)
     {
         var period = await budgetPeriodRepository.GetByYearAsync(year);
         var categories = await categoryRepository.GetAllAsync();
@@ -30,6 +31,14 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
         {
             var cells = BuildCells(period);
             var entries = (await budgetEntryRepository.GetByPeriodAsync(period.Id)).ToList();
+
+            entries = mode switch
+            {
+                BudgetGridMode.Income => [.. entries.Where(entry => entry.Category.Group.IsIncome)],
+                BudgetGridMode.Expense => [.. entries.Where(entry => !entry.Category.Group.IsIncome)],
+                _ => entries
+            };
+
             var poplulatedCells = PopulateCells(cells, entries);
 
             return new GetBudgetPageResult(period, poplulatedCells, categorySummaries);
@@ -72,23 +81,20 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
         return cells;
     }
 
-    private static List<BudgetCell> PopulateCells(List<BudgetCell> cells, IReadOnlyList<BudgetEntry> entries)
+    private static List<BudgetCell> PopulateCells(List<BudgetCell> cells, List<BudgetEntry> entries)
     {
-        foreach (var entry in entries)
-        {
-            for (var i = 0; i < entry.Length; i++)
-            {
-                cells[i + entry.PeriodPosition].Entries.Add(BudgetCellEntry.FromBudgetEntry(entry, i));
-            }
-        }
+        entries = [.. entries
+            .OrderByDescending(e => e.Length)
+            .ThenByDescending(e => e.Category.Group.IsIncome)
+            .ThenBy(e => e.Category.Group.Name)
+            .ThenBy(e => e.Category.Name)];
 
-        foreach (var cell in cells)
+        for (var i = 0; i < entries.Count; i++)
         {
-            cell.Entries = [.. cell.Entries
-                .OrderBy(e => e.OverallPeriodPosition)
-                .ThenBy(e => e.Category?.IsIncome == true)
-                .ThenBy(e => e.Category?.GroupName)
-                .ThenBy(e => e.Category?.Name)];
+            for (var j = 0; j < entries[i].Length; j++)
+            {
+                cells[j + entries[i].PeriodPosition].Entries.Add(BudgetCellEntry.FromBudgetEntry(entries[i], j, i));
+            }
         }
 
         return cells;

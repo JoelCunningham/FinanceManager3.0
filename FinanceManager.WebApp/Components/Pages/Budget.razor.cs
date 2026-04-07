@@ -1,6 +1,7 @@
 namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Entities;
 using FinanceManager.WebApp.Models;
@@ -20,10 +21,18 @@ public partial class Budget : ComponentBase
 
     public BudgetCellEntry? CurrentEntry { get; set; }
     public bool IsEditing { get; set; }
+    public BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
 
     public int CurrentYear => CurrentPeriod?.Year ?? DateTime.Now.Year;
 
     private object? _budgetEntryModal;
+
+    private static readonly BudgetGridMode[] EntryTypeFilters =
+    [
+        BudgetGridMode.Net,
+        BudgetGridMode.Income,
+        BudgetGridMode.Expense
+    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,12 +44,18 @@ public partial class Budget : ComponentBase
     public async Task Next() => await ReloadAsync(CurrentYear + 1);
     public async Task Today() => await ReloadAsync(DateTime.Now.Year);
 
+    public async Task OnEntryTypeFilterChanged(BudgetGridMode mode)
+    {
+        EntryTypeFilter = mode;
+        await ReloadAsync(CurrentYear);
+    }
+
     public async Task OpenEditModal() => await InvokeBudgetEntryModalAsync("ShowAsync");
     public async Task CloseEditModal() => await InvokeBudgetEntryModalAsync("HideAsync");
 
     private async Task ReloadAsync(int year)
     {
-        var page = await Workflow.GetPageAsync(year);
+        var page = await Workflow.GetPageAsync(year, EntryTypeFilter);
 
         Cells = page.Cells;
         Categories = page.Categories;

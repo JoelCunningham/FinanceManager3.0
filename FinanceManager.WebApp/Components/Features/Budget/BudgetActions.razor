@@ -1,15 +1,33 @@
 @code {
     [Parameter] public BudgetPeriod? CurrentPeriod { get; set; } = default!;
 
+    [Parameter] public BudgetGridMode EntryTypeFilter { get; set; }
+    [Parameter] public EventCallback<BudgetGridMode> EntryTypeFilterChanged { get; set; }
+        
+    [Parameter] public IReadOnlyList<BudgetGridMode> EntryTypeFilters { get; set; } = [];
+
     [Parameter] public EventCallback OnPrev { get; set; }
     [Parameter] public EventCallback OnToday { get; set; }
     [Parameter] public EventCallback OnNext { get; set; }
 }
 
-<div class="graph-actions mb-2">
+<div class="graph-actions">
     <h1>@(CurrentPeriod?.Year.ToString() ?? "TODO get year")</h1>
 
-    <HxButton Color="ThemeColor.Secondary" OnClick="OnPrev">Prev</HxButton>
-    <HxButton Color="ThemeColor.Secondary" OnClick="OnToday">Today</HxButton>
-    <HxButton Color="ThemeColor.Secondary" OnClick="OnNext">Next</HxButton>
+    <div class="graph-actions-buttons">
+        <HxButton Color="ThemeColor.Secondary" OnClick="OnPrev">Prev</HxButton>
+        <HxButton Color="ThemeColor.Secondary" OnClick="OnToday">Today</HxButton>
+        <HxButton Color="ThemeColor.Secondary" OnClick="OnNext">Next</HxButton>
+
+        <HxSelect Value="EntryTypeFilter"
+                  ValueChanged="EntryTypeFilterChanged"
+                  ValueExpression="() => EntryTypeFilter"
+                  Data="EntryTypeFilters"
+                  TItem="BudgetGridMode"
+                  TValue="BudgetGridMode"
+                  Nullable="false"
+                  AutoSort="false"
+                  TextSelector="f => f.ToString()"
+                  ValueSelector="f => f" />
+    </div>
 </div>
