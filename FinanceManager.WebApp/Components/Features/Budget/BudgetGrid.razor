@@ -7,6 +7,13 @@
 
     private Guid? HoveredEntryId { get; set; }
 
+    private IReadOnlyDictionary<int, decimal> RowHeights => GetRowHeights();
+    private IReadOnlyDictionary<int, decimal> RowTopOffsets => GetRowTopOffsets(RowHeights);
+
+    private const decimal MinEntryHeight = 1.6m;
+    private const decimal MaxEntryHeight = 3.2m;
+    private const decimal EntryGap = 0.2m;
+
     private string GridCssClass => Scope switch
     {
         BudgetScope.Monthly => "budget-grid budget-grid-month",
@@ -20,6 +27,50 @@
         HoveredEntryId = entryId;
         return Task.CompletedTask;
     }
+
+    private IReadOnlyDictionary<int, decimal> GetRowHeights()
+    {
+        var rows = Cells
+            .SelectMany(cell => cell.Entries)
+            .GroupBy(entry => entry.YIndex)
+            .Select(group => group.First())
+            .OrderBy(entry => entry.YIndex)
+            .ToList();
+
+        if (rows.Count == 0)
+        {
+            return new Dictionary<int, decimal>();
+        }
+
+        var minAmount = rows.Min(entry => entry.Amount);
+        var maxAmount = rows.Max(entry => entry.Amount);
+        var amountRange = maxAmount - minAmount;
+
+        var rowHeights = new Dictionary<int, decimal>(rows.Count);
+
+        foreach (var entry in rows)
+        {
+            rowHeights[entry.YIndex] = amountRange == 0m
+                ? (MinEntryHeight + MaxEntryHeight) / 2m
+                : MinEntryHeight + ((entry.Amount - minAmount) / amountRange) * (MaxEntryHeight - MinEntryHeight);
+        }
+
+        return rowHeights;
+    }
+
+    private IReadOnlyDictionary<int, decimal> GetRowTopOffsets(IReadOnlyDictionary<int, decimal> rowHeights)
+    {
+        var rowTopOffsets = new Dictionary<int, decimal>(rowHeights.Count);
+        var currentTop = 0m;
+
+        foreach (var rowIndex in rowHeights.Keys.OrderBy(rowIndex => rowIndex))
+        {
+            rowTopOffsets[rowIndex] = currentTop;
+            currentTop += rowHeights[rowIndex] + EntryGap;
+        }
+
+        return rowTopOffsets;
+    }
 }
 
 @if (Scope is not null)
@@ -27,7 +78,7 @@
     <div class="@GridCssClass">
         @foreach (var cell in Cells)
         {
-            <BudgetGridCell Cell="cell" HoveredEntryId="HoveredEntryId" OnCellClicked="OnCellClicked" OnEntryClicked="OnEntryClicked" OnEntryHoverChanged="HandleEntryHoverChanged" />
+            <BudgetGridCell Cell="cell" RowHeights="RowHeights" RowTopOffsets="RowTopOffsets" HoveredEntryId="HoveredEntryId" OnCellClicked="OnCellClicked" OnEntryClicked="OnEntryClicked" OnEntryHoverChanged="HandleEntryHoverChanged" />
         }
     </div>
 }

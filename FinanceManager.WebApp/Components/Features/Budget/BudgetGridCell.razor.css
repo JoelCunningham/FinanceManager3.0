@@ -7,24 +7,29 @@
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    padding-bottom: 2rem;
 
     .budget-cell-header {
-        position: sticky;
-        top: 0;
         padding-bottom: .25rem;
         margin-bottom: .35rem;
         font-weight: 600;
         opacity: .85;
-        user-select: none;
         text-align: center;
     }
 
-    .budget-entry-slot {
-        display: contents;
+    .budget-cell-footer {
+        margin-top: auto;
+        padding-top: .25rem;
+        font-weight: 600;
+        opacity: .65;
+        text-align: center;
     }
 
-    &:hover:not(:has(.budget-entry-slot:hover)) {
+    .budget-cell-content {
+        position: relative;
+        gap: 1rem;
+    }
+
+    &:hover:not(:has(.budget-cell-content:hover)) {
         transition-duration: .3s;
         background-color: var(--bs-gray-200);
     }

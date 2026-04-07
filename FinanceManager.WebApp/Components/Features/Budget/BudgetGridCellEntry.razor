@@ -1,17 +1,33 @@
 @code {
     [Parameter] public BudgetCellEntry Entry { get; set; } = default!;
     [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
+
     [Parameter] public Guid? HoveredEntryId { get; set; }
     [Parameter] public EventCallback<Guid?> OnEntryHoverChanged { get; set; }
+
+    [Parameter] public IReadOnlyDictionary<int, decimal> RowHeights { get; set; } = new Dictionary<int, decimal>();
+    [Parameter] public IReadOnlyDictionary<int, decimal> RowTopOffsets { get; set; } = new Dictionary<int, decimal>();
 
     private bool IsVisibleEntry => Entry.IsFirstInRow && Entry.Category is not null;
     private bool IsHovered => Entry.EntityId is not null && Entry.EntityId == HoveredEntryId;
 
-    private static string GetEntryStyle(BudgetCellEntry entry)
+    private string GetEntryStyle(BudgetCellEntry entry)
     {
+        var styleBuilder = new System.Text.StringBuilder();
+
         var backgroundColour = entry.Category?.GroupColour;
-        var textColour = GetContrastTextColour(backgroundColour!);
-        return $"--entry-bg: {backgroundColour}; color: {textColour};";
+        styleBuilder.Append($"--entry-bg: {backgroundColour};");
+        styleBuilder.Append($"color: {GetContrastTextColour(backgroundColour!)};");
+
+        var height = RowHeights[entry.YIndex];
+        var marginTop = RowTopOffsets[entry.YIndex];
+        var widthAdjustment = (entry.RowLength - 1) * 1.61m;
+
+        styleBuilder.Append($"width: calc(100% * {entry.RowLength} + {widthAdjustment}rem);");
+        styleBuilder.Append($"height: {height}rem;");
+        styleBuilder.Append($"margin-top: {marginTop}rem;");
+
+        return styleBuilder.ToString();
     }
 
     private static string GetAccentStyle(BudgetCellEntry entry)
@@ -33,7 +49,7 @@
 
 @if (IsVisibleEntry)
 {
-    <div class="budget-entry budget-entry-@Entry.RowLength @(IsHovered ? "budget-entry-hovered" : string.Empty)" 
+    <div class="budget-entry @(IsHovered ? "budget-entry-hovered" : string.Empty)" 
         style="@GetEntryStyle(Entry)" 
         @onclick:stopPropagation="true" 
         @onmouseenter="() => OnEntryHoverChanged.InvokeAsync(Entry.EntityId)" 
@@ -43,15 +59,6 @@
         <div class="budget-entry-content">
             <div class="budget-entry-title">@Entry.Category?.Name</div>
             <div class="budget-entry-amount">@Entry.Amount.ToString("C")</div>
-        </div>
-    </div>
-}
-else
-{
-    <div class="budget-entry budget-entry-hidden @(IsHovered ? "budget-entry-hovered" : string.Empty)">
-        <div class="budget-entry-content">
-            <div class="budget-entry-amount">@Entry.Amount.ToString("C")</div>
-            <div class="budget-entry-title">@Entry.Category?.Name</div>
         </div>
     </div>
 }
