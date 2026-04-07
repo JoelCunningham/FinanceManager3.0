@@ -48,27 +48,17 @@ public class CategoryRepository : ICategoryRepository
             CreateCategory("Unemployment", "Support"),
             CreateCategory("Pension", "Support"),
 
-            CreateCategory("Doctor", "Health"),
-            CreateCategory("Dentist", "Health"),
-            CreateCategory("Optometrist", "Health"),
-            CreateCategory("Therapy", "Health"),
+            CreateCategory("Medical Services", "Health"),
             CreateCategory("Medication", "Health"),
             CreateCategory("Supplements", "Health"),
-            CreateCategory("Exercise Equipment", "Health"),
-            CreateCategory("Sport", "Health"),
+            CreateCategory("Fitness", "Health"),
             CreateCategory("Insurance", "Health"),
             CreateCategory("Ambulance Cover", "Health"),
 
-            CreateCategory("Tuition", "Education"),
-            CreateCategory("Supplies", "Education"),
-            CreateCategory("Fees", "Education"),
-
-            CreateCategory("Games", "Recreation"),
+            CreateCategory("Entertainment", "Recreation"),
             CreateCategory("Activities", "Recreation"),
             CreateCategory("Alcohol", "Recreation"),
             CreateCategory("Books", "Recreation"),
-            CreateCategory("Streaming Services", "Recreation"),
-            CreateCategory("Music", "Recreation"),
 
             CreateCategory("Electricity", "Utilities"),
             CreateCategory("Water", "Utilities"),
@@ -79,14 +69,13 @@ public class CategoryRepository : ICategoryRepository
             CreateCategory("Public Transport", "Transportation"),
             CreateCategory("Fuel", "Transportation"),
             CreateCategory("Maintenance", "Transportation"),
-            CreateCategory("Parking", "Transportation"),
-            CreateCategory("Tolls", "Transportation"),
             CreateCategory("Taxi", "Transportation"),
-            CreateCategory("Car Hire", "Transportation"),
-            CreateCategory("Roadside Assistance", "Transportation"),
+            CreateCategory("Fees", "Transportation"),
             CreateCategory("Registration", "Transportation"),
             CreateCategory("Insurance", "Transportation"),
+            CreateCategory("Roadside Assistance", "Transportation"),
             CreateCategory("Flights", "Transportation"),
+            CreateCategory("Car Hire", "Transportation"),
 
             CreateCategory("Groceries", "Food"),
             CreateCategory("Dining Out", "Food"),
@@ -109,7 +98,8 @@ public class CategoryRepository : ICategoryRepository
             CreateCategory("Clothing", "Personal"),
             CreateCategory("Cosmetics", "Personal"),
             CreateCategory("Grooming", "Personal"),
-            CreateCategory("Quality", "Personal"),
+            CreateCategory("Lifestyle", "Personal"),
+            CreateCategory("Tuition", "Personal"),
 
             CreateCategory("Bank Fees", "Financial"),
             CreateCategory("Credit Card Fees", "Financial"),
@@ -124,44 +114,55 @@ public class CategoryRepository : ICategoryRepository
     private Category CreateCategory(string name, string groupName)
     {
         var group = _categoryGroups.Find(g => g.Name == groupName);
-        if (group is not null)
+        if (group is null)
         {
-            return new()
-            {
-                Id = Guid.NewGuid(),
-                Name = name,
-                Group = group,
-                GroupId = group.Id,
-                Colour = GetRandomColour()
-            };
+            throw new NotImplementedException();
         }
-        throw new NotImplementedException();
+
+        var category = new Category
+        {
+
+            Id = Guid.NewGuid(),
+            Name = name,
+            Group = group,
+            GroupId = group.Id,
+            Colour = GetRandomColour()
+        };
+
+        group.Categories ??= [];
+        group.Categories.Add(category);
+
+        return category;
     }
 
     private static IEnumerable<CategoryGroup> GetDefaultCategoryGroups()
     {
         return
         [
-            new() { Id = Guid.NewGuid(), Name = "Employment", IsIncome = true, Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Investment", IsIncome = true, Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Support", IsIncome = true, Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Health", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Education", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Recreation", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Utilities", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Transportation", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Food", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Investing", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Housing", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Personal", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Financial", Colour = GetRandomColour() },
-            new() { Id = Guid.NewGuid(), Name = "Gifts", Colour = GetRandomColour() },
+            new() { Id = Guid.NewGuid(), Name = "Employment", IsIncome = true, Colour = colours[0] },
+            new() { Id = Guid.NewGuid(), Name = "Investment", IsIncome = true, Colour = colours[1] },
+            new() { Id = Guid.NewGuid(), Name = "Support", IsIncome = true, Colour = colours[2] },
+
+            new() { Id = Guid.NewGuid(), Name = "Financial", Colour = colours[0] },
+            new() { Id = Guid.NewGuid(), Name = "Food", Colour = colours[1] },
+            new() { Id = Guid.NewGuid(), Name = "Gifts", Colour = colours[2] },
+            new() { Id = Guid.NewGuid(), Name = "Health", Colour = colours[3] },
+            new() { Id = Guid.NewGuid(), Name = "Housing", Colour = colours[4] },
+            new() { Id = Guid.NewGuid(), Name = "Investing", Colour = colours[5] },
+            new() { Id = Guid.NewGuid(), Name = "Personal", Colour = colours[6] },
+            new() { Id = Guid.NewGuid(), Name = "Recreation", Colour = colours[7] },
+            new() { Id = Guid.NewGuid(), Name = "Transportation", Colour = colours[8] },
+            new() { Id = Guid.NewGuid(), Name = "Utilities", Colour = colours[9] },
         ];
     }
 
     private static string GetRandomColour()
     {
-        var random = new Random();
-        return String.Format("#{0:X6}", random.Next(0x1000000));
+        return colours[new Random().Next(colours.Length)];
     }
+
+    private static readonly string[] colours = 
+    [
+        "#54478C", "#2C699A", "#048BA8", "#0DB39E", "#16DB93", "#83E377", "#B9E769", "#EFEA5A", "#F1C453", "#F29E4C"
+    ];
 }

@@ -87,7 +87,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 Length = 12
             });
 
-            var sport = categories.First(c => c.Name == "Sport");
+            var sport = categories.First(c => c.Name == "Fitness");
             _budgetEntries.Add(new BudgetEntry
             {
                 Id = Guid.NewGuid(),
@@ -131,7 +131,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
 
         if (period2025 != null)
         {
-            var sport = categories.First(c => c.Name == "Sport");
+            var sport = categories.First(c => c.Name == "Fitness");
             _budgetEntries.Add(new BudgetEntry
             {
                 Id = Guid.NewGuid(),

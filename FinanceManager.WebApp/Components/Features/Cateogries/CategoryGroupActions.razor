@@ -1,0 +1,21 @@
+@code {
+    [Parameter] public string SearchQuery { get; set; } = default!;
+    [Parameter] public EventCallback<string> SearchQueryChanged { get; set; }
+
+    private async Task OnSearchChanged(string value)
+    {
+        await SearchQueryChanged.InvokeAsync(value ?? string.Empty);
+    }
+}
+
+<div class="actions-container">
+    <div class="search-container">
+        <HxSearchBox TItem="string"
+                     TextQuery="@SearchQuery"
+                     TextQueryChanged="OnSearchChanged"
+                     MinimumLength="@int.MaxValue"
+                     Placeholder="Search groups" />
+    </div>
+
+    <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.PlusLg" Text="Add group" />
+</div>

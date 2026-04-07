@@ -1,0 +1,13 @@
+@code {
+    [Parameter] public string Title { get; set; } = default!;
+
+    [Parameter] public IEnumerable<CategoryGroupSummary> Groups { get; set; } = default!;
+}
+
+<h4 class="category-cards-title">@Title</h4>
+<div class="category-cards-grid">
+    @foreach (var group in Groups)
+    {
+        <CategoryGroupCard Group="group" />
+    }
+</div>

@@ -6,8 +6,7 @@ using FinanceManager.Application.UseCases;
 
 public sealed record GetCategoryListResult(
     IReadOnlyList<CategorySummary> Categories,
-    IReadOnlyList<CategoryGroupSummary> Groups,
-    IReadOnlyDictionary<Guid, int> CategoryCountByGroupId
+    IReadOnlyList<CategoryGroupSummary> Groups
 ) : UseCaseResult;
 
 public sealed class GetCategoryList(ICategoryRepository categoryRepository)
@@ -22,10 +21,6 @@ public sealed class GetCategoryList(ICategoryRepository categoryRepository)
             .OrderBy(g => g.IsIncome ? 0 : 1).ThenBy(g => g.Name)
             .Select(CategoryGroupSummary.FromCategoryGroup).ToList();
 
-        var countByGroupId = categories
-            .GroupBy(c => c.GroupId)
-            .ToDictionary(g => g.Key, g => g.Count());
-
-        return new GetCategoryListResult(categories, groups, countByGroupId);
+        return new GetCategoryListResult(categories, groups);
     }
 }

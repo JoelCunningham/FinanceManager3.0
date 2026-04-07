@@ -16,20 +16,14 @@ public partial class Categories : ComponentBase
     public IReadOnlyList<CategorySummary> AllCategories { get; set; } = [];
     public IReadOnlyList<CategoryGroupSummary> CategoryGroups { get; set; } = [];
 
-    private IReadOnlyDictionary<Guid, int> CategoryCountByGroupId { get; set; } = new Dictionary<Guid, int>();
-
     private string GroupSearch { get; set; } = string.Empty;
-    private string CategorySearch { get; set; } = string.Empty;
 
     private IEnumerable<CategoryGroupSummary> FilteredGroups => CategoryGroups
         .Where(g => string.IsNullOrWhiteSpace(GroupSearch) || g.Name.Contains(GroupSearch, StringComparison.OrdinalIgnoreCase))
         .OrderByDescending(g => g.IsIncome).ThenBy(g => g.Name);
 
-    private IEnumerable<CategorySummary> FilteredCategories => AllCategories
-        .Where(c => string.IsNullOrWhiteSpace(CategorySearch) || c.Name.Contains(CategorySearch, StringComparison.OrdinalIgnoreCase) || c.GroupName.Contains(CategorySearch, StringComparison.OrdinalIgnoreCase))
-        .OrderByDescending(c => c.IsIncome).ThenBy(c => c.GroupName).ThenBy(c => c.Name);
-
-    private int GetCategoryCount(Guid groupId) => CategoryCountByGroupId.TryGetValue(groupId, out var count) ? count : 0;
+    private IEnumerable<CategoryGroupSummary> IncomeGroups => FilteredGroups.Where(g => g.IsIncome);
+    private IEnumerable<CategoryGroupSummary> ExpenseGroups => FilteredGroups.Where(g => !g.IsIncome);
 
     protected override async Task OnInitializedAsync()
     {
@@ -38,16 +32,10 @@ public partial class Categories : ComponentBase
         var categoriesResult = await Workflow.GetCategoriesAsync();
         CategoryGroups = categoriesResult.Groups;
         AllCategories = categoriesResult.Categories;
-        CategoryCountByGroupId = categoriesResult.CategoryCountByGroupId;
     }
 
     private void OnGroupSearchChanged(string value)
     {
         GroupSearch = value ?? string.Empty;
-    }
-
-    private void OnCategorySearchChanged(string value)
-    {
-        CategorySearch = value ?? string.Empty;
     }
 }

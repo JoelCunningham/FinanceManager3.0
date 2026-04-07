@@ -2,132 +2,18 @@
 
 <PageTitle>Categories</PageTitle>
 
-<h1 class="page-heading">Categories</h1>
+<h1 class="page-heading">Category groups</h1>
 
-<HxTabPanel>
-    <HxTab Title="Groups">
-        <Content>
-            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-end mb-3">
-                <div style="min-width: 18rem; flex: 1 1 18rem;">
-                    <HxSearchBox TItem="string"
-                                 TextQuery="@GroupSearch"
-                                 TextQueryChanged="OnGroupSearchChanged"
-                                 MinimumLength="@int.MaxValue"
-                                 Placeholder="Search groups" />
-                </div>
+<CategoryGroupActions SearchQuery="@GroupSearch" SearchQueryChanged="OnGroupSearchChanged" />
 
-                <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.PlusLg" Text="Add group" />
-            </div>
-
-            @if (!FilteredGroups.Any())
-            {
-                <div class="alert alert-light border mb-0">
-                    No groups match your search.
-                </div>
-            }
-            else
-            {
-                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4 row-cols-xxxl-5 g-3">
-                    @foreach (var group in FilteredGroups)
-                    {
-                        <div class="col">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start gap-2">
-                                        <div class="min-width-0">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="flex-shrink-0">
-                                                    @if (group.IsIncome)
-                                                    {
-                                                        <HxTooltip Text="Income">
-                                                            <HxIcon Icon="BootstrapIcon.GraphUpArrow" CssClass="text-success" />
-                                                        </HxTooltip>
-                                                    }
-                                                    else
-                                                    {
-                                                        <HxTooltip Text="Expense">
-                                                            <HxIcon Icon="BootstrapIcon.GraphDownArrow" CssClass="text-danger" />
-                                                        </HxTooltip>
-                                                    }
-                                                </div>
-
-                                                <div class="fw-semibold text-truncate min-width-0" title="@group.Name">@group.Name</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-muted mt-3">
-                                        @GetCategoryCount(group.Id) categories
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-        </Content>
-    </HxTab>
-
-    <HxTab Title="Categories">
-        <Content>
-            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-end mb-3">
-                <div style="min-width: 18rem; flex: 1 1 18rem;">
-                    <HxSearchBox TItem="string"
-                                 TextQuery="@CategorySearch"
-                                 TextQueryChanged="OnCategorySearchChanged"
-                                 MinimumLength="@int.MaxValue"
-                                 Placeholder="Search categories by name or group" />
-                </div>
-
-                <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.PlusLg" Text="Add category" />
-            </div>
-
-            @if (!FilteredCategories.Any())
-            {
-                <div class="alert alert-light border mb-0">
-                    No categories match your search.
-                </div>
-            }
-            else
-            {
-                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4 row-cols-xxxl-5 g-3">
-                    @foreach (var category in FilteredCategories)
-                    {
-                        <div class="col">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start gap-2">
-                                        <div class="min-width-0">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="flex-shrink-0">
-                                                    @if (category.IsIncome)
-                                                    {
-                                                        <HxTooltip Text="Income">
-                                                            <HxIcon Icon="BootstrapIcon.GraphUpArrow" CssClass="text-success" />
-                                                        </HxTooltip>
-                                                    }
-                                                    else
-                                                    {
-                                                        <HxTooltip Text="Expense">
-                                                            <HxIcon Icon="BootstrapIcon.GraphDownArrow" CssClass="text-danger" />
-                                                        </HxTooltip>
-                                                    }
-                                                </div>
-
-                                                <div class="fw-semibold text-truncate min-width-0" title="@category.Name">@category.Name</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-muted mt-3">
-                                        @category.GroupName
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            }
-        </Content>
-    </HxTab>
-</HxTabPanel>
+@if (!FilteredGroups.Any())
+{
+    <div class="alert alert-light border mb-0">
+        No groups match your search.
+    </div>
+}
+else
+{
+    <CategoryCards Title="Income groups" Groups="IncomeGroups" />
+    <CategoryCards Title="Expense groups" Groups="ExpenseGroups" />
+}

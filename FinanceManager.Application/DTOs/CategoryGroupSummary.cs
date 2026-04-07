@@ -4,8 +4,10 @@ using FinanceManager.Domain.Entities;
 
 public sealed record CategoryGroupSummary(
     Guid Id, 
-    string Name, 
-    bool IsIncome
+    string Name,
+    string Colour,
+    bool IsIncome,
+    int CategoryCount
 )
 {
     public static CategoryGroupSummary FromCategoryGroup(CategoryGroup group)
@@ -13,7 +15,9 @@ public sealed record CategoryGroupSummary(
         return new CategoryGroupSummary(
             group.Id,
             group.Name,
-            group.IsIncome
+            group.Colour,
+            group.IsIncome,
+            group.Categories?.Count ?? 0
         );
     }
 }

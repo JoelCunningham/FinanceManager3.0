@@ -1,8 +1,9 @@
 @page "/Budget"
 
+<h1 class="page-heading">@(CurrentPeriod?.Year.ToString() ?? "TODO get year")</h1>
+
 <BudgetActions EntryTypeFilter="EntryTypeFilter"
                EntryTypeFilterChanged="OnEntryTypeFilterChanged"
-               CurrentPeriod="CurrentPeriod"
                EntryTypeFilters="EntryTypeFilters"
                OnPrev="Prev"
                OnToday="Today"
