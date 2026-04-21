@@ -36,7 +36,7 @@ public static class DependencyInjection
         services.AddScoped<GetBudgetScopes>();
         services.AddScoped<GetChart1Data>();
         services.AddScoped<GetChart2Data>();
-        services.AddScoped<TransactionsWorkflow>();
+        services.AddScoped<StatisticsWorkflow>();
 
         // Review use cases
         services.AddScoped<GetReviewPage>();
