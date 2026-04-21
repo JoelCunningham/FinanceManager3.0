@@ -21,7 +21,7 @@ public sealed class GetChart1Data(TransactionHelper transactionHelper, GetCatego
         var query = new FilterQuery
         {
             FilterDateFrom = period.StartDate.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = period.EndDate.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = period.EndDate.ToDateTime(TimeOnly.MaxValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 

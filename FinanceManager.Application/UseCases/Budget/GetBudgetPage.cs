@@ -3,10 +3,8 @@ namespace FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
-using FinanceManager.Application.Utilities;
-using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Entities;
-using FinanceManager.Domain.Enums;
+using FinanceManager.Domain.Utilities;
 
 public sealed record GetBudgetPageResult(
     BudgetPeriod? BudgetPeriod,
@@ -49,33 +47,13 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
     {
         var cells = new List<BudgetCell>();
 
-        if (period.Scope == BudgetScope.Monthly)
-        {
-            var monthsInYear = DateHelper.GetMonthCount();
-            for (var i = 0; i < monthsInYear; i++)
-            {
-                cells.Add(new BudgetCell(i, period.StartDate.AddMonths(i), BudgetScope.Monthly));
-            }
-        }
+        var scopeStart = ScopeHelper.GetYearStart(period.Scope, period.Year);
+        var periodsCount = ScopeHelper.GetPeriodCountForYear(period.Scope, period.Year);
 
-        var firstWeekOfYear = DateHelper.GetIsoWeek1(period.Year);
-
-        if (period.Scope == BudgetScope.Weekly)
+        for (var i = 0; i < periodsCount; i++)
         {
-            var weeksInYear = DateHelper.GetWeekCount(period.Year);
-            for (var i = 0; i < weeksInYear; i++)
-            {
-                cells.Add(new BudgetCell(i, firstWeekOfYear.AddDays(i * DateConstants.DAYS_IN_WEEK), BudgetScope.Weekly));
-            }
-        }
-
-        if (period.Scope == BudgetScope.Fortnightly)
-        {
-            var fortnightsInYear = DateHelper.GetFortnightCount(period.Year);
-            for (var i = 0; i < fortnightsInYear; i++)
-            {
-                cells.Add(new BudgetCell(i, firstWeekOfYear.AddDays(i * DateConstants.DAYS_IN_FORTNIGHT), BudgetScope.Fortnightly));
-            }
+            var cellStart = ScopeHelper.GetPeriodStart(period.Scope, scopeStart, i);
+            cells.Add(new BudgetCell(i, cellStart, period.Scope));
         }
 
         return cells;

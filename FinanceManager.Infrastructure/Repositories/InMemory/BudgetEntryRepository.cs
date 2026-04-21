@@ -2,7 +2,7 @@
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
-using System.Globalization;
+using FinanceManager.Domain.Utilities;
 
 public class BudgetEntryRepository : IBudgetEntryRepository
 {
@@ -19,7 +19,7 @@ public class BudgetEntryRepository : IBudgetEntryRepository
 
     public async Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Guid> categoryIds)
     {
-        return _budgetEntries.Where(b => categoryIds.Contains(b.CategoryId) && b.EndDate >= startDate && b.StartDate <= endDate);
+        return _budgetEntries.Where(b => categoryIds.Contains(b.CategoryId) && BudgetEntryPeriodHelper.HasAnySegmentOverlap(b, startDate, endDate));
     }
 
     public async Task<IEnumerable<BudgetEntry>> GetByPeriodAsync(Guid periodId)

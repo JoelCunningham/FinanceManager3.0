@@ -41,13 +41,7 @@
     {
         if (Entry is null || CurrentPeriod is null) return;
 
-        var maxPeriodPosition = CurrentPeriod.Scope switch
-        {
-            BudgetScope.Monthly => DateHelper.GetMonthCount() - 1,
-            BudgetScope.Fortnightly => DateHelper.GetFortnightCount(CurrentPeriod.Year) - 1,
-            BudgetScope.Weekly => DateHelper.GetWeekCount(CurrentPeriod.Year) - 1,
-            _ => 0
-        };
+        var maxPeriodPosition = ScopeHelper.GetPeriodCountForYear(CurrentPeriod.Scope, CurrentPeriod.Year) - 1;
 
         _startPeriodPosition = Math.Clamp(Math.Min(startPeriodPosition, endPeriodPosition), 0, maxPeriodPosition);
         _endPeriodPosition = Math.Clamp(Math.Max(startPeriodPosition, endPeriodPosition), _startPeriodPosition, maxPeriodPosition);
@@ -63,8 +57,8 @@
         return CurrentPeriod.Scope switch
         {
             BudgetScope.Monthly => GetMonthlyPeriodPositionOptions(),
-            BudgetScope.Fortnightly => GetSequentialOptions("F", DateHelper.GetFortnightCount(CurrentPeriod.Year)),
-            BudgetScope.Weekly => GetSequentialOptions("W", DateHelper.GetWeekCount(CurrentPeriod.Year)),
+            BudgetScope.Fortnightly => GetSequentialOptions("F", ScopeHelper.GetPeriodCountForYear(BudgetScope.Fortnightly, CurrentPeriod.Year)),
+            BudgetScope.Weekly => GetSequentialOptions("W", ScopeHelper.GetPeriodCountForYear(BudgetScope.Weekly, CurrentPeriod.Year)),
             _ => []
         };
     }

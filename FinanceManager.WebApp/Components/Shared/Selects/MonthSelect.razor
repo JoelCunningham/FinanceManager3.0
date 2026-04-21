@@ -87,13 +87,7 @@
         DateOnly endDate;
         do
         {
-            endDate = scope switch
-            {
-                BudgetScope.Weekly => startDate.AddDays(7 * length - 1),
-                BudgetScope.Fortnightly => startDate.AddDays(14 * length - 1),
-                BudgetScope.Monthly => startDate.AddMonths(length).AddDays(-1),
-                _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
-            };
+            endDate = ScopeHelper.GetPeriodEnd(scope, startDate, length);
 
             if (endDate >= targetEndDate)
             {

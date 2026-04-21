@@ -2,6 +2,7 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Domain.Utilities;
 
 public class TransactionHelper(ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
 {
@@ -12,6 +13,7 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
 
         while (true)
         {
+            query.Page = page;
             var pagedTransactions = await transactionRepository.GetPagedAsync(query);
             var pageResult = new PagedResult<TransactionSummary>
             {
@@ -35,7 +37,6 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
     {
         if (categories.Count == 0) return [];
 
-        var budgetsPerDay = await GetBudgetPerDay(period.StartDate, period.EndDate, categories);
         var budgetsPerMonth = await GetBudgetPerMonth(period.StartDate, period.EndDate, categories);
         return [.. budgetsPerMonth.Select(b => !asExpense ? b.Value : -b.Value)];
     }
@@ -46,22 +47,20 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
 
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 
-        var currentDate = start;
-        while (currentDate <= end)
+        foreach (var budget in budgetsInPeriod)
         {
-            var budgetsInDay = budgetsInPeriod.Where(b => currentDate >= b.StartDate && currentDate <= b.EndDate);
-
-            foreach (var budget in budgetsInDay)
+            foreach (var day in BudgetEntryPeriodHelper.GetOverlappingDays(budget, start, end))
             {
                 var label = isCategoryDrilldown ? budget.Category.Name : budget.Category.Group.Name;
-                if (string.IsNullOrWhiteSpace(label)) continue;
+                if (string.IsNullOrWhiteSpace(label))
+                {
+                    continue;
+                }
 
                 totals[label] = totals.TryGetValue(label, out var current)
-                    ? current + Math.Abs(budget.DailyAmount)
-                    : Math.Abs(budget.DailyAmount);
+                    ? current + Math.Abs(day.DailyAmount)
+                    : Math.Abs(day.DailyAmount);
             }
-
-            currentDate = currentDate.AddDays(1);
         }
 
         return totals;
@@ -84,16 +83,24 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
     {
         var budgetsInPeriod = await budgetEntryRepository.GetByRangeAsync(startDate, endDate, categories.Select(c => c.Id).ToHashSet());
 
-        var currentDate = startDate;
         var amountPerDay = new Dictionary<DateOnly, decimal>();
 
+        var currentDate = startDate;
         while (currentDate <= endDate)
         {
-            var budgetsInDay = budgetsInPeriod.Where(b => currentDate >= b.StartDate && currentDate <= b.EndDate);
-            amountPerDay[currentDate] = budgetsInDay.Sum(b => b.DailyAmount);
+            amountPerDay[currentDate] = 0m;
             currentDate = currentDate.AddDays(1);
+        }
+
+        foreach (var budget in budgetsInPeriod)
+        {
+            foreach (var day in BudgetEntryPeriodHelper.GetOverlappingDays(budget, startDate, endDate))
+            {
+                amountPerDay[day.Date] += day.DailyAmount;
+            }
         }
 
         return amountPerDay;
     }
+
 }
