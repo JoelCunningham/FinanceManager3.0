@@ -1,4 +1,7 @@
-﻿.chart {
+﻿.chart-wrapper {
     margin-top: 1rem;
-    width: 100%;
+
+    .chart {
+        width: 100%;
+    }
 }

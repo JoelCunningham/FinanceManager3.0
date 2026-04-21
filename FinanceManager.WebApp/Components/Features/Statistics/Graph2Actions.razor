@@ -1,5 +1,7 @@
 ﻿@code
 {
+    private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
+
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
     [Parameter] public ScopedRange Range { get; set; } = default!;
@@ -11,45 +13,33 @@
         TransactionsGraphMode.Income
     ];
 
-    private static readonly BudgetScope[] SupportedScopes =
-    [
-        BudgetScope.Weekly,
-        BudgetScope.Fortnightly,
-        BudgetScope.Monthly
-    ];
-
     private async Task OnRangeChangedAsync(ScopedRange range)
     {
+        Chart.Range = range;
         await RangeChanged.InvokeAsync(range);
         await Chart.RefreshAsync();
     }
 
-    private async Task OnScopeChangedAsync(BudgetScope scope)
+    private async Task OnPreviousAsync()
     {
-        var newRange = new ScopedRange(scope, Chart.Range.StartDate, Chart.Range.Length);
+        var previousStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, -Chart.Range.Length);
+        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, previousStart, Chart.Range.Length));
+    }
 
-        Chart.Range = newRange;
-        await RangeChanged.InvokeAsync(newRange);
+    private async Task OnTodayAsync()
+    {
+        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, Today, Chart.Range.Length));
+    }
 
-        await Chart.RefreshAsync();
+    private async Task OnNextAsync()
+    {
+        var nextStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, Chart.Range.Length);
+        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, nextStart, Chart.Range.Length));
     }
 }
 
-<GraphActions Modes="SupportedModes" Chart="Chart">
+<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync">
     <Actions>
-        <HxSelect Label="Scope"
-                  Value="Chart.Range.Scope"
-                  ValueChanged="OnScopeChangedAsync"
-                  ValueExpression="() => Chart.Range.Scope"
-                  Data="SupportedScopes"
-                  TItem="BudgetScope"
-                  TValue="BudgetScope"
-                  Nullable="false"
-                  AutoSort="false"
-                  Enabled="!Chart.IsCategoryLevel"
-                  TextSelector="s => s.ToString()"
-                  ValueSelector="s => s" />
-
         @if (Chart.Range.Scope == BudgetScope.Monthly)
         {
             <MonthSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" />

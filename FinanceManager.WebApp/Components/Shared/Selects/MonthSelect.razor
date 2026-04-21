@@ -19,12 +19,19 @@
     {
         if (ChangeEndDate)
         {
-            SelectedYear = Value.EndDate.Year;
+            if (YearOptions.Contains(Value.EndDate.Year))
+            {
+                SelectedYear = Value.EndDate.Year;
+            }
             MonthOptions = GetMonthRanges.Execute(SelectedYear).Ranges.ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.EndDate && m.EndDate >= Value.EndDate) ?? MonthOptions.First();
         }
         else
         {
+            if (YearOptions.Contains(Value.StartDate.Year))
+            {
+                SelectedYear = Value.StartDate.Year;
+            }
             SelectedYear = Value.StartDate.Year;
             MonthOptions = GetMonthRanges.Execute(SelectedYear).Ranges.ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.StartDate && m.EndDate >= Value.StartDate) ?? MonthOptions.First();

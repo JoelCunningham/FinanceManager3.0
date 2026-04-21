@@ -1,5 +1,7 @@
 ﻿@code
 {
+    private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
+
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
     [Parameter] public ScopedRange Range { get; set; } = default!;
@@ -14,12 +16,30 @@
 
     private async Task OnRangeChangedAsync(ScopedRange from)
     {
+        Chart.Range = from;
         await RangeChanged.InvokeAsync(from);
         await Chart.RefreshAsync();
     }
+
+    private async Task OnPreviousAsync()
+    {
+        var previousStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, -Chart.Range.Length);
+        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, previousStart, Chart.Range.Length));
+    }
+
+    private async Task OnTodayAsync()
+    {
+        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, Today, Chart.Range.Length));
+    }
+
+    private async Task OnNextAsync()
+    {
+        var nextStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, Chart.Range.Length);
+        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, nextStart, Chart.Range.Length));
+    }
 }
 
-<GraphActions Modes="SupportedModes" Chart="Chart">
+<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync">
     <Actions>
         <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="From month" YearLabel="From year" ChangeLength />
         <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="To month" YearLabel="To year" ChangeEndDate ChangeLength />

@@ -3,9 +3,10 @@
 
 @code {
     [Parameter] public object? Options { get; set; }
+    [Parameter] public ScopedRange Range { get; set; } = default!;
+    [Parameter] public string? Title { get; set; }
 
     [Parameter] public EventCallback<string?> OnItemClick { get; set; }
-
     [JSInvokable] public Task NotifyChartClicked(string? key) => OnItemClick.InvokeAsync(key);
 
     private ElementReference _wrapper;
@@ -30,13 +31,18 @@
     }
 }
 
-<div class="chart" @ref="_wrapper">
+<div class="chart-wrapper">
     @if (Options is null)
     {
-        <HxAlert Color="ThemeColor.Secondary">No data to display.</HxAlert>
+        <HxAlert Color="ThemeColor.Info">
+            There are no transactions or budgets in the selected @Range.ScopeDescription.
+        </HxAlert>
     }
     else
     {
-        <HxEChart Options="Options" AutoResize="true" />
+        <h4 class="chart-title">@Title</h4>
+        <div class="chart" @ref="_wrapper">
+            <HxEChart Options="Options" AutoResize="true" />
+        </div>
     }
 </div>

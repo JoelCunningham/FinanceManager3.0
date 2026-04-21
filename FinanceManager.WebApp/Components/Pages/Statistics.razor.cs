@@ -3,10 +3,13 @@
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
+using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Enums;
+using FinanceManager.WebApp.Components.Shared;
 using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
+using System.Globalization;
 
 public partial class Statistics : ComponentBase
 {
@@ -15,7 +18,6 @@ public partial class Statistics : ComponentBase
     public ChartModel Chart1 { get; set; } = default!;
     public ChartModel Chart2 { get; set; } = default!;
 
-    private bool Chart2HasLargerScopedBudgets { get; set; }
     private List<CategoryGroupSummary> CategoryGroups { get; set; } = [];
 
     private const string UncategorisedLabel = "Uncategorised";
@@ -25,13 +27,12 @@ public partial class Statistics : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         var initialRange = new ScopedRange(BudgetScope.Monthly, Today.AddMonths(-5), DateConstants.MONTHS_IN_YEAR);
-        var currentScope = (await StatisticsWorkflow.GetBudgetScopesAsync(initialRange)).CurrentScope;
+        var currentScope = (await StatisticsWorkflow.GetBudgetScopesAsync(initialRange)).GreatestScopeInRange;
 
-        Chart1 = new(currentScope, Today.AddMonths(-5), ReloadChart1Async, DateConstants.MONTHS_IN_YEAR);
+        Chart1 = new(currentScope, Today, ReloadChart1Async, DateConstants.MONTHS_IN_YEAR);
         Chart2 = new(currentScope, Today, ReloadChart2Async);
 
         CategoryGroups = [.. (await StatisticsWorkflow.GetCategoryGroupsAsync()).Groups];
-        Chart2HasLargerScopedBudgets = (await StatisticsWorkflow.GetBudgetScopesAsync(Chart2.Range)).GreatestScopeInRange > Chart2.Range.Scope;
 
         await Chart1.RefreshAsync();
         await Chart2.RefreshAsync();
@@ -47,16 +48,7 @@ public partial class Statistics : ComponentBase
 
         var chartTransactions = ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
 
-        Chart1.Options = BuildChart1(
-            chartTransactions,
-            Chart1.Range,
-            Chart1.Mode,
-            chartData.BudgetSeries,
-            chartData.IncomeBudgetSeries,
-            chartData.ExpenseBudgetSeries,
-            drilldownGroupId is not null,
-            groupIdByName,
-            drilldownGroupName);
+        BuildChart1(chartTransactions, chartData.BudgetSeries, chartData.IncomeBudgetSeries, chartData.ExpenseBudgetSeries, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
 
         StateHasChanged();
     }
@@ -64,6 +56,23 @@ public partial class Statistics : ComponentBase
     private async Task ReloadChart2Async()
     {
         Chart2.Options = null;
+
+        var correctScope = (await StatisticsWorkflow.GetBudgetScopesAsync(Chart2.Range)).GreatestScopeInRange;
+
+        if (Chart2.Range.Scope != correctScope)
+        {
+            var anchorDate = Chart2.Range.EndDate;
+            if (correctScope is BudgetScope.Weekly or BudgetScope.Fortnightly)
+            {
+                while (ISOWeek.GetYear(anchorDate.ToDateTime(TimeOnly.MinValue)) > anchorDate.Year)
+                {
+                    anchorDate = anchorDate.AddDays(-1);
+                }
+            }
+
+            Chart2.Range = new ScopedRange(correctScope, anchorDate, Chart2.Range.Length);
+        }
+
         var drilldownGroupId = Chart2.SelectedGroupId;
         var (groupIdByName, drilldownGroupName, _) = BuildGroupDrilldownMeta(drilldownGroupId);
 
@@ -71,23 +80,13 @@ public partial class Statistics : ComponentBase
 
         var chartTransactions = ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
 
-        Chart2.Options = BuildChart2(
-            chartTransactions,
-            chartData.BudgetTotals,
-            Chart2.Mode,
-            drilldownGroupId is not null,
-            groupIdByName,
-            drilldownGroupName);
-
-        Chart2HasLargerScopedBudgets = chartData.HasLargerScopedBudgets;
+        BuildChart2(chartTransactions, chartData.BudgetTotals, drilldownGroupId is not null, groupIdByName, drilldownGroupName);
 
         StateHasChanged();
     }
 
-    private static object? BuildChart1(
+    private void BuildChart1(
         List<TransactionSummary> transactions,
-        ScopedRange range,
-        TransactionsGraphMode mode,
         decimal[]? budgetSeriesData,
         decimal[]? budgetIncomeSeriesData,
         decimal[]? budgetExpenseSeriesData,
@@ -95,20 +94,20 @@ public partial class Statistics : ComponentBase
         Dictionary<string, Guid> groupIdByName,
         string? drilldownGroupName)
     {
-        if (transactions.Count == 0 && budgetSeriesData == null && budgetIncomeSeriesData == null && budgetExpenseSeriesData == null) return null;
+        if (transactions.Count == 0 && budgetSeriesData == null && budgetIncomeSeriesData == null && budgetExpenseSeriesData == null) return;
 
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var transaction in transactions)
         {
-            if (!range.Includes(DateOnly.FromDateTime(transaction.Date)))
+            if (!Chart1.Range.Includes(DateOnly.FromDateTime(transaction.Date)))
             {
                 continue;
             }
-            if (!IsTransactionInMode(transaction, mode, false)) continue;
+            if (!IsTransactionInMode(transaction, Chart1.Mode, false)) continue;
 
             var category = GetCategoryOrGroupLabel(transaction, isCategoryDrilldown);
-            var sortAmount = GetChartSortAmount(transaction, mode);
+            var sortAmount = GetChartSortAmount(transaction, Chart1.Mode);
 
             totals[category] = totals.TryGetValue(category, out var current) ? current + sortAmount : sortAmount;
         }
@@ -121,24 +120,29 @@ public partial class Statistics : ComponentBase
         var amountsByCategory = new Dictionary<string, decimal[]>(StringComparer.OrdinalIgnoreCase);
         foreach (var name in categoryNames)
         {
-            amountsByCategory[name] = new decimal[range.Length];
+            amountsByCategory[name] = new decimal[Chart1.Range.Length];
         }
 
-        var months = range.Periods.ToList();
+        var months = Chart1.Range.Periods.ToList();
         foreach (var t in transactions)
         {
-            if (!IsTransactionInMode(t, mode, excludeNet: false)) continue;
+            if (!IsTransactionInMode(t, Chart1.Mode, excludeNet: false)) continue;
 
             var month = months.FirstOrDefault(m => m.Includes(DateOnly.FromDateTime(t.Date)));
             var monthIndex = months.IndexOf(month!);
 
-            var amount = GetChartStackAmount(t, mode);
+            var amount = GetChartStackAmount(t, Chart1.Mode);
             var category = GetCategoryOrGroupLabel(t, isCategoryDrilldown);
 
             if (amountsByCategory.TryGetValue(category, out var arr))
             {
                 arr[monthIndex] += amount;
             }
+        }
+
+        if (totals.Count == 0 && (budgetSeriesData == null || budgetSeriesData.All(v => v == 0m)) && (budgetIncomeSeriesData == null || budgetIncomeSeriesData.All(v => v == 0m)) && (budgetExpenseSeriesData == null || budgetExpenseSeriesData.All(v => v == 0m)))
+        {
+            return;
         }
 
         var series = new List<object>();
@@ -157,27 +161,29 @@ public partial class Statistics : ComponentBase
         var incomeBudgetName = groupBudgetPrefix is null ? "Budget (Income)" : $"{groupBudgetPrefix} Budget";
         var expenseBudgetName = groupBudgetPrefix is null ? "Budget (Expense)" : $"{groupBudgetPrefix} Budget";
 
-        if (mode == TransactionsGraphMode.Net)
+        if (Chart1.Mode == TransactionsGraphMode.Net)
         {
-            if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == range.Length)
+            if (budgetIncomeSeriesData is not null && budgetIncomeSeriesData.Length == Chart1.Range.Length)
             {
                 series.Add(CreateLineSeries(incomeBudgetName, budgetIncomeSeriesData, 7));
             }
 
-            if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == range.Length)
+            if (budgetExpenseSeriesData is not null && budgetExpenseSeriesData.Length == Chart1.Range.Length)
             {
                 series.Add(CreateLineSeries(expenseBudgetName, budgetExpenseSeriesData, 7));
             }
         }
         else
         {
-            if (budgetSeriesData is not null && budgetSeriesData.Length == range.Length)
+            if (budgetSeriesData is not null && budgetSeriesData.Length == Chart1.Range.Length)
             {
                 series.Add(CreateLineSeries(budgetName, budgetSeriesData, 8));
             }
         }
 
-        var titleText = (mode, isCategoryDrilldown) switch
+        var xAxisLabels = Chart1.Range.Periods.Select(m => m.StartDate.ToString("yyyy-MM")).ToArray();
+
+        Chart1.Title = (Chart1.Mode, isCategoryDrilldown) switch
         {
             (TransactionsGraphMode.Expense, false) => "Expenses by group",
             (TransactionsGraphMode.Income, false) => "Income by group",
@@ -185,12 +191,8 @@ public partial class Statistics : ComponentBase
             (_, true) => $"{drilldownGroupName ?? "Group"} by category",
             _ => "Transactions"
         };
-
-        var xAxisLabels = range.Periods.Select(m => m.StartDate.ToString("yyyy-MM")).ToArray();
-
-        return new
+        Chart1.Options = new
         {
-            title = new { text = titleText },
             tooltip = new { trigger = "axis" },
             legend = new { type = "scroll" },
             grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
@@ -200,10 +202,9 @@ public partial class Statistics : ComponentBase
         };
     }
 
-    private static object? BuildChart2(
+    private void BuildChart2(
         List<TransactionSummary> transactions,
         IReadOnlyDictionary<string, decimal> budgetTotals,
-        TransactionsGraphMode mode,
         bool isCategoryDrilldown,
         Dictionary<string, Guid> groupIdByName,
         string? drilldownGroupName)
@@ -212,10 +213,10 @@ public partial class Statistics : ComponentBase
 
         foreach (var t in transactions)
         {
-            if (!IsTransactionInMode(t, mode, excludeNet: true)) continue;
+            if (!IsTransactionInMode(t, Chart2.Mode, excludeNet: true)) continue;
 
             var name = GetCategoryOrGroupLabel(t, isCategoryDrilldown);
-            var amount = GetChartSortAmount(t, mode);
+            var amount = GetChartSortAmount(t, Chart2.Mode);
 
             actualTotals[name] = actualTotals.TryGetValue(name, out var current)
                 ? current + amount
@@ -235,7 +236,7 @@ public partial class Statistics : ComponentBase
             .ThenByDescending(x => x.Budget)
             .ToList();
 
-        if (rows.Count == 0) return null;
+        if (rows.Count == 0) return;
 
         var labels = rows.Select(r => r.Name).ToArray();
 
@@ -247,7 +248,7 @@ public partial class Statistics : ComponentBase
             })
             .ToArray();
 
-        var isIncome = mode == TransactionsGraphMode.Income;
+        var isIncome = Chart2.Mode == TransactionsGraphMode.Income;
 
         var baseValues = rows.Select(r => (double)Math.Min(r.Actual, r.Budget)).ToArray();
         var remainingValues = rows.Select(r => (double)Math.Max(r.Budget - r.Actual, 0m)).ToArray();
@@ -255,7 +256,7 @@ public partial class Statistics : ComponentBase
 
         object[] BuildSeriesData(double[] values) => [.. values.Select((v, i) => new { value = v, key = drilldownKeys[i] })];
 
-        var modeText = mode == TransactionsGraphMode.Income ? "incomes" : "expenses";
+        var modeText = Chart2.Mode == TransactionsGraphMode.Income ? "incomes" : "expenses";
         var levelText = drilldownGroupName is null ? "All" : drilldownGroupName;
 
         var baseLabel = isIncome ? "Earned" : "Spent";
@@ -266,9 +267,9 @@ public partial class Statistics : ComponentBase
         var remainingColor = isIncome ? "#dc3545" : "#198754";
         var overColor = isIncome ? "#198754" : "#dc3545";
 
-        return new
+        Chart2.Title = $"{levelText} {modeText} vs budget";
+        Chart2.Options = new
         {
-            title = new { text = $"{levelText} {modeText} vs budget" },
             tooltip = new { trigger = "axis", axisPointer = new { type = "shadow" } },
             legend = new { type = "scroll" },
             grid = new { left = "3%", right = "4%", bottom = "10%", containLabel = true },

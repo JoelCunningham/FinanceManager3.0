@@ -6,6 +6,10 @@
 
     [Parameter] public IReadOnlyList<TransactionsGraphMode> Modes { get; set; } = [];
 
+    [Parameter] public EventCallback OnPreviousRange { get; set; }
+    [Parameter] public EventCallback OnToday { get; set; }
+    [Parameter] public EventCallback OnNextRange { get; set; }
+
     private async Task OnModeChangedAsync(TransactionsGraphMode mode)
     {
         Chart.Mode = mode;
@@ -35,4 +39,12 @@
             <HxButton Text="Back to groups" Icon="BootstrapIcon.ArrowLeft" OnClick="Chart.ClearDrilldownAsync" />
         </div>
     }
+    
+    <HxButtonGroup CssClass="end">
+        <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="OnPreviousRange" />
+        <HxButton Color="ThemeColor.Light" Text="Today" OnClick="OnToday" />
+        <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="OnNextRange" />
+    </HxButtonGroup>
+
+
 </div>

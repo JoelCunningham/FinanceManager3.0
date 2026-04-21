@@ -3,4 +3,12 @@
     flex-wrap: wrap;
     gap: 1rem;
     align-items: end;
+
+    .end {
+        margin-left: auto;
+    }
+
+    ::deep button {
+        padding-left: 0rem !important;
+    }
 }
