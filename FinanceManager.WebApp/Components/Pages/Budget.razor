@@ -1,6 +1,6 @@
 @page "/Budget"
 
-<h1 class="page-heading">@(CurrentPeriod?.Year.ToString() ?? "TODO get year")</h1>
+<h1 class="page-heading">@(CurrentBudgetYear?.Year.ToString() ?? "TODO get year")</h1>
 
 <BudgetActions EntryTypeFilter="EntryTypeFilter"
                EntryTypeFilterChanged="OnEntryTypeFilterChanged"
@@ -9,11 +9,11 @@
                OnToday="Today"
                OnNext="Next" />
 
-<BudgetGrid Scope="CurrentPeriod?.Scope" Cells="Cells" OnCellClicked="CreateEntry" OnEntryClicked="EditEntry" />
+<BudgetGrid Scope="CurrentBudgetYear?.Scope" Cells="Cells" OnCellClicked="CreateEntry" OnEntryClicked="EditEntry" />
 
 <BudgetEntryModal @ref="_budgetEntryModal"
                   Entry="CurrentEntry"
-                  CurrentPeriod="CurrentPeriod"
+                  CurrentBudgetYear="CurrentBudgetYear"
                   IsEditing="IsEditing"
                   Categories="Categories"
                   OnCancel="CloseEditModal"

@@ -18,7 +18,7 @@ public static class DependencyInjection
         services.AddSingleton<ICategoryRepository, CategoryRepository>();
         services.AddSingleton<IMachineLearningRepository, MachineLearningRepository>();
         services.AddSingleton<IBudgetEntryRepository, BudgetEntryRepository>();
-        services.AddSingleton<IBudgetPeriodRepository, BudgetPeriodRepository>();
+        services.AddSingleton<IBudgetYearRepository, BudgetYearRepository>();
 
         // Parsers
         services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();

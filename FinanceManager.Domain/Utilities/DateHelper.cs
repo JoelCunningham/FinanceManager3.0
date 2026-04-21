@@ -1,7 +1,7 @@
-﻿using System.Globalization;
-using FinanceManager.Domain.Constants;
+﻿namespace FinanceManager.Domain.Utilities;
 
-namespace FinanceManager.Application.Utilities;
+using System.Globalization;
+using FinanceManager.Domain.Constants;
 
 public class DateHelper
 {
@@ -14,4 +14,21 @@ public class DateHelper
     public static int GetWeekCount(int year) => ISOWeek.GetWeeksInYear(year);
     public static int GetFortnightCount(int year) => (int)Math.Ceiling((double)GetWeekCount(year) / DateConstants.WEEKS_IN_FORTNIGHT);
     public static int GetMonthCount() => DateConstants.MONTHS_IN_YEAR;
+
+    public static DateOnly GetWeekStart(DateOnly date)
+    {
+        var diff = (DateConstants.DAYS_IN_WEEK + (date.DayOfWeek - DayOfWeek.Monday)) % DateConstants.DAYS_IN_WEEK;
+        return date.AddDays(-diff);
+    }
+
+    public static DateOnly GetFortnightStart(DateOnly date)
+    {
+        var isoYear = ISOWeek.GetYear(date.ToDateTime(TimeOnly.MinValue));
+        var fortnightStartWeek = (GetWeekIndex(date) - 1) / DateConstants.WEEKS_IN_FORTNIGHT * DateConstants.WEEKS_IN_FORTNIGHT + 1;
+
+        var start = ISOWeek.ToDateTime(isoYear, fortnightStartWeek, DayOfWeek.Monday);
+        return DateOnly.FromDateTime(start);
+    }
+
+    public static DateOnly GetMonthStart(DateOnly date) => new(date.Year, date.Month, 1);
 }

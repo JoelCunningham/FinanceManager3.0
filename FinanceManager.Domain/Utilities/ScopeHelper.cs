@@ -6,7 +6,7 @@ using System.Globalization;
 
 public static class ScopeHelper
 {
-    public static int GetPeriodCountForYear(BudgetScope scope, int year)
+    public static int GetPeriodCount(BudgetScope scope, int year)
     {
         return scope switch
         {
@@ -28,26 +28,28 @@ public static class ScopeHelper
         };
     }
 
-    public static DateOnly GetPeriodStart(BudgetScope scope, DateOnly date, int offset = 0)
+    public static DateOnly GetRangeStart(BudgetScope scope, DateOnly date)
     {
-        var periodStart = scope switch
-        {
-            BudgetScope.Weekly => GetWeekStart(date),
-            BudgetScope.Fortnightly => GetFortnightStart(date),
-            BudgetScope.Monthly => new DateOnly(date.Year, date.Month, 1),
-            _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
-        };
+       return GetPeriodStart(scope, date, 0);
+    }
 
+    public static DateOnly GetPeriodStart(BudgetScope scope, DateOnly date, int offset)
+    {
         return scope switch
         {
-            BudgetScope.Weekly => periodStart.AddDays(DateConstants.DAYS_IN_WEEK * offset),
-            BudgetScope.Fortnightly => periodStart.AddDays(DateConstants.DAYS_IN_FORTNIGHT * offset),
-            BudgetScope.Monthly => periodStart.AddMonths(offset),
+            BudgetScope.Weekly => DateHelper.GetWeekStart(date).AddDays(DateConstants.DAYS_IN_WEEK * offset),
+            BudgetScope.Fortnightly => DateHelper.GetFortnightStart(date).AddDays(DateConstants.DAYS_IN_FORTNIGHT * offset),
+            BudgetScope.Monthly => DateHelper.GetMonthStart(date).AddMonths(offset),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
     }
 
-    public static DateOnly GetPeriodEnd(BudgetScope scope, DateOnly periodStart, int length = 1)
+    public static DateOnly GetPeriodEnd(BudgetScope scope, DateOnly periodStart)
+    {
+        return GetRangeEnd(scope, periodStart, 1);
+    }
+
+    public static DateOnly GetRangeEnd(BudgetScope scope, DateOnly rangeStart, int length)
     {
         if (length < 1)
         {
@@ -56,14 +58,14 @@ public static class ScopeHelper
 
         return scope switch
         {
-            BudgetScope.Weekly => periodStart.AddDays(DateConstants.DAYS_IN_WEEK * length - 1),
-            BudgetScope.Fortnightly => periodStart.AddDays(DateConstants.DAYS_IN_FORTNIGHT * length - 1),
-            BudgetScope.Monthly => periodStart.AddMonths(length).AddDays(-1),
+            BudgetScope.Weekly => rangeStart.AddDays(DateConstants.DAYS_IN_WEEK * length - 1),
+            BudgetScope.Fortnightly => rangeStart.AddDays(DateConstants.DAYS_IN_FORTNIGHT * length - 1),
+            BudgetScope.Monthly => rangeStart.AddMonths(length).AddDays(-1),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
     }
 
-    public static DateOnly GetYearStart(BudgetScope scope, int year)
+    public static DateOnly GetIsoYearStart(BudgetScope scope, int year)
     {
         return scope switch
         {
@@ -72,22 +74,5 @@ public static class ScopeHelper
             BudgetScope.Monthly => new DateOnly(year, 1, 1),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
-    }
-
-    private static DateOnly GetWeekStart(DateOnly date)
-    {
-        var diff = (DateConstants.DAYS_IN_WEEK + (date.DayOfWeek - DayOfWeek.Monday)) % DateConstants.DAYS_IN_WEEK;
-        return date.AddDays(-diff);
-    }
-
-    private static DateOnly GetFortnightStart(DateOnly date)
-    {
-        var dt = date.ToDateTime(TimeOnly.MinValue);
-        var isoYear = ISOWeek.GetYear(dt);
-        var isoWeek = ISOWeek.GetWeekOfYear(dt);
-        var fortnightStartWeek = (isoWeek - 1) / DateConstants.WEEKS_IN_FORTNIGHT * DateConstants.WEEKS_IN_FORTNIGHT + 1;
-
-        var start = ISOWeek.ToDateTime(isoYear, fortnightStartWeek, DayOfWeek.Monday);
-        return DateOnly.FromDateTime(start);
     }
 }

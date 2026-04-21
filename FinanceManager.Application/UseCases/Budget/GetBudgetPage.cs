@@ -7,28 +7,28 @@ using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Utilities;
 
 public sealed record GetBudgetPageResult(
-    BudgetPeriod? BudgetPeriod,
+    BudgetYear? BudgetYear,
     IReadOnlyList<BudgetCell> Cells,
     IReadOnlyList<CategorySummary> Categories
 );
 
-public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetPeriodRepository budgetPeriodRepository)
+public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository)
 {
     public async Task<GetBudgetPageResult> ExecuteAsync(int year, BudgetGridMode mode = BudgetGridMode.Net)
     {
-        var period = await budgetPeriodRepository.GetByYearAsync(year);
+        var budgetYear = await budgetYearRepository.GetByYearAsync(year);
         var categories = await categoryRepository.GetAllAsync();
 
         var categorySummaries = categories.Select(CategorySummary.FromCategory).ToList();
 
-        if (period == null)
+        if (budgetYear == null)
         {
             return new GetBudgetPageResult(null, [], categorySummaries);
         }
         else
         {
-            var cells = BuildCells(period);
-            var entries = (await budgetEntryRepository.GetByPeriodAsync(period.Id)).ToList();
+            var cells = BuildCells(budgetYear);
+            var entries = (await budgetEntryRepository.GetByBudgetYearAsync(budgetYear.Id)).ToList();
 
             entries = mode switch
             {
@@ -39,21 +39,21 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
 
             var poplulatedCells = PopulateCells(cells, entries);
 
-            return new GetBudgetPageResult(period, poplulatedCells, categorySummaries);
+            return new GetBudgetPageResult(budgetYear, poplulatedCells, categorySummaries);
         }
     }
 
-    private static List<BudgetCell> BuildCells(BudgetPeriod period)
+    private static List<BudgetCell> BuildCells(BudgetYear budgetYear)
     {
         var cells = new List<BudgetCell>();
 
-        var scopeStart = ScopeHelper.GetYearStart(period.Scope, period.Year);
-        var periodsCount = ScopeHelper.GetPeriodCountForYear(period.Scope, period.Year);
+        var scopeStart = ScopeHelper.GetIsoYearStart(budgetYear.Scope, budgetYear.Year);
+        var periodsCount = ScopeHelper.GetPeriodCount(budgetYear.Scope, budgetYear.Year);
 
         for (var i = 0; i < periodsCount; i++)
         {
-            var cellStart = ScopeHelper.GetPeriodStart(period.Scope, scopeStart, i);
-            cells.Add(new BudgetCell(i, cellStart, period.Scope));
+            var cellStart = ScopeHelper.GetPeriodStart(budgetYear.Scope, scopeStart, i);
+            cells.Add(new BudgetCell(i, cellStart, budgetYear.Scope));
         }
 
         return cells;
@@ -71,7 +71,7 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
         {
             for (var j = 0; j < entries[i].Length; j++)
             {
-                cells[j + entries[i].PeriodPosition].Entries.Add(BudgetCellEntry.FromBudgetEntry(entries[i], j, i));
+                cells[j + entries[i].ScopePosition].Entries.Add(BudgetCellEntry.FromBudgetEntry(entries[i], j, i));
             }
         }
 

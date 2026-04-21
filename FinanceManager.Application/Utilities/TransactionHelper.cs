@@ -33,23 +33,23 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
         return results;
     }
 
-    public async Task<decimal[]> GetBudgetPerMonthForCategories(ScopedPeriod period, List<CategorySummary> categories, bool asExpense)
+    public async Task<decimal[]> GetBudgetPerMonthForCategories(ScopedRange range, List<CategorySummary> categories, bool asExpense)
     {
         if (categories.Count == 0) return [];
 
-        var budgetsPerMonth = await GetBudgetPerMonth(period.StartDate, period.EndDate, categories);
+        var budgetsPerMonth = await GetBudgetPerMonth(range.StartDate, range.EndDate, categories);
         return [.. budgetsPerMonth.Select(b => !asExpense ? b.Value : -b.Value)];
     }
 
     public async Task<Dictionary<string, decimal>> GetBudgetPerLabel(DateOnly start, DateOnly end, List<CategorySummary> categories, bool isCategoryDrilldown)
     {
-        var budgetsInPeriod = await budgetEntryRepository.GetByRangeAsync(start, end, categories.Select(c => c.Id).ToHashSet());
+        var budgetsInRange = await budgetEntryRepository.GetByRangeAsync(start, end, categories.Select(c => c.Id).ToHashSet());
 
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var budget in budgetsInPeriod)
+        foreach (var budget in budgetsInRange)
         {
-            foreach (var day in BudgetEntryPeriodHelper.GetOverlappingDays(budget, start, end))
+            foreach (var day in BudgetYearHelper.GetOverlappingDays(budget, start, end))
             {
                 var label = isCategoryDrilldown ? budget.Category.Name : budget.Category.Group.Name;
                 if (string.IsNullOrWhiteSpace(label))
@@ -81,7 +81,7 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
 
     private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerDay(DateOnly startDate, DateOnly endDate, IEnumerable<CategorySummary> categories)
     {
-        var budgetsInPeriod = await budgetEntryRepository.GetByRangeAsync(startDate, endDate, categories.Select(c => c.Id).ToHashSet());
+        var budgetsInRange = await budgetEntryRepository.GetByRangeAsync(startDate, endDate, categories.Select(c => c.Id).ToHashSet());
 
         var amountPerDay = new Dictionary<DateOnly, decimal>();
 
@@ -92,9 +92,9 @@ public class TransactionHelper(ITransactionRepository transactionRepository, IBu
             currentDate = currentDate.AddDays(1);
         }
 
-        foreach (var budget in budgetsInPeriod)
+        foreach (var budget in budgetsInRange)
         {
-            foreach (var day in BudgetEntryPeriodHelper.GetOverlappingDays(budget, startDate, endDate))
+            foreach (var day in BudgetYearHelper.GetOverlappingDays(budget, startDate, endDate))
             {
                 amountPerDay[day.Date] += day.DailyAmount;
             }

@@ -54,9 +54,9 @@ public static class DependencyInjection
         services.AddScoped<BudgetWorkflow>();
 
         // Date use cases
-        services.AddScoped<GetWeekPeriods>();
-        services.AddScoped<GetFortnightPeriods>();
-        services.AddScoped<GetMonthPeriods>();
+        services.AddScoped<GetWeekRanges>();
+        services.AddScoped<GetFortnightRanges>();
+        services.AddScoped<GetMonthRanges>();
 
         services.AddScoped<TransactionHelper>();
 

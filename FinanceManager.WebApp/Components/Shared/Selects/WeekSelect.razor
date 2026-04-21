@@ -1,26 +1,26 @@
 ﻿@code
 {
-    [Parameter] public required ScopedPeriod Value { get; set; }
-    [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
+    [Parameter] public required ScopedRange Value { get; set; }
+    [Parameter] public EventCallback<ScopedRange> ValueChanged { get; set; }
 
     private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
-    private IEnumerable<ScopedPeriod> WeekOptions = [];
+    private IEnumerable<ScopedRange> WeekOptions = [];
 
     private int SelectedYear { get; set; }
 
     protected override void OnParametersSet()
     {
         SelectedYear = ISOWeek.GetYear(Value.StartDate.ToDateTime(TimeOnly.MinValue));
-        WeekOptions = GetWeekPeriods.Execute(SelectedYear).Periods.ToList();
+        WeekOptions = GetWeekRanges.Execute(SelectedYear).Ranges.ToList();
         Value = WeekOptions.FirstOrDefault(p => p.StartDate <= Value.StartDate && p.EndDate >= Value.StartDate) ?? WeekOptions.First();
     }
 
-    private async Task WeekChangedAsync(ScopedPeriod period) => await ValueChanged.InvokeAsync(period);
+    private async Task WeekChangedAsync(ScopedRange range) => await ValueChanged.InvokeAsync(range);
 
     private async Task YearChanged(int isoYear)
     {
         SelectedYear = isoYear;
-        WeekOptions = GetWeekPeriods.Execute(SelectedYear).Periods.ToList();
+        WeekOptions = GetWeekRanges.Execute(SelectedYear).Ranges.ToList();
 
         var currentIsoWeek = DateHelper.GetWeekIndex(Value.StartDate);
         var targetStartDt = ISOWeek.ToDateTime(isoYear, currentIsoWeek, DayOfWeek.Monday);
@@ -31,10 +31,10 @@
         await ValueChanged.InvokeAsync(Value);
     }
 
-    private static string FormatWeek(ScopedPeriod period)
+    private static string FormatWeek(ScopedRange range)
     {
-        var start = DateHelper.GetWeekIndex(period.StartDate);
-        return $"W{start:00} ({period.StartDate:dd/MM} - {period.EndDate:dd/MM})";
+        var start = DateHelper.GetWeekIndex(range.StartDate);
+        return $"W{start:00} ({range.StartDate:dd/MM} - {range.EndDate:dd/MM})";
     }
 }
 
@@ -44,8 +44,8 @@
               ValueChanged="WeekChangedAsync"
               ValueExpression="() => Value"
               Data="WeekOptions"
-              TItem="ScopedPeriod"
-              TValue="ScopedPeriod"
+              TItem="ScopedRange"
+              TValue="ScopedRange"
               Nullable="false"
               AutoSort="false"
               TextSelector="w => FormatWeek(w)"

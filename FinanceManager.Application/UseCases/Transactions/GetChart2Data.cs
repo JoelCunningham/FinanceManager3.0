@@ -14,12 +14,12 @@ public sealed record GetChart2DataResult(
 
 public sealed class GetChart2Data(TransactionHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategoryList getCategoryList)
 {
-    public async Task<GetChart2DataResult> ExecuteAsync(ScopedPeriod period, Guid? drilldownGroupId, TransactionsGraphMode mode)
+    public async Task<GetChart2DataResult> ExecuteAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {
         var query = new FilterQuery
         {
-            FilterDateFrom = period.StartDate.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = period.EndDate.ToDateTime(TimeOnly.MaxValue),
+            FilterDateFrom = range.StartDate.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = range.EndDate.ToDateTime(TimeOnly.MaxValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 
@@ -35,10 +35,10 @@ public sealed class GetChart2Data(TransactionHelper transactionHelper, GetBudget
             relevantCategories = [.. relevantCategories.Where(c => c.GroupId == id)];
         }
 
-        var budgetTotals = await transactionHelper.GetBudgetPerLabel(period.StartDate, period.EndDate, relevantCategories, drilldownGroupId is not null);
-        var scopes = await getBudgetScopes.ExecuteAsync(period);
+        var budgetTotals = await transactionHelper.GetBudgetPerLabel(range.StartDate, range.EndDate, relevantCategories, drilldownGroupId is not null);
+        var scopes = await getBudgetScopes.ExecuteAsync(range);
 
-        var hasLargerScopedBudgets = scopes.GreatestScopeInPeriod > period.Scope;
+        var hasLargerScopedBudgets = scopes.GreatestScopeInRange > range.Scope;
 
         return new GetChart2DataResult(transactions, relevantCategories, budgetTotals, hasLargerScopedBudgets);
     }

@@ -17,13 +17,13 @@ public partial class Budget : ComponentBase
 
     public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
     public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
-    public BudgetPeriod? CurrentPeriod { get; set; } = null;
+    public BudgetYear? CurrentBudgetYear { get; set; } = null;
 
     public BudgetCellEntry? CurrentEntry { get; set; }
     public bool IsEditing { get; set; }
     public BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
 
-    public int CurrentYear => CurrentPeriod?.Year ?? DateTime.Now.Year;
+    public int CurrentYear => CurrentBudgetYear?.Year ?? DateTime.Now.Year;
 
     private object? _budgetEntryModal;
 
@@ -59,13 +59,13 @@ public partial class Budget : ComponentBase
 
         Cells = page.Cells;
         Categories = page.Categories;
-        CurrentPeriod = page.BudgetPeriod;
+        CurrentBudgetYear = page.BudgetYear;
     }
 
     public async Task CreateEntry(BudgetCell cell)
     {
         Validation.Clear();
-        CurrentEntry = new BudgetCellEntry { OverallPeriodPosition = cell.Index, OverallLength = 1 };
+        CurrentEntry = new BudgetCellEntry { OverallScopePosition = cell.Index, OverallLength = 1 };
         IsEditing = false;
         await OpenEditModal();
     }
@@ -80,7 +80,7 @@ public partial class Budget : ComponentBase
 
     public async Task Save()
     {
-        if (CurrentEntry is null || CurrentPeriod is null) return;
+        if (CurrentEntry is null || CurrentBudgetYear is null) return;
 
         Validation.Clear();
 
@@ -98,7 +98,7 @@ public partial class Budget : ComponentBase
 
         try
         {
-            await Workflow.SaveAsync(CurrentEntry, CurrentPeriod.Year, IsEditing);
+            await Workflow.SaveAsync(CurrentEntry, CurrentBudgetYear.Year, IsEditing);
             if (IsEditing)
             {
                 Validation.SetSuccess("Budget entry updated");
@@ -109,7 +109,7 @@ public partial class Budget : ComponentBase
             }
 
             await CloseEditModal();
-            await ReloadAsync(CurrentPeriod.Year);
+            await ReloadAsync(CurrentBudgetYear.Year);
         }
         catch (Exception ex)
         {

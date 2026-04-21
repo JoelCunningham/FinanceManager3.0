@@ -3,7 +3,7 @@
 
     [Parameter] public BudgetCellEntry? Entry { get; set; }
     [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
-    [Parameter] public BudgetPeriod? CurrentPeriod { get; set; }
+    [Parameter] public BudgetYear? CurrentBudgetYear { get; set; }
 
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
@@ -14,56 +14,56 @@
 
     private Havit.Blazor.Components.Web.Bootstrap.HxModal? _modal;
 
-    private int _startPeriodPosition = 0;
-    private int _endPeriodPosition = 0;
+    private int _startScopePosition = 0;
+    private int _endScopePosition = 0;
 
-    private int StartPeriodPosition
+    private int StartScopePosition
     {
-        get => _startPeriodPosition;
-        set => SetPeriodRange(value, _endPeriodPosition);
+        get => _startScopePosition;
+        set => SetRange(value, _endScopePosition);
     }
 
-    private int EndPeriodPosition
+    private int EndScopePosition
     {
-        get => _endPeriodPosition;
-        set => SetPeriodRange(_startPeriodPosition, value);
+        get => _endScopePosition;
+        set => SetRange(_startScopePosition, value);
     }
 
     protected override void OnParametersSet()
     {
         if (Entry is not null)
         {
-            SetPeriodRange(Entry.OverallPeriodPosition, Entry.OverallPeriodPosition + Entry.OverallLength - 1);
+            SetRange(Entry.OverallScopePosition, Entry.OverallScopePosition + Entry.OverallLength - 1);
         }
     }
 
-    private void SetPeriodRange(int startPeriodPosition, int endPeriodPosition)
+    private void SetRange(int startScopePosition, int endScopePosition)
     {
-        if (Entry is null || CurrentPeriod is null) return;
+        if (Entry is null || CurrentBudgetYear is null) return;
 
-        var maxPeriodPosition = ScopeHelper.GetPeriodCountForYear(CurrentPeriod.Scope, CurrentPeriod.Year) - 1;
+        var maxScopePosition = ScopeHelper.GetPeriodCount(CurrentBudgetYear.Scope, CurrentBudgetYear.Year) - 1;
 
-        _startPeriodPosition = Math.Clamp(Math.Min(startPeriodPosition, endPeriodPosition), 0, maxPeriodPosition);
-        _endPeriodPosition = Math.Clamp(Math.Max(startPeriodPosition, endPeriodPosition), _startPeriodPosition, maxPeriodPosition);
+        _startScopePosition = Math.Clamp(Math.Min(startScopePosition, endScopePosition), 0, maxScopePosition);
+        _endScopePosition = Math.Clamp(Math.Max(startScopePosition, endScopePosition), _startScopePosition, maxScopePosition);
       
-        Entry.OverallPeriodPosition = _startPeriodPosition;
-        Entry.OverallLength = _endPeriodPosition - _startPeriodPosition + 1;
+        Entry.OverallScopePosition = _startScopePosition;
+        Entry.OverallLength = _endScopePosition - _startScopePosition + 1;
     }
 
-    private IEnumerable<KeyValuePair<string, int>> GetPeriodPositionOptions()
+    private IEnumerable<KeyValuePair<string, int>> GetScopePositionOptions()
     {
-        if (CurrentPeriod is null) return [];
+        if (CurrentBudgetYear is null) return [];
 
-        return CurrentPeriod.Scope switch
+        return CurrentBudgetYear.Scope switch
         {
-            BudgetScope.Monthly => GetMonthlyPeriodPositionOptions(),
-            BudgetScope.Fortnightly => GetSequentialOptions("F", ScopeHelper.GetPeriodCountForYear(BudgetScope.Fortnightly, CurrentPeriod.Year)),
-            BudgetScope.Weekly => GetSequentialOptions("W", ScopeHelper.GetPeriodCountForYear(BudgetScope.Weekly, CurrentPeriod.Year)),
+            BudgetScope.Monthly => GetMonthScopePositionOptions(),
+            BudgetScope.Fortnightly => GetSequentialOptions("F", ScopeHelper.GetPeriodCount(BudgetScope.Fortnightly, CurrentBudgetYear.Year)),
+            BudgetScope.Weekly => GetSequentialOptions("W", ScopeHelper.GetPeriodCount(BudgetScope.Weekly, CurrentBudgetYear.Year)),
             _ => []
         };
     }
 
-    private static IEnumerable<KeyValuePair<string, int>> GetMonthlyPeriodPositionOptions()
+    private static IEnumerable<KeyValuePair<string, int>> GetMonthScopePositionOptions()
     {
         var monthNames = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames
             .Where(monthName => !string.IsNullOrWhiteSpace(monthName))
@@ -84,24 +84,24 @@
 <HxModal @ref="_modal" Title="@(IsEditing ? "Edit budget entry" : "Create budget entry")">
     <BodyTemplate>
         <div class="d-flex flex-column gap-2">
-            @if (Entry is not null && CurrentPeriod is not null)
+            @if (Entry is not null && CurrentBudgetYear is not null)
             {
                 <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" Nullable="false" />
                 <HxInputNumber @bind-Value="Entry.Amount" Label="Amount" />
 
                 <div class="d-flex gap-3">
-                        <HxSelect @bind-Value="StartPeriodPosition"
+                        <HxSelect @bind-Value="StartScopePosition"
                                   Label="Start"
-                                  Data="GetPeriodPositionOptions()"
+                                  Data="GetScopePositionOptions()"
                                   TItem="KeyValuePair<string, int>"
                                   TValue="int"
                                   Nullable="false"
                                   AutoSort="false"
                                   TextSelector="option => option.Key"
                                   ValueSelector="option => option.Value" />
-                        <HxSelect @bind-Value="EndPeriodPosition"
+                        <HxSelect @bind-Value="EndScopePosition"
                                   Label="End"
-                                  Data="GetPeriodPositionOptions()"
+                                  Data="GetScopePositionOptions()"
                                   TItem="KeyValuePair<string, int>"
                                   TValue="int"
                                   Nullable="false"

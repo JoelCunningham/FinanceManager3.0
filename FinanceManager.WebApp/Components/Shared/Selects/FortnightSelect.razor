@@ -1,26 +1,26 @@
 ﻿@code
 {
-    [Parameter] public required ScopedPeriod Value { get; set; }
-    [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
+    [Parameter] public required ScopedRange Value { get; set; }
+    [Parameter] public EventCallback<ScopedRange> ValueChanged { get; set; }
 
     private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
-    private IEnumerable<ScopedPeriod> FortnightOptions = [];
+    private IEnumerable<ScopedRange> FortnightOptions = [];
 
     private int SelectedYear { get; set; }
 
     protected override void OnParametersSet()
     {
         SelectedYear = ISOWeek.GetYear(Value.StartDate.ToDateTime(TimeOnly.MinValue));
-        FortnightOptions = GetFortnightPeriods.Execute(SelectedYear).Periods.ToList();
+        FortnightOptions = GetFortnightRanges.Execute(SelectedYear).Ranges.ToList();
         Value = FortnightOptions.FirstOrDefault(p => p.StartDate <= Value.StartDate && p.EndDate >= Value.StartDate) ?? FortnightOptions.First();
     }
 
-    private async Task FortnightChangedAsync(ScopedPeriod period) => await ValueChanged.InvokeAsync(period);
+    private async Task FortnightChangedAsync(ScopedRange range) => await ValueChanged.InvokeAsync(range);
 
     private async Task YearChanged(int year)
     {
         SelectedYear = year;
-        FortnightOptions = GetFortnightPeriods.Execute(SelectedYear).Periods.ToList();
+        FortnightOptions = GetFortnightRanges.Execute(SelectedYear).Ranges.ToList();
 
         var currentFortnightIndex = DateHelper.GetFortnightIndex(Value.StartDate);
         var targetDateTime = ISOWeek.ToDateTime(year, ((currentFortnightIndex - 1) * 2) + 1, DayOfWeek.Monday);
@@ -31,10 +31,10 @@
         await ValueChanged.InvokeAsync(Value);
     }
 
-    private static string FormatFortnight(ScopedPeriod period)
+    private static string FormatFortnight(ScopedRange range)
     {
-        var start = DateHelper.GetFortnightIndex(period.StartDate);
-        return $"F{start:00} ({period.StartDate:dd/MM} - {period.EndDate:dd/MM})";
+        var start = DateHelper.GetFortnightIndex(range.StartDate);
+        return $"F{start:00} ({range.StartDate:dd/MM} - {range.EndDate:dd/MM})";
     }
 }
 
@@ -44,8 +44,8 @@
               ValueChanged="FortnightChangedAsync"
               ValueExpression="() => Value"
               Data="FortnightOptions"
-              TItem="ScopedPeriod"
-              TValue="ScopedPeriod"
+              TItem="ScopedRange"
+              TValue="ScopedRange"
               Nullable="false"
               AutoSort="false"
               TextSelector="f => FormatFortnight(f)"

@@ -16,12 +16,12 @@ public sealed record GetChart1DataResult(
 
 public sealed class GetChart1Data(TransactionHelper transactionHelper, GetCategoryList getCategoryList)
 {
-    public async Task<GetChart1DataResult> ExecuteAsync(ScopedPeriod period, Guid? drilldownGroupId, TransactionsGraphMode mode)
+    public async Task<GetChart1DataResult> ExecuteAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {
         var query = new FilterQuery
         {
-            FilterDateFrom = period.StartDate.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = period.EndDate.ToDateTime(TimeOnly.MaxValue),
+            FilterDateFrom = range.StartDate.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = range.EndDate.ToDateTime(TimeOnly.MaxValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 
@@ -45,17 +45,17 @@ public sealed class GetChart1Data(TransactionHelper transactionHelper, GetCatego
         {
             if (drilldownGroupId is null || incomeCategories.Count != 0)
             {
-                budgetIncomeSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(period, incomeCategories, false);
+                budgetIncomeSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(range, incomeCategories, false);
             }
             if (drilldownGroupId is null || expenseCategories.Count != 0)
             {
-                budgetExpenseSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(period, expenseCategories, true);
+                budgetExpenseSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(range, expenseCategories, true);
             }
         }
         else
         {
             var relevantCategories = mode == TransactionsGraphMode.Income ? incomeCategories : expenseCategories;
-            budgetSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(period, relevantCategories, false);
+            budgetSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(range, relevantCategories, false);
         }
 
         return new GetChart1DataResult(transactions, incomeCategories, expenseCategories, budgetSeriesData, budgetIncomeSeriesData, budgetExpenseSeriesData);

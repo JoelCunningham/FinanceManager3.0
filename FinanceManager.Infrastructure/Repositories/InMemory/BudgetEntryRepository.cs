@@ -8,23 +8,23 @@ public class BudgetEntryRepository : IBudgetEntryRepository
 {
     private readonly List<BudgetEntry> _budgetEntries = [];
     private readonly ICategoryRepository CategoryRepository;
-    private readonly IBudgetPeriodRepository BudgetPeriodRepository;
+    private readonly IBudgetYearRepository BudgetYearRepository;
 
-    public BudgetEntryRepository(ICategoryRepository categoryRepository, IBudgetPeriodRepository budgetPeriodRepository)
+    public BudgetEntryRepository(ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository)
     {
         CategoryRepository = categoryRepository;
-        BudgetPeriodRepository = budgetPeriodRepository;
+        BudgetYearRepository = budgetYearRepository;
         SeedDefaultBudgetEntries();
     }
 
     public async Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Guid> categoryIds)
     {
-        return _budgetEntries.Where(b => categoryIds.Contains(b.CategoryId) && BudgetEntryPeriodHelper.HasAnySegmentOverlap(b, startDate, endDate));
+        return _budgetEntries.Where(b => categoryIds.Contains(b.CategoryId) && BudgetYearHelper.HasAnyPeriodOverlap(b, startDate, endDate));
     }
 
-    public async Task<IEnumerable<BudgetEntry>> GetByPeriodAsync(Guid periodId)
+    public async Task<IEnumerable<BudgetEntry>> GetByBudgetYearAsync(Guid budgetYearId)
     {
-        return _budgetEntries.Where(b => b.PeriodId == periodId);
+        return _budgetEntries.Where(b => b.BudgetYearId == budgetYearId);
     }
 
     public async Task<BudgetEntry?> GetByIdAsync(Guid id)
@@ -68,11 +68,11 @@ public class BudgetEntryRepository : IBudgetEntryRepository
     {
         var categories = CategoryRepository.GetAllAsync().GetAwaiter().GetResult().ToList();
 
-        var period2024 = BudgetPeriodRepository.GetByYearAsync(2024).GetAwaiter().GetResult();
-        var period2025 = BudgetPeriodRepository.GetByYearAsync(2025).GetAwaiter().GetResult();
-        var period2026 = BudgetPeriodRepository.GetByYearAsync(2026).GetAwaiter().GetResult();
+        var year2024 = BudgetYearRepository.GetByYearAsync(2024).GetAwaiter().GetResult();
+        var year2025 = BudgetYearRepository.GetByYearAsync(2025).GetAwaiter().GetResult();
+        var year2026 = BudgetYearRepository.GetByYearAsync(2026).GetAwaiter().GetResult();
 
-        if (period2026 != null)
+        if (year2026 != null)
         {
             var salary = categories.First(c => c.Name == "Salary");
             _budgetEntries.Add(new BudgetEntry
@@ -81,9 +81,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = salary.Id,
                 Category = salary,
                 Amount = 4564.85m,
-                PeriodId = period2026.Id,
-                Period = period2026,
-                PeriodPosition = 0,
+                BudgetYearId = year2026.Id,
+                BudgetYear = year2026,
+                ScopePosition = 0,
                 Length = 12
             });
 
@@ -94,9 +94,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = sport.Id,
                 Category = sport,
                 Amount = 50,
-                PeriodId= period2026.Id,
-                Period = period2026,
-                PeriodPosition = 2,
+                BudgetYearId= year2026.Id,
+                BudgetYear = year2026,
+                ScopePosition = 2,
                 Length = 8
             });
 
@@ -107,9 +107,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = diningout.Id,
                 Category = diningout,
                 Amount = 100,
-                PeriodId = period2026.Id,
-                Period = period2026,
-                PeriodPosition = 0,
+                BudgetYearId = year2026.Id,
+                BudgetYear = year2026,
+                ScopePosition = 0,
                 Length = 12
             });
 
@@ -122,14 +122,14 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                     CategoryId = cosmetics.Id,
                     Category = cosmetics,
                     Amount = 50,
-                    PeriodId = period2026.Id,
-                    Period = period2026,
-                    PeriodPosition = i,
+                    BudgetYearId = year2026.Id,
+                    BudgetYear = year2026,
+                    ScopePosition = i,
                 });
             }
         }
 
-        if (period2025 != null)
+        if (year2025 != null)
         {
             var sport = categories.First(c => c.Name == "Fitness");
             _budgetEntries.Add(new BudgetEntry
@@ -138,9 +138,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = sport.Id,
                 Category = sport,
                 Amount = 50,
-                PeriodId = period2025.Id,
-                Period = period2025,
-                PeriodPosition = 0,
+                BudgetYearId = year2025.Id,
+                BudgetYear = year2025,
+                ScopePosition = 0,
                 Length = 24
             });
 
@@ -151,9 +151,9 @@ public class BudgetEntryRepository : IBudgetEntryRepository
                 CategoryId = diningout.Id,
                 Category = diningout,
                 Amount = 100,
-                PeriodId = period2025.Id,
-                Period = period2025,
-                PeriodPosition = 2,
+                BudgetYearId = year2025.Id,
+                BudgetYear = year2025,
+                ScopePosition = 2,
                 Length = 20
             });
         }

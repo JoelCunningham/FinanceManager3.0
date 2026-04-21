@@ -3,10 +3,10 @@
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 
-public interface IBudgetPeriodRepository
+public interface IBudgetYearRepository
 {
-    Task<BudgetPeriod?> GetCurrentAsync();
-    Task<BudgetPeriod?> GetByYearAsync(int year);
-    Task<IEnumerable<BudgetPeriod>> GetByRangeAsync(DateOnly startDate, DateOnly endDate);
+    Task<BudgetYear?> GetCurrentAsync();
+    Task<BudgetYear?> GetByYearAsync(int year);
+    Task<IEnumerable<BudgetYear>> GetByRangeAsync(DateOnly startDate, DateOnly endDate);
     Task CreateAsync(int year, BudgetScope scope);
 }

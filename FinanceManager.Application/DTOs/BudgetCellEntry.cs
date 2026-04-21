@@ -13,16 +13,16 @@ public sealed class BudgetCellEntry()
     public decimal Amount { get; set; }
     public string? Notes { get; set; }
 
-    public int OverallPeriodPosition { get; set; }
+    public int OverallScopePosition { get; set; }
     public int OverallLength { get; set; }
 
-    public int PeriodPosition => OverallPeriodPosition + XIndex;
+    public int ScopePosition => OverallScopePosition + XIndex;
 
     public bool IsFirst => XIndex == 0;
-    public bool IsStartOfRow => PeriodPosition % ROW_LENGTH == 0;
+    public bool IsStartOfRow => ScopePosition % ROW_LENGTH == 0;
     public bool IsFirstInRow => IsFirst || IsStartOfRow;
 
-    public int RowLength => Math.Min(ROW_LENGTH - (PeriodPosition % ROW_LENGTH), OverallLength - XIndex);
+    public int RowLength => Math.Min(ROW_LENGTH - (ScopePosition % ROW_LENGTH), OverallLength - XIndex);
 
     private const int ROW_LENGTH = 4;
 
@@ -36,12 +36,12 @@ public sealed class BudgetCellEntry()
             Category = CategorySummary.FromCategory(entry.Category),
             Amount = entry.Amount,
             Notes = entry.Notes,
-            OverallPeriodPosition = entry.PeriodPosition,
+            OverallScopePosition = entry.ScopePosition,
             OverallLength = entry.Length
         };
     }
 
-    public BudgetEntry ToBudgetEntry(BudgetPeriod period)
+    public BudgetEntry ToBudgetEntry(BudgetYear budgetYear)
     {
         if (Category == null) throw new InvalidOperationException("Category must be provided.");
 
@@ -52,9 +52,9 @@ public sealed class BudgetCellEntry()
             Category = Category.ToCategory(),
             Amount = Amount,
             Notes = Notes,
-            PeriodId = period.Id,
-            Period = period,
-            PeriodPosition = OverallPeriodPosition,
+            BudgetYearId = budgetYear.Id,
+            BudgetYear = budgetYear,
+            ScopePosition = OverallScopePosition,
             Length = OverallLength
         };
     }

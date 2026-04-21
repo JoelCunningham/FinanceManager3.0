@@ -1,7 +1,7 @@
 ﻿@code
 {
-    [Parameter] public required ScopedPeriod Value { get; set; }
-    [Parameter] public EventCallback<ScopedPeriod> ValueChanged { get; set; }
+    [Parameter] public required ScopedRange Value { get; set; }
+    [Parameter] public EventCallback<ScopedRange> ValueChanged { get; set; }
 
     [Parameter] public bool ChangeLength { get; set; }
     [Parameter] public bool ChangeEndDate { get; set; }
@@ -10,41 +10,41 @@
     [Parameter] public string YearLabel { get; set; } = "Year";
 
     private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
-    private IEnumerable<ScopedPeriod> MonthOptions = [];
+    private IEnumerable<ScopedRange> MonthOptions = [];
 
     private int SelectedYear { get; set; }
-    private ScopedPeriod SelectedMonth { get; set; } = default!;
+    private ScopedRange SelectedMonth { get; set; } = default!;
 
     protected override void OnParametersSet()
     {
         if (ChangeEndDate)
         {
             SelectedYear = Value.EndDate.Year;
-            MonthOptions = GetMonthPeriods.Execute(SelectedYear).Periods.ToList();
+            MonthOptions = GetMonthRanges.Execute(SelectedYear).Ranges.ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.EndDate && m.EndDate >= Value.EndDate) ?? MonthOptions.First();
         }
         else
         {
             SelectedYear = Value.StartDate.Year;
-            MonthOptions = GetMonthPeriods.Execute(SelectedYear).Periods.ToList();
+            MonthOptions = GetMonthRanges.Execute(SelectedYear).Ranges.ToList();
             SelectedMonth = MonthOptions.FirstOrDefault(m => m.StartDate <= Value.StartDate && m.EndDate >= Value.StartDate) ?? MonthOptions.First();
         }
     }
 
-    private async Task MonthChangedAsync(ScopedPeriod period)
+    private async Task MonthChangedAsync(ScopedRange range)
     {
-        SelectedMonth = period;
+        SelectedMonth = range;
 
         if (ChangeEndDate)
         {
             if (!ChangeLength)
             {
-                await ValueChanged.InvokeAsync(new ScopedPeriod(Value.Scope, period.EndDate, Value.Length));
+                await ValueChanged.InvokeAsync(new ScopedRange(Value.Scope, range.EndDate, Value.Length));
                 return;
             }
 
             var startDate = Value.StartDate;
-            var targetEndDate = period.EndDate;
+            var targetEndDate = range.EndDate;
 
             if (targetEndDate < startDate)
             {
@@ -58,18 +58,18 @@
 
         if (!ChangeLength)
         {
-            await ValueChanged.InvokeAsync(period);
+            await ValueChanged.InvokeAsync(range);
         }
         else
         {
-            await ValueChanged.InvokeAsync(CreateWithStartAndEnd(Value.Scope, period.StartDate, Value.EndDate));
+            await ValueChanged.InvokeAsync(CreateWithStartAndEnd(Value.Scope, range.StartDate, Value.EndDate));
         }
     }
 
     private async Task YearChanged(int year)
     {
         SelectedYear = year;
-        MonthOptions = GetMonthPeriods.Execute(year).Periods.ToList();
+        MonthOptions = GetMonthRanges.Execute(year).Ranges.ToList();
 
         var containingDate = ChangeEndDate ? Value.EndDate : Value.StartDate;
         var currentMonthIndex = DateHelper.GetMonthIndex(containingDate);
@@ -79,15 +79,15 @@
         await MonthChangedAsync(selectedMonth);
     }
 
-    private ScopedPeriod CreateWithStartAndEnd(BudgetScope scope, DateOnly startDate, DateOnly targetEndDate)
+    private ScopedRange CreateWithStartAndEnd(BudgetScope scope, DateOnly startDate, DateOnly targetEndDate)
     {
-        if (targetEndDate < startDate) return new ScopedPeriod(scope, startDate, 1);
+        if (targetEndDate < startDate) return new ScopedRange(scope, startDate, 1);
 
         int length = 1;
         DateOnly endDate;
         do
         {
-            endDate = ScopeHelper.GetPeriodEnd(scope, startDate, length);
+            endDate = ScopeHelper.GetRangeEnd(scope, startDate, length);
 
             if (endDate >= targetEndDate)
             {
@@ -98,10 +98,10 @@
         }
         while (length < 10_000);
 
-        return new ScopedPeriod(scope, startDate, length);
+        return new ScopedRange(scope, startDate, length);
     }
 
-    private static string FormatMonth(ScopedPeriod period) => period.StartDate.ToString("MMM");
+    private static string FormatMonth(ScopedRange range) => range.StartDate.ToString("MMM");
 }
                 
 <HxButtonGroup>
@@ -110,8 +110,8 @@
               ValueChanged="MonthChangedAsync"
               ValueExpression="() => SelectedMonth"
               Data="MonthOptions"
-              TItem="ScopedPeriod"
-              TValue="ScopedPeriod"
+              TItem="ScopedRange"
+              TValue="ScopedRange"
               Nullable="false"
               AutoSort="false"
               TextSelector="m => FormatMonth(m)"

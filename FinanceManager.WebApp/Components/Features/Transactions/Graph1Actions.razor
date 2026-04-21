@@ -2,8 +2,8 @@
 {
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public ScopedPeriod Period { get; set; } = default!;
-    [Parameter] public EventCallback<ScopedPeriod> PeriodChanged { get; set; }
+    [Parameter] public ScopedRange Range { get; set; } = default!;
+    [Parameter] public EventCallback<ScopedRange> RangeChanged { get; set; }
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -12,16 +12,16 @@
         TransactionsGraphMode.Net
     ];
 
-    private async Task OnPeriodChangedAsync(ScopedPeriod from)
+    private async Task OnRangeChangedAsync(ScopedRange from)
     {
-        await PeriodChanged.InvokeAsync(from);
+        await RangeChanged.InvokeAsync(from);
         await Chart.RefreshAsync();
     }
 }
 
 <GraphActions Modes="SupportedModes" Chart="Chart">
     <Actions>
-        <MonthSelect Value="Period" ValueChanged="OnPeriodChangedAsync" MonthLabel="From month" YearLabel="From year" ChangeLength />
-        <MonthSelect Value="Period" ValueChanged="OnPeriodChangedAsync" MonthLabel="To month" YearLabel="To year" ChangeEndDate ChangeLength />
+        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="From month" YearLabel="From year" ChangeLength />
+        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="To month" YearLabel="To year" ChangeEndDate ChangeLength />
     </Actions>
 </GraphActions>
