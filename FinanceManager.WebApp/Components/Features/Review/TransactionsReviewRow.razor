@@ -1,20 +1,16 @@
 @code {
     [Parameter] public ReviewGroup TransactionGroup { get; set; } = default!;
-
     [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
 
     [Parameter] public IEnumerable<Guid> ErrorCategoryIds { get; set; } = [];
-
     [Parameter] public IEnumerable<Guid> ErrorAmountIds { get; set; } = [];
 
     [Parameter] public EventCallback OnSave { get; set; }
 
     [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> OnCategoryChange { get; set; }
-
     [Parameter] public EventCallback<(ReviewTransaction, decimal)> OnAmountChange { get; set; }
 
     [Parameter] public EventCallback<ReviewTransaction> OnFindReimbursement { get; set; }
-
     [Parameter] public EventCallback OnFindTransfer { get; set; }
 
     private ReviewTransaction? CurrentTransaction { get; set; }
@@ -24,9 +20,9 @@
 {
     <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave">
         <ReviewRowEntry Label="Transfers from">
-            <HxInputDate @bind-Value="TransactionGroup.InitalTransaction.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
-            <HxInputText @bind-Value="TransactionGroup.InitalTransaction.Description" title="@TransactionGroup.InitalTransaction.Description" Enabled="false" />
-            <HxInputNumber @bind-Value="TransactionGroup.InitalTransaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+            <HxInputDate @bind-Value="TransactionGroup.InitialTransaction.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
+            <HxInputText @bind-Value="TransactionGroup.InitialTransaction.Description" title="@TransactionGroup.InitialTransaction.Description" Enabled="false" />
+            <HxInputNumber @bind-Value="TransactionGroup.InitialTransaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
         </ReviewRowEntry>
         <ReviewRowEntry Label="To">
             <HxInputDate @bind-Value="TransactionGroup.Transfers.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
@@ -40,27 +36,29 @@ else
     <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave">
         @foreach (var transaction in TransactionGroup.Transactions)
         {
-            <ReviewRowEntry Label="@(transaction.Reimburses is null ? null : "Reimburses")">
+            <ReviewRowEntry>
                 @if (transaction.Reimburses is null)
                 {
                     <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.Id)" />
+                } else {
+                    <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" />
                 }
-                <HxInputDate @bind-Value="transaction.Date" CalendarIcon="BootstrapIcon.Calendar" MaxDate="@TransactionGroup.InitalTransaction.Date" />
+                <HxInputDate @bind-Value="transaction.Date" CalendarIcon="BootstrapIcon.Calendar" MaxDate="@TransactionGroup.InitialTransaction.Date" />
                 <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
-                @if (transaction.Id == TransactionGroup.InitalTransaction.Id)
+                @if (transaction.Id == TransactionGroup.InitialTransaction.Id)
                 {
                     <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01" Enabled="false" />
                 }
                 else
                 {
                     <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01"
-                                   min="@(TransactionGroup.InitalTransaction.Amount < 0 ? TransactionGroup.InitalTransaction.Amount : null)"
-                                   max="@(TransactionGroup.InitalTransaction.Amount > 0 ? TransactionGroup.InitalTransaction.Amount : null)"
+                                   min="@(TransactionGroup.InitialTransaction.Amount < 0 ? TransactionGroup.InitialTransaction.Amount : null)"
+                                   max="@(TransactionGroup.InitialTransaction.Amount > 0 ? TransactionGroup.InitialTransaction.Amount : null)"
                                    @bind-Value:set="v => OnAmountChange.InvokeAsync((transaction, v))" />
                 }
                 <HxContextMenu>
                     <HxContextMenuItem OnClick="TransactionGroup.Split">Split</HxContextMenuItem>
-                    @if (transaction.Id != TransactionGroup.InitalTransaction.Id)
+                    @if (transaction.Id != TransactionGroup.InitialTransaction.Id)
                     {
                         <HxContextMenuItem OnClick="() => TransactionGroup.Unsplit(transaction)">Unsplit</HxContextMenuItem>
                     }
@@ -76,8 +74,7 @@ else
             </ReviewRowEntry>
             @if (transaction.Reimburses is not null)
             {
-                <ReviewRowEntry>
-                    <CategoryInput @bind-Value="transaction.Reimburses.Category" Data="[transaction.Reimburses.Category]" Enabled="false" />
+                <ReviewRowEntry Label=" ↳ Reimburses">
                     <HxInputDate @bind-Value="transaction.Reimburses.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
                     <HxInputText @bind-Value="transaction.Reimburses.Description" title="@transaction.Reimburses.Description" Enabled="false" />
                     <HxInputNumber @bind-Value="transaction.Reimburses.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />

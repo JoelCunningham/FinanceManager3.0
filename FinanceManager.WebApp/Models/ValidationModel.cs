@@ -1,5 +1,8 @@
 ﻿namespace FinanceManager.WebApp.Models;
 
+using FinanceManager.Application.Constants;
+using FinanceManager.Application.Enums;
+using FinanceManager.Application.UseCases;
 using Havit.Blazor.Components.Web;
 using Havit.Blazor.Components.Web.Bootstrap;
 
@@ -40,18 +43,36 @@ public class ValidationModel
         SetState(ValidationType.Error, message, isSilent);
     }
 
-    public void SetError(Guid itemId, string field, string message)
+    //TODO Remove this after moving DTO logic to application layer
+    public void SetError(Guid itemId, ValidationField field, string message)
     {
         Items.Add(new() { Id = itemId, Field = field });
         SetState(ValidationType.Error, message);
     }
 
-    public List<Guid> GetValidationItemIds(string field)
+    public void SetError(UseCaseError error)
+    {
+        if (error is UseCaseValidationError validationError)
+        {
+            Items.Add(new() { Id = validationError.RecordId, Field = validationError.Field });
+        }
+        SetState(ValidationType.Error, error.Message);
+    }
+
+    public void SetErrors(IEnumerable<UseCaseError> errors)
+    {
+        foreach (var error in errors)
+        {
+            SetError(error);
+        }
+    }
+
+    public List<Guid> GetValidationItemIds(ValidationField field)
     {
         return [.. Items.Where(i => i.Field == field).Select(i => i.Id)];
     }
 
-    public void ClearValidationItem(Guid itemId, string field)
+    public void ClearValidationItem(Guid itemId, ValidationField field)
     {
         Items.RemoveAll(i => i.Id == itemId && i.Field == field);
     }
@@ -107,13 +128,5 @@ public class ValidationModel
 public class ValidationItem
 {
     public Guid Id { get; set; }
-    public string Field { get; set; } = string.Empty;
-}
-
-public enum ValidationType
-{
-    None,
-    Info,
-    Error,
-    Success,
+    public ValidationField Field { get; set; }
 }

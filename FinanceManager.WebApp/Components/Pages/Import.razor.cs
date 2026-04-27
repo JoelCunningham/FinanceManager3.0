@@ -1,10 +1,12 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages;
 
+using FinanceManager.Application.Constants;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.WebApp.Components.Features.Import;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Utilities;
 using Havit.Blazor.Components.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -60,12 +62,12 @@ public partial class Import : ComponentBase
         if (parseResult.IsSuccess && parseResult.Transactions is not null)
         {
             ImportedTransactions = [.. parseResult.Transactions];
-            Validation.SetSuccess($"{parseResult.Transactions.Count} new tranasctions found.", true);
+            Validation.SetSuccess($"{parseResult.Transactions.Count} new {LanguageUtilities.Pluralise("transactions", parseResult.Transactions.Count)} found.", true);
         }
         else
         {
             ImportedTransactions = null;
-            Validation.SetError(parseResult.ErrorMessage!, true);
+            Validation.SetError(ErrorMessages.DefaultErrorMessage, true);
         }
     }
 
@@ -82,7 +84,7 @@ public partial class Import : ComponentBase
         }
         else
         {
-            Validation.SetError("An unexpected error occurred. Please try again.");
+            Validation.SetError(ErrorMessages.DefaultErrorMessage);
         }
     }
 }

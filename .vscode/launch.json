@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch FinanceManager.WebApp",
+            "name": "Debug FinanceManager.WebApp",
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/FinanceManager.WebApp/FinanceManager.WebApp.csproj"

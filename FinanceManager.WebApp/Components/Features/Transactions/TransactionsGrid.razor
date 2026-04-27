@@ -1,0 +1,51 @@
+@code {
+    [Parameter] public DataGridModel<FilterQuery, TransactionSummary> Data { get; set; } = new();
+    [Parameter] public EventCallback<DataGridModel<FilterQuery, TransactionSummary>> DataChanged { get; set; }
+    [Parameter] public IReadOnlyList<string> Accounts { get; set; } = [];
+    [Parameter] public EventCallback<TransactionSummary> OpenDetails { get; set; }
+    [Parameter] public EventCallback<TransactionSummary> OpenEdit { get; set; }
+}
+
+<div class="transactions-grid">
+    <ListLayout TItem="TransactionSummary" Data="Data">
+        <FilterTemplate Context="query">
+            <HxSelect Label="Account" @bind-Value="query.FilterAccountFrom" Data="Accounts" Nullable="true" NullText="- Any -" />
+            <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />
+            <HxInputDate Label="Date to" @bind-Value="query.FilterDateTo" MinDate="query.FilterDateFrom" MaxDate="DateTime.Today" CalendarIcon="BootstrapIcon.Calendar" />
+            <HxInputNumber Label="Min amount" @bind-Value="query.FilterAmountMin" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" max="@query.FilterAmountMax" />
+            <HxInputNumber Label="Max amount" @bind-Value="query.FilterAmountMax" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" min="@query.FilterAmountMin" />
+            <HxSelect Label="Status" @bind-Value="query.FilterStatus" Data="Enum.GetValues<ReviewStatus>()" Nullable="false" TextSelector="@(s => s.ToString())" />
+        </FilterTemplate>
+
+        <DataTemplate>
+            <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" PageSize="Data.Query.PageSize" PreserveSelection="false" SelectionEnabled="false" Responsive="false" Hover="true">
+                <Columns>
+                    <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => CategoryUtilities.GetCategoryName(t))">
+                        <ItemTemplate Context="transaction">
+                            @if (transaction.Category is null)
+                            {
+                                <span class="text-body-tertiary">Uncategorised</span>
+                            }
+                            else
+                            {
+                                <span class="category-bubble" style="@CategoryUtilities.GetCategoryStyle(transaction)">@CategoryUtilities.GetCategoryFullName(transaction)</span>
+                            }
+                        </ItemTemplate>
+                    </HxGridColumn>
+                    <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
+                    <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col">
+                        <ItemTemplate Context="transaction"><span title="@transaction.Description">@transaction.Description</span></ItemTemplate>
+                    </HxGridColumn>
+                    <HxGridColumn HeaderText="Amount" SortString="Amount" SortKeySelector="@(t => t.Amount)" ItemTextSelector="@(t => t.Amount.ToString("C"))" HeaderCssClass="text-end" ItemCssClass="text-end" />
+
+                    <HxContextMenuGridColumn Context="transaction">
+                        <HxContextMenu>
+                            <HxContextMenuItem Text="Activity details" OnClick="() => OpenDetails.InvokeAsync(transaction)" Icon="BootstrapIcon.InfoCircle" />
+                            <HxContextMenuItem Text="Edit activity" OnClick="() => OpenEdit.InvokeAsync(transaction)" Icon="BootstrapIcon.PencilSquare" />
+                        </HxContextMenu>
+                    </HxContextMenuGridColumn>
+                </Columns>
+            </HxGrid>
+        </DataTemplate>
+    </ListLayout>
+</div>

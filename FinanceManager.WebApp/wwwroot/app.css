@@ -22,3 +22,12 @@ html, body {
 select {
     cursor: pointer;
 }
+
+.bank-logo-container {
+    width: 20px;
+    height: 20px;
+}
+
+.invisible {
+    visibility: hidden;
+}

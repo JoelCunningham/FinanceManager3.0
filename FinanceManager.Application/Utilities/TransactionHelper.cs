@@ -1,106 +1,54 @@
-﻿namespace FinanceManager.Application.Utilities;
-
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
-using FinanceManager.Domain.Utilities;
+using FinanceManager.Domain.Entities;
 
-public class TransactionHelper(ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
+namespace FinanceManager.Application.Utilities;
+
+public class TransactionHelper()
 {
-    public async Task<List<TransactionSummary>> GetTransactionsForRange(FilterQuery query)
+    public static void SetTransactionAmount(decimal amount, TransactionSummary summary, List<TransactionSummary> siblings, BankRecord record)
     {
-        var results = new List<TransactionSummary>();
-        var page = 1;
-
-        while (true)
+        if (!siblings.Contains(summary))
         {
-            query.Page = page;
-            var pagedTransactions = await transactionRepository.GetPagedAsync(query);
-            var pageResult = new PagedResult<TransactionSummary>
-            {
-                Items = [.. pagedTransactions.Items.Select(TransactionSummary.FromTransaction)],
-                TotalItems = pagedTransactions.TotalItems,
-                CurrentPage = pagedTransactions.CurrentPage,
-                PageSize = pagedTransactions.PageSize
-            };
-
-            if (pageResult.Items.Count == 0) break;
-            results.AddRange(pageResult.Items);
-
-            if (results.Count >= pageResult.TotalItems) break;
-            page++;
+            throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
+        }
+        if (amount < Math.Min(0, record.Amount) || amount > Math.Max(0, record.Amount))
+        {
+            throw new InvalidOperationException("Amount must be between 0 and the InitialTransaction amount.");
         }
 
-        return results;
-    }
+        var diff = Math.Abs(amount) - Math.Abs(summary.Amount);
+        var current = siblings.IndexOf(summary);
+        var nextTransactions = siblings.Skip(current + 1).Concat(siblings.Take(current));
 
-    public async Task<decimal[]> GetBudgetPerMonthForCategories(ScopedRange range, List<CategorySummary> categories, bool asExpense)
-    {
-        if (categories.Count == 0) return [];
-
-        var budgetsPerMonth = await GetBudgetPerMonth(range.StartDate, range.EndDate, categories);
-        return [.. budgetsPerMonth.Select(b => !asExpense ? b.Value : -b.Value)];
-    }
-
-    public async Task<Dictionary<string, decimal>> GetBudgetPerLabel(DateOnly start, DateOnly end, List<CategorySummary> categories, bool isCategoryDrilldown)
-    {
-        var budgetsInRange = await budgetEntryRepository.GetByRangeAsync(start, end, categories.Select(c => c.Id).ToHashSet());
-
-        var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var budget in budgetsInRange)
+        foreach (var split in nextTransactions)
         {
-            foreach (var day in BudgetYearHelper.GetOverlappingDays(budget, start, end))
-            {
-                var label = isCategoryDrilldown ? budget.Category.Name : budget.Category.Group.Name;
-                if (string.IsNullOrWhiteSpace(label))
-                {
-                    continue;
-                }
+            if (diff == 0) break;
 
-                totals[label] = totals.TryGetValue(label, out var current)
-                    ? current + Math.Abs(day.DailyAmount)
-                    : Math.Abs(day.DailyAmount);
+            var absSplit = Math.Abs(split.Amount);
+
+            if (diff > 0)
+            {
+                var reducible = absSplit;
+                var reduction = Math.Min(diff, reducible);
+
+                absSplit -= reduction;
+                diff -= reduction;
             }
-        }
-
-        return totals;
-    }
-
-    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerMonth(DateOnly startDate, DateOnly endDate, IEnumerable<CategorySummary> categories)
-    {
-        var budgetsPerDay = await GetBudgetPerDay(startDate, endDate, categories);
-        var budgetsPerMonth = budgetsPerDay
-            .GroupBy(d => new { d.Key.Year, d.Key.Month })
-            .ToDictionary(
-                g => new DateOnly(g.Key.Year, g.Key.Month, 1),
-                g => g.Sum(x => x.Value)
-            );
-
-        return budgetsPerMonth;
-    }
-
-    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerDay(DateOnly startDate, DateOnly endDate, IEnumerable<CategorySummary> categories)
-    {
-        var budgetsInRange = await budgetEntryRepository.GetByRangeAsync(startDate, endDate, categories.Select(c => c.Id).ToHashSet());
-
-        var amountPerDay = new Dictionary<DateOnly, decimal>();
-
-        var currentDate = startDate;
-        while (currentDate <= endDate)
-        {
-            amountPerDay[currentDate] = 0m;
-            currentDate = currentDate.AddDays(1);
-        }
-
-        foreach (var budget in budgetsInRange)
-        {
-            foreach (var day in BudgetYearHelper.GetOverlappingDays(budget, startDate, endDate))
+            else
             {
-                amountPerDay[day.Date] += day.DailyAmount;
+                var currentAllocated = siblings.Sum(t => Math.Abs(t.Amount));
+                var remainingCapacity = Math.Abs(record.Amount) - currentAllocated;
+
+                var increase = Math.Min(-diff, remainingCapacity);
+
+                absSplit += increase;
+                diff += increase;
             }
+
+            split.Amount = absSplit * Math.Sign(record.Amount);
         }
 
-        return amountPerDay;
+        summary.Amount = amount;
     }
-
 }

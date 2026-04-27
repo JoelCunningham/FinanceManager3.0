@@ -10,7 +10,7 @@
     [Parameter] public EventCallback<TransferDto> RemoveTransfer { get; set; }
 }
 
-<div class="tranfers-grid">
+<div class="transfers-grid">
     <ListLayout TItem="TransferDto" Data="Data">
         <FilterTemplate Context="query">
             <HxSelect Label="Account from" @bind-Value="query.FilterAccountFrom" Data="Accounts" Nullable="true" NullText="- Any -" />

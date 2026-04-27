@@ -1,30 +1,20 @@
 @code {
     [Parameter] public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new();
-
     [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
-
     [Parameter] public ValidationModel Validation { get; set; } = new();
 
     [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> SetCategory { get; set; }
-
     [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction, decimal)> SetAmount { get; set; }
 
     [Parameter] public EventCallback<ReviewGroup> SaveGroup { get; set; }
 
     [Parameter] public EventCallback<ReviewGroup> OnFindTransfer { get; set; }
-
     [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction)> OnFindReimbursement { get; set; }
 
     [Parameter] public bool IsAutoAssignEnabled { get; set; }
-
     [Parameter] public EventCallback<bool> IsAutoAssignEnabledChanged { get; set; }
 
-    [Parameter] public string CategoryKey { get; set; } = string.Empty;
-
-    [Parameter] public string AmountKey { get; set; } = string.Empty;
-
     public List<CategorySummary> IncomeCategories => [.. Categories.Where(c => c.IsIncome)];
-
     public List<CategorySummary> ExpenseCategories => [.. Categories.Where(c => !c.IsIncome)];
 }
 
@@ -47,8 +37,8 @@
                     <ItemTemplate Context="group">
                         <TransactionsReviewRow TransactionGroup="group"
                                                Categories="group.IsIncome ? IncomeCategories : ExpenseCategories"
-                                               ErrorCategoryIds="Validation.GetValidationItemIds(CategoryKey)"
-                                               ErrorAmountIds="Validation.GetValidationItemIds(AmountKey)"
+                                               ErrorCategoryIds="Validation.GetValidationItemIds(ValidationField.Category)"
+                                               ErrorAmountIds="Validation.GetValidationItemIds(ValidationField.Amount)"
                                                OnCategoryChange="args => SetCategory.InvokeAsync((args.Item1, args.Item2))"
                                                OnAmountChange="args => SetAmount.InvokeAsync((group, args.Item1, args.Item2))"
                                                OnSave="() => SaveGroup.InvokeAsync(group)"

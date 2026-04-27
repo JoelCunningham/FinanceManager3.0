@@ -37,6 +37,17 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             };
         }
 
+        public Task<List<string>> GetUniqueAccountsAsync()
+        {
+            var accounts = _transactions
+                .Select(t => $"{t.Record.Bank} - {t.Record.AccountNumber}")
+                .Distinct()
+                .OrderBy(a => a)
+                .ToList();
+
+            return Task.FromResult(accounts);
+        }
+
         public async Task CreateAsync(IEnumerable<Transaction> transactions)
         {
             _transactions.AddRange(transactions);
@@ -74,6 +85,15 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             _transactions.Remove(transaction);
         }
 
+        public async Task DeleteOrSkipAsync(Guid id)
+        {
+            var transaction = _transactions.FirstOrDefault(t => t.Id == id);
+            if (transaction != null)
+            {
+                _transactions.Remove(transaction);
+            }
+        }
+
         private static IQueryable<Transaction> ApplyFilters(IQueryable<Transaction> query, FilterQuery request)
         {
             // Search term filter
@@ -102,11 +122,11 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             // Reviewed filter
             if (request.FilterStatus == ReviewStatus.Reviewed)
             {
-                query = query.Where(t => t.IsReviewed);
+                query = query.Where(t => t.CategoryId != null);
             }
             if (request.FilterStatus == ReviewStatus.Unreviewed)
             {
-                query = query.Where(t => !t.IsReviewed);
+                query = query.Where(t => t.CategoryId == null);
             }
 
             // Account filters
@@ -129,11 +149,11 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             // Amount filters
             if (request.FilterAmountMin.HasValue)
             {
-                query = query.Where(t => t.Amount >= request.FilterAmountMin.Value);
+                query = query.Where(t => t.TotalAmount >= request.FilterAmountMin.Value);
             }
             if (request.FilterAmountMax.HasValue)
             {
-                query = query.Where(t => t.Amount <= request.FilterAmountMax.Value);
+                query = query.Where(t => t.TotalAmount <= request.FilterAmountMax.Value);
             }
 
             return query;

@@ -3,6 +3,7 @@ namespace FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
+// TODO use UseCaseResult and return errors instead of throwing exceptions
 public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IBudgetYearRepository budgetYearRepository)
 {
     public async Task ExecuteAsync(BudgetCellEntry model, int year, bool isExisting)

@@ -6,12 +6,12 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 
 public sealed record ImportSaveResult(
-    Guid ImportId = default,
-    int RecordsSaved = default,
-    int TransactionsSaved = default,
-    int TransfersSaved = default,
-    string? ErrorMessage = null
-) : UseCaseResult(ErrorMessage);
+    Guid ImportId,
+    int RecordsSaved,
+    int TransactionsSaved,
+    int TransfersSaved,
+    IEnumerable<UseCaseError> Errors
+) : UseCaseResult(Errors);
 
 public sealed class SaveImport(IBankRecordRepository bankRecordRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IUnitOfWork unitOfWork)
 {
@@ -34,12 +34,12 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, ITran
 
             await transaction.CommitAsync();
 
-            return new ImportSaveResult(importId, transactions.Count, transfers.Count, records.Count);
+            return new ImportSaveResult(importId, transactions.Count, transfers.Count, records.Count, []);
         }
         catch
         {
             await transaction.RollbackAsync();
-            return new ImportSaveResult(ErrorMessage: "An error occurred while saving the import.");
+            return new ImportSaveResult(Guid.Empty, 0, 0, 0, [new UseCaseUnexpectedError()]);
         }
     }
 }

@@ -4,7 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
 
-public sealed record SaveReviewResult(string? ErrorMessage = null) : UseCaseResult(ErrorMessage);
+public sealed record SaveReviewResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
 public sealed class SaveReview(ITransactionRepository transactionRepository, IReimbursementRepository reimbursementRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IUnitOfWork unitOfWork)
 {
@@ -12,11 +12,11 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
     {
         if (group.Transactions.Count == 0)
         {
-            return new SaveReviewResult("Transaction group must contain at least one transaction.");
+            return new SaveReviewResult([new UseCaseInvalidOperationError("Transaction group must contain at least one transaction.")]);
         }
         if (group.Transfers is not null && group.Transactions.Count > 1)
         {
-            return new SaveReviewResult("Transfer transactions cannot be split.");
+            return new SaveReviewResult([new UseCaseInvalidOperationError("Transfer transactions cannot be split.")]);
         }
 
         try
@@ -27,14 +27,15 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
             }
             else
             {
-                await ConvertToTransferAsync(group.InitalTransaction.Id, group.Transfers.Id);
+                await ConvertToTransferAsync(group.InitialTransaction.Id, group.Transfers.TransactionId);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            return new SaveReviewResult(ex.Message ?? "An unexpected error occurred. Please try again.");
+            // TODO: Log exception
+            return new SaveReviewResult([new UseCaseUnexpectedError()]);
         }
-        return new SaveReviewResult();
+        return new SaveReviewResult([]);
     }
 
     private async Task SaveTransactionsAsync(IEnumerable<ReviewTransaction> transactions)
@@ -43,23 +44,22 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         {
             if (transaction.Reimburses is null && transaction.Category is not null)
             {
-                await SaveTransactionAsync(transaction);
+                await SaveTransactionAsync(transaction, transactions.Where(t => t != transaction));
             }
             else if (transaction.Reimburses is not null)
             {
-                await AddReimbursementAsync(transaction.Reimburses.Id, transaction.Id);
+                await AddReimbursementAsync(transaction, transaction.Reimburses.TransactionId);
             }
         }
     }
 
-    private async Task SaveTransactionAsync(ReviewTransaction transaction)
+    private async Task SaveTransactionAsync(ReviewTransaction transaction, IEnumerable<ReviewTransaction> siblings)
     {
         if (transaction.Amount == 0) throw new Exception("Transaction must have a nonzero amount.");
         if (transaction.Category is null) throw new Exception("Transaction must have a category.");
 
         var categoryEntity = transaction.Category.ToCategory();
-        var transactionEntity = transaction.ToTransaction();
-        transactionEntity.IsReviewed = true;
+        var transactionEntity = transaction.ToTransaction(siblings.Select(s => s.ToTransaction()));
 
         await using var operations = unitOfWork.BeginTransaction();
         try
@@ -71,26 +71,27 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         }
         catch
         {
+            // TODO: Log exception
             await operations.RollbackAsync();
-            throw new Exception("An unexpected error occurred. Please try again.");
+            throw;
         }
     }
 
-    private async Task AddReimbursementAsync(Guid transactionId, Guid reimbursementId)
+    private async Task AddReimbursementAsync(ReviewTransaction reimbursement, Guid transactionId)
     {
-        if (transactionId == reimbursementId) throw new Exception("Transaction IDs must be different.");
+        if (transactionId == reimbursement.Id) throw new Exception("Transaction IDs must be different.");
 
         await using var operations = unitOfWork.BeginTransaction();
         try
         {
             var transaction = await transactionRepository.GetByIdAsync(transactionId);
-            var reimbursement = EntityConverter.TransactionToReimbursement(await transactionRepository.GetByIdAsync(reimbursementId));
+            var reimbursementEntity = EntityConverter.TransactionToReimbursement(reimbursement.ToTransaction());
 
-            await transactionRepository.DeleteAsync(reimbursementId);
-            await reimbursementRepository.CreateAsync(reimbursement);
+            await transactionRepository.DeleteOrSkipAsync(reimbursement.Id);
+            await reimbursementRepository.CreateAsync(reimbursementEntity);
 
             transaction.Reimbursements ??= [];
-            transaction.Reimbursements.Add(reimbursement);
+            transaction.Reimbursements.Add(reimbursementEntity);
 
             await transactionRepository.UpdateAsync(transaction);
 
@@ -98,8 +99,9 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         }
         catch
         {
+            // TODO: Log exception
             await operations.RollbackAsync();
-            throw new Exception("An unexpected error occurred. Please try again.");
+            throw;
         }
     }
 
@@ -129,8 +131,9 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         }
         catch
         {
+            // TODO: Log exception
             await operations.RollbackAsync();
-            throw new Exception("An unexpected error occurred. Please try again.");
+            throw;
         }
     }
 }

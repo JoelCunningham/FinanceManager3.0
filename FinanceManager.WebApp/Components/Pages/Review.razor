@@ -1,19 +1,19 @@
 ﻿@page "/Review"
 
-<PageTitle>Review Transaction</PageTitle>
+<PageTitle>Review Activities</PageTitle>
 
-<h1 class="page-heading">Review transactions</h1>
+<h1 class="page-heading">Review activities</h1>
 
 <HxAlert Color="ThemeColor.Info">
     <HxIcon Icon="@BootstrapIcon.InfoCircleFill" />
-    Review and correct transactions to help the automatic categorisation get smarter and more accurate.
+    Review and correct activities to help the automatic categorisation get smarter and more accurate.
 </HxAlert>
 
 @if (Data.HasResults && Data.Result is not null)
 {
     <div class="text-muted d-flex mb-2">
         <span class="align-self-end">
-            Showing @Data.Result.StartItem - @Data.Result.EndItem of @Data.Result.TotalItems unreviewed transactions
+            Showing @Data.Result.StartItem - @Data.Result.EndItem of @Data.Result.TotalItems unreviewed activities
         </span>
     </div>
 }
@@ -27,9 +27,7 @@
                         OnFindTransfer="OnFindTransfer"
                         OnFindReimbursement="(args) => OnFindReimbursement(args.Item1, args.Item2)"
                         @bind-IsAutoAssignEnabled="IsAutoAssignEnabled"
-                        @bind-IsAutoAssignEnabled:after="Data.UpdateAsync"
-                        CategoryKey="@CategoryKey"
-                        AmountKey="@AmountKey" />
+                        @bind-IsAutoAssignEnabled:after="Data.UpdateAsync" />
 
 <FindTransferModal @ref="TransferModal" TransferData="TransferData" Categories="Categories" SetTransfer="SetTransfer"  />
 

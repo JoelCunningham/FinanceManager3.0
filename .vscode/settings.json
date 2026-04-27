@@ -10,6 +10,7 @@
         "Math",
         "MSBUILD",
         "onclick",
+        "oninput",
         "onmouseenter",
         "onmouseleave"
     ]

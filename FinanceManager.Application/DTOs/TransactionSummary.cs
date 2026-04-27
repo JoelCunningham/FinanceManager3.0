@@ -5,24 +5,36 @@ using FinanceManager.Domain.Entities;
 
 public class TransactionSummary : ITransactionConvertible<TransactionSummary>
 {
-    public Guid Id { get; set; }
+    public Guid TransactionId { get; set; }
     public CategorySummary? Category { get; set; }
     public required string Description { get; set; }
     public required decimal Amount { get; set; }
     public required DateTime Date { get; set; }
+    public required BankRecordSummary Record { get; set; }
 
     public static TransactionSummary FromTransaction(Transaction transaction)
     {
-        var amount = transaction.Amount + (transaction.Reimbursements?.Sum(r => r.Amount) ?? 0);
-        var category = transaction.Category is not null ? CategorySummary.FromCategory(transaction.Category) : null;
-
         return new TransactionSummary
         {
-            Id = transaction.Id,
-            Amount = amount,
-            Category = category,
+            TransactionId = transaction.Id,
+            Amount = transaction.TotalAmount,
             Date = transaction.Date,
             Description = transaction.Description,
+            Category = transaction.Category is not null ? CategorySummary.FromCategory(transaction.Category) : null,
+            Record = BankRecordSummary.FromBankRecord(transaction.Record),
+        };
+    }
+
+    public TransactionSummary Clone()
+    {
+        return new TransactionSummary
+        {
+            TransactionId = TransactionId,
+            Amount = Amount,
+            Date = Date,
+            Description = Description,
+            Category = Category, 
+            Record = Record,
         };
     }
 }

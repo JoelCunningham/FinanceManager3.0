@@ -3,10 +3,7 @@ namespace FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
-public sealed record ParseFileResult(
-    List<ParsedTransaction>? Transactions = default,
-    string? ErrorMessage = null
-) : UseCaseResult(ErrorMessage);
+public sealed record ParseFileResult(List<ParsedTransaction> Transactions, IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
 public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IEnumerable<ITransactionFileParser> parsers)
 {
@@ -20,7 +17,7 @@ public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IEnume
         if (parser == null)
         {
             var extensions = parsers.FirstOrDefault(p => p.GetBankName().Equals(bank, StringComparison.OrdinalIgnoreCase))?.GetFileExtensions() ?? [];
-            return new ParseFileResult { ErrorMessage = "The type of the file you uploaded is not supported. Please upload a file of type: " + string.Join(", ", extensions) };
+            return new ParseFileResult([], [new UseCaseInvalidOperationError("The type of the file you uploaded is not supported. Please upload a file of type: " + string.Join(", ", extensions))]);
         }
 
         var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();
@@ -31,9 +28,9 @@ public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IEnume
         var transactions = parsed.Where(p => !duplicateIds.Contains(p.Id)).ToList();
         if (transactions.Count == 0)
         {
-            return new ParseFileResult(ErrorMessage: "No new transactions were found in the uploaded file.");
+            return new ParseFileResult([], [new UseCaseInvalidOperationError("No new transactions were found in the uploaded file.")]);
         }
 
-        return new ParseFileResult(transactions);
+        return new ParseFileResult(transactions, []);
     }
 }

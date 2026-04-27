@@ -33,6 +33,13 @@ public static class DependencyInjection
         services.AddScoped<TransfersWorkflow>();
 
         // Transaction use cases
+        services.AddScoped<GetTransactionsPage>();
+        services.AddScoped<GetTransactionDetails>();
+        services.AddScoped<ValidateTransactionEdit>();
+        services.AddScoped<SaveTransactionEdit>();
+        services.AddScoped<TransactionsWorkflow>();
+
+        // Statistics use cases
         services.AddScoped<GetBudgetScopes>();
         services.AddScoped<GetChart1Data>();
         services.AddScoped<GetChart2Data>();
@@ -58,7 +65,7 @@ public static class DependencyInjection
         services.AddScoped<GetFortnightRanges>();
         services.AddScoped<GetMonthRanges>();
 
-        services.AddScoped<TransactionHelper>();
+        services.AddScoped<ChartHelper>();
 
         return services;
     }

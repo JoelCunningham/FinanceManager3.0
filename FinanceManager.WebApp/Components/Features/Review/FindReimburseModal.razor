@@ -2,13 +2,11 @@
     private HxModal _modal = default!;
 
     [Parameter] public DataGridModel<FilterQuery, TransactionSummary> ReimburseData { get; set; } = new();
-
     [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
 
     [Parameter] public EventCallback<TransactionSummary> SetReimburse { get; set; }
 
     public async Task ShowAsync() => await _modal.ShowAsync();
-
     public async Task HideAsync() => await _modal.HideAsync();
 }
 

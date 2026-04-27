@@ -12,7 +12,7 @@ public sealed record GetChart2DataResult(
     bool HasLargerScopedBudgets
 ) : UseCaseResult;
 
-public sealed class GetChart2Data(TransactionHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategoryList getCategoryList)
+public sealed class GetChart2Data(ChartHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategoryList getCategoryList)
 {
     public async Task<GetChart2DataResult> ExecuteAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {

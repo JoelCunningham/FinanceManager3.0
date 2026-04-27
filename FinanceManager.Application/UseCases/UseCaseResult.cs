@@ -1,6 +1,15 @@
 ﻿namespace FinanceManager.Application.UseCases;
 
-public abstract record UseCaseResult(string? ErrorMessage = null)
+using FinanceManager.Application.Constants;
+using FinanceManager.Application.Enums;
+
+public abstract record UseCaseResult(IEnumerable<UseCaseError> Errors)
 {
-    public bool IsSuccess => ErrorMessage == null;
+    protected UseCaseResult() : this([]) { }
+    public bool IsSuccess => !Errors.Any();
 }
+
+public abstract record UseCaseError(ErrorType ErrorType, string Message);
+public record UseCaseValidationError(Guid RecordId, ValidationField Field, string Message) : UseCaseError(ErrorType.Validation, Message);
+public record UseCaseUnexpectedError() : UseCaseError(ErrorType.Unexpected, ErrorMessages.DefaultErrorMessage);
+public record UseCaseInvalidOperationError(string Message) : UseCaseError(ErrorType.InvalidOperation, Message);

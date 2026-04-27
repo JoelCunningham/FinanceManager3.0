@@ -14,7 +14,7 @@ public sealed record GetChart1DataResult(
     decimal[]? ExpenseBudgetSeries
 ) : UseCaseResult;
 
-public sealed class GetChart1Data(TransactionHelper transactionHelper, GetCategoryList getCategoryList)
+public sealed class GetChart1Data(ChartHelper transactionHelper, GetCategoryList getCategoryList)
 {
     public async Task<GetChart1DataResult> ExecuteAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {

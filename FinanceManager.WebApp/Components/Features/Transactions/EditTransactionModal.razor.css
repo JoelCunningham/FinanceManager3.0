@@ -1,0 +1,22 @@
+.transaction-modal .transaction-form {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.transaction-form ::deep .hx-form-group {
+    flex: 0 0 auto;
+    margin-bottom: 0.25rem;
+}
+
+    .transaction-form ::deep > div:nth-child(2n+1) {
+        width: calc(50% - 1rem);
+        margin-right: 1rem;
+    }
+
+    .transaction-form ::deep > div:nth-child(2n) {
+        width: 50%;
+    }
+
+    .transaction-form ::deep > div.full-width {
+        width: 100%;
+    }

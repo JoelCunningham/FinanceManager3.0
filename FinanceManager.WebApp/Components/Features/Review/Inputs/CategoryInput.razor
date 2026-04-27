@@ -1,8 +1,6 @@
 @code {
     [Parameter] public CategorySummary? Value { get; set; }
-
     [Parameter] public EventCallback<CategorySummary?> ValueChanged { get; set; }
-
     [Parameter] public Expression<Func<CategorySummary?>>? ValueExpression { get; set; }
 
     [Parameter] public IEnumerable<CategorySummary> Data { get; set; } = [];
@@ -10,11 +8,8 @@
     [Parameter] public string? Label { get; set; }
 
     [Parameter] public bool Nullable { get; set; } = false;
-
     [Parameter] public bool IsAutoCategorised { get; set; } = false;
-
     [Parameter] public bool HasError { get; set; } = false;
-
     [Parameter] public bool Enabled { get; set; } = true;
 
     private Expression<Func<CategorySummary?>> CurrentValueExpression => ValueExpression ?? (() => Value);

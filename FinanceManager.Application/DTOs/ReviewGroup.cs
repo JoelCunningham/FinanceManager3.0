@@ -5,16 +5,16 @@ using FinanceManager.Domain.Entities;
 
 public class ReviewGroup : ITransactionConvertible<ReviewGroup>
 {
-    public required Transaction InitalTransaction { get; set; }
+    public required Transaction InitialTransaction { get; set; }
     public List<ReviewTransaction> Transactions { get; set; } = [];
     public TransactionSummary? Transfers { get; set; }
-    public bool IsIncome => InitalTransaction.Amount > 0;
+    public bool IsIncome => InitialTransaction.Amount > 0;
 
     public static ReviewGroup FromTransaction(Transaction transaction)
     {
         return new ReviewGroup
         {
-            InitalTransaction = transaction,
+            InitialTransaction = transaction,
             Transactions = [ReviewTransaction.FromTransaction(transaction)],
         };
     }
@@ -22,18 +22,18 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
     public void Reset()
     {
         Transfers = null;
-        Transactions = [ReviewTransaction.FromTransaction(InitalTransaction)];
+        Transactions = [ReviewTransaction.FromTransaction(InitialTransaction)];
     }
 
     public void Backdate(ReviewTransaction transaction, DateTime date)
     {
         if (!Transactions.Contains(transaction))
         {
-            throw new InvalidOperationException("Transaction does not belong to this InitalTransaction.");
+            throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
         }
-        if (date > InitalTransaction.Date)
+        if (date > InitialTransaction.Date)
         {
-            throw new InvalidOperationException("Backdate must be before or equal to the InitalTransaction date");
+            throw new InvalidOperationException("Backdate must be before or equal to the InitialTransaction date");
         }
         transaction.Date = date;
     }
@@ -43,10 +43,10 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
         Transactions.Add(new()
         {
             Id = Guid.NewGuid(),
-            Record = InitalTransaction.Record,
+            Record = InitialTransaction.Record,
             Amount = 0,
-            Date = InitalTransaction.Date,
-            Description = InitalTransaction.Description,
+            Date = InitialTransaction.Date,
+            Description = InitialTransaction.Description,
             Category = null,
             Reimburses = null,
         });
@@ -56,7 +56,7 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
     {
         if (!Transactions.Contains(transaction))
         {
-            throw new InvalidOperationException("Transaction does not belong to this InitalTransaction.");
+            throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
         }
         if (Transactions.Count <= 1)
         {
@@ -72,7 +72,7 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
         {
             throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
         }
-        if (amount < Math.Min(0, InitalTransaction.Amount) || amount > Math.Max(0, InitalTransaction.Amount))
+        if (amount < Math.Min(0, InitialTransaction.Amount) || amount > Math.Max(0, InitialTransaction.Amount))
         {
             throw new InvalidOperationException("Amount must be between 0 and the InitialTransaction amount.");
         }
@@ -98,7 +98,7 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
             else
             {
                 var currentAllocated = Transactions.Sum(t => Math.Abs(t.Amount));
-                var remainingCapacity = Math.Abs(InitalTransaction.Amount) - currentAllocated;
+                var remainingCapacity = Math.Abs(InitialTransaction.Amount) - currentAllocated;
 
                 var increase = Math.Min(-diff, remainingCapacity);
 
@@ -106,7 +106,7 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
                 diff += increase;
             }
 
-            split.Amount = absSplit * Math.Sign(InitalTransaction.Amount);
+            split.Amount = absSplit * Math.Sign(InitialTransaction.Amount);
         }
 
         transaction.Amount = amount;
@@ -140,7 +140,7 @@ public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
         };
     }
 
-    public Transaction ToTransaction()
+    public Transaction ToTransaction(IEnumerable<Transaction>? siblings = null)
     {
         return new Transaction
         {
@@ -152,6 +152,7 @@ public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
             Date = Date,
             CategoryId = Category?.Id,
             Category = Category?.ToCategory(),
+            Siblings = siblings?.ToList(),
         };
     }
 }

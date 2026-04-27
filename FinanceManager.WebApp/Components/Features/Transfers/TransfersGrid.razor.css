@@ -1,9 +1,4 @@
-.tranfers-grid ::deep .fluid-truncate-col {
+.transfers-grid ::deep .fluid-truncate-col {
     max-width: 0;
     width: 100%;
-}
-
-.tranfers-grid ::deep .bank-logo-container {
-    width: 20px;
-    height: 20px;
 }

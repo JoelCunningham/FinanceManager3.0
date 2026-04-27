@@ -1,0 +1,18 @@
+@page "/Activities"
+
+<PageTitle>Activities</PageTitle>
+
+<h1 class="page-heading">Activities</h1>
+
+<TransactionsGrid @bind-Data="Data" Accounts="UniqueAccounts" OpenDetails="OpenDetailsModal" OpenEdit="OpenEditModal" />
+
+<TransactionDetailsModal @ref="DetailsModal" Details="SelectedDetails" OnEdit="OpenEditModal" />
+
+<EditTransactionModal @ref="EditModal"
+					  EditTransaction="EditTransaction"
+					  Categories="Categories"
+					  Validation="Validation"
+					  SetCategory="SetEditCategory"
+					  SetAmount="SetEditAmount"
+					  SetDate="SetEditDate"
+					  Save="SaveEdit" />

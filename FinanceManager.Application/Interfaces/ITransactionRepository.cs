@@ -7,9 +7,11 @@ namespace FinanceManager.Application.Interfaces
     {
         Task<Transaction> GetByIdAsync(Guid id);
         Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query);
+        Task<List<string>> GetUniqueAccountsAsync();
         Task CreateAsync(IEnumerable<Transaction> transactions);
         Task CreateOrUpdateAsync(Transaction transaction);
         Task UpdateAsync(Transaction transaction);
         Task DeleteAsync(Guid id);
+        Task DeleteOrSkipAsync(Guid id);
     }
 }

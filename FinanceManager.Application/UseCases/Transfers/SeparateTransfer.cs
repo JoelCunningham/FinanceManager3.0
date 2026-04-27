@@ -3,7 +3,7 @@ namespace FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
 
-public sealed record SeparateTransferResult(string? ErrorMessage = null) : UseCaseResult(ErrorMessage);
+public sealed record SeparateTransferResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
 public sealed class SeparateTransfer(ITransferRepository transferRepository, ITransactionRepository transactionRepository, IUnitOfWork unitOfWork)
 {
@@ -24,12 +24,13 @@ public sealed class SeparateTransfer(ITransferRepository transferRepository, ITr
 
             await operations.CommitAsync();
 
-            return new SeparateTransferResult();
+            return new SeparateTransferResult([]);
         }
-        catch (Exception ex)
+        catch
         {
+            //TODO Log exception
             await operations.RollbackAsync();
-            return new SeparateTransferResult(ex.Message);
+            return new SeparateTransferResult([new UseCaseUnexpectedError()]);
         }
     }
 }

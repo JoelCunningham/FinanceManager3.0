@@ -3,10 +3,7 @@ namespace FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
-public sealed record GetReviewPageResult(
-    PagedResult<ReviewGroup> Page,
-    string? ErrorMessage = null
-) : UseCaseResult(ErrorMessage);
+public sealed record GetReviewPageResult(PagedResult<ReviewGroup> Page) : UseCaseResult();
 
 public sealed class GetReviewPage(ITransactionRepository transactionRepository)
 {

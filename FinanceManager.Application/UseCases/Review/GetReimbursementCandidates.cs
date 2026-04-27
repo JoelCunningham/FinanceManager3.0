@@ -10,6 +10,7 @@ public sealed class GetReimbursementCandidates(ITransactionRepository transactio
     public async Task<GetReimbursementCandidatesResult> ExecuteAsync(FilterQuery query)
     {
         query.FilterStatus = ReviewStatus.Reviewed;
+        query.FilterAmountMax = 0;
 
         var paged = await transactionRepository.GetPagedAsync(query);
         return new GetReimbursementCandidatesResult(

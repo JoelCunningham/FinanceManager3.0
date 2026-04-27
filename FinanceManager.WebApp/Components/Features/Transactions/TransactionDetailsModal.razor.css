@@ -1,0 +1,42 @@
+.transaction-modal ::deep .tab-pane.active {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.transaction-modal ::deep .reimbursements-tab.active {
+    display: block;
+}
+
+.transaction-modal ::deep .hx-form-group {
+    flex: 0 0 auto;
+    margin-bottom: 0.25rem;
+}
+
+    .transaction-modal ::deep .hx-form-group:nth-child(2n+1) {
+        width: calc(50% - 1rem);
+        margin-right: 1rem;
+    }
+
+    .transaction-modal ::deep .hx-form-group:nth-child(2n) {
+        width: 50%;
+    }
+
+    .transaction-modal ::deep .hx-form-group.full-width {
+        width: 100%;
+    }
+
+    .transaction-modal ::deep .alert {
+        margin: 0;
+        width: 100%;
+    }
+
+    h2 {
+        width: 100%;
+        font-size: 18px;
+        margin-top: 1.5rem;
+    }
+
+    .siblings-details {
+        margin-top: 0.5rem;
+        margin-bottom: -1rem;
+    }

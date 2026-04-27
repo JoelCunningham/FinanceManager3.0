@@ -25,4 +25,8 @@
     <Watch Include="..\FinanceManager.Infrastructure\**\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Utilities\" />
+  </ItemGroup>
+
 </Project>

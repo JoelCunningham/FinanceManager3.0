@@ -1,6 +1,7 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
@@ -28,9 +29,6 @@ public partial class Review : ComponentBase
 
     public bool IsFirstAutoAssign { get; set; } = true;
     public bool IsAutoAssignEnabled { get; set; } = true;
-
-    public readonly string AmountKey = "amount";
-    public readonly string CategoryKey = "category";
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,7 +67,7 @@ public partial class Review : ComponentBase
 
     private async Task<PagedResult<TransactionSummary>> GetTransferData(FilterQuery query)
     {
-        var amount = CurrentGroup?.InitalTransaction.Amount ?? 0;
+        var amount = CurrentGroup?.InitialTransaction.Amount ?? 0;
         return (await ReviewWorkflow.GetTransferCandidatesAsync(query, amount)).Page;
     }
 
@@ -83,25 +81,21 @@ public partial class Review : ComponentBase
         Validation.Clear();
 
         var validationResult = await ReviewWorkflow.ValidateGroupAsync(group);
-        if (!validationResult.IsValid)
+        if (!validationResult.IsSuccess)
         {
-            foreach (var error in validationResult.Errors)
-            {
-                Validation.SetError(error.TransactionId, error.Key, error.Message);
-            }
+            Validation.SetErrors(validationResult.Errors);
             return;
         }
 
         var saveResult = await ReviewWorkflow.SaveAsync(group);
-        if (saveResult.IsSuccess)
+        if (!saveResult.IsSuccess)
         {
-            await Data.UpdateAsync();
-            if (showMessage) Validation.SetSuccess("Transaction saved successfully");
+            Validation.SetErrors(saveResult.Errors);
+            return;
         }
-        else
-        {
-            Validation.SetError(saveResult.ErrorMessage ?? "An unexpected error occurred. Please try again");
-        }
+       
+        await Data.UpdateAsync();
+        if (showMessage) Validation.SetSuccess("Activity saved successfully");
     }
 
     public async Task SetReimburse(TransactionSummary transaction)
@@ -109,7 +103,6 @@ public partial class Review : ComponentBase
         if (CurrentTransaction is null) return;
         CurrentTransaction.Reimburses = transaction;
         await ReimburseModal.HideAsync();
-
     }
 
     public async Task SetTransfer(TransactionSummary transaction)
@@ -121,21 +114,22 @@ public partial class Review : ComponentBase
 
     public void SetCategory(ReviewTransaction transaction, CategorySummary? value)
     {
-        Validation.ClearValidationItem(transaction.Id, CategoryKey);
+        Validation.ClearValidationItem(transaction.Id, ValidationField.Category);
         transaction.Category = value;
         transaction.IsAutoCategorised = false;
     }
 
     public void SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
     {
-        Validation.ClearValidationItem(transaction.Id, AmountKey);
+        Validation.ClearValidationItem(transaction.Id, ValidationField.Amount);
         try
         {
             group.SetAmount(transaction, value);
         }
+        //TODO This validation should be moved to the application layer. 
         catch (InvalidOperationException)
         {
-            Validation.SetError(transaction.Id, AmountKey, "Amount must be between 0 and the original amount");
+            Validation.SetError(transaction.Id, ValidationField.Amount, "Amount must be between 0 and the original amount");
         }
     }
 

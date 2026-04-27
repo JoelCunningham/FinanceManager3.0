@@ -16,7 +16,8 @@ public sealed class Transaction : IEntity
     public decimal Amount { get; set; }
     public required string Description { get; set; }
 
-    public bool IsReviewed { get; set; }
-
+    public ICollection<Transaction>? Siblings { get; set; }
     public ICollection<Reimbursement>? Reimbursements { get; set; }
+
+    public decimal TotalAmount => Amount + (Reimbursements?.Sum(r => r.Amount) ?? 0);
 }
