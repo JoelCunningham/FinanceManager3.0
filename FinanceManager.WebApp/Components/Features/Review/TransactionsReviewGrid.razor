@@ -5,6 +5,7 @@
 
     [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> SetCategory { get; set; }
     [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction, decimal)> SetAmount { get; set; }
+    [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction, DateTime)> SetDate { get; set; }
 
     [Parameter] public EventCallback<ReviewGroup> SaveGroup { get; set; }
 
@@ -41,6 +42,7 @@
                                                ErrorAmountIds="Validation.GetValidationItemIds(ValidationField.Amount)"
                                                OnCategoryChange="args => SetCategory.InvokeAsync((args.Item1, args.Item2))"
                                                OnAmountChange="args => SetAmount.InvokeAsync((group, args.Item1, args.Item2))"
+                                               OnDateChange="args => SetDate.InvokeAsync((group, args.Item1, args.Item2))"
                                                OnSave="() => SaveGroup.InvokeAsync(group)"
                                                OnFindTransfer="() => OnFindTransfer.InvokeAsync(group)"
                                                OnFindReimbursement="(t) => OnFindReimbursement.InvokeAsync((group, t))" />

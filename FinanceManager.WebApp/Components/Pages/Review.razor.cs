@@ -93,7 +93,7 @@ public partial class Review : ComponentBase
             Validation.SetErrors(saveResult.Errors);
             return;
         }
-       
+
         await Data.UpdateAsync();
         if (showMessage) Validation.SetSuccess("Activity saved successfully");
     }
@@ -119,18 +119,20 @@ public partial class Review : ComponentBase
         transaction.IsAutoCategorised = false;
     }
 
-    public void SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
+    public void SetDate(ReviewGroup group, ReviewTransaction transaction, DateTime value)
+    {
+        Validation.ClearValidationItem(transaction.Id, ValidationField.Date);
+        var result = ReviewWorkflow.BackdateTransactionAsync(transaction, value, group.InitialTransaction.Date).Result;
+        
+        if (!result.IsSuccess)  Validation.SetErrors(result.Errors);
+    }
+
+    public async Task SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
     {
         Validation.ClearValidationItem(transaction.Id, ValidationField.Amount);
-        try
-        {
-            group.SetAmount(transaction, value);
-        }
-        //TODO This validation should be moved to the application layer. 
-        catch (InvalidOperationException)
-        {
-            Validation.SetError(transaction.Id, ValidationField.Amount, "Amount must be between 0 and the original amount");
-        }
+        var result = await ReviewWorkflow.UpdateTransactionAmountAsync(transaction, value, group);
+      
+        if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
 
     public async Task OnFindReimbursement(ReviewGroup group, ReviewTransaction transaction)

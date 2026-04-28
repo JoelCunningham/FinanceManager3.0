@@ -45,13 +45,6 @@ public class ValidationModel
         SetState(ValidationType.Error, message, isSilent);
     }
 
-    //TODO Remove this after moving DTO logic to application layer
-    public void SetError(Guid itemId, ValidationField field, string message)
-    {
-        Items.Add(new() { Id = itemId, Field = field });
-        SetState(ValidationType.Error, message);
-    }
-
     public void SetError(UseCaseError error)
     {
         if (error is UseCaseValidationError validationError)

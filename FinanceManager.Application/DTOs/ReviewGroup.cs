@@ -25,19 +25,6 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
         Transactions = [ReviewTransaction.FromTransaction(InitialTransaction)];
     }
 
-    public void Backdate(ReviewTransaction transaction, DateTime date)
-    {
-        if (!Transactions.Contains(transaction))
-        {
-            throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
-        }
-        if (date > InitialTransaction.Date)
-        {
-            throw new InvalidOperationException("Backdate must be before or equal to the InitialTransaction date");
-        }
-        transaction.Date = date;
-    }
-
     public void Split()
     {
         Transactions.Add(new()
@@ -64,52 +51,6 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
         }
         Transactions.Remove(transaction);
         Transactions.First().Amount += transaction.Amount;
-    }
-
-    public void SetAmount(ReviewTransaction transaction, decimal amount)
-    {
-        if (!Transactions.Contains(transaction))
-        {
-            throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
-        }
-        if (amount < Math.Min(0, InitialTransaction.Amount) || amount > Math.Max(0, InitialTransaction.Amount))
-        {
-            throw new InvalidOperationException("Amount must be between 0 and the InitialTransaction amount.");
-        }
-
-        var diff = Math.Abs(amount) - Math.Abs(transaction.Amount);
-        var current = Transactions.IndexOf(transaction);
-        var nextTransactions = Transactions.Skip(current + 1).Concat(Transactions.Take(current));
-
-        foreach (var split in nextTransactions)
-        {
-            if (diff == 0) break;
-
-            var absSplit = Math.Abs(split.Amount);
-
-            if (diff > 0)
-            {
-                var reducible = absSplit;
-                var reduction = Math.Min(diff, reducible);
-
-                absSplit -= reduction;
-                diff -= reduction;
-            }
-            else
-            {
-                var currentAllocated = Transactions.Sum(t => Math.Abs(t.Amount));
-                var remainingCapacity = Math.Abs(InitialTransaction.Amount) - currentAllocated;
-
-                var increase = Math.Min(-diff, remainingCapacity);
-
-                absSplit += increase;
-                diff += increase;
-            }
-
-            split.Amount = absSplit * Math.Sign(InitialTransaction.Amount);
-        }
-
-        transaction.Amount = amount;
     }
 }
 

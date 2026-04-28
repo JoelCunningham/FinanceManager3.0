@@ -52,6 +52,8 @@ public static class DependencyInjection
         services.AddScoped<SaveReview>();
         services.AddScoped<ValidateReviewGroup>();
         services.AddScoped<AutoAssignCategories>();
+        services.AddScoped<BackdateTransaction>();
+        services.AddScoped<UpdateTransactionAmount>();
         services.AddScoped<ReviewWorkflow>();
 
         // Budget use cases

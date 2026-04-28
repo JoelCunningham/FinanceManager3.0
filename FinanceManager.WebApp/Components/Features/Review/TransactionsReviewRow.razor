@@ -9,6 +9,7 @@
 
     [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> OnCategoryChange { get; set; }
     [Parameter] public EventCallback<(ReviewTransaction, decimal)> OnAmountChange { get; set; }
+    [Parameter] public EventCallback<(ReviewTransaction, DateTime)> OnDateChange { get; set; }
 
     [Parameter] public EventCallback<ReviewTransaction> OnFindReimbursement { get; set; }
     [Parameter] public EventCallback OnFindTransfer { get; set; }
@@ -43,7 +44,10 @@ else
                 } else {
                     <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" />
                 }
-                <HxInputDate @bind-Value="transaction.Date" CalendarIcon="BootstrapIcon.Calendar" MaxDate="@TransactionGroup.InitialTransaction.Date" />
+                <HxInputDate @bind-Value:get="transaction.Date" 
+                             CalendarIcon="BootstrapIcon.Calendar" 
+                             MaxDate="@TransactionGroup.InitialTransaction.Date"
+                             @bind-Value:set="v => OnDateChange.InvokeAsync((transaction, v))" />
                 <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
                 @if (transaction.Id == TransactionGroup.InitialTransaction.Id)
                 {
