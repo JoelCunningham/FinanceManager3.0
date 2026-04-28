@@ -1,6 +1,4 @@
-﻿using FinanceManager.Domain.Entities;
-
-namespace FinanceManager.Application.DTOs;
+﻿namespace FinanceManager.Application.DTOs;
 
 public record FilterQuery : PagedQuery
 {
@@ -14,6 +12,16 @@ public record FilterQuery : PagedQuery
     public decimal? FilterAmountMin { get; set; }
     public decimal? FilterAmountMax { get; set; }
     public ReviewStatus FilterStatus { get; set; } = ReviewStatus.All;
+    public override bool HasFilters =>
+            !string.IsNullOrWhiteSpace(SearchTerm) ||
+            FilterSource != TransferSource.All ||
+            FilterCategory is not null ||
+            !string.IsNullOrWhiteSpace(FilterAccountFrom) ||
+            !string.IsNullOrWhiteSpace(FilterAccountTo) ||
+            FilterDateFrom is not null ||
+            FilterDateTo is not null ||
+            FilterAmountMin is not null ||
+            FilterAmountMax is not null;
 }
 
 public enum TransferSource

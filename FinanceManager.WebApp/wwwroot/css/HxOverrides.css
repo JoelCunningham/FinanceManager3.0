@@ -31,7 +31,7 @@
 }
 
 .hx-grid-container.grid-invisible {
-    border: none !important;
+    border: none !important; 
 
     table {
         thead {
@@ -46,10 +46,6 @@
                 opacity: 1;
             }
         }
-    }
-
-    .alert {
-        margin: 0 -1rem;
     }
 }
 
