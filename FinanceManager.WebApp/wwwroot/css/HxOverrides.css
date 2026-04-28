@@ -30,19 +30,26 @@
     }
 }
 
-.hx-grid-container.grid-invisible table {
+.hx-grid-container.grid-invisible {
+    border: none !important;
 
-    thead {
-        display: none;
+    table {
+        thead {
+            display: none;
+        }
+
+        tbody tr td {
+            border: 0;
+            padding: 0.5rem 0 !important;
+
+            .hx-context-menu {
+                opacity: 1;
+            }
+        }
     }
 
-    tbody tr td {
-        border: 0;
-        padding: 0.5rem 0;
-
-        .hx-context-menu {
-            opacity: 1;
-        }
+    .alert {
+        margin: 0 -1rem;
     }
 }
 
@@ -54,10 +61,10 @@
         position: relative;
     }
 
-        .hx-form-group select:focus {
-            z-index: 1;
-            border-right-width: var(--bs-border-width);
-        }
+    .hx-form-group select:focus {
+        z-index: 1;
+        border-right-width: var(--bs-border-width);
+    }
 
 
     .hx-form-group:first-child select {
