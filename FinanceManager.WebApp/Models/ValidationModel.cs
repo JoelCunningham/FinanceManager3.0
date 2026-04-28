@@ -1,10 +1,8 @@
 ﻿namespace FinanceManager.WebApp.Models;
 
-using FinanceManager.Application.Constants;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using Havit.Blazor.Components.Web;
-using Havit.Blazor.Components.Web.Bootstrap;
 
 public class ValidationModel
 {
@@ -13,11 +11,15 @@ public class ValidationModel
     public string? Message { get; set; }
     public List<ValidationItem> Items { get; set; } = [];
 
-    private MessengerMessage SuccessMessage => new()
+    private MessengerMessage SuccessMessage => CreateMessage("bg-success text-white");
+    private MessengerMessage ErrorMessage => CreateMessage("bg-danger text-white");
+    private MessengerMessage InformationMessage => CreateMessage("bg-info text-white");
+
+    private MessengerMessage CreateMessage(string cssClass) => new()
     {
         Text = Message ?? string.Empty,
-        CssClass = "bg-success text-white",
-        AutohideDelay = 5000
+        CssClass = cssClass,
+        AutohideDelay = 5000,
     };
 
     public void Clear()
@@ -108,20 +110,13 @@ public class ValidationModel
     {
         if (Messenger is null || Message is null) return;
 
-        switch (Type)
+        MessengerMessage message = Type switch
         {
-            case ValidationType.Error:
-                Messenger.AddError(Message);
-                break;
-
-            case ValidationType.Success:
-                Messenger.AddMessage(SuccessMessage);
-                break;
-
-            default:
-                Messenger.AddInformation(Message);
-                break;
-        }
+            ValidationType.Error => ErrorMessage,
+            ValidationType.Success => SuccessMessage,
+            _ => InformationMessage 
+        };
+        Messenger.AddMessage(message);
     }
 }
 

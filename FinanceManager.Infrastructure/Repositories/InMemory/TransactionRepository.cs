@@ -1,4 +1,5 @@
 ﻿using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 

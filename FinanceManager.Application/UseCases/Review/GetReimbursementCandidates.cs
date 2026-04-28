@@ -1,6 +1,7 @@
 namespace FinanceManager.Application.UseCases.Review;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 
 public sealed record GetReimbursementCandidatesResult(PagedResult<TransactionSummary> Page) : UseCaseResult;
