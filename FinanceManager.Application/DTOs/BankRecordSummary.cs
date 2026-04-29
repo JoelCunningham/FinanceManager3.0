@@ -29,4 +29,22 @@ public class BankRecordSummary
             Reference = record.Reference,
         };
     }
+
+    public BankRecord ToBankRecord()
+    {
+        return new BankRecord
+        {
+            Id = BankRecordId,
+            BankAccount = new BankAccount
+            {
+                Bank = Bank,
+                AccountNumber = AccountNumber,
+            },
+            Amount = Amount,
+            Date = Date,
+            Description = Description,
+            Type = Type,
+            Reference = Reference,
+        };
+    }
 }

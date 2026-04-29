@@ -1,8 +1,7 @@
 namespace FinanceManager.Application.UseCases.Review;
 
-using FinanceManager.Application.Constants;
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Enums;
+using FinanceManager.Application.Utilities;
 
 // TODO Remove this and replace with common ValidateTransaction
 public sealed record ValidateReviewGroupResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
@@ -15,15 +14,7 @@ public sealed class ValidateReviewGroup
 
         foreach (var transaction in group.Transactions)
         {
-            if (transaction.Category is null && group.Transfers is null && transaction.Reimburses is null)
-            {
-                errors.Add(new UseCaseValidationError(transaction.Id, ValidationField.Category, ErrorMessages.CategoryRequired));
-            }
-
-            if (transaction.Amount == 0)
-            {
-                errors.Add(new UseCaseValidationError(transaction.Id, ValidationField.Amount, ErrorMessages.AmountMustNotBeZero));
-            }
+            TransactionHelper.ValidateTransaction(transaction, group.InitialTransaction.Date, group.InitialTransaction.Amount).ToList().ForEach(errors.Add);
         }
 
         return Task.FromResult(new ValidateReviewGroupResult(errors));

@@ -106,14 +106,14 @@ public partial class Review : PageBase
 
     public void SetCategory(ReviewTransaction transaction, CategorySummary? value)
     {
-        Validation.ClearValidationItem(transaction.Id, ValidationField.Category);
+        Validation.ClearValidationItem(transaction.TransactionId, ValidationField.Category);
         transaction.Category = value;
         transaction.IsAutoCategorised = false;
     }
 
     public void SetDate(ReviewGroup group, ReviewTransaction transaction, DateTime value)
     {
-        Validation.ClearValidationItem(transaction.Id, ValidationField.Date);
+        Validation.ClearValidationItem(transaction.TransactionId, ValidationField.Date);
         var result = UseCases.BackdateTransactionAsync(transaction, value, group.InitialTransaction.Date).Result;
         
         if (!result.IsSuccess)  Validation.SetErrors(result.Errors);
@@ -121,7 +121,7 @@ public partial class Review : PageBase
 
     public async Task SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
     {
-        Validation.ClearValidationItem(transaction.Id, ValidationField.Amount);
+        Validation.ClearValidationItem(transaction.TransactionId, ValidationField.Amount);
         var result = await UseCases.UpdateTransactionAmountAsync(transaction, value, group);
       
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);

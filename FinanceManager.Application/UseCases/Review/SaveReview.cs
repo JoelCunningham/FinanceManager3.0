@@ -79,7 +79,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
 
     private async Task AddReimbursementAsync(ReviewTransaction reimbursement, Guid transactionId)
     {
-        if (transactionId == reimbursement.Id) throw new Exception("Transaction IDs must be different.");
+        if (transactionId == reimbursement.TransactionId) throw new Exception("Transaction IDs must be different.");
 
         await using var operations = unitOfWork.BeginTransaction();
         try
@@ -87,7 +87,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
             var transaction = await transactionRepository.GetByIdAsync(transactionId);
             var reimbursementEntity = EntityConverter.TransactionToReimbursement(reimbursement.ToTransaction());
 
-            await transactionRepository.DeleteOrSkipAsync(reimbursement.Id);
+            await transactionRepository.DeleteOrSkipAsync(reimbursement.TransactionId);
             await reimbursementRepository.CreateAsync(reimbursementEntity);
 
             transaction.Reimbursements ??= [];

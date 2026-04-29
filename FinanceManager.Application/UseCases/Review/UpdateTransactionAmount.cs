@@ -11,11 +11,11 @@ public sealed class UpdateTransactionAmount()
     {
         if (!group.Transactions.Contains(transaction))
         {
-            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.Id, ValidationField.Amount, "Transaction does not belong to this group")]);
+            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.TransactionId, ValidationField.Amount, "Transaction does not belong to this group")]);
         }
         if (amount < Math.Min(0, group.InitialTransaction.Amount) || amount > Math.Max(0, group.InitialTransaction.Amount))
         {
-            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.Id, ValidationField.Amount, "Amount must be between 0 and the original amount.")]);
+            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.TransactionId, ValidationField.Amount, "Amount must be between 0 and the original amount.")]);
         }
 
         transaction.Amount = amount;

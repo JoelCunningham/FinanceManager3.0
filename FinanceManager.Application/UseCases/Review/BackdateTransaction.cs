@@ -11,7 +11,7 @@ public sealed class BackdateTransaction()
     {
         if (date > initialDate)
         {
-            return new BackdateTransactionResult([new UseCaseValidationError(transaction.Id, ValidationField.Date, "Date must be before the original date")]);
+            return new BackdateTransactionResult([new UseCaseValidationError(transaction.TransactionId, ValidationField.Date, "Date must be before the original date")]);
         }
         transaction.Date = date;
         return new BackdateTransactionResult([]);

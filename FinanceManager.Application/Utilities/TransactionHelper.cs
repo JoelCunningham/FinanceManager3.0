@@ -1,11 +1,37 @@
+using FinanceManager.Application.Constants;
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.Enums;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Entities;
 
 namespace FinanceManager.Application.Utilities;
 
 public class TransactionHelper()
 {
+    public static IEnumerable<UseCaseValidationError> ValidateTransaction(TransactionSummary summary, DateTime recordDate, decimal recordAmount)
+    {
+        var errors = new List<UseCaseValidationError>();
+        
+        if (summary.Category is null)
+        {
+            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Category, ErrorMessages.CategoryRequired));
+        }
+        if (summary.Date > recordDate)
+        {
+            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Date, ErrorMessages.DateMustNotBeAfterRecordDate));
+        }
+        if (summary.Amount <  Math.Min(0, recordAmount) || summary.Amount > Math.Max(0, recordAmount))
+        {
+            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Amount, ErrorMessages.AmountMustBeBetweenZeroAndOriginalAmount));
+        }
+        if (summary.Amount == 0)
+        {
+            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Amount, ErrorMessages.AmountMustNotBeZero));
+        }
+
+        return errors;
+    }
+
     public static void SetTransactionAmount(decimal amount, TransactionSummary summary, List<TransactionSummary> siblings, BankRecord record)
     {
         if (!siblings.Contains(summary))

@@ -15,22 +15,22 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
         return new ReviewGroup
         {
             InitialTransaction = transaction,
-            Transactions = [ReviewTransaction.FromTransaction(transaction)],
+            Transactions = [ReviewTransaction.FromSummary(TransactionSummary.FromTransaction(transaction))],
         };
     }
 
     public void Reset()
     {
         Transfers = null;
-        Transactions = [ReviewTransaction.FromTransaction(InitialTransaction)];
+        Transactions = [ReviewTransaction.FromSummary(TransactionSummary.FromTransaction(InitialTransaction))];
     }
 
     public void Split()
     {
         Transactions.Add(new()
         {
-            Id = Guid.NewGuid(),
-            Record = InitialTransaction.Record,
+            TransactionId = Guid.NewGuid(),
+            Record = BankRecordSummary.FromBankRecord(InitialTransaction.Record),
             Amount = 0,
             Date = InitialTransaction.Date,
             Description = InitialTransaction.Description,
@@ -54,30 +54,21 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
     }
 }
 
-public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
+public class ReviewTransaction : TransactionSummary
 {
-    public Guid Id { get; set; }
-    public required BankRecord Record { get; set; }
-    public required string Description { get; set; }
-    public required decimal Amount { get; set; }
-    public required DateTime Date { get; set; }
-    public CategorySummary? Category { get; set; }
     public TransactionSummary? Reimburses { get; set; }
     public bool IsAutoCategorised { get; set; }
 
-    public static ReviewTransaction FromTransaction(Transaction transaction)
+    public static ReviewTransaction FromSummary(TransactionSummary summary)
     {
-        var category = transaction.Category is not null ? CategorySummary.FromCategory(transaction.Category) : null;
-
         return new ReviewTransaction
         {
-            Id = transaction.Id,
-            Record = transaction.Record,
-            Description = transaction.Description,
-            Amount = transaction.Amount,
-            Date = transaction.Date,
-            Category = category,
-            Reimburses = null,
+            TransactionId = summary.TransactionId,
+            Amount = summary.Amount,
+            Date = summary.Date,
+            Description = summary.Description,
+            Category = summary.Category,
+            Record = summary.Record,
         };
     }
 
@@ -85,12 +76,12 @@ public class ReviewTransaction : ITransactionConvertible<ReviewTransaction>
     {
         return new Transaction
         {
-            Id = Id,
-            RecordId = Record.Id,
-            Record = Record,
+            Id = TransactionId,
             Description = Description,
             Amount = Amount,
             Date = Date,
+            RecordId = Record.BankRecordId,
+            Record = Record.ToBankRecord(),
             CategoryId = Category?.Id,
             Category = Category?.ToCategory(),
             Siblings = siblings?.ToList(),

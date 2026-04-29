@@ -40,7 +40,7 @@ else
             <ReviewRowEntry>
                 @if (transaction.Reimburses is null)
                 {
-                    <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.Id)" />
+                    <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.TransactionId)" />
                 } else {
                     <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" />
                 }
@@ -49,7 +49,7 @@ else
                              MaxDate="@TransactionGroup.InitialTransaction.Date"
                              @bind-Value:set="v => OnDateChange.InvokeAsync((transaction, v))" />
                 <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
-                @if (transaction.Id == TransactionGroup.InitialTransaction.Id)
+                @if (transaction.TransactionId == TransactionGroup.InitialTransaction.Id)
                 {
                     <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01" Enabled="false" />
                 }
@@ -62,7 +62,7 @@ else
                 }
                 <HxContextMenu>
                     <HxContextMenuItem OnClick="TransactionGroup.Split">Split</HxContextMenuItem>
-                    @if (transaction.Id != TransactionGroup.InitialTransaction.Id)
+                    @if (transaction.TransactionId != TransactionGroup.InitialTransaction.Id)
                     {
                         <HxContextMenuItem OnClick="() => TransactionGroup.Unsplit(transaction)">Unsplit</HxContextMenuItem>
                     }
