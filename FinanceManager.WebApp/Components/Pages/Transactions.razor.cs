@@ -7,17 +7,9 @@ using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.WebApp.Components.Features.Transactions;
 using FinanceManager.WebApp.Components.Features.Transfers;
 using FinanceManager.WebApp.Models;
-using Havit.Blazor.Components.Web;
-using Microsoft.AspNetCore.Components;
 
-public partial class Transactions : ComponentBase
+public partial class Transactions : PageBase
 {
-    [Inject] public TransactionsWorkflow TransactionsWorkflow { get; set; } = default!;
-    [Inject] public TransfersWorkflow TransfersWorkflow { get; set; } = default!;
-
-    [Inject] public IHxMessengerService Messenger { get; set; } = default!;
-    public ValidationModel Validation { get; set; } = new();
-
     public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(20);
     public DataGridModel<FilterQuery, TransferDto> TransferData { get; set; } = new(20);
 
@@ -27,7 +19,7 @@ public partial class Transactions : ComponentBase
     public TransactionDetails SelectedDetails { get; set; } = default!;
     public TransactionSummary EditTransaction { get; set; } = default!;
     public TransferDto? SelectedTransfer { get; set; }
-    
+
     public TransactionDetailsModal DetailsModal { get; set; } = new();
     public EditTransactionModal EditModal { get; set; } = new();
     public TransferModal TransferModal { get; set; } = new();
@@ -36,16 +28,16 @@ public partial class Transactions : ComponentBase
     {
         Validation.Messenger = Messenger;
 
-        UniqueAccounts = (await TransactionsWorkflow.GetUniqueAccountsAsync()).Accounts;
-        Categories = (await TransactionsWorkflow.GetCategoriesAsync()).Categories;
+        UniqueAccounts = (await UseCases.GetUniqueAccountsAsync()).Accounts;
+        Categories = (await UseCases.GetCategoryListAsync()).Categories;
 
-        TransactionData.GetDataFunc = async (query) => (await TransactionsWorkflow.GetPagedTransactionsAsync(query)).Page;
-        TransferData.GetDataFunc = async (query) => (await TransfersWorkflow.GetPageAsync(query)).Page;
+        TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
+        TransferData.GetDataFunc = async (query) => (await UseCases.GetPagedTransfersAsync(query)).Page;
     }
 
     public async Task OpenTransactionDetailsModal(TransactionSummary transaction)
     {
-        SelectedDetails = (await TransactionsWorkflow.GetDetailsAsync(transaction.TransactionId)).Transaction;
+        SelectedDetails = (await UseCases.GetTransactionDetailsAsync(transaction.TransactionId)).Transaction;
         await DetailsModal.ShowAsync();
     }
 
@@ -84,14 +76,14 @@ public partial class Transactions : ComponentBase
     {
         Validation.Clear();
 
-        var validationResult = await TransactionsWorkflow.ValidateTransactionEditAsync(EditTransaction);
+        var validationResult = await UseCases.ValidateTransactionEditAsync(EditTransaction);
         if (!validationResult.IsSuccess)
         {
             Validation.SetErrors(validationResult.Errors);
             return;
         }
 
-        var saveResult = await TransactionsWorkflow.SaveTransactionEditAsync(EditTransaction);
+        var saveResult = await UseCases.SaveTransactionEditAsync(EditTransaction);
         if (!saveResult.IsSuccess)
         {
             Validation.SetErrors(saveResult.Errors);
@@ -103,9 +95,9 @@ public partial class Transactions : ComponentBase
         await EditModal.HideAsync();
     }
 
-     private async Task SeparateTransfer(TransferDto transfer)
+    private async Task SeparateTransfer(TransferDto transfer)
     {
-        var result = await TransfersWorkflow.SeparateAsync(transfer.Id);
+        var result = await UseCases.SeparateTransferAsync(transfer.Id);
         if (result.IsSuccess)
         {
             Validation.SetSuccess("Transfer separated successfully.");

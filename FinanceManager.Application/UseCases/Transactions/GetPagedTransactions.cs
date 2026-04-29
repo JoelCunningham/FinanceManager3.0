@@ -5,7 +5,7 @@ using FinanceManager.Application.Interfaces;
 
 public sealed record GetTransactionsPageResult(PagedResult<TransactionSummary> Page) : UseCaseResult;
 
-public sealed class GetTransactionsPage(ITransactionRepository transactionRepository)
+public sealed class GetPagedTransactions(ITransactionRepository transactionRepository)
 {
     public async Task<GetTransactionsPageResult> ExecuteAsync(FilterQuery query)
     {

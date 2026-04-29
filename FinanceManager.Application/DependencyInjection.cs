@@ -19,34 +19,29 @@ public static class DependencyInjection
         services.AddScoped<GetParsers>();
         services.AddScoped<ParseFile>();
         services.AddScoped<SaveImport>();
-        services.AddScoped<ImportWorkflow>();
 
         // Categories use cases
         services.AddScoped<GetCategoryList>();
         services.AddScoped<GetCategoryGroupList>();
-        services.AddScoped<CategoriesWorkflow>();
 
         // Transfers use cases
-        services.AddScoped<GetTransfersPage>();
+        services.AddScoped<GetPagedTransfers>();
         services.AddScoped<GetUniqueAccounts>();
         services.AddScoped<SeparateTransfer>();
-        services.AddScoped<TransfersWorkflow>();
 
         // Transaction use cases
-        services.AddScoped<GetTransactionsPage>();
+        services.AddScoped<GetPagedTransactions>();
         services.AddScoped<GetTransactionDetails>();
         services.AddScoped<ValidateTransactionEdit>();
         services.AddScoped<SaveTransactionEdit>();
-        services.AddScoped<TransactionsWorkflow>();
 
         // Statistics use cases
         services.AddScoped<GetBudgetScopes>();
         services.AddScoped<GetChart1Data>();
         services.AddScoped<GetChart2Data>();
-        services.AddScoped<StatisticsWorkflow>();
 
         // Review use cases
-        services.AddScoped<GetReviewPage>();
+        services.AddScoped<GetPagedReview>();
         services.AddScoped<GetTransferCandidates>();
         services.AddScoped<GetReimbursementCandidates>();
         services.AddScoped<SaveReview>();
@@ -54,13 +49,11 @@ public static class DependencyInjection
         services.AddScoped<AutoAssignCategories>();
         services.AddScoped<BackdateTransaction>();
         services.AddScoped<UpdateTransactionAmount>();
-        services.AddScoped<ReviewWorkflow>();
 
         // Budget use cases
-        services.AddScoped<GetBudgetPage>();
+        services.AddScoped<GetPagedBudget>();
         services.AddScoped<SaveBudgetEntry>();
         services.AddScoped<DeleteBudgetEntry>();
-        services.AddScoped<BudgetWorkflow>();
 
         // Date use cases
         services.AddScoped<GetWeekRanges>();
@@ -68,6 +61,8 @@ public static class DependencyInjection
         services.AddScoped<GetMonthRanges>();
 
         services.AddScoped<ChartHelper>();
+
+        services.AddScoped<UseCases.UseCases>();
 
         return services;
     }

@@ -2,19 +2,13 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Application.UseCases;
-using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Enums;
-using FinanceManager.WebApp.Components.Shared;
 using FinanceManager.WebApp.Models;
-using Microsoft.AspNetCore.Components;
 using System.Globalization;
 
-public partial class Statistics : ComponentBase
+public partial class Statistics : PageBase
 {
-    [Inject] public StatisticsWorkflow StatisticsWorkflow { get; set; } = default!;
-
     public ChartModel Chart1 { get; set; } = default!;
     public ChartModel Chart2 { get; set; } = default!;
 
@@ -27,12 +21,12 @@ public partial class Statistics : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         var initialRange = new ScopedRange(BudgetScope.Monthly, Today.AddMonths(-5), DateConstants.MONTHS_IN_YEAR);
-        var currentScope = (await StatisticsWorkflow.GetBudgetScopesAsync(initialRange)).GreatestScopeInRange;
+        var currentScope = (await UseCases.GetBudgetScopesAsync(initialRange)).GreatestScopeInRange;
 
         Chart1 = new(currentScope, Today, ReloadChart1Async, DateConstants.MONTHS_IN_YEAR);
         Chart2 = new(currentScope, Today, ReloadChart2Async);
 
-        CategoryGroups = [.. (await StatisticsWorkflow.GetCategoryGroupsAsync()).Groups];
+        CategoryGroups = [.. (await UseCases.GetCategoryGroupsAsync()).Groups];
 
         await Chart1.RefreshAsync();
         await Chart2.RefreshAsync();
@@ -44,7 +38,7 @@ public partial class Statistics : ComponentBase
         var drilldownGroupId = Chart1.SelectedGroupId;
         var (groupIdByName, drilldownGroupName, _) = BuildGroupDrilldownMeta(drilldownGroupId);
 
-        var chartData = await StatisticsWorkflow.GetChart1DataAsync(Chart1.Range, drilldownGroupId, Chart1.Mode);
+        var chartData = await UseCases.GetChart1DataAsync(Chart1.Range, drilldownGroupId, Chart1.Mode);
 
         var chartTransactions = ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
 
@@ -57,7 +51,7 @@ public partial class Statistics : ComponentBase
     {
         Chart2.Options = null;
 
-        var correctScope = (await StatisticsWorkflow.GetBudgetScopesAsync(Chart2.Range)).GreatestScopeInRange;
+        var correctScope = (await UseCases.GetBudgetScopesAsync(Chart2.Range)).GreatestScopeInRange;
 
         if (Chart2.Range.Scope != correctScope)
         {
@@ -76,7 +70,7 @@ public partial class Statistics : ComponentBase
         var drilldownGroupId = Chart2.SelectedGroupId;
         var (groupIdByName, drilldownGroupName, _) = BuildGroupDrilldownMeta(drilldownGroupId);
 
-        var chartData = await StatisticsWorkflow.GetChart2DataAsync(Chart2.Range, drilldownGroupId, Chart2.Mode);
+        var chartData = await UseCases.GetChart2DataAsync(Chart2.Range, drilldownGroupId, Chart2.Mode);
 
         var chartTransactions = ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
 

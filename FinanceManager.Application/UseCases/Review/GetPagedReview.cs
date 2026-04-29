@@ -3,15 +3,15 @@ namespace FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
-public sealed record GetReviewPageResult(PagedResult<ReviewGroup> Page) : UseCaseResult();
+public sealed record GetPagedReviewResult(PagedResult<ReviewGroup> Page) : UseCaseResult();
 
-public sealed class GetReviewPage(ITransactionRepository transactionRepository)
+public sealed class GetPagedReview(ITransactionRepository transactionRepository)
 {
-    public async Task<GetReviewPageResult> ExecuteAsync(FilterQuery query)
+    public async Task<GetPagedReviewResult> ExecuteAsync(FilterQuery query)
     {
         var paged = await transactionRepository.GetPagedAsync(query);
 
-        return new GetReviewPageResult
+        return new GetPagedReviewResult
         (
             new PagedResult<ReviewGroup>
             {

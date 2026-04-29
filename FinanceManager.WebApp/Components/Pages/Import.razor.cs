@@ -2,22 +2,13 @@
 
 using FinanceManager.Application.Constants;
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.WebApp.Components.Features.Import;
-using FinanceManager.WebApp.Models;
 using FinanceManager.WebApp.Utilities;
-using Havit.Blazor.Components.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-public partial class Import : ComponentBase
+public partial class Import : PageBase
 {
-    [Inject] public ImportWorkflow Workflow { get; set; } = default!;
-    [Inject] public IHxMessengerService Messenger { get; set; } = default!;
-
-    public ValidationModel Validation { get; set; } = new();
-
     public IReadOnlyList<BankParser> AvailableParsers { get; set; } = [];
     public BankParser? SelectedParser { get; set; }
     public IReadOnlyList<ParsedTransaction>? ImportedTransactions { get; set; }
@@ -33,7 +24,7 @@ public partial class Import : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
-        AvailableParsers = Workflow.GetParsers().Parsers;
+        AvailableParsers = UseCases.GetParsers().Parsers;
     }
 
     protected void Reset()
@@ -57,7 +48,7 @@ public partial class Import : ComponentBase
         var bankName = SelectedParser.BankName;
         var fileExtension = Path.GetExtension(file.Name);
 
-        var parseResult = await Workflow.ParseFileAsync(stream, bankName, fileExtension);
+        var parseResult = await UseCases.ParseFileAsync(stream, bankName, fileExtension);
 
         if (parseResult.IsSuccess && parseResult.Transactions is not null)
         {
@@ -75,7 +66,7 @@ public partial class Import : ComponentBase
     {
         if (ImportedTransactions is null) return;
 
-        var saveResult = await Workflow.SaveImportAsync(ImportedTransactions);
+        var saveResult = await UseCases.SaveImportAsync(ImportedTransactions);
 
         if (saveResult is not null)
         {

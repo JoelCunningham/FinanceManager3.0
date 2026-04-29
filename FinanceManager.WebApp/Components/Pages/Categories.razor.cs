@@ -2,17 +2,9 @@ namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases;
-using FinanceManager.WebApp.Models;
-using Havit.Blazor.Components.Web;
-using Microsoft.AspNetCore.Components;
 
-public partial class Categories : ComponentBase
+public partial class Categories : PageBase
 {
-    [Inject] public CategoriesWorkflow Workflow { get; set; } = default!;
-    [Inject] public IHxMessengerService Messenger { get; set; } = default!;
-
-    public ValidationModel Validation { get; set; } = new();
-
     public IReadOnlyList<CategorySummary> AllCategories { get; set; } = [];
     public IReadOnlyList<CategoryGroupSummary> CategoryGroups { get; set; } = [];
 
@@ -29,7 +21,7 @@ public partial class Categories : ComponentBase
     {
         Validation.Messenger = Messenger;
 
-        var categoriesResult = await Workflow.GetCategoriesAsync();
+        var categoriesResult = await UseCases.GetCategoryListAsync();
         CategoryGroups = categoriesResult.Groups;
         AllCategories = categoriesResult.Categories;
     }

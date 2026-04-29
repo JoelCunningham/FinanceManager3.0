@@ -2,19 +2,10 @@ namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Entities;
-using FinanceManager.WebApp.Models;
-using Havit.Blazor.Components.Web;
-using Microsoft.AspNetCore.Components;
 
-public partial class Budget : ComponentBase
+public partial class Budget : PageBase
 {
-    [Inject] public BudgetWorkflow Workflow { get; set; } = default!;
-    [Inject] public IHxMessengerService Messenger { get; set; } = default!;
-
-    public ValidationModel Validation { get; set; } = new();
-
     public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
     public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
     public BudgetYear? CurrentBudgetYear { get; set; } = null;
@@ -55,7 +46,7 @@ public partial class Budget : ComponentBase
 
     private async Task ReloadAsync(int year)
     {
-        var page = await Workflow.GetPageAsync(year, EntryTypeFilter);
+        var page = await UseCases.GetPagedBudgetAsync(year, EntryTypeFilter);
 
         Cells = page.Cells;
         Categories = page.Categories;
@@ -98,7 +89,7 @@ public partial class Budget : ComponentBase
 
         try
         {
-            await Workflow.SaveAsync(CurrentEntry, CurrentBudgetYear.Year, IsEditing);
+            await UseCases.SaveBudgetEntryAsync(CurrentEntry, CurrentBudgetYear.Year, IsEditing);
             if (IsEditing)
             {
                 Validation.SetSuccess("Budget entry updated");
@@ -123,7 +114,7 @@ public partial class Budget : ComponentBase
 
         try
         {
-            await Workflow.DeleteAsync(CurrentEntry.EntityId.Value);
+            await UseCases.DeleteBudgetEntryAsync(CurrentEntry.EntityId.Value);
             Validation.SetSuccess("Budget entry deleted");
             await CloseEditModal();
             await ReloadAsync(CurrentYear);

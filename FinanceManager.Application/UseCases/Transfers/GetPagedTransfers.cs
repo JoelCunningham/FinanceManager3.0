@@ -4,15 +4,15 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 
-public sealed record GetTransfersPageResult(PagedResult<TransferDto> Page) : UseCaseResult;
+public sealed record GetPagedTransfersResult(PagedResult<TransferDto> Page) : UseCaseResult;
 
-public sealed class GetTransfersPage(ITransferRepository transferRepository)
+public sealed class GetPagedTransfers(ITransferRepository transferRepository)
 {
-    public async Task<GetTransfersPageResult> ExecuteAsync(FilterQuery query)
+    public async Task<GetPagedTransfersResult> ExecuteAsync(FilterQuery query)
     {
         var pagedTransfers = await transferRepository.GetPagedAsync(query);
 
-        return new GetTransfersPageResult
+        return new GetPagedTransfersResult
         (
            new PagedResult<TransferDto>
            {

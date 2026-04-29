@@ -2,19 +2,11 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Application.UseCases;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
-using Havit.Blazor.Components.Web;
-using Microsoft.AspNetCore.Components;
 
-public partial class Review : ComponentBase
+public partial class Review : PageBase
 {
-    [Inject] public ReviewWorkflow ReviewWorkflow { get; set; } = default!;
-    [Inject] public IHxMessengerService Messenger { get; set; } = default!;
-
-    public ValidationModel Validation { get; set; } = new();
-
     public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new(20);
     public DataGridModel<FilterQuery, TransactionSummary> TransferData { get; set; } = new(15);
     public DataGridModel<FilterQuery, TransactionSummary> ReimburseData { get; set; } = new(15);
@@ -40,17 +32,17 @@ public partial class Review : ComponentBase
         TransferData.GetDataFunc = GetTransferData;
         ReimburseData.GetDataFunc = GetReimburseData;
 
-        Categories = (await ReviewWorkflow.GetCategoriesAsync()).Categories;
+        Categories = (await UseCases.GetCategoryListAsync()).Categories;
     }
 
     private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)
     {
         query.FilterStatus = ReviewStatus.Unreviewed;
-        var result = (await ReviewWorkflow.GetPageAsync(query)).Page;
+        var result = (await UseCases.GetPagedReviewAsync(query)).Page;
 
         if (IsAutoAssignEnabled)
         {
-            var autoAssignResult = await ReviewWorkflow.AutoCategoriseAsync(result.Items, Categories);
+            var autoAssignResult = await UseCases.AutoCategoriseAsync(result.Items, Categories);
             if (autoAssignResult.AssignedCount > 0)
             {
                 Validation.SetSuccess($"Auto assigned {autoAssignResult.AssignedCount} transactions");
@@ -68,26 +60,26 @@ public partial class Review : ComponentBase
     private async Task<PagedResult<TransactionSummary>> GetTransferData(FilterQuery query)
     {
         var amount = CurrentGroup?.InitialTransaction.Amount ?? 0;
-        return (await ReviewWorkflow.GetTransferCandidatesAsync(query, amount)).Page;
+        return (await UseCases.GetTransferCandidatesAsync(query, amount)).Page;
     }
 
     private async Task<PagedResult<TransactionSummary>> GetReimburseData(FilterQuery query)
     {
-        return (await ReviewWorkflow.GetReimbursementCandidatesAsync(query)).Page;
+        return (await UseCases.GetReimbursementCandidatesAsync(query)).Page;
     }
 
     private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
     {
         Validation.Clear();
 
-        var validationResult = await ReviewWorkflow.ValidateGroupAsync(group);
+        var validationResult = await UseCases.ValidateReviewGroupAsync(group);
         if (!validationResult.IsSuccess)
         {
             Validation.SetErrors(validationResult.Errors);
             return;
         }
 
-        var saveResult = await ReviewWorkflow.SaveAsync(group);
+        var saveResult = await UseCases.SaveAsync(group);
         if (!saveResult.IsSuccess)
         {
             Validation.SetErrors(saveResult.Errors);
@@ -122,7 +114,7 @@ public partial class Review : ComponentBase
     public void SetDate(ReviewGroup group, ReviewTransaction transaction, DateTime value)
     {
         Validation.ClearValidationItem(transaction.Id, ValidationField.Date);
-        var result = ReviewWorkflow.BackdateTransactionAsync(transaction, value, group.InitialTransaction.Date).Result;
+        var result = UseCases.BackdateTransactionAsync(transaction, value, group.InitialTransaction.Date).Result;
         
         if (!result.IsSuccess)  Validation.SetErrors(result.Errors);
     }
@@ -130,7 +122,7 @@ public partial class Review : ComponentBase
     public async Task SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
     {
         Validation.ClearValidationItem(transaction.Id, ValidationField.Amount);
-        var result = await ReviewWorkflow.UpdateTransactionAmountAsync(transaction, value, group);
+        var result = await UseCases.UpdateTransactionAmountAsync(transaction, value, group);
       
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }

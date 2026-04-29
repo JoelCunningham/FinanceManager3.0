@@ -6,15 +6,15 @@ using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Utilities;
 
-public sealed record GetBudgetPageResult(
+public sealed record GetPagedBudgetResult(
     BudgetYear? BudgetYear,
     IReadOnlyList<BudgetCell> Cells,
     IReadOnlyList<CategorySummary> Categories
 );
 
-public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository)
+public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository)
 {
-    public async Task<GetBudgetPageResult> ExecuteAsync(int year, BudgetGridMode mode = BudgetGridMode.Net)
+    public async Task<GetPagedBudgetResult> ExecuteAsync(int year, BudgetGridMode mode = BudgetGridMode.Net)
     {
         var budgetYear = await budgetYearRepository.GetByYearAsync(year);
         var categories = await categoryRepository.GetAllAsync();
@@ -23,7 +23,7 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
 
         if (budgetYear == null)
         {
-            return new GetBudgetPageResult(null, [], categorySummaries);
+            return new GetPagedBudgetResult(null, [], categorySummaries);
         }
         else
         {
@@ -39,7 +39,7 @@ public sealed class GetBudgetPage(IBudgetEntryRepository budgetEntryRepository, 
 
             var poplulatedCells = PopulateCells(cells, entries);
 
-            return new GetBudgetPageResult(budgetYear, poplulatedCells, categorySummaries);
+            return new GetPagedBudgetResult(budgetYear, poplulatedCells, categorySummaries);
         }
     }
 
