@@ -38,22 +38,6 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             };
         }
 
-        public Task<List<string>> GetUniqueAccountsAsync()
-        {
-            var accounts = new HashSet<string>();
-
-            foreach (var transfer in _transfers)
-            {
-                if (!string.IsNullOrEmpty(transfer.FromRecord.Bank))
-                    accounts.Add($"{transfer.FromRecord.Bank} - {transfer.FromRecord.AccountNumber}");
-
-                if (!string.IsNullOrEmpty(transfer.ToRecord.Bank))
-                    accounts.Add($"{transfer.ToRecord.Bank} - {transfer.ToRecord.AccountNumber}");
-            }
-
-            return Task.FromResult(accounts.OrderBy(a => a).ToList());
-        }
-
         public async Task CreateAsync(Transfer transfer)
         {
             _transfers.Add(transfer);
@@ -87,10 +71,10 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
                 var searchLower = request.SearchTerm.ToLower();
                 query = query.Where(t =>
                     t.Description.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
-                    t.FromRecord.Bank.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
-                    t.ToRecord.Bank.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
-                    (t.FromRecord.AccountNumber != null && t.FromRecord.AccountNumber.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase)) ||
-                    (t.ToRecord.AccountNumber != null && t.ToRecord.AccountNumber.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase)));
+                    t.FromRecord.BankAccount.Bank.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
+                    t.ToRecord.BankAccount.Bank.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
+                    (t.FromRecord.BankAccount.AccountNumber != null && t.FromRecord.BankAccount.AccountNumber.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase)) ||
+                    (t.ToRecord.BankAccount.AccountNumber != null && t.ToRecord.BankAccount.AccountNumber.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase)));
             }
 
             // Source filter
@@ -104,12 +88,12 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             if (!string.IsNullOrWhiteSpace(request.FilterAccountFrom))
             {
                 query = query.Where(t =>
-                    $"{t.FromRecord.Bank} - {t.FromRecord.AccountNumber}" == request.FilterAccountFrom);
+                    $"{t.FromRecord.BankAccount.Bank} - {t.FromRecord.BankAccount.AccountNumber}" == request.FilterAccountFrom);
             }
             if (!string.IsNullOrWhiteSpace(request.FilterAccountTo))
             {
                 query = query.Where(t =>
-                    $"{t.ToRecord.Bank} - {t.ToRecord.AccountNumber}" == request.FilterAccountTo);
+                    $"{t.ToRecord.BankAccount.Bank} - {t.ToRecord.BankAccount.AccountNumber}" == request.FilterAccountTo);
             }
 
             // Date range filters
@@ -144,12 +128,12 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
                     : query.OrderBy(t => t.Amount),
 
                 TransactionSortBy.FromAccount => request.SortDescending
-                    ? query.OrderByDescending(t => t.FromRecord.Bank).ThenByDescending(t => t.FromRecord.AccountNumber)
-                    : query.OrderBy(t => t.FromRecord.Bank).ThenBy(t => t.FromRecord.AccountNumber),
+                    ? query.OrderByDescending(t => t.FromRecord.BankAccount.Bank).ThenByDescending(t => t.FromRecord.BankAccount.AccountNumber)
+                    : query.OrderBy(t => t.FromRecord.BankAccount.Bank).ThenBy(t => t.FromRecord.BankAccount.AccountNumber),
 
                 TransactionSortBy.ToAccount => request.SortDescending
-                    ? query.OrderByDescending(t => t.ToRecord.Bank).ThenByDescending(t => t.ToRecord.AccountNumber)
-                    : query.OrderBy(t => t.ToRecord.Bank).ThenBy(t => t.ToRecord.AccountNumber),
+                    ? query.OrderByDescending(t => t.ToRecord.BankAccount.Bank).ThenByDescending(t => t.ToRecord.BankAccount.AccountNumber)
+                    : query.OrderBy(t => t.ToRecord.BankAccount.Bank).ThenBy(t => t.ToRecord.BankAccount.AccountNumber),
 
                 TransactionSortBy.Date or _ => request.SortDescending
                     ? query.OrderByDescending(t => t.Date)

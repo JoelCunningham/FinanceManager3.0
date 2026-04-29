@@ -13,7 +13,7 @@ public sealed record ImportSaveResult(
     IEnumerable<UseCaseError> Errors
 ) : UseCaseResult(Errors);
 
-public sealed class SaveImport(IBankRecordRepository bankRecordRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IUnitOfWork unitOfWork)
+public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IUnitOfWork unitOfWork)
 {
     public async Task<ImportSaveResult> ExecuteAsync(IEnumerable<ParsedTransaction> parsedTransactions)
     {
@@ -22,7 +22,9 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, ITran
 
         try
         {
-            var records = parsedTransactions.Select(t => t.ToBankRecord(importId)).ToList();
+            var accounts =  await bankAccountRepository.GetOrCreateAsync(parsedTransactions.Select(t => (t.Bank, t.AccountNumber)));
+
+            var records = parsedTransactions.Select(t => t.ToBankRecord(importId, accounts.First(a => a.Bank == t.Bank && a.AccountNumber == t.AccountNumber))).ToList();
 
             await bankRecordRepository.CreateAsync(records);
 

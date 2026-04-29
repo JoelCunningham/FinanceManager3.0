@@ -14,14 +14,14 @@ namespace FinanceManager.Application.DTOs
         public string? Reference { get; set; }
         public bool IsInternalTransfer { get; set; }
 
-        public BankRecord ToBankRecord(Guid importId)
+        public BankRecord ToBankRecord(Guid importId, BankAccount bankAccount)
         {
             return new BankRecord
             {
                 Id = Id,
                 ImportId = importId,
-                Bank = Bank,
-                AccountNumber = AccountNumber,
+                BankAccountId = bankAccount.Id,
+                BankAccount = bankAccount,
                 Amount = Amount,
                 Date = Date,
                 Description = Description,

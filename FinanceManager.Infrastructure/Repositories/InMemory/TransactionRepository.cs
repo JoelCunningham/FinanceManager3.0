@@ -38,17 +38,6 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             };
         }
 
-        public Task<List<string>> GetUniqueAccountsAsync()
-        {
-            var accounts = _transactions
-                .Select(t => $"{t.Record.Bank} - {t.Record.AccountNumber}")
-                .Distinct()
-                .OrderBy(a => a)
-                .ToList();
-
-            return Task.FromResult(accounts);
-        }
-
         public async Task CreateAsync(IEnumerable<Transaction> transactions)
         {
             _transactions.AddRange(transactions);
@@ -103,8 +92,8 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
                 var searchLower = request.SearchTerm.ToLower();
                 query = query.Where(t =>
                     t.Description.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
-                    t.Record.Bank.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
-                    (t.Record.AccountNumber != null && t.Record.AccountNumber.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase)));
+                    t.Record.BankAccount.Bank.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase) ||
+                    (t.Record.BankAccount.AccountNumber != null && t.Record.BankAccount.AccountNumber.Contains(searchLower, StringComparison.CurrentCultureIgnoreCase)));
             }
 
             // Category filter
@@ -134,7 +123,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             if (!string.IsNullOrWhiteSpace(request.FilterAccountFrom))
             {
                 query = query.Where(t =>
-                    $"{t.Record.Bank} - {t.Record.AccountNumber}" == request.FilterAccountFrom);
+                    $"{t.Record.BankAccount.Bank} - {t.Record.BankAccount.AccountNumber}" == request.FilterAccountFrom);
             }
 
             // Date range filters

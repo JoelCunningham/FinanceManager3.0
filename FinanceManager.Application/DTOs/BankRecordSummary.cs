@@ -20,8 +20,8 @@ public class BankRecordSummary
         return new BankRecordSummary
         {
             BankRecordId = record.Id,
-            Bank = record.Bank,
-            AccountNumber = record.AccountNumber,
+            Bank = record.BankAccount.Bank,
+            AccountNumber = record.BankAccount.AccountNumber,
             Amount = record.Amount,
             Date = record.Date,
             Description = record.Description,

@@ -28,8 +28,8 @@ public sealed class GetPagedTransfers(ITransferRepository transferRepository)
     {
         return new TransferDto(
             transfer.Id, transfer.Amount,
-            new Transferable(transfer.FromRecord.Bank, transfer.FromRecord.AccountNumber),
-            new Transferable(transfer.ToRecord.Bank, transfer.ToRecord.AccountNumber),
+            new Transferable(transfer.FromRecord.BankAccount.Bank, transfer.FromRecord.BankAccount.AccountNumber),
+            new Transferable(transfer.ToRecord.BankAccount.Bank, transfer.ToRecord.BankAccount.AccountNumber),
             transfer.Date, transfer.Description, transfer.IsUserCreated
         );
     }

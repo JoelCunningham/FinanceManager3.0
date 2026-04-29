@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();
         services.AddSingleton<ITransferRepository, TransferRepository>();
         services.AddSingleton<ITransactionRepository, TransactionRepository>();
+        services.AddSingleton<IBankAccountRepository, BankAccountRepository>();
         services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
         services.AddSingleton<IReimbursementRepository, ReimbursementRepository>();
         services.AddSingleton<ICategoryRepository, CategoryRepository>();

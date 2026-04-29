@@ -4,11 +4,11 @@ using FinanceManager.Application.Interfaces;
 
 public sealed record GetUniqueAccountsResult(IReadOnlyList<string> Accounts) : UseCaseResult;
 
-public sealed class GetUniqueAccounts(ITransferRepository transferRepository)
+public sealed class GetUniqueAccounts(IBankAccountRepository bankAccountRepository)
 {
     public async Task<GetUniqueAccountsResult> ExecuteAsync()
     {
-        var accounts = await transferRepository.GetUniqueAccountsAsync();
-        return new GetUniqueAccountsResult(accounts);
+        var accounts = await bankAccountRepository.GetAllAsync();
+        return new GetUniqueAccountsResult([.. accounts.Select(a => a.DisplayName)]);
     }
 }

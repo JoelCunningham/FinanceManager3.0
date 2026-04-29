@@ -35,8 +35,7 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
 
             foreach (var bankRecord in bankRecords) {
                 if (_bankRecords.Any(br => 
-                    br.Bank == bankRecord.Bank &&
-                    br.AccountNumber == bankRecord.AccountNumber &&
+                    br.BankAccountId == bankRecord.BankAccountId &&
                     br.Amount == bankRecord.Amount &&
                     br.Date == bankRecord.Date &&
                     br.Description == bankRecord.Description &&
