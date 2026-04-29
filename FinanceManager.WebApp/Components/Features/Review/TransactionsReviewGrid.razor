@@ -21,6 +21,7 @@
 
 <ListLayout TItem="ReviewGroup" Data="Data">
     <AdditionalCommands>
+        <HxCheckbox @bind-Value="Data.Query.SortDescending" @bind-Value:after="() => Data.UpdateAsync()" Text="Newest First" CssClass="pe-3"/>
         <HxCheckbox @bind-Value="IsAutoAssignEnabled" @bind-Value:after="() => IsAutoAssignEnabledChanged.InvokeAsync(IsAutoAssignEnabled)" Text="Auto assign categories" />
     </AdditionalCommands>
 

@@ -28,6 +28,7 @@ public partial class Review : PageBase
 
         Data.GetDataFunc = GetData;
         Data.UpdateViewState = StateHasChanged;
+        Data.Query.SortDescending = false;
 
         TransferData.GetDataFunc = GetTransferData;
         ReimburseData.GetDataFunc = GetReimburseData;
@@ -37,7 +38,6 @@ public partial class Review : PageBase
 
     private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)
     {
-        query.FilterStatus = ReviewStatus.Unreviewed;
         var result = (await UseCases.GetPagedReviewAsync(query)).Page;
 
         if (IsAutoAssignEnabled)

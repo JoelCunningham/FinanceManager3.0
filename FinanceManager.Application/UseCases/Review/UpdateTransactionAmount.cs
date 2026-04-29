@@ -18,39 +18,38 @@ public sealed class UpdateTransactionAmount()
             return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.TransactionId, ValidationField.Amount, "Amount must be between 0 and the original amount.")]);
         }
 
+        var total = group.InitialTransaction.Amount;
+        var sign = Math.Sign(total);
+
+        var oldAmount = transaction.Amount;
         transaction.Amount = amount;
 
-        var total = group.InitialTransaction.Amount;
+        var delta = Math.Abs(amount) - Math.Abs(oldAmount);
+
+        if (delta == 0) return new UpdateTransactionAmountResult([]);
+
+        var remainingDelta = delta;
         var others = group.Transactions.Where(t => t != transaction).ToList();
-        var othersCount = others.Count;
 
-        if (othersCount == 0) return new UpdateTransactionAmountResult([]);
-
-        decimal remainder = total - amount;
-
-        if (othersCount == 1)
+        foreach (var other in others)
         {
-            others[0].Amount = remainder;
-            return new UpdateTransactionAmountResult([]);
-        }
+            if (remainingDelta == 0) break;
 
-        var originalOthers = others.Select(t => t.Amount).ToList();
-        var originalSum = originalOthers.Sum();
-        if (originalSum == 0)
-        {
-            decimal even = remainder / othersCount;
-            for (int i = 0; i < othersCount; i++)
+            var otherMagnitude = Math.Abs(other.Amount);
+
+            if (delta > 0)
             {
-                others[i].Amount = even;
+                var reduction = Math.Min(otherMagnitude, remainingDelta);
+                otherMagnitude -= reduction;
+                remainingDelta -= reduction;
             }
-        }
-        else
-        {
-            for (int i = 0; i < othersCount; i++)
+            else
             {
-                var proportion = originalOthers[i] / originalSum;
-                others[i].Amount = remainder * proportion;
+                otherMagnitude += Math.Abs(remainingDelta);
+                remainingDelta = 0;
             }
+
+            other.Amount = sign * otherMagnitude;
         }
 
         return new UpdateTransactionAmountResult([]);

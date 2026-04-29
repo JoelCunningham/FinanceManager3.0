@@ -8,11 +8,11 @@ namespace FinanceManager.Application.Utilities;
 
 public class TransactionHelper()
 {
-    public static IEnumerable<UseCaseValidationError> ValidateTransaction(TransactionSummary summary, DateTime recordDate, decimal recordAmount)
+    public static IEnumerable<UseCaseValidationError> ValidateTransaction(TransactionSummary summary, DateTime recordDate, decimal recordAmount, bool requireCategory = true)
     {
         var errors = new List<UseCaseValidationError>();
         
-        if (summary.Category is null)
+        if (requireCategory && summary.Category is null)
         {
             errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Category, ErrorMessages.CategoryRequired));
         }

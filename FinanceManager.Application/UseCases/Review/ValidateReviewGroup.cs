@@ -13,7 +13,8 @@ public sealed class ValidateReviewGroup
 
         foreach (var transaction in group.Transactions)
         {
-            TransactionHelper.ValidateTransaction(transaction, group.InitialTransaction.Date, group.InitialTransaction.Amount).ToList().ForEach(errors.Add);
+            var requireCategory = transaction.Reimburses is null && group.Transfers is null;
+            TransactionHelper.ValidateTransaction(transaction, group.InitialTransaction.Date, group.InitialTransaction.Amount, requireCategory).ToList().ForEach(errors.Add);
         }
 
         return Task.FromResult(new ValidateReviewGroupResult(errors));
