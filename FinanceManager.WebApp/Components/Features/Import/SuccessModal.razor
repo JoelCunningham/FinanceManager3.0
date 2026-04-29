@@ -23,16 +23,16 @@
             </span>
         </BodyTemplate>
         <FooterTemplate>
-            @if (TransfersCount > 0)
-            {
-                <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Transfers"))" Color="ThemeColor.Secondary">
-                    View transfers
-                </HxButton>
-            }
             @if (TransfersCount < Transactions?.Count)
             {
                 <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Review"))" Color="ThemeColor.Primary">
                     Review transactions
+                </HxButton>
+            }
+            else
+            {
+                <HxButton OnClick="@(() => NavigationManager.NavigateTo("/"))" Color="ThemeColor.Primary">
+                    Home
                 </HxButton>
             }
         </FooterTemplate>

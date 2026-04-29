@@ -1,9 +1,0 @@
-﻿@page "/Transfers"
-
-<PageTitle>Transfers</PageTitle>
-
-<h1 class="page-heading">Transfers</h1>
-
-<TransfersGrid @bind-Data="Data" Accounts="UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="OpenDetailsModal" />
-
-<TransferModal @ref="TransferModal" Transfer="SelectedTransfer" SeparateFromDetails="SeparateFromDetails" />

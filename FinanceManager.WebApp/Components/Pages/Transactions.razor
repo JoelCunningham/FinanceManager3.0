@@ -4,7 +4,18 @@
 
 <h1 class="page-heading">Activities</h1>
 
-<TransactionsGrid @bind-Data="Data" Accounts="UniqueAccounts" OpenDetails="OpenDetailsModal" OpenEdit="OpenEditModal" />
+<HxTabPanel>
+	<HxTab Title="Activities">
+		<Content>
+			<TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
+		</Content>
+	</HxTab>
+	<HxTab Title="Transfers">
+		<Content>
+			<TransfersGrid @bind-Data="TransferData" Accounts="UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="OpenTransferDetailsModal" />
+		</Content>
+	</HxTab>
+</HxTabPanel>
 
 <TransactionDetailsModal @ref="DetailsModal" Details="SelectedDetails" OnEdit="OpenEditModal" />
 
@@ -16,3 +27,5 @@
 					  SetAmount="SetEditAmount"
 					  SetDate="SetEditDate"
 					  Save="SaveEdit" />
+
+<TransferModal @ref="TransferModal" Transfer="SelectedTransfer" SeparateFromDetails="SeparateFromDetails" />
