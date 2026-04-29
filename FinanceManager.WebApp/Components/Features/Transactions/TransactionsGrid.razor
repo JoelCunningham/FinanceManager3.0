@@ -14,7 +14,6 @@
             <HxInputDate Label="Date to" @bind-Value="query.FilterDateTo" MinDate="query.FilterDateFrom" MaxDate="DateTime.Today" CalendarIcon="BootstrapIcon.Calendar" />
             <HxInputNumber Label="Min amount" @bind-Value="query.FilterAmountMin" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" max="@query.FilterAmountMax" />
             <HxInputNumber Label="Max amount" @bind-Value="query.FilterAmountMax" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" min="@query.FilterAmountMin" />
-            <HxSelect Label="Status" @bind-Value="query.FilterStatus" Data="Enum.GetValues<ReviewStatus>()" Nullable="false" TextSelector="@(s => s.ToString())" />
         </FilterTemplate>
 
         <DataTemplate>

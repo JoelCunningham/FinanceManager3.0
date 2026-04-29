@@ -24,6 +24,8 @@ public partial class Transactions : PageBase
     public EditTransactionModal EditModal { get; set; } = new();
     public TransferModal TransferModal { get; set; } = new();
 
+    public int UnreviewedCount = 0;
+
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
@@ -31,8 +33,11 @@ public partial class Transactions : PageBase
         UniqueAccounts = (await UseCases.GetUniqueAccountsAsync()).Accounts;
         Categories = (await UseCases.GetCategoryListAsync()).Categories;
 
+        TransactionData.Query.FilterStatus = ReviewStatus.Reviewed;
         TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
         TransferData.GetDataFunc = async (query) => (await UseCases.GetPagedTransfersAsync(query)).Page;
+
+        UnreviewedCount = (await UseCases.GetPagedReviewAsync(new FilterQuery { FilterStatus = ReviewStatus.Unreviewed })).Page.TotalItems;
     }
 
     public async Task OpenTransactionDetailsModal(TransactionSummary transaction)
