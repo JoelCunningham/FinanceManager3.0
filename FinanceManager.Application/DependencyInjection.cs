@@ -21,8 +21,8 @@ public static class DependencyInjection
         services.AddScoped<SaveImport>();
 
         // Categories use cases
-        services.AddScoped<GetCategoryList>();
         services.AddScoped<GetCategoryGroupList>();
+        services.AddScoped<GetCategoryList>();
 
         // Transfers use cases
         services.AddScoped<GetPagedTransfers>();
@@ -32,8 +32,8 @@ public static class DependencyInjection
         // Transaction use cases
         services.AddScoped<GetPagedTransactions>();
         services.AddScoped<GetTransactionDetails>();
-        services.AddScoped<ValidateTransactionEdit>();
         services.AddScoped<SaveTransactionEdit>();
+        services.AddScoped<ValidateTransactionEdit>();
 
         // Statistics use cases
         services.AddScoped<GetBudgetScopes>();
@@ -41,24 +41,25 @@ public static class DependencyInjection
         services.AddScoped<GetChart2Data>();
 
         // Review use cases
-        services.AddScoped<GetPagedReview>();
-        services.AddScoped<GetTransferCandidates>();
-        services.AddScoped<GetReimbursementCandidates>();
-        services.AddScoped<SaveReview>();
-        services.AddScoped<ValidateReviewGroup>();
         services.AddScoped<AutoAssignCategories>();
         services.AddScoped<BackdateTransaction>();
+        services.AddScoped<GetPagedReview>();
+        services.AddScoped<GetReimbursementCandidates>();
+        services.AddScoped<GetReviewGroup>();
+        services.AddScoped<GetTransferCandidates>();
+        services.AddScoped<SaveReview>();
         services.AddScoped<UpdateTransactionAmount>();
+        services.AddScoped<ValidateReviewGroup>();
 
         // Budget use cases
+        services.AddScoped<DeleteBudgetEntry>();
         services.AddScoped<GetPagedBudget>();
         services.AddScoped<SaveBudgetEntry>();
-        services.AddScoped<DeleteBudgetEntry>();
 
         // Date use cases
-        services.AddScoped<GetWeekRanges>();
         services.AddScoped<GetFortnightRanges>();
         services.AddScoped<GetMonthRanges>();
+        services.AddScoped<GetWeekRanges>();
 
         services.AddScoped<ChartHelper>();
 

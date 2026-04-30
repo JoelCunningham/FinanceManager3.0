@@ -79,7 +79,7 @@ public partial class Review : PageBase
             return;
         }
 
-        var saveResult = await UseCases.SaveAsync(group);
+        var saveResult = await UseCases.SaveReviewAsync(group);
         if (!saveResult.IsSuccess)
         {
             Validation.SetErrors(saveResult.Errors);
@@ -106,22 +106,22 @@ public partial class Review : PageBase
 
     public void SetCategory(ReviewTransaction transaction, CategorySummary? value)
     {
-        Validation.ClearValidationItem(transaction.TransactionId, ValidationField.Category);
+        Validation.ClearValidationItem(transaction.EntityId, ValidationField.Category);
         transaction.Category = value;
         transaction.IsAutoCategorised = false;
     }
 
     public void SetDate(ReviewGroup group, ReviewTransaction transaction, DateTime value)
     {
-        Validation.ClearValidationItem(transaction.TransactionId, ValidationField.Date);
+        Validation.ClearValidationItem(transaction.EntityId, ValidationField.Date);
         var result = UseCases.BackdateTransactionAsync(transaction, value, group.InitialTransaction.Date).Result;
         
-        if (!result.IsSuccess)  Validation.SetErrors(result.Errors);
+        if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
 
     public async Task SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
     {
-        Validation.ClearValidationItem(transaction.TransactionId, ValidationField.Amount);
+        Validation.ClearValidationItem(transaction.EntityId, ValidationField.Amount);
         var result = await UseCases.UpdateTransactionAmountAsync(transaction, value, group);
       
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);

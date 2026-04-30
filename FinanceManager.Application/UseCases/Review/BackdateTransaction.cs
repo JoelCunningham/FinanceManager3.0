@@ -7,11 +7,11 @@ public sealed record BackdateTransactionResult(IEnumerable<UseCaseError> Errors)
 
 public sealed class BackdateTransaction()
 {
-    public async Task<BackdateTransactionResult> ExecuteAsync(ReviewTransaction transaction, DateTime date, DateTime initialDate)
+    public async Task<BackdateTransactionResult> ExecuteAsync(TransactionSummary transaction, DateTime date, DateTime initialDate)
     {
         if (date > initialDate)
         {
-            return new BackdateTransactionResult([new UseCaseValidationError(transaction.TransactionId, ValidationField.Date, "Date must be before the original date")]);
+            return new BackdateTransactionResult([new UseCaseValidationError(transaction.EntityId, ValidationField.Date, "Date must be before the original date")]);
         }
         transaction.Date = date;
         return new BackdateTransactionResult([]);

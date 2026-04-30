@@ -14,19 +14,19 @@ public class TransactionHelper()
         
         if (requireCategory && summary.Category is null)
         {
-            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Category, ErrorMessages.CategoryRequired));
+            errors.Add(new UseCaseValidationError(summary.EntityId, ValidationField.Category, ErrorMessages.CategoryRequired));
         }
         if (summary.Date > recordDate)
         {
-            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Date, ErrorMessages.DateMustNotBeAfterRecordDate));
+            errors.Add(new UseCaseValidationError(summary.EntityId, ValidationField.Date, ErrorMessages.DateMustNotBeAfterRecordDate));
         }
         if (summary.Amount <  Math.Min(0, recordAmount) || summary.Amount > Math.Max(0, recordAmount))
         {
-            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Amount, ErrorMessages.AmountMustBeBetweenZeroAndOriginalAmount));
+            errors.Add(new UseCaseValidationError(summary.EntityId, ValidationField.Amount, ErrorMessages.AmountMustBeBetweenZeroAndOriginalAmount));
         }
         if (summary.Amount == 0)
         {
-            errors.Add(new UseCaseValidationError(summary.TransactionId, ValidationField.Amount, ErrorMessages.AmountMustNotBeZero));
+            errors.Add(new UseCaseValidationError(summary.EntityId, ValidationField.Amount, ErrorMessages.AmountMustNotBeZero));
         }
 
         return errors;

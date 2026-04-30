@@ -1,17 +1,21 @@
 @code {
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
-
     [Parameter] public ReviewGroup TransactionGroup { get; set; } = default!;
 
     [Parameter] public EventCallback OnSave { get; set; }
+
+    [Parameter] public bool ShowActions { get; set; } = true;
 }
 
-<div class="transaction-group">
+<div class="transaction-group @(ShowActions ? "" : "actionless")">
     <div class="transaction-rows">
         @ChildContent
     </div>
-    <div class="action-buttons">
-        <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="TransactionGroup.Reset" />
-        <HxSubmit Color="ThemeColor.None" Icon="BootstrapIcon.CheckLg" OnClick="() => OnSave.InvokeAsync()" />
-    </div>
+    @if (ShowActions)
+    {
+        <div class="action-buttons">
+            <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="TransactionGroup.Reset" />
+            <HxSubmit Color="ThemeColor.None" Icon="BootstrapIcon.CheckLg" OnClick="() => OnSave.InvokeAsync()" />
+        </div>
+    }
 </div>

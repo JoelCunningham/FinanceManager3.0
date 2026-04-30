@@ -12,12 +12,14 @@ public partial class Transactions : PageBase
 {
     public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(20);
     public DataGridModel<FilterQuery, TransferDto> TransferData { get; set; } = new(20);
+    public DataGridModel<FilterQuery, ReviewGroup> ReviewData { get; set; } = new(20);
 
     public IReadOnlyList<string> UniqueAccounts { get; set; } = [];
     public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
 
     public TransactionDetails SelectedDetails { get; set; } = default!;
     public TransactionSummary EditTransaction { get; set; } = default!;
+    public ReviewGroup EditTransactionGroup { get; set; } = default!;
     public TransferDto? SelectedTransfer { get; set; }
 
     public TransactionDetailsModal DetailsModal { get; set; } = new();
@@ -42,7 +44,7 @@ public partial class Transactions : PageBase
 
     public async Task OpenTransactionDetailsModal(TransactionSummary transaction)
     {
-        SelectedDetails = (await UseCases.GetTransactionDetailsAsync(transaction.TransactionId)).Transaction;
+        SelectedDetails = (await UseCases.GetTransactionDetailsAsync(transaction.EntityId)).Transaction;
         await DetailsModal.ShowAsync();
     }
 
@@ -56,25 +58,36 @@ public partial class Transactions : PageBase
     {
         Validation.Clear();
         EditTransaction = transaction.Clone();
+        EditTransactionGroup = (await UseCases.GetReviewGroupAsync(transaction.EntityId)).Group;
         await EditModal.ShowAsync();
     }
 
-    public void SetEditCategory(CategorySummary? category)
+    public void SetCategory(CategorySummary? category)
     {
-        Validation.ClearValidationItem(EditTransaction.TransactionId, ValidationField.Category);
+        Validation.ClearValidationItem(EditTransaction.EntityId, ValidationField.Category);
         EditTransaction.Category = category;
     }
 
-    public void SetEditDate(DateTime date)
+    public void SetCategory(ReviewTransaction transaction, CategorySummary? category)
     {
-        Validation.ClearValidationItem(EditTransaction.TransactionId, ValidationField.Date);
-        EditTransaction.Date = date;
+        Validation.ClearValidationItem(transaction.EntityId, ValidationField.Category);
+        transaction.Category = category;
     }
 
-    public void SetEditAmount(decimal amount)
+    public void SetDate(TransactionSummary transaction, DateTime value, DateTime recordDate)
     {
-        Validation.ClearValidationItem(EditTransaction.TransactionId, ValidationField.Amount);
-        EditTransaction.Amount = amount;
+        Validation.ClearValidationItem(transaction.EntityId, ValidationField.Date);
+        var result = UseCases.BackdateTransactionAsync(transaction, value, recordDate).Result;
+        
+        if (!result.IsSuccess) Validation.SetErrors(result.Errors);
+    }
+
+    public async Task SetAmount(ReviewTransaction transaction, decimal value, ReviewGroup group)
+    {
+        Validation.ClearValidationItem(transaction.EntityId, ValidationField.Amount);
+        var result = await UseCases.UpdateTransactionAmountAsync(transaction, value, group);
+      
+        if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
 
     public async Task SaveEdit()
@@ -96,6 +109,29 @@ public partial class Transactions : PageBase
         }
 
         Validation.SetSuccess("Transaction updated successfully.");
+        await TransactionData.UpdateAsync();
+        await EditModal.HideAsync();
+    }
+
+    public async Task SaveGroupEdit()
+    {
+        Validation.Clear();
+
+        var validationResult = await UseCases.ValidateReviewGroupAsync(EditTransactionGroup);
+        if (!validationResult.IsSuccess)
+        {
+            Validation.SetErrors(validationResult.Errors);
+            return;
+        }
+
+        var saveResult = await UseCases.SaveReviewAsync(EditTransactionGroup);
+        if (!saveResult.IsSuccess)
+        {
+            Validation.SetErrors(saveResult.Errors);
+            return;
+        }
+
+        Validation.SetSuccess("Transaction group updated successfully.");
         await TransactionData.UpdateAsync();
         await EditModal.HideAsync();
     }

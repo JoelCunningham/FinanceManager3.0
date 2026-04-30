@@ -18,18 +18,18 @@ namespace FinanceManager.Application.Utilities
             };
         }
 
-        public static Reimbursement TransactionToReimbursement(Transaction transaction)
+        public static Transaction ReimbursementToTransaction(Reimbursement reimbursement)
         {
-            return new Reimbursement
+            return new Transaction
             {
-                Id = Guid.NewGuid(),
-                TransactionId = transaction.Id,
-                Transaction = transaction,
-                RecordId = transaction.RecordId,
-                Record = transaction.Record,
-                Date = transaction.Date,
-                Amount = transaction.Amount,
-                Description = transaction.Description
+                Id = reimbursement.Id,
+                RecordId = reimbursement.RecordId,
+                Record = reimbursement.Record,
+                Date = reimbursement.Date,
+                Amount = reimbursement.Amount,
+                Description = reimbursement.Description,
+                CategoryId = null,
+                Siblings = reimbursement.Siblings
             };
         }
 

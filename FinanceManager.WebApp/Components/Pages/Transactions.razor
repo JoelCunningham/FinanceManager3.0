@@ -29,11 +29,14 @@
 
 <EditTransactionModal @ref="EditModal"
 					  EditTransaction="EditTransaction"
+					  EditTransactionGroup="EditTransactionGroup"
 					  Categories="Categories"
 					  Validation="Validation"
-					  SetCategory="SetEditCategory"
-					  SetAmount="SetEditAmount"
-					  SetDate="SetEditDate"
-					  Save="SaveEdit" />
+					  SetCategory="SetCategory"
+					  SetGroupCategory="(args) => SetCategory(args.Item1, args.Item2)"
+					  SetGroupAmount="(args) => SetAmount(args.Item1, args.Item2, args.Item3)"
+					  SetGroupDate="(args) => SetDate(args.Item1, args.Item2, args.Item3)"
+					  SaveTransaction="SaveEdit"
+					  SaveGroup="SaveGroupEdit" />
 
 <TransferModal @ref="TransferModal" Transfer="SelectedTransfer" SeparateFromDetails="SeparateFromDetails" />

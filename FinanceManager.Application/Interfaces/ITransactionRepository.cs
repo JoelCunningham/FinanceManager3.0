@@ -6,7 +6,9 @@ namespace FinanceManager.Application.Interfaces
     public interface ITransactionRepository
     {
         Task<Transaction> GetByIdAsync(Guid id);
+        Task<Transaction?> GetOrDefaultAsync(Guid id);
         Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query);
+        Task CreateAsync(Transaction transaction);
         Task CreateAsync(IEnumerable<Transaction> transactions);
         Task CreateOrUpdateAsync(Transaction transaction);
         Task UpdateAsync(Transaction transaction);

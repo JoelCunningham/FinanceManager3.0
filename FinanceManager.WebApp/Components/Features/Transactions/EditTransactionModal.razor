@@ -1,33 +1,39 @@
 @code {
     [Parameter] public TransactionSummary EditTransaction { get; set; } = default!;
+    [Parameter] public ReviewGroup EditTransactionGroup { get; set; } = default!;
 
     [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
     [Parameter] public ValidationModel Validation { get; set; } = default!;
 
     [Parameter] public EventCallback<CategorySummary?> SetCategory { get; set; }
-    [Parameter] public EventCallback<decimal> SetAmount { get; set; }
-    [Parameter] public EventCallback<DateTime> SetDate { get; set; }
 
-    [Parameter] public EventCallback Save { get; set; }
+    [Parameter] public EventCallback<(ReviewTransaction, CategorySummary)> SetGroupCategory { get; set; }
+    [Parameter] public EventCallback<(ReviewTransaction, DateTime, DateTime)> SetGroupDate { get; set; }
+    [Parameter] public EventCallback<(ReviewTransaction, decimal, ReviewGroup)> SetGroupAmount { get; set; }
+
+    [Parameter] public EventCallback SaveTransaction { get; set; }
+    [Parameter] public EventCallback SaveGroup { get; set; }
 
     private HxModal _modal = default!;
 
-    private bool HasCategoryError => Validation.GetValidationItemIds(ValidationField.Category).Contains(EditTransaction.TransactionId);
-    private bool HasAmountError => Validation.GetValidationItemIds(ValidationField.Amount).Contains(EditTransaction.TransactionId);
-    private bool HasDateError => Validation.GetValidationItemIds(ValidationField.Date).Contains(EditTransaction.TransactionId);
+    private bool HasCategoryError => Validation.GetValidationItemIds(ValidationField.Category).Contains(EditTransaction.EntityId);
+    private bool HasAmountError => Validation.GetValidationItemIds(ValidationField.Amount).Contains(EditTransaction.EntityId);
+    private bool HasDateError => Validation.GetValidationItemIds(ValidationField.Date).Contains(EditTransaction.EntityId);
 
     private decimal? MinAmount => EditTransaction.Record.Amount < 0 ? EditTransaction.Record.Amount : 0;
     private decimal? MaxAmount => EditTransaction.Record.Amount > 0 ? EditTransaction.Record.Amount : 0;
+
+    private bool IsAdvancedMode = false;
 
     public async Task ShowAsync() => await _modal.ShowAsync();
     public async Task HideAsync() => await _modal.HideAsync();
 }
 
 <div class="transaction-modal">
-    <HxModal @ref="_modal" Title="Edit activity" Size="ModalSize.Large">
-            <BodyTemplate>
-        @if (EditTransaction is not null)
-        {
+    <HxModal @ref="_modal" Title="Edit activity" Size="ModalSize.ExtraLarge">
+        <BodyTemplate>
+            @if (!IsAdvancedMode && EditTransaction is not null)
+            {
                 <div class="transaction-form">
                     <CategoryInput Value="EditTransaction.Category" ValueChanged="SetCategory" Label="Category" Data="Categories" HasError="HasCategoryError" />
                     <HxInputText Label="Hidden" @bind-Value="EditTransaction.Description" CssClass="invisible" />
@@ -35,12 +41,31 @@
                     <HxInputNumber Label="Amount" @bind-Value="EditTransaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01" min="@MinAmount" max="@MaxAmount" InputCssClass="@(HasAmountError ? "is-invalid" : string.Empty)" Enabled="false" />
                     <HxInputTextArea Label="Description" @bind-Value="EditTransaction.Description" CssClass="full-width" />
                 </div>
-        }
-            </BodyTemplate>
+            }
+            @if (IsAdvancedMode && EditTransaction is not null)
+            {
+             <TransactionsReviewRow TransactionGroup="EditTransactionGroup"
+                                    Categories="EditTransaction.Record.Amount > 0 ? Categories.Where(c => c.IsIncome) : Categories.Where(c => !c.IsIncome)"
+                                    ErrorCategoryIds="Validation.GetValidationItemIds(ValidationField.Category)"
+                                    ErrorAmountIds="Validation.GetValidationItemIds(ValidationField.Amount)"
+                                    OnCategoryChange="args => SetGroupCategory.InvokeAsync((args.Item1, args.Item2))"
+                                    OnAmountChange="args => SetGroupAmount.InvokeAsync((args.Item1, args.Item2, EditTransactionGroup))"
+                                    OnDateChange="args => SetGroupDate.InvokeAsync((args.Item1, args.Item2, EditTransactionGroup.InitialTransaction.Date))" 
+                                    IsReviewed="true"/>   
+            }
+        </BodyTemplate>
         <FooterTemplate>
             <HxButton Color="ThemeColor.Secondary" OnClick="HideAsync">Cancel</HxButton>
-            <HxButton Color="ThemeColor.Info" OnClick="() => { }">Split & Reimburse</HxButton>
-            <HxButton Color="ThemeColor.Primary" OnClick="Save">Save</HxButton>
+                @if (!IsAdvancedMode)
+                {
+                    <HxButton Color="ThemeColor.Info" OnClick="() => IsAdvancedMode = true">Split & Reimburse</HxButton>
+                    <HxButton Color="ThemeColor.Primary" OnClick="SaveTransaction">Save</HxButton>
+                }
+                else
+                {
+                    <HxButton Color="ThemeColor.Info" OnClick="() => IsAdvancedMode = false">Simple Edit</HxButton>
+                    <HxButton Color="ThemeColor.Primary" OnClick="SaveGroup">Save</HxButton>
+                }
         </FooterTemplate>
     </HxModal>
 </div>

@@ -5,7 +5,7 @@ using FinanceManager.Domain.Entities;
 
 public class TransactionSummary : ITransactionConvertible<TransactionSummary>
 {
-    public Guid TransactionId { get; set; }
+    public Guid EntityId { get; set; }
     public CategorySummary? Category { get; set; }
     public required string Description { get; set; }
     public required decimal Amount { get; set; }
@@ -16,7 +16,7 @@ public class TransactionSummary : ITransactionConvertible<TransactionSummary>
     {
         return new TransactionSummary
         {
-            TransactionId = transaction.Id,
+            EntityId = transaction.Id,
             Amount = transaction.TotalAmount,
             Date = transaction.Date,
             Description = transaction.Description,
@@ -25,15 +25,31 @@ public class TransactionSummary : ITransactionConvertible<TransactionSummary>
         };
     }
 
+    public Transaction ToTransaction(IEnumerable<Transaction>? siblings = null)
+    {
+        return new Transaction
+        {
+            Id = EntityId,
+            Description = Description,
+            Amount = Amount,
+            Date = Date,
+            RecordId = Record.BankRecordId,
+            Record = Record.ToBankRecord(),
+            CategoryId = Category?.Id,
+            Category = Category?.ToCategory(),
+            Siblings = siblings?.ToList(),
+        };
+    }
+
     public TransactionSummary Clone()
     {
         return new TransactionSummary
         {
-            TransactionId = TransactionId,
+            EntityId = EntityId,
             Amount = Amount,
             Date = Date,
             Description = Description,
-            Category = Category, 
+            Category = Category,
             Record = Record,
         };
     }

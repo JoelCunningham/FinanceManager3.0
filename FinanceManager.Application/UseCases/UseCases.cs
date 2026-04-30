@@ -19,11 +19,12 @@ public class UseCases(
     GetChart1Data getChart1Data, 
     GetChart2Data getChart2Data, 
     GetPagedBudget getBudgetPage, 
+    GetPagedReview getPagedReview, 
     GetPagedTransactions getPagedTransactions, 
     GetPagedTransfers getPagedTransfers,
     GetParsers getParsers, 
     GetReimbursementCandidates getReimbursementCandidates, 
-    GetPagedReview getPagedReview, 
+    GetReviewGroup getReviewGroup,
     GetTransactionDetails getTransactionDetails, 
     GetTransferCandidates getTransferCandidates,
     GetUniqueAccounts getUniqueAccounts, 
@@ -42,7 +43,7 @@ public class UseCases(
     public Task DeleteBudgetEntryAsync(Guid id) => deleteBudgetEntry.ExecuteAsync(id);
     public Task SaveBudgetEntryAsync(BudgetCellEntry entry, int year, bool isEditing) => saveBudgetEntry.ExecuteAsync(entry, year, isEditing);
     public Task<AutoCategoriseResult> AutoCategoriseAsync(IEnumerable<ReviewGroup> groups, IEnumerable<CategorySummary> categories) => autoAssignCategories.ExecuteAsync(groups, categories);
-    public Task<BackdateTransactionResult> BackdateTransactionAsync(ReviewTransaction transaction, DateTime date, DateTime initialDate) => backdateTransaction.ExecuteAsync(transaction, date, initialDate);
+    public Task<BackdateTransactionResult> BackdateTransactionAsync(TransactionSummary transaction, DateTime date, DateTime initialDate) => backdateTransaction.ExecuteAsync(transaction, date, initialDate);
     public Task<GetBudgetScopesResult> GetBudgetScopesAsync(ScopedRange range) => getBudgetScopes.ExecuteAsync(range);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroupList.ExecuteAsync();
     public Task<GetCategoryListResult> GetCategoryListAsync() => getCategoryList.ExecuteAsync();
@@ -53,12 +54,13 @@ public class UseCases(
     public Task<GetPagedTransactionsResult> GetPagedTransactionsAsync(FilterQuery query) => getPagedTransactions.ExecuteAsync(query);
     public Task<GetPagedTransfersResult> GetPagedTransfersAsync(FilterQuery query) => getPagedTransfers.ExecuteAsync(query);
     public Task<GetReimbursementCandidatesResult> GetReimbursementCandidatesAsync(FilterQuery query) => getReimbursementCandidates.ExecuteAsync(query);
+    public Task<GetReviewGroupResult> GetReviewGroupAsync(Guid transactionId) => getReviewGroup.ExecuteAsync(transactionId);
     public Task<GetTransactionDetailsResult> GetTransactionDetailsAsync(Guid transactionId) => getTransactionDetails.ExecuteAsync(transactionId);
     public Task<GetTransferCandidatesResult> GetTransferCandidatesAsync(FilterQuery query, decimal amount) => getTransferCandidates.ExecuteAsync(query, amount);
     public Task<GetUniqueAccountsResult> GetUniqueAccountsAsync() => getUniqueAccounts.ExecuteAsync();
     public Task<ImportSaveResult> SaveImportAsync(IEnumerable<ParsedTransaction> parsedTransactions) => saveImport.ExecuteAsync(parsedTransactions);
     public Task<ParseFileResult> ParseFileAsync(Stream file, string bank, string extension) => parseFile.ExecuteAsync(file, bank, extension);
-    public Task<SaveReviewResult> SaveAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
+    public Task<SaveReviewResult> SaveReviewAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
     public Task<SaveTransactionEditResult> SaveTransactionEditAsync(TransactionSummary transaction) => saveTransactionEdit.ExecuteAsync(transaction);
     public Task<SeparateTransferResult> SeparateTransferAsync(Guid transferId) => separateTransfer.ExecuteAsync(transferId);
     public Task<UpdateTransactionAmountResult> UpdateTransactionAmountAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group) => updateTransactionAmount.ExecuteAsync(transaction, amount, group);

@@ -49,7 +49,7 @@
                                 This activity has no associated reimbursements. Edit the activity to add reimbursements.
                             </HxAlert>
                         }
-                        @foreach (var reimbursement in Details.Reimbursements)
+                        else
                         {
                             <ListLayout TItem="ReimbursementSummary" Data="Data">
                                 <FilterTemplate Context="query">

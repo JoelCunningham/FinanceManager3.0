@@ -14,6 +14,8 @@
     [Parameter] public EventCallback<ReviewTransaction> OnFindReimbursement { get; set; }
     [Parameter] public EventCallback OnFindTransfer { get; set; }
 
+    [Parameter] public bool IsReviewed { get; set; } = false;
+
     private ReviewTransaction? CurrentTransaction { get; set; }
 }
 
@@ -34,13 +36,13 @@
 }
 else
 {
-    <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave">
+    <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave" ShowActions="!IsReviewed">
         @foreach (var transaction in TransactionGroup.Transactions)
         {
             <ReviewRowEntry>
                 @if (transaction.Reimburses is null)
                 {
-                    <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.TransactionId)" />
+                    <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.EntityId)" />
                 } else {
                     <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" />
                 }
@@ -49,7 +51,7 @@ else
                              MaxDate="@TransactionGroup.InitialTransaction.Date"
                              @bind-Value:set="v => OnDateChange.InvokeAsync((transaction, v))" />
                 <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
-                @if (transaction.TransactionId == TransactionGroup.InitialTransaction.Id)
+                @if (transaction.EntityId == TransactionGroup.InitialTransaction.Id)
                 {
                     <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01" Enabled="false" />
                 }
@@ -62,7 +64,7 @@ else
                 }
                 <HxContextMenu>
                     <HxContextMenuItem OnClick="TransactionGroup.Split">Split</HxContextMenuItem>
-                    @if (transaction.TransactionId != TransactionGroup.InitialTransaction.Id)
+                    @if (transaction.EntityId != TransactionGroup.InitialTransaction.Id)
                     {
                         <HxContextMenuItem OnClick="() => TransactionGroup.Unsplit(transaction)">Unsplit</HxContextMenuItem>
                     }
@@ -70,7 +72,7 @@ else
                     {
                         <HxContextMenuItem OnClick="() => OnFindReimbursement.InvokeAsync(transaction)">Reimburse existing</HxContextMenuItem>
                     }
-                    @if (TransactionGroup.Transactions.Count == 1)
+                    @if (TransactionGroup.Transactions.Count == 1 && transaction.Reimbursements is null)
                     {
                         <HxContextMenuItem OnClick="OnFindTransfer">Change to transfer</HxContextMenuItem>
                     }
@@ -84,6 +86,18 @@ else
                     <HxInputNumber @bind-Value="transaction.Reimburses.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
                     <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.XLg" OnClick="() => transaction.Reimburses = null" />
                 </ReviewRowEntry>
+            }
+            @if (transaction.Reimbursements is not null)
+            {
+                foreach (var reimbursement in transaction.Reimbursements)
+                {
+                    <ReviewRowEntry Label=" ↳ Reimbursed by">
+                        <HxInputDate @bind-Value="reimbursement.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
+                        <HxInputText @bind-Value="reimbursement.Description" title="@reimbursement.Description" Enabled="false" />
+                        <HxInputNumber @bind-Value="reimbursement.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+                        <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.XLg" OnClick="() => transaction.Reimbursements = transaction.Reimbursements.Where(r => r != reimbursement)" />
+                    </ReviewRowEntry>
+                }
             }
         }
     </ReviewRow>

@@ -9,21 +9,16 @@ public sealed class SaveTransactionEdit(ITransactionRepository transactionReposi
 {
     public async Task<SaveTransactionEditResult> ExecuteAsync(TransactionSummary transaction)
     {
-        if (transaction.Category is null)
-        {
-            return new SaveTransactionEditResult([new UseCaseInvalidOperationError("Category is required.")]);
-        }
-
         await using var operations = unitOfWork.BeginTransaction();
 
         try
         {
-            var entity = await transactionRepository.GetByIdAsync(transaction.TransactionId);
+            var entity = await transactionRepository.GetByIdAsync(transaction.EntityId);
 
             entity.Date = transaction.Date;
             entity.Description = transaction.Description;
             entity.Amount = transaction.Amount;
-            entity.Category = transaction.Category.ToCategory();
+            entity.Category = transaction.Category!.ToCategory();
             entity.CategoryId = transaction.Category.Id;
             
             await transactionRepository.UpdateAsync(entity);

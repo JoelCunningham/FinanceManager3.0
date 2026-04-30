@@ -9,16 +9,18 @@ public sealed class UpdateTransactionAmount()
 {
     public async Task<UpdateTransactionAmountResult> ExecuteAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group)
     {
+        var originalAmount = group.InitialTransaction.Record.Amount;
+
         if (!group.Transactions.Contains(transaction))
         {
-            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.TransactionId, ValidationField.Amount, "Transaction does not belong to this group")]);
+            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.EntityId, ValidationField.Amount, Constants.ErrorMessages.DefaultErrorMessage)]);
         }
-        if (amount < Math.Min(0, group.InitialTransaction.Amount) || amount > Math.Max(0, group.InitialTransaction.Amount))
+        if (amount < Math.Min(0, originalAmount) || amount > Math.Max(0, originalAmount))
         {
-            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.TransactionId, ValidationField.Amount, "Amount must be between 0 and the original amount.")]);
+            return new UpdateTransactionAmountResult([new UseCaseValidationError(transaction.EntityId, ValidationField.Amount, Constants.ErrorMessages.AmountMustBeBetweenZeroAndOriginalAmount)]);
         }
 
-        var total = group.InitialTransaction.Amount;
+        var total = originalAmount;
         var sign = Math.Sign(total);
 
         var oldAmount = transaction.Amount;

@@ -15,4 +15,6 @@ public sealed class Reimbursement : IEntity
     public DateTime Date { get; set; }
     public decimal Amount { get; set; }
     public required string Description { get; set; }
+    
+    public ICollection<Transaction>? Siblings { get; set; }
 }

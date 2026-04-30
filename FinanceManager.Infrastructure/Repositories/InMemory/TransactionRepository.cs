@@ -19,6 +19,12 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             return transaction;
         }
 
+        public async Task<Transaction?> GetOrDefaultAsync(Guid id)
+        {
+            var transaction = _transactions.FirstOrDefault(t => t.Id == id);
+            return transaction;
+        }
+
         public async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query)
         {
             var queryable = _transactions.AsQueryable();
@@ -36,6 +42,12 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
                 CurrentPage = query.Page,
                 PageSize = query.PageSize
             };
+        }
+
+        public async Task CreateAsync(Transaction transaction)
+        {
+            _transactions.Add(transaction);
+            //throw here on failure
         }
 
         public async Task CreateAsync(IEnumerable<Transaction> transactions)

@@ -10,7 +10,7 @@ public sealed class ValidateTransactionEdit(ITransactionRepository transactionRe
 {
     public Task<ValidateTransactionEditResult> ExecuteAsync(TransactionSummary summary)
     {      
-        var transaction = transactionRepository.GetByIdAsync(summary.TransactionId).Result;
+        var transaction = transactionRepository.GetByIdAsync(summary.EntityId).Result;
         var bankRecord = bankRecordRepository.GetByIdAsync(transaction.RecordId).Result;
 
         var errors = TransactionHelper.ValidateTransaction(summary, bankRecord.Date, bankRecord.Amount);
