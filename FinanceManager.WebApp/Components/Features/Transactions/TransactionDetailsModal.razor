@@ -8,12 +8,12 @@
 
     private HxModal _modal = default!;
 
-    private DataGridModel<FilterQuery, ReimbursementSummary> Data = default!;
+    private DataGridModel<FilterQuery, TransactionSummary> Data = default!;
 
     protected override void OnParametersSet()
     {
         if (Details is null) return;
-        var pagedResult = new PagedResult<ReimbursementSummary>
+        var pagedResult = new PagedResult<TransactionSummary>
         {
             Items = Details.Reimbursements.ToList(),
             TotalItems = Details.Reimbursements.Count(),
@@ -51,12 +51,12 @@
                         }
                         else
                         {
-                            <ListLayout TItem="ReimbursementSummary" Data="Data">
+                            <ListLayout TItem="TransactionSummary" Data="Data">
                                 <FilterTemplate Context="query">
                                     <HxInputText Label="Search" @bind-Value="query.SearchTerm" />
                                 </FilterTemplate>
                                 <DataTemplate>
-                                    <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" TItem="ReimbursementSummary" PageSize="Data.Query.PageSize" PreserveSelection="false" Responsive="false">
+                                    <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" TItem="TransactionSummary" PageSize="Data.Query.PageSize" PreserveSelection="false" Responsive="false">
                                         <Columns>
                                             <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
                                             <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col">

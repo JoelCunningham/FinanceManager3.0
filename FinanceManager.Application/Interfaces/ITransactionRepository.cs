@@ -7,7 +7,8 @@ namespace FinanceManager.Application.Interfaces
     {
         Task<Transaction> GetByIdAsync(Guid id);
         Task<Transaction?> GetOrDefaultAsync(Guid id);
-        Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query);
+        Task<PagedResult<Transaction>> GetPagedTransactionsAsync(FilterQuery query);
+        Task<PagedResult<Transaction>> GetPagedReimbursementsAsync(FilterQuery query);
         Task CreateAsync(Transaction transaction);
         Task CreateAsync(IEnumerable<Transaction> transactions);
         Task CreateOrUpdateAsync(Transaction transaction);

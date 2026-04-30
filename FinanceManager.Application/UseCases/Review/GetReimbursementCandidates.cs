@@ -13,7 +13,7 @@ public sealed class GetReimbursementCandidates(ITransactionRepository transactio
         query.FilterStatus = ReviewStatus.Reviewed;
         query.FilterAmountMax = 0;
 
-        var paged = await transactionRepository.GetPagedAsync(query);
+        var paged = await transactionRepository.GetPagedTransactionsAsync(query);
         return new GetReimbursementCandidatesResult(
             new PagedResult<TransactionSummary>
             {

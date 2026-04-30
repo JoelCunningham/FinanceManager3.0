@@ -13,7 +13,7 @@ public sealed class GetPagedReview(ITransactionRepository transactionRepository)
         query.SortBy = TransactionSortBy.Date;
         query.FilterStatus = ReviewStatus.Unreviewed;
 
-        var paged = await transactionRepository.GetPagedAsync(query);
+        var paged = await transactionRepository.GetPagedTransactionsAsync(query);
 
         return new GetPagedReviewResult
         (

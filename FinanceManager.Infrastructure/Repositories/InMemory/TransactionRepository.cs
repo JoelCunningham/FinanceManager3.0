@@ -25,23 +25,18 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             return transaction;
         }
 
-        public async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query)
+        public async Task<PagedResult<Transaction>> GetPagedTransactionsAsync(FilterQuery query)
         {
             var queryable = _transactions.AsQueryable();
-            queryable = ApplyFilters(queryable, query);
+            queryable = queryable.Where(t => !t.IsReimbursement);
+            return await GetPagedAsync(query, queryable);
+        }
 
-            var totalItems = queryable.Count();
-            queryable = ApplySorting(queryable, query);
-
-            var items = ApplyPagination(queryable, query).ToList();
-
-            return new PagedResult<Transaction>
-            {
-                Items = items,
-                TotalItems = totalItems,
-                CurrentPage = query.Page,
-                PageSize = query.PageSize
-            };
+        public async Task<PagedResult<Transaction>> GetPagedReimbursementsAsync(FilterQuery query)
+        {
+            var queryable = _transactions.AsQueryable();
+            queryable = queryable.Where(t => t.IsReimbursement);
+            return await GetPagedAsync(query, queryable);
         }
 
         public async Task CreateAsync(Transaction transaction)
@@ -94,6 +89,24 @@ namespace FinanceManager.Infrastructure.Repositories.InMemory
             {
                 _transactions.Remove(transaction);
             }
+        }
+
+        private async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query, IQueryable<Transaction> transactions)
+        {
+            transactions = ApplyFilters(transactions, query);
+
+            var totalItems = transactions.Count();
+            transactions = ApplySorting(transactions, query);
+
+            var items = ApplyPagination(transactions, query).ToList();
+
+            return new PagedResult<Transaction>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                CurrentPage = query.Page,
+                PageSize = query.PageSize
+            };
         }
 
         private static IQueryable<Transaction> ApplyFilters(IQueryable<Transaction> query, FilterQuery request)

@@ -17,7 +17,7 @@ public sealed class GetTransactionDetails(ITransactionRepository transactionRepo
         {
             TransactionSummary = TransactionSummary.FromTransaction(transaction),
             RecordSummary = BankRecordSummary.FromBankRecord(transaction.Record),
-            Reimbursements = reimbursements.Select(ReimbursementSummary.FromReimbursement),
+            Reimbursements = reimbursements.Select(TransactionSummary.FromTransaction),
             Siblings = siblings.Select(TransactionSummary.FromTransaction),
         };
 

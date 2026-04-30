@@ -9,7 +9,7 @@ public sealed class GetPagedTransactions(ITransactionRepository transactionRepos
 {
     public async Task<GetPagedTransactionsResult> ExecuteAsync(FilterQuery query)
     {
-        var pagedTransactions = await transactionRepository.GetPagedAsync(query);
+        var pagedTransactions = await transactionRepository.GetPagedTransactionsAsync(query);
 
         return new GetPagedTransactionsResult
         (

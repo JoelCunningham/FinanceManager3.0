@@ -63,14 +63,14 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
 public class ReviewTransaction : TransactionSummary
 {
     public TransactionSummary? Reimburses { get; set; } // Used for adding a reimbursement to an existing transaction
-    public IEnumerable<ReviewTransaction>? Reimbursements { get; set; } // Used for editing reimbursements of an existing transaction
+    public IEnumerable<ReviewTransaction> Reimbursements { get; set; } = []; // Used for editing reimbursements of an existing transaction
     public bool IsAutoCategorised { get; set; }
 
     public static new ReviewTransaction FromTransaction(Transaction transaction)
     {
         var record = BankRecordSummary.FromBankRecord(transaction.Record);
         var category = transaction.Category != null ? CategorySummary.FromCategory(transaction.Category) : null;
-        var reimbursements = transaction.Reimbursements?.Select(FromReimbursement).ToList();
+        var reimbursements = transaction.Reimbursements.Select(FromTransaction).ToList();
 
         return new ReviewTransaction
         {
@@ -87,7 +87,8 @@ public class ReviewTransaction : TransactionSummary
     public new Transaction ToTransaction(IEnumerable<Transaction>? siblings = null)
     {
         //TODO investigate if siblings parameter is necessary for reimbursements
-        var reimbursements = Reimbursements?.Select(r => r.ToReimbursement([], true)).ToList();
+        var reimburses = Reimburses?.ToTransaction();
+        var reimbursements = Reimbursements.Select(r => r.ToTransaction()).ToList();
 
         return new Transaction
         {
@@ -99,41 +100,10 @@ public class ReviewTransaction : TransactionSummary
             Record = Record.ToBankRecord(),
             CategoryId = Category?.Id,
             Category = Category?.ToCategory(),
-            Siblings = siblings?.ToList(),
+            Siblings = siblings?.ToList() ?? [],
+            ReimbursesId = reimburses?.Id,
+            Reimburses = reimburses,
             Reimbursements = reimbursements,
-        };
-    }
-
-    public static ReviewTransaction FromReimbursement(Reimbursement reimbursement)
-    {
-        return new ReviewTransaction
-        {
-            EntityId = reimbursement.Id,
-            Amount = reimbursement.Amount,
-            Date = reimbursement.Date,
-            Description = reimbursement.Description,
-            Category = null,
-            Record = BankRecordSummary.FromBankRecord(reimbursement.Record),
-        };
-    }
-
-    public Reimbursement ToReimbursement(IEnumerable<Transaction>? siblings = null, bool reimbursesThis = false)
-    {
-        if (Reimburses is null && !reimbursesThis) throw new InvalidOperationException("Reimburses property must exist to convert to reimbursement.");
-
-        var reimbursesEntity = Reimburses is not null ? Reimburses.ToTransaction(siblings) : ToTransaction(siblings);
-
-        return new Reimbursement
-        {
-            Id = EntityId,
-            TransactionId = reimbursesEntity.Id,
-            Transaction = reimbursesEntity,
-            Amount = Amount,
-            Date = Date,
-            Description = Description,
-            RecordId = Record.BankRecordId,
-            Record = Record.ToBankRecord(),
-            Siblings = siblings?.ToList(),
         };
     }
 }

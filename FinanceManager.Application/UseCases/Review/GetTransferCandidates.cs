@@ -12,7 +12,7 @@ public sealed class GetTransferCandidates(ITransactionRepository transactionRepo
         query.FilterAmountMax = -amount;
         query.FilterAmountMin = -amount;
 
-        var paged = await transactionRepository.GetPagedAsync(query);
+        var paged = await transactionRepository.GetPagedTransactionsAsync(query);
         return new GetTransferCandidatesResult(
             new PagedResult<TransactionSummary>
             {

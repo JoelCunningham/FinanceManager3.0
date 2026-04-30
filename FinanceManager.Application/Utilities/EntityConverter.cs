@@ -18,21 +18,6 @@ namespace FinanceManager.Application.Utilities
             };
         }
 
-        public static Transaction ReimbursementToTransaction(Reimbursement reimbursement)
-        {
-            return new Transaction
-            {
-                Id = reimbursement.Id,
-                RecordId = reimbursement.RecordId,
-                Record = reimbursement.Record,
-                Date = reimbursement.Date,
-                Amount = reimbursement.Amount,
-                Description = reimbursement.Description,
-                CategoryId = null,
-                Siblings = reimbursement.Siblings
-            };
-        }
-
         public static List<Transfer> BankRecordsToTransfers(IEnumerable<BankRecord> records)
         {
             List<Transfer> transfers = [];

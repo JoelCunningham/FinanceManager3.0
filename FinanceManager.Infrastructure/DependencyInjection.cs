@@ -15,7 +15,6 @@ public static class DependencyInjection
         services.AddSingleton<ITransactionRepository, TransactionRepository>();
         services.AddSingleton<IBankAccountRepository, BankAccountRepository>();
         services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
-        services.AddSingleton<IReimbursementRepository, ReimbursementRepository>();
         services.AddSingleton<ICategoryRepository, CategoryRepository>();
         services.AddSingleton<IMachineLearningRepository, MachineLearningRepository>();
         services.AddSingleton<IBudgetEntryRepository, BudgetEntryRepository>();

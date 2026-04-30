@@ -37,7 +37,7 @@ public class TransactionSummary : ITransactionConvertible<TransactionSummary>
             Record = Record.ToBankRecord(),
             CategoryId = Category?.Id,
             Category = Category?.ToCategory(),
-            Siblings = siblings?.ToList(),
+            Siblings = siblings?.ToList() ?? [],
         };
     }
 

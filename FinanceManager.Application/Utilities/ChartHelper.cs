@@ -14,7 +14,7 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
         while (true)
         {
             query.Page = page;
-            var pagedTransactions = await transactionRepository.GetPagedAsync(query);
+            var pagedTransactions = await transactionRepository.GetPagedTransactionsAsync(query);
             var pageResult = new PagedResult<TransactionSummary>
             {
                 Items = [.. pagedTransactions.Items.Select(TransactionSummary.FromTransaction)],

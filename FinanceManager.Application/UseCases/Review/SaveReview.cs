@@ -3,10 +3,11 @@ namespace FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
+using FinanceManager.Domain.Entities;
 
 public sealed record SaveReviewResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveReview(ITransactionRepository transactionRepository, IReimbursementRepository reimbursementRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IUnitOfWork unitOfWork)
+public sealed class SaveReview(ITransactionRepository transactionRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IUnitOfWork unitOfWork)
 {
     public async Task<SaveReviewResult> ExecuteAsync(ReviewGroup group)
     {
@@ -18,12 +19,11 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         {
             return new SaveReviewResult([new UseCaseInvalidOperationError("Transfer transactions cannot be split.")]);
         }
-
         try
         {
             if (group.Transfers is null)
             {
-                await SaveTransactionsAsync(group.Transactions);
+                await SaveTransactionsAsync(group);
             }
             else
             {
@@ -38,143 +38,154 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, IRe
         return new SaveReviewResult([]);
     }
 
-    private async Task SaveTransactionsAsync(IEnumerable<ReviewTransaction> transactions)
+    private async Task SaveTransactionsAsync(ReviewGroup group)
     {
-        foreach (var transaction in transactions)
-        {
-            var siblings = transactions.Where(t => t != transaction);
-            var reimbursements = transaction.Reimbursements ?? [];
-
-            await RemoveReimbursementsAsync(transaction, reimbursements);
-            await RemoveSiblingsAsync(transaction, siblings);
-
-            if (transaction.Reimburses is null && transaction.Category is not null)
-            {
-                await SaveTransactionAsync(transaction, siblings);
-            }
-            else if (transaction.Reimburses is not null)
-            {
-                await AddReimbursementAsync(transaction, transaction.Reimburses.EntityId, siblings);
-            }
-        }
-    }
-
-    private async Task SaveTransactionAsync(ReviewTransaction transaction, IEnumerable<ReviewTransaction> siblings)
-    {
-        if (transaction.Amount == 0) throw new Exception("Transaction must have a nonzero amount.");
-        if (transaction.Category is null) throw new Exception("Transaction must have a category.");
-
-        var categoryEntity = transaction.Category.ToCategory();
-        var transactionEntity = transaction.ToTransaction(siblings.Select(s => s.ToTransaction()));
-
         await using var operations = unitOfWork.BeginTransaction();
         try
         {
-            await transactionRepository.CreateOrUpdateAsync(transactionEntity);
-            await machineLearningRepository.SaveAsync(categoryEntity, transaction.Description);
+            var transactionList = group.Transactions.ToList();
+            var entities = transactionList.ToDictionary(t => t.EntityId, CreateBaseEntity);
+            var externalEntities = new Dictionary<Guid, Transaction>();
+            var retainedIds = transactionList.Select(t => t.EntityId).ToHashSet();
+
+            foreach (var transaction in transactionList)
+            {
+                if (transaction.Amount == 0) throw new Exception("Transaction must have a nonzero amount.");
+                if (transaction.Category is null && transaction.Reimburses is null) throw new Exception("Transaction must have a category.");
+            }
+
+            var recordTransactions = group.InitialTransaction.Record.Transactions ?? [];
+            var removedSplits = recordTransactions.Where(t => !retainedIds.Contains(t.Id)).ToList();
+            foreach (var removed in removedSplits)
+            {
+                if (removed.ReimbursesId is not null)
+                {
+                    var previousReimburses = await ResolveTransactionAsync(removed.ReimbursesId.Value, entities, externalEntities);
+                    previousReimburses.Reimbursements = previousReimburses.Reimbursements.Where(r => r.Id != removed.Id).ToList();
+                }
+
+                foreach (var reimbursement in removed.Reimbursements)
+                {
+                    var reimbursementEntity = await ResolveTransactionAsync(reimbursement.Id, entities, externalEntities);
+                    reimbursementEntity.ReimbursesId = null;
+                    reimbursementEntity.Reimburses = null;
+                }
+
+                recordTransactions.Remove(removed);
+                await transactionRepository.DeleteOrSkipAsync(removed.Id);
+            }
+
+            foreach (var entity in entities.Values)
+            {
+                entity.Siblings = entities.Values.Where(e => e.Id != entity.Id).ToList();
+            }
+
+            foreach (var reviewTransaction in transactionList)
+            {
+                var transactionEntity = entities[reviewTransaction.EntityId];
+                var existingTransaction = await transactionRepository.GetOrDefaultAsync(reviewTransaction.EntityId);
+
+                var desiredReimbursements = reviewTransaction.Reimbursements.Select(r => r.EntityId).ToHashSet();
+                transactionEntity.Reimbursements.Clear();
+
+                if (existingTransaction?.Reimbursements is not null)
+                {
+                    foreach (var removed in existingTransaction.Reimbursements.Where(r => !desiredReimbursements.Contains(r.Id)))
+                    {
+                        var removedEntity = await ResolveTransactionAsync(removed.Id, entities, externalEntities);
+                        removedEntity.ReimbursesId = null;
+                        removedEntity.Reimburses = null;
+                    }
+                }
+
+                foreach (var reimbursement in reviewTransaction.Reimbursements)
+                {
+                    var reimbursementEntity = await ResolveTransactionAsync(reimbursement.EntityId, entities, externalEntities);
+                    reimbursementEntity.ReimbursesId = transactionEntity.Id;
+                    reimbursementEntity.Reimburses = transactionEntity;
+                    if (transactionEntity.Reimbursements.All(r => r.Id != reimbursementEntity.Id))
+                    {
+                        transactionEntity.Reimbursements.Add(reimbursementEntity);
+                    }
+                }
+
+                if (reviewTransaction.Reimburses is not null)
+                {
+                    var reimbursesEntity = await ResolveTransactionAsync(reviewTransaction.Reimburses.EntityId, entities, externalEntities);
+                    transactionEntity.ReimbursesId = reimbursesEntity.Id;
+                    transactionEntity.Reimburses = reimbursesEntity;
+
+                    reimbursesEntity.Reimbursements ??= new List<Transaction>();
+                    if (reimbursesEntity.Reimbursements.All(r => r.Id != transactionEntity.Id))
+                    {
+                        reimbursesEntity.Reimbursements.Add(transactionEntity);
+                    }
+                }
+                else if (existingTransaction?.ReimbursesId is not null)
+                {
+                    var previousReimburses = await ResolveTransactionAsync(existingTransaction.ReimbursesId.Value, entities, externalEntities);
+                    previousReimburses.Reimbursements = previousReimburses.Reimbursements.Where(r => r.Id != transactionEntity.Id).ToList();
+                }
+            }
+
+            foreach (var transaction in transactionList)
+            {
+                var categoryEntity = transaction.Category?.ToCategory();
+                var transactionEntity = entities[transaction.EntityId];
+
+                await transactionRepository.CreateOrUpdateAsync(transactionEntity);
+                if (categoryEntity is not null)
+                {
+                    await machineLearningRepository.SaveAsync(categoryEntity, transaction.Description);
+                }
+            }
+
+            foreach (var externalEntity in externalEntities.Values)
+            {
+                await transactionRepository.CreateOrUpdateAsync(externalEntity);
+            }
 
             await operations.CommitAsync();
         }
         catch
         {
-            // TODO: Log exception
             await operations.RollbackAsync();
             throw;
         }
     }
 
-    private async Task AddReimbursementAsync(ReviewTransaction reimbursement, Guid transactionId, IEnumerable<ReviewTransaction> siblings)
+    private static Transaction CreateBaseEntity(ReviewTransaction transaction)
     {
-        if (transactionId == reimbursement.EntityId) throw new Exception("Transaction IDs must be different.");
-        if (reimbursement.Reimbursements is not null) throw new Exception("Reimbursement cannot have its own reimbursements.");
-
-        await using var operations = unitOfWork.BeginTransaction();
-        try
+        return new Transaction
         {
-            var transaction = await transactionRepository.GetByIdAsync(transactionId);
-            var reimbursementEntity = reimbursement.ToReimbursement(siblings.Select(s => s.ToTransaction()));
-
-            await transactionRepository.DeleteOrSkipAsync(reimbursement.EntityId);
-            await reimbursementRepository.CreateAsync(reimbursementEntity);
-
-            transaction.Reimbursements ??= [];
-            transaction.Reimbursements.Add(reimbursementEntity);
-
-            await transactionRepository.UpdateAsync(transaction);
-
-            await operations.CommitAsync();
-        }
-        catch
-        {
-            // TODO: Log exception
-            await operations.RollbackAsync();
-            throw;
-        }
+            Id = transaction.EntityId,
+            Description = transaction.Description,
+            Amount = transaction.Amount,
+            Date = transaction.Date,
+            RecordId = transaction.Record.BankRecordId,
+            Record = transaction.Record.ToBankRecord(),
+            CategoryId = transaction.Category?.Id,
+            Category = transaction.Category?.ToCategory(),
+            Siblings = [],
+            Reimbursements = [],
+        };
     }
 
-    private async Task RemoveReimbursementsAsync(ReviewTransaction transaction, IEnumerable<ReviewTransaction> reimbursements)
+    private async Task<Transaction> ResolveTransactionAsync(Guid id, IReadOnlyDictionary<Guid, Transaction> entities, IDictionary<Guid, Transaction> externalEntities)
     {
-        if (transaction.Reimburses is not null) throw new Exception("Reimbursement cannot have a reimburses property.");
-
-        await using var operations = unitOfWork.BeginTransaction();
-        try
+        if (entities.TryGetValue(id, out var entity))
         {
-            var transactionEntity = await transactionRepository.GetOrDefaultAsync(transaction.EntityId);
-
-            if (transactionEntity is null ||transactionEntity.Reimbursements is null || transactionEntity.Reimbursements.Count == 0) return;
-
-            var reimbursementsToRemove = transactionEntity.Reimbursements.Where(r => !reimbursements.Any(rr => rr.EntityId == r.Id)).ToList();
-
-            foreach (var reimbursement in reimbursementsToRemove)
-            {
-                var newTransaction = EntityConverter.ReimbursementToTransaction(reimbursement);
-
-                await reimbursementRepository.DeleteAsync(reimbursement.Id);
-                await transactionRepository.CreateAsync(newTransaction);
-
-                transactionEntity.Reimbursements.Remove(reimbursement);
-            }
-
-            await transactionRepository.UpdateAsync(transactionEntity);
-
-            await operations.CommitAsync();
+            return entity;
         }
-        catch
+
+        if (externalEntities.TryGetValue(id, out var externalEntity))
         {
-            // TODO: Log exception
-            await operations.RollbackAsync();
-            throw;
+            return externalEntity;
         }
-    }
 
-    private async Task RemoveSiblingsAsync(ReviewTransaction transaction, IEnumerable<ReviewTransaction> siblings)
-    {
-        await using var operations = unitOfWork.BeginTransaction();
-        try
-        {
-            var transactionEntity = await transactionRepository.GetOrDefaultAsync(transaction.EntityId);
-
-            if (transactionEntity is null || transactionEntity.Siblings is null || transactionEntity.Siblings.Count == 0) return;
-
-            var siblingsToRemove = transactionEntity.Siblings.Where(s => !siblings.Any(sb => sb.EntityId == s.Id)).ToList();
-
-            foreach (var sibling in siblingsToRemove)
-            {
-                await transactionRepository.DeleteAsync(sibling.Id);
-
-                transactionEntity.Siblings.Remove(sibling);
-            }
-
-            await transactionRepository.UpdateAsync(transactionEntity);
-            
-            await operations.CommitAsync();
-        }
-        catch
-        {
-            // TODO: Log exception
-            await operations.RollbackAsync();
-            throw;
-        }
+        var loaded = await transactionRepository.GetByIdAsync(id);
+        externalEntities[id] = loaded;
+        return loaded;
     }
 
     private async Task ConvertToTransferAsync(Guid transactionIdA, Guid transactionIdB)
