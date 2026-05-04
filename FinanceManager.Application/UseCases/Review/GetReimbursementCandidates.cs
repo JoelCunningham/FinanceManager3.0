@@ -17,7 +17,7 @@ public sealed class GetReimbursementCandidates(ITransactionRepository transactio
         return new GetReimbursementCandidatesResult(
             new PagedResult<TransactionSummary>
             {
-                Items = [.. paged.Items.Select(TransactionSummary.FromTransaction)],
+                Items = [.. paged.Items.Select(TransactionSummary.FromTransactions)],
                 TotalItems = paged.TotalItems,
                 CurrentPage = paged.CurrentPage,
                 PageSize = paged.PageSize

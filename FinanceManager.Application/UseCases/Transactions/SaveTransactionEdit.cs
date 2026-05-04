@@ -11,6 +11,11 @@ public sealed class SaveTransactionEdit(ITransactionRepository transactionReposi
     {
         await using var operations = unitOfWork.BeginTransaction();
 
+        if (transaction.Category is null)
+        {
+            return new SaveTransactionEditResult([new UseCaseInvalidOperationError("Transaction must have a category.")]);
+        }
+
         try
         {
             var entity = await transactionRepository.GetByIdAsync(transaction.EntityId);
@@ -18,11 +23,14 @@ public sealed class SaveTransactionEdit(ITransactionRepository transactionReposi
             entity.Date = transaction.Date;
             entity.Description = transaction.Description;
             entity.Amount = transaction.Amount;
-            entity.Category = transaction.Category!.ToCategory();
             entity.CategoryId = transaction.Category.Id;
             
             await transactionRepository.UpdateAsync(entity);
-            await machineLearningRepository.SaveAsync(entity.Category, entity.Description);
+            
+            if (transaction.Category.Id != entity.CategoryId && entity.CategoryId is not null)
+            {
+                await machineLearningRepository.SaveAsync(entity.CategoryId.Value, entity.Description);
+            }
 
             await operations.CommitAsync();
             return new SaveTransactionEditResult([]);

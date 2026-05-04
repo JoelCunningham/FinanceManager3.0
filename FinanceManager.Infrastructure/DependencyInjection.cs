@@ -1,24 +1,29 @@
 namespace FinanceManager.Infrastructure;
 
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Infrastructure.Data;
 using FinanceManager.Infrastructure.Parsers;
-using FinanceManager.Infrastructure.Repositories.InMemory;
+using FinanceManager.Infrastructure.Repositories.EfCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
-        // Repositories (TODO change to scoped when using a database)
-        services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();
-        services.AddSingleton<ITransferRepository, TransferRepository>();
-        services.AddSingleton<ITransactionRepository, TransactionRepository>();
-        services.AddSingleton<IBankAccountRepository, BankAccountRepository>();
-        services.AddSingleton<IBankRecordRepository, BankRecordRepository>();
-        services.AddSingleton<ICategoryRepository, CategoryRepository>();
-        services.AddSingleton<IMachineLearningRepository, MachineLearningRepository>();
-        services.AddSingleton<IBudgetEntryRepository, BudgetEntryRepository>();
-        services.AddSingleton<IBudgetYearRepository, BudgetYearRepository>();
+        // DbContext
+        services.AddDbContext<FinanceManagerDbContext>(options => options.UseSqlite(connectionString, sqlite => sqlite.MigrationsAssembly(Constants.MigrationsAssembly)));
+
+        // Repositories
+        services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
+        services.AddScoped<ITransferRepository, TransferRepository>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<IBankAccountRepository, BankAccountRepository>();
+        services.AddScoped<IBankRecordRepository, BankRecordRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IMachineLearningRepository, MachineLearningRepository>();
+        services.AddScoped<IBudgetEntryRepository, BudgetEntryRepository>();
+        services.AddScoped<IBudgetYearRepository, BudgetYearRepository>();
 
         // Parsers
         services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();

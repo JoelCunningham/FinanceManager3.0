@@ -50,7 +50,7 @@
                                     ErrorAmountIds="Validation.GetValidationItemIds(ValidationField.Amount)"
                                     OnCategoryChange="args => SetGroupCategory.InvokeAsync((args.Item1, args.Item2))"
                                     OnAmountChange="args => SetGroupAmount.InvokeAsync((args.Item1, args.Item2, EditTransactionGroup))"
-                                    OnDateChange="args => SetGroupDate.InvokeAsync((args.Item1, args.Item2, EditTransactionGroup.InitialTransaction.Date))" 
+                                    OnDateChange="args => SetGroupDate.InvokeAsync((args.Item1, args.Item2, EditTransactionGroup.Record.Date))" 
                                     IsReviewed="true"/>   
             }
         </BodyTemplate>

@@ -13,8 +13,8 @@ public sealed class ValidateReviewGroup
 
         foreach (var transaction in group.Transactions)
         {
-            var originalDate = group.InitialTransaction.Record.Date;
-            var originalAmount = group.InitialTransaction.Record.Amount;
+            var originalDate = group.Record.Date;
+            var originalAmount = group.Record.Amount;
             var requireCategory = transaction.Reimburses is null && group.Transfers is null;
             TransactionHelper.ValidateTransaction(transaction, originalDate, originalAmount, requireCategory).ToList().ForEach(errors.Add);
         }

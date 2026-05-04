@@ -16,7 +16,7 @@ public sealed class GetTransferCandidates(ITransactionRepository transactionRepo
         return new GetTransferCandidatesResult(
             new PagedResult<TransactionSummary>
             {
-                Items = [.. paged.Items.Select(TransactionSummary.FromTransaction)],
+                Items = [.. paged.Items.Select(TransactionSummary.FromTransactions)],
                 TotalItems = paged.TotalItems,
                 CurrentPage = paged.CurrentPage,
                 PageSize = paged.PageSize

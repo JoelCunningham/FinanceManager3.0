@@ -1,22 +1,23 @@
-namespace FinanceManager.Infrastructure.Repositories.InMemory;
+namespace FinanceManager.Infrastructure.Repositories.EfCore;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
+using FinanceManager.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
-public class BankAccountRepository : IBankAccountRepository
+public sealed class BankAccountRepository(FinanceManagerDbContext dbContext) : IBankAccountRepository
 {
-    private readonly List<BankAccount> _bankAccounts = [];
-
     public async Task<IEnumerable<BankAccount>> GetAllAsync()
     {
-        return _bankAccounts;
+        return await dbContext.BankAccounts.AsNoTracking().ToListAsync();
     }
-    
+
     public async Task CreateAsync(BankAccount bankAccount)
     {
-        _bankAccounts.Add(bankAccount);
-        //throw here on failure
+        dbContext.BankAccounts.Add(bankAccount);
+        await dbContext.SaveChangesAsync();
     }
+
 
     public async Task<IEnumerable<BankAccount>> GetOrCreateAsync(IEnumerable<(string Bank, string? AccountNumber)> accountDetails)
     {
@@ -24,7 +25,7 @@ public class BankAccountRepository : IBankAccountRepository
 
         foreach (var (bank, accountNumber) in accountDetails)
         {
-            var existingAccount = _bankAccounts.FirstOrDefault(ba => ba.Bank == bank && ba.AccountNumber == accountNumber);
+            var existingAccount = await dbContext.BankAccounts.FirstOrDefaultAsync(ba => ba.Bank == bank && ba.AccountNumber == accountNumber);
             if (existingAccount is not null)
             {
                 result.Add(existingAccount);
@@ -37,12 +38,12 @@ public class BankAccountRepository : IBankAccountRepository
                     Bank = bank,
                     AccountNumber = accountNumber
                 };
-                _bankAccounts.Add(newAccount);
+                dbContext.BankAccounts.Add(newAccount);
                 result.Add(newAccount);
             }
         }
 
+        await dbContext.SaveChangesAsync();
         return result;
-        //throw here on failure
     }
 }

@@ -4,7 +4,7 @@ using FinanceManager.Domain.Entities;
 
 public interface IMachineLearningRepository
 {
-    Task SaveAsync(Category category, string description);
+    Task SaveAsync(Guid categoryId, string description);
     Task<IEnumerable<MachineLearning>> GetAllAsync();
     Task<MachineLearning?> GetExactOrDefaultAsync(string description);
     string? NormaliseDescription(string description);

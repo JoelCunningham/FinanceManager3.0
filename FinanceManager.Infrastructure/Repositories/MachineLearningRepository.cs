@@ -1,37 +1,42 @@
-﻿namespace FinanceManager.Infrastructure.Repositories.InMemory;
+namespace FinanceManager.Infrastructure.Repositories.EfCore;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
+using FinanceManager.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
-public class MachineLearningRepository : IMachineLearningRepository
+public sealed class MachineLearningRepository(FinanceManagerDbContext dbContext) : IMachineLearningRepository
 {
-    private readonly List<MachineLearning> _memories = [];
-
-    private static readonly string[] GenericTerms = ["debit", "credit", "card", "payment", "purchase", "withdraw", "withdrawal", "osko", "aus", "paid", "eftpos", "deposit", "sp", "fee", "bonus"];
-
-    public async Task SaveAsync(Category category, string description)
+    public async Task SaveAsync(Guid categoryId, string description)
     {
         var normalisedDescription = NormaliseDescription(description);
         if (normalisedDescription == null) return;
 
-        _memories.Add(new MachineLearning 
+        dbContext.MachineLearning.Add(new MachineLearning
         {
             Id = Guid.NewGuid(),
-            CategoryId = category.Id,
-            Category = category,
+            CategoryId = categoryId,
+            Category = null!,
             NormalisedDescription = normalisedDescription,
             LastUsed = DateTime.UtcNow
         });
+
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<MachineLearning>> GetAllAsync()
     {
-        return _memories; 
+        return await dbContext.MachineLearning
+            .Include(m => m.Category)
+            .AsNoTracking()
+            .ToListAsync();
     }
 
-    public async Task<MachineLearning?> GetExactOrDefaultAsync(string normalisedDescription)
+    public async Task<MachineLearning?> GetExactOrDefaultAsync(string description)
     {
-        return _memories.FirstOrDefault(m => m.NormalisedDescription == normalisedDescription);
+        return await dbContext.MachineLearning
+            .Include(m => m.Category)
+            .FirstOrDefaultAsync(m => m.NormalisedDescription == description);
     }
 
     public string? NormaliseDescription(string description)
@@ -42,9 +47,8 @@ public class MachineLearningRepository : IMachineLearningRepository
         description = new([.. description.Select(c => char.IsLetter(c) || char.IsWhiteSpace(c) ? c : ' ')]);
         description = string
             .Join(" ", description.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Where(t => !GenericTerms.Contains(t))
+            .Where(t => !Constants.MLGenericTerms.Contains(t))
             .Select(t => t.EndsWith('s') ? t[..^1] : t));
-
 
         if (string.IsNullOrWhiteSpace(description)) return null;
 

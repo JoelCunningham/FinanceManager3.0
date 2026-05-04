@@ -1,9 +1,8 @@
 ﻿namespace FinanceManager.Application.DTOs;
 
-using FinanceManager.Application.DTOs.Base;
 using FinanceManager.Domain.Entities;
 
-public class TransactionSummary : ITransactionConvertible<TransactionSummary>
+public class TransactionSummary
 {
     public Guid EntityId { get; set; }
     public CategorySummary? Category { get; set; }
@@ -12,7 +11,7 @@ public class TransactionSummary : ITransactionConvertible<TransactionSummary>
     public required DateTime Date { get; set; }
     public required BankRecordSummary Record { get; set; }
 
-    public static TransactionSummary FromTransaction(Transaction transaction)
+    public static TransactionSummary FromTransactions(Transaction transaction)
     {
         return new TransactionSummary
         {
@@ -25,7 +24,7 @@ public class TransactionSummary : ITransactionConvertible<TransactionSummary>
         };
     }
 
-    public Transaction ToTransaction(IEnumerable<Transaction>? siblings = null)
+    public Transaction ToTransaction()
     {
         return new Transaction
         {
@@ -37,7 +36,6 @@ public class TransactionSummary : ITransactionConvertible<TransactionSummary>
             Record = Record.ToBankRecord(),
             CategoryId = Category?.Id,
             Category = Category?.ToCategory(),
-            Siblings = siblings?.ToList() ?? [],
         };
     }
 

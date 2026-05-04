@@ -23,9 +23,9 @@
 {
     <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave">
         <ReviewRowEntry Label="Transfers from">
-            <HxInputDate @bind-Value="TransactionGroup.InitialTransaction.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
-            <HxInputText @bind-Value="TransactionGroup.InitialTransaction.Description" title="@TransactionGroup.InitialTransaction.Description" Enabled="false" />
-            <HxInputNumber @bind-Value="TransactionGroup.InitialTransaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+            <HxInputDate @bind-Value="TransactionGroup.Record.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
+            <HxInputText @bind-Value="TransactionGroup.Record.Description" title="@TransactionGroup.Record.Description" Enabled="false" />
+            <HxInputNumber @bind-Value="TransactionGroup.Record.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
         </ReviewRowEntry>
         <ReviewRowEntry Label="To">
             <HxInputDate @bind-Value="TransactionGroup.Transfers.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
@@ -48,23 +48,23 @@ else
                 }
                 <HxInputDate @bind-Value:get="transaction.Date" 
                              CalendarIcon="BootstrapIcon.Calendar" 
-                             MaxDate="@TransactionGroup.InitialTransaction.Date"
+                             MaxDate="@TransactionGroup.Record.Date"
                              @bind-Value:set="v => OnDateChange.InvokeAsync((transaction, v))" />
                 <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
-                @if (transaction.EntityId == TransactionGroup.InitialTransaction.Id)
+                @if (transaction.EntityId == TransactionGroup.Transactions.First().EntityId)
                 {
                     <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01" Enabled="false" />
                 }
                 else
                 {
                     <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01"
-                                   min="@(TransactionGroup.InitialTransaction.Amount < 0 ? TransactionGroup.InitialTransaction.Amount : null)"
-                                   max="@(TransactionGroup.InitialTransaction.Amount > 0 ? TransactionGroup.InitialTransaction.Amount : null)"
+                                   min="@(TransactionGroup.Record.Amount < 0 ? TransactionGroup.Record.Amount : null)"
+                                   max="@(TransactionGroup.Record.Amount > 0 ? TransactionGroup.Record.Amount : null)"
                                    @bind-Value:set="v => OnAmountChange.InvokeAsync((transaction, v))" />
                 }
                 <HxContextMenu>
-                    <HxContextMenuItem OnClick="TransactionGroup.Split">Split</HxContextMenuItem>
-                    @if (transaction.EntityId != TransactionGroup.InitialTransaction.Id)
+                    <HxContextMenuItem OnClick="() => TransactionGroup.Split(transaction)">Split</HxContextMenuItem>
+                    @if (transaction.EntityId != TransactionGroup.Transactions.First().EntityId)
                     {
                         <HxContextMenuItem OnClick="() => TransactionGroup.Unsplit(transaction)">Unsplit</HxContextMenuItem>
                     }
@@ -72,7 +72,7 @@ else
                     {
                         <HxContextMenuItem OnClick="() => OnFindReimbursement.InvokeAsync(transaction)">Reimburse existing</HxContextMenuItem>
                     }
-                    @if (TransactionGroup.Transactions.Count == 1 && transaction.Reimbursements is null)
+                    @if (TransactionGroup.Transactions.Count == 1 && (transaction.Reimbursements is null || !transaction.Reimbursements.Any()))
                     {
                         <HxContextMenuItem OnClick="OnFindTransfer">Change to transfer</HxContextMenuItem>
                     }

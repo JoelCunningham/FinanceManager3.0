@@ -59,7 +59,7 @@ public partial class Review : PageBase
 
     private async Task<PagedResult<TransactionSummary>> GetTransferData(FilterQuery query)
     {
-        var amount = CurrentGroup?.InitialTransaction.Amount ?? 0;
+        var amount = CurrentGroup?.Record.Amount ?? 0;
         return (await UseCases.GetTransferCandidatesAsync(query, amount)).Page;
     }
 
@@ -114,7 +114,7 @@ public partial class Review : PageBase
     public void SetDate(ReviewGroup group, ReviewTransaction transaction, DateTime value)
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Date);
-        var result = UseCases.BackdateTransactionAsync(transaction, value, group.InitialTransaction.Date).Result;
+        var result = UseCases.BackdateTransactionAsync(transaction, value, group.Record.Date).Result;
         
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }

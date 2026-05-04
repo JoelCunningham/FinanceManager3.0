@@ -14,12 +14,21 @@ public sealed class GetPagedReview(ITransactionRepository transactionRepository)
         query.FilterStatus = ReviewStatus.Unreviewed;
 
         var paged = await transactionRepository.GetPagedTransactionsAsync(query);
+        var reviewGroups = new List<ReviewGroup>();
+
+        foreach (var transaction in paged.Items)
+        {
+            var recordTransactions = await transactionRepository.GetByRecordIdAsync(transaction.RecordId);
+            var reimbursements = await transactionRepository.GetReimbursementsAsync(recordTransactions.Select(t => t.Id));
+            var reviewGroup = ReviewGroup.FromTransactions(transaction.Record, recordTransactions, reimbursements);
+            reviewGroups.Add(reviewGroup);
+        }
 
         return new GetPagedReviewResult
         (
             new PagedResult<ReviewGroup>
             {
-                Items = [.. paged.Items.Select(ReviewGroup.FromTransaction)],
+                Items = reviewGroups,
                 TotalItems = paged.TotalItems,
                 CurrentPage = paged.CurrentPage,
                 PageSize = paged.PageSize

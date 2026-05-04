@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Config/">
     <File Path=".gitignore" />
+    <File Path="dotnet-tools.json" />
   </Folder>
   <Folder Name="/Config/Copilot/">
     <File Path=".github/copilot-instructions.md" />

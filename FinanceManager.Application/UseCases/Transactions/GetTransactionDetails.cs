@@ -10,15 +10,15 @@ public sealed class GetTransactionDetails(ITransactionRepository transactionRepo
     public async Task<GetTransactionDetailsResult> ExecuteAsync(Guid transactionId)
     {
         var transaction = await transactionRepository.GetByIdAsync(transactionId);
-        var reimbursements = transaction.Reimbursements ?? [];
-        var siblings = transaction.Siblings ?? [];
+        var reimbursements = await transactionRepository.GetReimbursementsAsync([transactionId]);
+        var siblings = (await transactionRepository.GetByRecordIdAsync(transaction.RecordId)).Where(t => t.Id != transactionId);
 
         var transactionDetails = new TransactionDetails
         {
-            TransactionSummary = TransactionSummary.FromTransaction(transaction),
+            TransactionSummary = TransactionSummary.FromTransactions(transaction),
             RecordSummary = BankRecordSummary.FromBankRecord(transaction.Record),
-            Reimbursements = reimbursements.Select(TransactionSummary.FromTransaction),
-            Siblings = siblings.Select(TransactionSummary.FromTransaction),
+            Reimbursements = reimbursements.Select(TransactionSummary.FromTransactions),
+            Siblings = siblings.Select(TransactionSummary.FromTransactions),
         };
 
         return new GetTransactionDetailsResult(transactionDetails);

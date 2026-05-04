@@ -18,8 +18,6 @@ public sealed class Transaction : IEntity
 
     public Guid? ReimbursesId { get; set; }
     public Transaction? Reimburses { get; set; }
-
-    public ICollection<Transaction> Siblings { get; set; } = [];
     public ICollection<Transaction> Reimbursements { get; set; } = [];
 
     public bool IsReimbursement => ReimbursesId.HasValue;

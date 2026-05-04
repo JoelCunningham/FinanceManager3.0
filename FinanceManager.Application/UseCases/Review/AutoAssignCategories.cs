@@ -11,10 +11,11 @@ public sealed class AutoAssignCategories(ICategoryRepository categoryRepository,
     public async Task<AutoCategoriseResult> ExecuteAsync(IEnumerable<ReviewGroup> groups, IEnumerable<CategorySummary> categories)
     {
         int assignedCount = 0;
-        var categoryDict = categories.ToDictionary(c => c.Id);
 
         foreach (var group in groups)
         {
+            var categoryDict = categories.Where(c => c.IsIncome == group.IsIncome).ToDictionary(c => c.Id);
+
             foreach (var transaction in group.Transactions)
             {
                 var suggested = await SuggestCategoryAsync(transaction.Description);

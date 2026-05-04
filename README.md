@@ -77,8 +77,8 @@ Built with **Blazor Interactive Server Components** for a responsive, interactiv
 
 ### Prerequisites
 
-- ✅ [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later
-- ✅ [Visual Studio 2022](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/) (recommended)
+- ✅ [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- ✅ [Visual Studio 2062](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/) (recommended)
 
 ### 📦 Installation
 
@@ -105,6 +105,28 @@ Built with **Blazor Interactive Server Components** for a responsive, interactiv
 4. **Open in browser** 🌐
 
    Navigate to `https://localhost:7292` (or the URL shown in the console)
+
+### 🗄️ EF Core (SQLite)
+
+This app uses EF Core with SQLite. The WebApp expects a connection string in one of these settings:
+
+- `ConnectionStrings__Default`
+- `FINANCEMANAGER__CONNECTIONSTRING`
+
+Example (PowerShell):
+
+```ps
+$env:ConnectionStrings__Default="Data Source=finance_manager.db"
+```
+
+#### Migrations
+
+After changing the model, create and apply a migration:
+
+```ps
+dotnet tool run dotnet-ef migrations add AddYourChange --project FinanceManager.Infrastructure --startup-project FinanceManager.WebApp
+dotnet tool run dotnet-ef database update --project FinanceManager.Infrastructure --startup-project FinanceManager.WebApp
+```
 
 ---
 
@@ -135,8 +157,6 @@ FinanceManager
 Dependencies flow **inward** toward the domain, ensuring core business logic remains independent of external concerns.
 
 > 📚 **For detailed documentation**, see [ARCHITECTURE.md](ARCHITECTURE.md)
-
-> ⚠️ **Note**: Currently uses in-memory storage. Database implementation planned for future releases.
 
 ---
 

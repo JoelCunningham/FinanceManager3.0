@@ -9,7 +9,7 @@ public sealed class UpdateTransactionAmount()
 {
     public async Task<UpdateTransactionAmountResult> ExecuteAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group)
     {
-        var originalAmount = group.InitialTransaction.Record.Amount;
+        var originalAmount = group.Record.Amount;
 
         if (!group.Transactions.Contains(transaction))
         {

@@ -6,7 +6,7 @@ namespace FinanceManager.Application.Interfaces
     {
         Task<BankRecord> GetByIdAsync(Guid id);
         Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> importId);
-        Task<IEnumerable<BankRecord>> GetDuplicatesAsync(IEnumerable<BankRecord> bankRecords);
+        Task<IEnumerable<BankRecord>> FilterDuplicatesAsync(IEnumerable<BankRecord> bankRecords);
         Task CreateAsync(IEnumerable<BankRecord> bankRecords);
     }
 }

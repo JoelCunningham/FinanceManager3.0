@@ -49,7 +49,7 @@ public sealed class BudgetCellEntry()
         {
             Id = EntityId ?? Guid.NewGuid(),
             CategoryId = Category.Id,
-            Category = Category.ToCategory(),
+            Category = null!,
             Amount = Amount,
             Notes = Notes,
             BudgetYearId = budgetYear.Id,

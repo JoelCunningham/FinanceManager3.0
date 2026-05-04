@@ -1,45 +1,60 @@
 ﻿namespace FinanceManager.Application.DTOs;
 
-using FinanceManager.Application.DTOs.Base;
 using FinanceManager.Domain.Entities;
 
-public class ReviewGroup : ITransactionConvertible<ReviewGroup>
+public class ReviewGroup
 {
-    public required Transaction InitialTransaction { get; set; }
+    public required BankRecordSummary Record { get; set; }
+    public List<ReviewTransaction> InitialTransactions { get; set; } = [];
     public List<ReviewTransaction> Transactions { get; set; } = [];
     public TransactionSummary? Transfers { get; set; }
-    public bool IsIncome => InitialTransaction.Amount > 0;
+    public bool IsIncome => Record.Amount > 0;
 
-    public static ReviewGroup FromTransaction(Transaction transaction)
+    public static ReviewGroup FromTransactions(BankRecord record, IEnumerable<Transaction> transactions, IEnumerable<Transaction> reimbursements)
     {
-        List<ReviewTransaction> transactions = [ReviewTransaction.FromTransaction(transaction)];
-        if (transaction.Siblings != null && transaction.Siblings.Count != 0)
+        var reimbursementsMap = reimbursements
+            .Where(t => t.ReimbursesId is not null)
+            .GroupBy(t => t.ReimbursesId!.Value)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var reviewTransactions = transactions.Select(t =>
         {
-            transactions.AddRange(transaction.Siblings.Select(ReviewTransaction.FromTransaction));
-        }
+            var reviewTransaction = ReviewTransaction.FromTransaction(t);
+            if (reimbursementsMap.TryGetValue(t.Id, out var reimbursements))
+            {
+                reviewTransaction.Reimbursements = [.. reimbursements.Select(ReviewTransaction.FromTransaction)];
+            }
+
+            return reviewTransaction;
+        }).ToList();
 
         return new ReviewGroup
         {
-            InitialTransaction = transaction,
-            Transactions = transactions,
+            Record = BankRecordSummary.FromBankRecord(record),
+            Transactions = reviewTransactions,
+            InitialTransactions = reviewTransactions,
         };
     }
 
     public void Reset()
     {
         Transfers = null;
-        Transactions = [ReviewTransaction.FromTransaction(InitialTransaction)];
+        Transactions = InitialTransactions;
     }
 
-    public void Split()
+    public void Split(ReviewTransaction transaction)
     {
+        if (!Transactions.Contains(transaction))
+        {
+            throw new InvalidOperationException("Transaction does not belong to this ReviewGroup.");
+        }
         Transactions.Add(new()
         {
             EntityId = Guid.NewGuid(),
-            Record = BankRecordSummary.FromBankRecord(InitialTransaction.Record),
+            Record = Record,
             Amount = 0,
-            Date = InitialTransaction.Date,
-            Description = InitialTransaction.Description,
+            Date = transaction.Date,
+            Description = transaction.Description,
             Category = null,
             Reimburses = null,
         });
@@ -49,7 +64,7 @@ public class ReviewGroup : ITransactionConvertible<ReviewGroup>
     {
         if (!Transactions.Contains(transaction))
         {
-            throw new InvalidOperationException("Transaction does not belong to this InitialTransaction.");
+            throw new InvalidOperationException("Transaction does not belong to this ReviewGroup.");
         }
         if (Transactions.Count <= 1)
         {
@@ -66,7 +81,7 @@ public class ReviewTransaction : TransactionSummary
     public IEnumerable<ReviewTransaction> Reimbursements { get; set; } = []; // Used for editing reimbursements of an existing transaction
     public bool IsAutoCategorised { get; set; }
 
-    public static new ReviewTransaction FromTransaction(Transaction transaction)
+    public static ReviewTransaction FromTransaction(Transaction transaction)
     {
         var record = BankRecordSummary.FromBankRecord(transaction.Record);
         var category = transaction.Category != null ? CategorySummary.FromCategory(transaction.Category) : null;
@@ -84,26 +99,18 @@ public class ReviewTransaction : TransactionSummary
         };
     }
 
-    public new Transaction ToTransaction(IEnumerable<Transaction>? siblings = null)
+    public Transaction ToTransaction(BankRecordSummary record)
     {
-        //TODO investigate if siblings parameter is necessary for reimbursements
-        var reimburses = Reimburses?.ToTransaction();
-        var reimbursements = Reimbursements.Select(r => r.ToTransaction()).ToList();
-
         return new Transaction
         {
             Id = EntityId,
             Description = Description,
             Amount = Amount,
             Date = Date,
-            RecordId = Record.BankRecordId,
-            Record = Record.ToBankRecord(),
+            RecordId = record.BankRecordId,
+            Record = record.ToBankRecord(),
             CategoryId = Category?.Id,
-            Category = Category?.ToCategory(),
-            Siblings = siblings?.ToList() ?? [],
-            ReimbursesId = reimburses?.Id,
-            Reimburses = reimburses,
-            Reimbursements = reimbursements,
+            Category = null,
         };
     }
 }

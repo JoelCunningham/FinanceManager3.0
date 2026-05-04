@@ -17,7 +17,7 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
             var pagedTransactions = await transactionRepository.GetPagedTransactionsAsync(query);
             var pageResult = new PagedResult<TransactionSummary>
             {
-                Items = [.. pagedTransactions.Items.Select(TransactionSummary.FromTransaction)],
+                Items = [.. pagedTransactions.Items.Select(TransactionSummary.FromTransactions)],
                 TotalItems = pagedTransactions.TotalItems,
                 CurrentPage = pagedTransactions.CurrentPage,
                 PageSize = pagedTransactions.PageSize

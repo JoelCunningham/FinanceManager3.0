@@ -108,7 +108,7 @@ public partial class Transactions : PageBase
             return;
         }
 
-        Validation.SetSuccess("Transaction updated successfully.");
+        Validation.SetSuccess("Activity updated successfully.");
         await TransactionData.UpdateAsync();
         await EditModal.HideAsync();
     }
@@ -131,7 +131,7 @@ public partial class Transactions : PageBase
             return;
         }
 
-        Validation.SetSuccess("Transaction group updated successfully.");
+        Validation.SetSuccess("Activity updated successfully.");
         await TransactionData.UpdateAsync();
         await EditModal.HideAsync();
     }

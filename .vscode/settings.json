@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "analyzers",
         "Awaiter",
         "Blazor",
         "Centered",
@@ -13,6 +14,7 @@
         "onclick",
         "oninput",
         "onmouseenter",
-        "onmouseleave"
+        "onmouseleave",
+        "osko"
     ]
 }
