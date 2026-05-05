@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
@@ -12,10 +12,10 @@ public sealed class BankAccountRepository(FinanceManagerDbContext dbContext) : I
         return await dbContext.BankAccounts.AsNoTracking().ToListAsync();
     }
 
-    public async Task CreateAsync(BankAccount bankAccount)
+    public Task CreateAsync(BankAccount bankAccount)
     {
         dbContext.BankAccounts.Add(bankAccount);
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
 
@@ -43,7 +43,6 @@ public sealed class BankAccountRepository(FinanceManagerDbContext dbContext) : I
             }
         }
 
-        await dbContext.SaveChangesAsync();
         return result;
     }
 }

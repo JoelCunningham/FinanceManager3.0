@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
@@ -33,6 +33,5 @@ public sealed class BudgetYearRepository(FinanceManagerDbContext dbContext) : IB
         }
 
         dbContext.BudgetYears.Add(new BudgetYear { Id = Guid.NewGuid(), Year = year, Scope = scope });
-        await dbContext.SaveChangesAsync();
     }
 }

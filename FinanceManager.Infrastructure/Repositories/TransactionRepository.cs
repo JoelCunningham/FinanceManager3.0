@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
@@ -103,16 +103,16 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         return await GetPagedAsync(query, queryable);
     }
 
-    public async Task CreateAsync(Transaction transaction)
+    public Task CreateAsync(Transaction transaction)
     {
         dbContext.Transactions.Add(transaction);
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task CreateAsync(IEnumerable<Transaction> transactions)
+    public Task CreateAsync(IEnumerable<Transaction> transactions)
     {
         dbContext.Transactions.AddRange(transactions);
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
     public async Task CreateOrUpdateAsync(Transaction transaction)
@@ -149,7 +149,6 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
             };
 
             dbContext.Transactions.Add(newTransaction);
-            await dbContext.SaveChangesAsync();
             return;
         }
 
@@ -176,7 +175,6 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         }
 
         dbContext.Transactions.Remove(transaction);
-        await dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteOrSkipAsync(Guid id)
@@ -185,7 +183,6 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         if (transaction != null)
         {
             dbContext.Transactions.Remove(transaction);
-            await dbContext.SaveChangesAsync();
         }
     }
 
@@ -288,7 +285,7 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         return query.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize);
     }
 
-    private async Task ApplyUpdatesAsync(Transaction existing, Transaction source)
+    private Task ApplyUpdatesAsync(Transaction existing, Transaction source)
     {
         existing.Description = source.Description;
         existing.Amount = source.Amount;
@@ -296,7 +293,6 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         existing.RecordId = source.RecordId;
         existing.CategoryId = source.CategoryId;
         existing.ReimbursesId = source.ReimbursesId;
-
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

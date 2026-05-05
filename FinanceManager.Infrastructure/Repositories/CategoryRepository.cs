@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;

@@ -5,12 +5,10 @@ using FinanceManager.Application.Interfaces;
 
 public sealed record SaveTransactionEditResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveTransactionEdit(ITransactionRepository transactionRepository, IMachineLearningRepository machineLearningRepository, IUnitOfWork unitOfWork)
+public sealed class SaveTransactionEdit(ITransactionRepository transactionRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore)
 {
     public async Task<SaveTransactionEditResult> ExecuteAsync(TransactionSummary transaction)
     {
-        await using var operations = unitOfWork.BeginTransaction();
-
         if (transaction.Category is null)
         {
             return new SaveTransactionEditResult([new UseCaseInvalidOperationError("Transaction must have a category.")]);
@@ -29,16 +27,15 @@ public sealed class SaveTransactionEdit(ITransactionRepository transactionReposi
             
             if (transaction.Category.Id != entity.CategoryId && entity.CategoryId is not null)
             {
-                await machineLearningRepository.SaveAsync(entity.CategoryId.Value, entity.Description);
+                await machineLearningRepository.CreateAsync(entity.CategoryId.Value, entity.Description);
             }
 
-            await operations.CommitAsync();
+            await dataStore.SaveAsync();
             return new SaveTransactionEditResult([]);
         }
         catch
         {
             // TODO: Log exception
-            await operations.RollbackAsync();
             return new SaveTransactionEditResult([new UseCaseUnexpectedError()]);
         }
     }

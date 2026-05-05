@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
@@ -47,7 +47,6 @@ public sealed class BudgetEntryRepository(FinanceManagerDbContext dbContext) : I
         }
 
         dbContext.BudgetEntries.Add(entry);
-        await dbContext.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(BudgetEntry entry)
@@ -64,8 +63,6 @@ public sealed class BudgetEntryRepository(FinanceManagerDbContext dbContext) : I
         existing.Notes = entry.Notes;
         existing.ScopePosition = entry.ScopePosition;
         existing.Length = entry.Length;
-
-        await dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
@@ -77,6 +74,5 @@ public sealed class BudgetEntryRepository(FinanceManagerDbContext dbContext) : I
         }
 
         dbContext.BudgetEntries.Remove(entry);
-        await dbContext.SaveChangesAsync();
     }
 }

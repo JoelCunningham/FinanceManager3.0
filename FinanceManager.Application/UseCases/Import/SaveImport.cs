@@ -13,13 +13,11 @@ public sealed record ImportSaveResult(
     IEnumerable<UseCaseError> Errors
 ) : UseCaseResult(Errors);
 
-public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IUnitOfWork unitOfWork)
+public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IDataStore dataStore)
 {
     public async Task<ImportSaveResult> ExecuteAsync(IEnumerable<ParsedTransaction> parsedTransactions)
     {
         var importId = Guid.NewGuid();
-        await using var transaction = unitOfWork.BeginTransaction();
-
         try
         {
             var accounts =  await bankAccountRepository.GetOrCreateAsync(parsedTransactions.Select(t => (t.Bank, t.AccountNumber)));
@@ -34,13 +32,12 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBank
             await transferRepository.CreateAsync(transfers);
             await transactionRepository.CreateAsync(transactions);
 
-            await transaction.CommitAsync();
+            await dataStore.SaveAsync();
 
             return new ImportSaveResult(importId, transactions.Count, transfers.Count, records.Count, []);
         }
         catch
         {
-            await transaction.RollbackAsync();
             return new ImportSaveResult(Guid.Empty, 0, 0, 0, [new UseCaseUnexpectedError()]);
         }
     }

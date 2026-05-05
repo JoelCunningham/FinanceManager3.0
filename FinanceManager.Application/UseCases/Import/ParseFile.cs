@@ -5,7 +5,7 @@ using FinanceManager.Application.Interfaces;
 
 public sealed record ParseFileResult(List<ParsedTransaction> Transactions, IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, IEnumerable<ITransactionFileParser> parsers)
+public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, IDataStore dataStore, IEnumerable<ITransactionFileParser> parsers)
 {
     public async Task<ParseFileResult> ExecuteAsync(Stream file, string bank, string extension)
     {
@@ -22,6 +22,7 @@ public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IBankA
 
         var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();         
         var accounts =  await bankAccountRepository.GetOrCreateAsync(parsed.Select(t => (t.Bank, t.AccountNumber)));
+        await dataStore.SaveAsync();
 
         var records = parsed.Select(t => t.ToBankRecord(new Guid(), accounts.First(a => a.Bank == t.Bank && a.AccountNumber == t.AccountNumber))).ToList();
         var duplicateIds = (await bankRecordRepository.FilterDuplicatesAsync(records)).Select(d => d.Id).ToHashSet();

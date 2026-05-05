@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 public sealed class MachineLearningRepository(FinanceManagerDbContext dbContext) : IMachineLearningRepository
 {
-    public async Task SaveAsync(Guid categoryId, string description)
+    public Task CreateAsync(Guid categoryId, string description)
     {
         var normalisedDescription = NormaliseDescription(description);
-        if (normalisedDescription == null) return;
+        if (normalisedDescription == null) return Task.CompletedTask;
 
         dbContext.MachineLearning.Add(new MachineLearning
         {
@@ -20,8 +20,7 @@ public sealed class MachineLearningRepository(FinanceManagerDbContext dbContext)
             NormalisedDescription = normalisedDescription,
             LastUsed = DateTime.UtcNow
         });
-
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
     public async Task<IEnumerable<MachineLearning>> GetAllAsync()

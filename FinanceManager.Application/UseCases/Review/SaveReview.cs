@@ -7,7 +7,7 @@ using FinanceManager.Domain.Entities;
 
 public sealed record SaveReviewResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveReview(ITransactionRepository transactionRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IUnitOfWork unitOfWork)
+public sealed class SaveReview(ITransactionRepository transactionRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore)
 {
     public async Task<SaveReviewResult> ExecuteAsync(ReviewGroup group)
     {
@@ -40,7 +40,6 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
 
     private async Task SaveTransactionsAsync(ReviewGroup group)
     {
-        await using var operations = unitOfWork.BeginTransaction();
         try
         {
             var transactionList = group.Transactions.ToList();
@@ -136,7 +135,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
                 await transactionRepository.CreateOrUpdateAsync(transactionEntity);
                 if (categoryId is not null)
                 {
-                    await machineLearningRepository.SaveAsync(categoryId.Value, transaction.Description);
+                    await machineLearningRepository.CreateAsync(categoryId.Value, transaction.Description);
                 }
             }
 
@@ -145,11 +144,10 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
                 await transactionRepository.UpdateAsync(externalEntity);
             }
 
-            await operations.CommitAsync();
+            await dataStore.SaveAsync();
         }
         catch
         {
-            await operations.RollbackAsync();
             throw;
         }
     }
@@ -174,8 +172,6 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
     private async Task ConvertToTransferAsync(Guid transactionIdA, Guid transactionIdB)
     {
         if (transactionIdA == transactionIdB) throw new Exception("Transaction IDs must be different.");
-
-        await using var operations = unitOfWork.BeginTransaction();
         try
         {
             var transactionA = await transactionRepository.GetByIdAsync(transactionIdA);
@@ -193,12 +189,11 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
 
             await transferRepository.CreateAsync(transfer);
 
-            await operations.CommitAsync();
+            await dataStore.SaveAsync();
         }
         catch
         {
             // TODO: Log exception
-            await operations.RollbackAsync();
             throw;
         }
     }

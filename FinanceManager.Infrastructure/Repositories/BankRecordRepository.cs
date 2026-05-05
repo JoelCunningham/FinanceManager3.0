@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
@@ -61,9 +61,9 @@ public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IB
         return duplicates;
     }
 
-    public async Task CreateAsync(IEnumerable<BankRecord> bankRecords)
+    public Task CreateAsync(IEnumerable<BankRecord> bankRecords)
     {
         dbContext.BankRecords.AddRange(bankRecords);
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 }

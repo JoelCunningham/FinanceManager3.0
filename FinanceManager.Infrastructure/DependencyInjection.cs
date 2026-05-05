@@ -3,7 +3,7 @@ namespace FinanceManager.Infrastructure;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Infrastructure.Data;
 using FinanceManager.Infrastructure.Parsers;
-using FinanceManager.Infrastructure.Repositories.EfCore;
+using FinanceManager.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,11 +11,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
-        // DbContext
+        // Data
         services.AddDbContext<FinanceManagerDbContext>(options => options.UseSqlite(connectionString, sqlite => sqlite.MigrationsAssembly(Constants.MigrationsAssembly)));
+        services.AddScoped<IDataStore>(sp => sp.GetRequiredService<FinanceManagerDbContext>());
 
         // Repositories
-        services.AddScoped<IUnitOfWork, EfCoreUnitOfWork>();
         services.AddScoped<ITransferRepository, TransferRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IBankAccountRepository, BankAccountRepository>();

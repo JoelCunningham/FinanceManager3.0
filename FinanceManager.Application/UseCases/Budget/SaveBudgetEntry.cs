@@ -4,7 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
 // TODO use UseCaseResult and return errors instead of throwing exceptions
-public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IBudgetYearRepository budgetYearRepository)
+public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IBudgetYearRepository budgetYearRepository, IDataStore dataStore)
 {
     public async Task ExecuteAsync(BudgetCellEntry model, int year, bool isExisting)
     {
@@ -22,5 +22,7 @@ public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository
         {
             await budgetEntryRepository.CreateAsync(entry);
         }
+
+        await dataStore.SaveAsync();
     }
 }

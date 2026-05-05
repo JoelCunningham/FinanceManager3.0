@@ -1,9 +1,10 @@
 namespace FinanceManager.Infrastructure.Data;
 
+using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options) : DbContext(options)
+public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options) : DbContext(options), IDataStore
 {
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<BankRecord> BankRecords => Set<BankRecord>();
@@ -14,6 +15,8 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
     public DbSet<MachineLearning> MachineLearning => Set<MachineLearning>();
     public DbSet<BudgetYear> BudgetYears => Set<BudgetYear>();
     public DbSet<BudgetEntry> BudgetEntries => Set<BudgetEntry>();
+
+    public Task SaveAsync() { return SaveChangesAsync(); }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

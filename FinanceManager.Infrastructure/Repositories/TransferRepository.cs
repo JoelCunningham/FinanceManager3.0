@@ -1,4 +1,4 @@
-namespace FinanceManager.Infrastructure.Repositories.EfCore;
+namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
@@ -51,16 +51,16 @@ public sealed class TransferRepository(FinanceManagerDbContext dbContext) : ITra
         };
     }
 
-    public async Task CreateAsync(Transfer transfer)
+    public Task CreateAsync(Transfer transfer)
     {
         dbContext.Transfers.Add(transfer);
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
-    public async Task CreateAsync(IEnumerable<Transfer> transfers)
+    public Task CreateAsync(IEnumerable<Transfer> transfers)
     {
         dbContext.Transfers.AddRange(transfers);
-        await dbContext.SaveChangesAsync();
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(Guid id)
@@ -69,7 +69,6 @@ public sealed class TransferRepository(FinanceManagerDbContext dbContext) : ITra
         if (transfer is not null)
         {
             dbContext.Transfers.Remove(transfer);
-            await dbContext.SaveChangesAsync();
         }
         else
         {
