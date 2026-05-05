@@ -53,12 +53,15 @@ public partial class Import : PageBase
         if (parseResult.IsSuccess && parseResult.Transactions is not null)
         {
             ImportedTransactions = [.. parseResult.Transactions];
-            Validation.SetSuccess($"{parseResult.Transactions.Count} new {LanguageUtilities.Pluralise("transactions", parseResult.Transactions.Count)} found.", true);
+            Validation.SetSuccess($"{parseResult.Transactions.Count} new {LanguageUtilities.Pluralise("transactions", parseResult.Transactions.Count)} found.");
         }
         else
         {
             ImportedTransactions = null;
-            Validation.SetError(ErrorMessages.DefaultErrorMessage, true);
+            foreach (var error in parseResult.Errors)
+            {
+                Validation.SetError(error.Message);
+            }
         }
     }
 

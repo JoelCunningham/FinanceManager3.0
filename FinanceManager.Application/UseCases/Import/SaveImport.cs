@@ -20,7 +20,7 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBank
         var importId = Guid.NewGuid();
         try
         {
-            var accounts =  await bankAccountRepository.GetOrCreateAsync(parsedTransactions.Select(t => (t.Bank, t.AccountNumber)));
+            var accounts =  await bankAccountRepository.GetOrCreateAsync(parsedTransactions.First().Bank, parsedTransactions.Select(t => t.AccountNumber).Distinct());
 
             var records = parsedTransactions.Select(t => t.ToBankRecord(importId, accounts.First(a => a.Bank == t.Bank && a.AccountNumber == t.AccountNumber))).ToList();
 

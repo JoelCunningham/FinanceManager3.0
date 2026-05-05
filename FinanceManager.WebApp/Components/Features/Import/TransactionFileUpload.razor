@@ -1,9 +1,8 @@
 @code {
     [Parameter] public string SupportedExtensions { get; set; } = string.Empty;
+    [Parameter] public ValidationModel ValidationModel { get; set; } = new();
 
     [Parameter] public EventCallback<IBrowserFile> OnFileUploaded { get; set; }
-
-    [Parameter] public ValidationModel ValidationModel { get; set; } = new();
 
     private async Task OnChange(InputFileChangeEventArgs args)
     {
@@ -13,9 +12,4 @@
 
 <div class="file-input">
     <HxInputFile Label="Upload your transactions:" Accept="@SupportedExtensions" OnChange="OnChange" InputCssClass="@ValidationModel.GetControlClass()" />
-
-    @if (!string.IsNullOrEmpty(ValidationModel.Message))
-    {
-        <div class="d-block @ValidationModel.GetFeedbackClass()">@ValidationModel.Message</div>
-    }
 </div>

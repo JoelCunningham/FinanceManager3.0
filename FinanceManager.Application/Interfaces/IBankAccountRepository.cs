@@ -6,5 +6,5 @@ public interface IBankAccountRepository
 {
     Task<IEnumerable<BankAccount>> GetAllAsync();
     Task CreateAsync(BankAccount bankAccount);
-    Task<IEnumerable<BankAccount>> GetOrCreateAsync(IEnumerable<(string Bank, string? AccountNumber)> accountDetails);
+    Task<IEnumerable<BankAccount>> GetOrCreateAsync(string Bank, IEnumerable<string?> AccountNumbers);
 }

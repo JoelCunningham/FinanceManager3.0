@@ -2,10 +2,11 @@ namespace FinanceManager.Application.UseCases.Import;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Domain.Entities;
 
 public sealed record ParseFileResult(List<ParsedTransaction> Transactions, IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, IDataStore dataStore, IEnumerable<ITransactionFileParser> parsers)
+public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IEnumerable<ITransactionFileParser> parsers)
 {
     public async Task<ParseFileResult> ExecuteAsync(Stream file, string bank, string extension)
     {
@@ -20,11 +21,9 @@ public sealed class ParseFile(IBankRecordRepository bankRecordRepository, IBankA
             return new ParseFileResult([], [new UseCaseInvalidOperationError("The type of the file you uploaded is not supported. Please upload a file of type: " + string.Join(", ", extensions))]);
         }
 
-        var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();         
-        var accounts =  await bankAccountRepository.GetOrCreateAsync(parsed.Select(t => (t.Bank, t.AccountNumber)));
-        await dataStore.SaveAsync();
+        var parsed = (await parser.ParseTransactionsFileAsync(file)).ToList();
 
-        var records = parsed.Select(t => t.ToBankRecord(new Guid(), accounts.First(a => a.Bank == t.Bank && a.AccountNumber == t.AccountNumber))).ToList();
+        var records = parsed.Select(t => t.ToBankRecord(new Guid(), new BankAccount() { Bank = t.Bank, AccountNumber = t.AccountNumber })).ToList();
         var duplicateIds = (await bankRecordRepository.FilterDuplicatesAsync(records)).Select(d => d.Id).ToHashSet();
 
         var transactions = parsed.Where(p => !duplicateIds.Contains(p.Id)).ToList();

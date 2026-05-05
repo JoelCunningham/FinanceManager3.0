@@ -39,31 +39,33 @@ public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IB
 
     public async Task<IEnumerable<BankRecord>> FilterDuplicatesAsync(IEnumerable<BankRecord> bankRecords)
     {
-        var duplicates = new List<BankRecord>();
+        var records = bankRecords as List<BankRecord> ?? [.. bankRecords];
+        if (records.Count == 0) return [];
 
-        foreach (var bankRecord in bankRecords)
-        {
-            var exists = await dbContext.BankRecords.AnyAsync(br =>
-                br.BankAccountId == bankRecord.BankAccountId &&
-                br.Amount == bankRecord.Amount &&
-                br.Date == bankRecord.Date &&
-                br.Description == bankRecord.Description &&
-                br.Type == bankRecord.Type &&
-                br.Reference == bankRecord.Reference &&
-                br.Id != bankRecord.Id);
+        var dates = records.Select(r => r.Date).Distinct().ToList();
+        var amounts = records.Select(r => r.Amount).Distinct().ToList();
+        var banks = records.Select(r => r.BankAccount.Bank).Distinct().ToList();
+        var accountNumbers = records.Select(r => r.BankAccount.AccountNumber).Distinct().ToList();
 
-            if (exists)
-            {
-                duplicates.Add(bankRecord);
-            }
-        }
+        var candidateKeys = await dbContext.BankRecords
+            .AsNoTracking()
+            .Where(br => dates.Contains(br.Date))
+            .Where(br => amounts.Contains(br.Amount))
+            .Where(br => banks.Contains(br.BankAccount.Bank))
+            .Where(br => accountNumbers.Contains(br.BankAccount.AccountNumber))
+            .Select(br => new BankRecordKey(br.Amount, br.Date, br.BankAccount.Bank, br.BankAccount.AccountNumber, br.Description, br.Type, br.Reference))
+            .Distinct()
+            .ToListAsync();
 
-        return duplicates;
+        var keySet = candidateKeys.ToHashSet();
+        return records.Where(r => keySet.Contains(new BankRecordKey(r.Amount, r.Date, r.BankAccount.Bank, r.BankAccount.AccountNumber, r.Description, r.Type, r.Reference)));
     }
-
+    
     public Task CreateAsync(IEnumerable<BankRecord> bankRecords)
     {
         dbContext.BankRecords.AddRange(bankRecords);
         return Task.CompletedTask;
     }
+
+    private readonly record struct BankRecordKey(decimal Amount, DateTime Date, string Bank, string? AccountNumber, string Description, string? Type, string? Reference); 
 }

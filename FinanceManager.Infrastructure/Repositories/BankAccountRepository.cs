@@ -19,30 +19,33 @@ public sealed class BankAccountRepository(FinanceManagerDbContext dbContext) : I
     }
 
 
-    public async Task<IEnumerable<BankAccount>> GetOrCreateAsync(IEnumerable<(string Bank, string? AccountNumber)> accountDetails)
+    public async Task<IEnumerable<BankAccount>> GetOrCreateAsync(string bank, IEnumerable<string?> accountNumbers)
     {
-        var result = new List<BankAccount>();
+        var requested = accountNumbers.Distinct().ToList();
+        if (requested.Count == 0) return [];
 
-        foreach (var (bank, accountNumber) in accountDetails)
+        var existingAccounts = await dbContext.BankAccounts
+            .Where(ba => ba.Bank == bank && requested.Contains(ba.AccountNumber))
+            .ToListAsync();
+
+        var newAccounts = new List<BankAccount>();
+        var allAccounts = new List<BankAccount>(requested.Count);
+
+        foreach (var accountNumber in requested)
         {
-            var existingAccount = await dbContext.BankAccounts.FirstOrDefaultAsync(ba => ba.Bank == bank && ba.AccountNumber == accountNumber);
-            if (existingAccount is not null)
+            if (existingAccounts.Any(a => a.AccountNumber == accountNumber))
             {
-                result.Add(existingAccount);
+                allAccounts.Add(existingAccounts.First(a => a.AccountNumber == accountNumber));
+                continue;
             }
-            else
-            {
-                var newAccount = new BankAccount
-                {
-                    Id = Guid.NewGuid(),
-                    Bank = bank,
-                    AccountNumber = accountNumber
-                };
-                dbContext.BankAccounts.Add(newAccount);
-                result.Add(newAccount);
-            }
+
+            var newAccount = new BankAccount { Id = Guid.NewGuid(), Bank = bank, AccountNumber = accountNumber };
+
+            allAccounts.Add(newAccount);
+            newAccounts.Add(newAccount);
         }
 
-        return result;
+        if (newAccounts.Count > 0) dbContext.BankAccounts.AddRange(newAccounts);
+        return allAccounts;
     }
 }
