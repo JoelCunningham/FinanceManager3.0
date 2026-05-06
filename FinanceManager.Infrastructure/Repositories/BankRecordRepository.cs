@@ -1,5 +1,6 @@
 namespace FinanceManager.Infrastructure.Repositories;
 
+using EFCore.BulkExtensions;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
@@ -42,30 +43,26 @@ public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IB
         var records = bankRecords as List<BankRecord> ?? [.. bankRecords];
         if (records.Count == 0) return [];
 
-        var dates = records.Select(r => r.Date).Distinct().ToList();
-        var amounts = records.Select(r => r.Amount).Distinct().ToList();
-        var banks = records.Select(r => r.BankAccount.Bank).Distinct().ToList();
-        var accountNumbers = records.Select(r => r.BankAccount.AccountNumber).Distinct().ToList();
+        var recordKeys = records.Select(r => new BankRecordKey(r.Amount, r.Date, r.BankAccount.Bank, r.BankAccount.AccountNumber, r.Description, r.Type, r.Reference)).ToHashSet();
+
+        var dates = recordKeys.Select(k => k.Date).Distinct().ToList();
+        var amounts = recordKeys.Select(k => k.Amount).Distinct().ToList();
 
         var candidateKeys = await dbContext.BankRecords
             .AsNoTracking()
-            .Where(br => dates.Contains(br.Date))
-            .Where(br => amounts.Contains(br.Amount))
-            .Where(br => banks.Contains(br.BankAccount.Bank))
-            .Where(br => accountNumbers.Contains(br.BankAccount.AccountNumber))
+            .Where(br => dates.Contains(br.Date) && amounts.Contains(br.Amount))
             .Select(br => new BankRecordKey(br.Amount, br.Date, br.BankAccount.Bank, br.BankAccount.AccountNumber, br.Description, br.Type, br.Reference))
-            .Distinct()
             .ToListAsync();
 
         var keySet = candidateKeys.ToHashSet();
         return records.Where(r => keySet.Contains(new BankRecordKey(r.Amount, r.Date, r.BankAccount.Bank, r.BankAccount.AccountNumber, r.Description, r.Type, r.Reference)));
     }
-    
+
     public Task CreateAsync(IEnumerable<BankRecord> bankRecords)
     {
-        dbContext.BankRecords.AddRange(bankRecords);
+        dbContext.BulkInsertAsync(bankRecords);
         return Task.CompletedTask;
     }
 
-    private readonly record struct BankRecordKey(decimal Amount, DateTime Date, string Bank, string? AccountNumber, string Description, string? Type, string? Reference); 
+    private readonly record struct BankRecordKey(decimal Amount, DateTime Date, string Bank, string? AccountNumber, string Description, string? Type, string? Reference);
 }

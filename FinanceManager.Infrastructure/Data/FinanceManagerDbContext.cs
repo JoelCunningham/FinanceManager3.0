@@ -3,6 +3,7 @@ namespace FinanceManager.Infrastructure.Data;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options) : DbContext(options), IDataStore
 {
@@ -17,6 +18,14 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
     public DbSet<BudgetEntry> BudgetEntries => Set<BudgetEntry>();
 
     public Task SaveAsync() { return SaveChangesAsync(); }
+    public ITransactionScope BeginTransaction() { return new TransactionScope(Database.BeginTransaction()); }
+
+    private sealed class TransactionScope(IDbContextTransaction transaction) : ITransactionScope
+    {
+        public Task CommitAsync() { return transaction.CommitAsync(); }
+        public Task RollbackAsync() { return transaction.RollbackAsync(); }
+        public ValueTask DisposeAsync() { return transaction.DisposeAsync(); }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

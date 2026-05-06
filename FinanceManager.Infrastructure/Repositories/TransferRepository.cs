@@ -1,5 +1,6 @@
 namespace FinanceManager.Infrastructure.Repositories;
 
+using EFCore.BulkExtensions;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
@@ -59,7 +60,7 @@ public sealed class TransferRepository(FinanceManagerDbContext dbContext) : ITra
 
     public Task CreateAsync(IEnumerable<Transfer> transfers)
     {
-        dbContext.Transfers.AddRange(transfers);
+        dbContext.BulkInsertAsync(transfers);
         return Task.CompletedTask;
     }
 

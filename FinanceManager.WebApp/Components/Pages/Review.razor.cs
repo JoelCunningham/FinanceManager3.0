@@ -4,6 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Utilities;
 
 public partial class Review : PageBase
 {
@@ -45,7 +46,7 @@ public partial class Review : PageBase
             var autoAssignResult = await UseCases.AutoCategoriseAsync(result.Items, Categories);
             if (autoAssignResult.AssignedCount > 0)
             {
-                Validation.SetSuccess($"Auto assigned {autoAssignResult.AssignedCount} transactions");
+                Validation.SetSuccess($"Auto assigned {autoAssignResult.AssignedCount} {LanguageUtilities.Pluralise("activities", autoAssignResult.AssignedCount)}.");
             }
             else if (Data.HasResults && IsFirstAutoAssign)
             {

@@ -71,7 +71,7 @@ public partial class Import : PageBase
 
         var saveResult = await UseCases.SaveImportAsync(ImportedTransactions);
 
-        if (saveResult is not null)
+        if (saveResult.IsSuccess)
         {
             Validation.SetSuccess($"Imported {saveResult.RecordsSaved} records ({saveResult.TransactionsSaved} transactions, {saveResult.TransfersSaved} transfers).", true);
             await SuccessModal.ShowAsync();

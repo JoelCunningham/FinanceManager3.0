@@ -10,12 +10,17 @@ namespace FinanceManager.Application.Utilities
             {
                 Id = Guid.NewGuid(),
                 RecordId = record.Id,
-                Record = record,
+                Record = null!,
                 Date = record.Date,
                 Amount = record.Amount,
                 Description = record.Description,
                 CategoryId = null
             };
+        }
+
+        public static IEnumerable<Transaction> BankRecordsToTransactions(IEnumerable<BankRecord> records)
+        {
+            return records.Select(BankRecordToTransaction);
         }
 
         public static List<Transfer> BankRecordsToTransfers(IEnumerable<BankRecord> records)
@@ -43,9 +48,9 @@ namespace FinanceManager.Application.Utilities
             {
                 Id = Guid.NewGuid(),
                 FromRecordId = from.Id,
-                FromRecord = from,
+                FromRecord = null!,
                 ToRecordId = to.Id,
-                ToRecord = to,
+                ToRecord = null!,
                 Amount = from.Amount,
                 Date = from.Date,
                 Description = from.Description + " / " + to.Description,

@@ -1,5 +1,6 @@
 namespace FinanceManager.Infrastructure.Repositories;
 
+using EFCore.BulkExtensions;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
@@ -111,7 +112,7 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
 
     public Task CreateAsync(IEnumerable<Transaction> transactions)
     {
-        dbContext.Transactions.AddRange(transactions);
+        dbContext.BulkInsertAsync(transactions);
         return Task.CompletedTask;
     }
 

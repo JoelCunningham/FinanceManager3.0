@@ -1,17 +1,21 @@
 ﻿@inject NavigationManager NavigationManager
 
 @code {
-    private HxModal _modal = default!;
-
     [Parameter] public IReadOnlyList<ParsedTransaction> Transactions { get; set; } = [];
-
     [Parameter] public EventCallback OnClose { get; set; }
 
-    private int TransfersCount => Transactions.Count(t => t.IsInternalTransfer);
+    private HxModal _modal = default!;
+
+    private int TransfersCount => Transactions?.Count(t => t.IsInternalTransfer) ?? 0;
 
     public async Task ShowAsync() => await _modal.ShowAsync();
-
     public async Task HideAsync() => await _modal.HideAsync();
+
+    private async Task CloseModal()
+    {
+        await HideAsync();
+        await OnClose.InvokeAsync();
+    }
 }
 
 <div class="success-modal">
@@ -23,13 +27,13 @@
             </span>
         </BodyTemplate>
         <FooterTemplate>
-            <HxButton OnClick="@OnClose" Color="ThemeColor.Secondary">
+            <HxButton OnClick="@CloseModal" Color="ThemeColor.Secondary">
                 Close
             </HxButton>
             @if (TransfersCount < Transactions?.Count)
             {
                 <HxButton OnClick="@(() => NavigationManager.NavigateTo("/Review"))" Color="ThemeColor.Primary">
-                    Review transactions
+                    Review activities
                 </HxButton>
             }
         </FooterTemplate>
