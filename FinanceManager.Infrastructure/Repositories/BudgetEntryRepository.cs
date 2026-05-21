@@ -2,6 +2,7 @@ namespace FinanceManager.Infrastructure.Repositories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
+using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 using FinanceManager.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -74,5 +75,21 @@ public sealed class BudgetEntryRepository(FinanceManagerDbContext dbContext) : I
         }
 
         dbContext.BudgetEntries.Remove(entry);
+    }
+
+    public async Task StretchEntriesToScope(int year, BudgetScope oldScope, BudgetScope newScope)
+    {
+        var entries = await dbContext.BudgetEntries
+            .Include(e => e.BudgetYear)
+            .Where(e => e.BudgetYear.Year == year)
+            .ToListAsync();
+
+        var scopeLengthRatio = (double)ScopeHelper.GetPeriodCount(newScope, year) / ScopeHelper.GetPeriodCount(oldScope, year);
+
+        foreach (var entry in entries)
+        {
+            entry.Length = (int)Math.Round(entry.Length * scopeLengthRatio);
+            entry.ScopePosition = (int)Math.Round(entry.ScopePosition * scopeLengthRatio);
+        }
     }
 }

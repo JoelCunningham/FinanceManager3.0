@@ -2,6 +2,7 @@ namespace FinanceManager.WebApp.Components.Pages;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases;
+using FinanceManager.WebApp.Components.Base;
 
 public partial class Categories : PageBase
 {

@@ -1,3 +1,5 @@
+@inherits ModalBase
+
 @code {
     [Parameter] public bool IsEditing { get; set; }
 
@@ -9,11 +11,6 @@
     [Parameter] public EventCallback OnDelete { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
     
-    public Task ShowAsync() => _modal?.ShowAsync() ?? Task.CompletedTask;
-    public Task HideAsync() => _modal?.HideAsync() ?? Task.CompletedTask;
-
-    private Havit.Blazor.Components.Web.Bootstrap.HxModal? _modal;
-
     private int _startScopePosition = 0;
     private int _endScopePosition = 0;
 

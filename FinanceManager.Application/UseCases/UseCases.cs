@@ -8,6 +8,7 @@ using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
+using FinanceManager.Domain.Enums;
 
 public class UseCases(
     AutoAssignCategories autoAssignCategories, 
@@ -29,6 +30,7 @@ public class UseCases(
     GetTransferCandidates getTransferCandidates,
     GetUniqueAccounts getUniqueAccounts, 
     ParseFile parseFile, 
+    SaveBudget saveBudget,
     SaveBudgetEntry saveBudgetEntry, 
     SaveImport saveImport,
     SaveReview saveReview,
@@ -60,6 +62,7 @@ public class UseCases(
     public Task<GetUniqueAccountsResult> GetUniqueAccountsAsync() => getUniqueAccounts.ExecuteAsync();
     public Task<ImportSaveResult> SaveImportAsync(IEnumerable<ParsedTransaction> parsedTransactions) => saveImport.ExecuteAsync(parsedTransactions);
     public Task<ParseFileResult> ParseFileAsync(Stream file, string bank, string extension) => parseFile.ExecuteAsync(file, bank, extension);
+    public Task<SaveBudgetResult> SaveBudgetAsync(int year, BudgetScope scope, bool isEditing) => saveBudget.ExecuteAsync(year, scope, isEditing);
     public Task<SaveReviewResult> SaveReviewAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
     public Task<SaveTransactionEditResult> SaveTransactionEditAsync(TransactionSummary transaction) => saveTransactionEdit.ExecuteAsync(transaction);
     public Task<SeparateTransferResult> SeparateTransferAsync(Guid transferId) => separateTransfer.ExecuteAsync(transferId);

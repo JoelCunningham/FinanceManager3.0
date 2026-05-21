@@ -1,0 +1,29 @@
+@inherits ModalBase
+
+@code {
+    [Parameter] public bool IsEditing { get; set; }
+
+    [Parameter] public int Year { get; set; }
+    [Parameter] public EventCallback<int> YearChanged { get; set; }
+
+    [Parameter] public BudgetScope Scope { get; set; }
+    [Parameter] public EventCallback<BudgetScope> ScopeChanged { get; set; }
+
+    [Parameter] public IEnumerable<BudgetScope> AvailableScopes { get; set; } = [];
+
+    [Parameter] public EventCallback<(int Year, BudgetScope Scope)> OnCreate { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}
+
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit Budget" : "Create Budget")">
+    <BodyTemplate>
+        <div class="d-flex flex-column gap-2">           
+            <HxInputNumber Label="Year" @bind-Value="Year" Enabled="!IsEditing" />
+            <HxSelect Label="Budget Scope" @bind-Value="Scope" Data="AvailableScopes" TextSelector="s => s.ToString()" ValueSelector="s => s" />
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <HxButton Color="ThemeColor.Secondary" OnClick="OnCancel">Cancel</HxButton>
+        <HxButton Color="ThemeColor.Primary" OnClick="() => OnCreate.InvokeAsync((Year, Scope))">@(IsEditing ? "Save" : "Create")</HxButton>
+    </FooterTemplate>
+</HxModal>

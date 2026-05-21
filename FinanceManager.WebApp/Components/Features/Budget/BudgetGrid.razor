@@ -5,7 +5,7 @@
 
     [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
     [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
-    [Parameter] public EventCallback<Guid?> OnBudgetCreateClicked { get; set; }
+    [Parameter] public EventCallback OnBudgetCreateClicked { get; set; }
 
     private Guid? HoveredEntryId { get; set; }
 
@@ -87,5 +87,5 @@
 else
 {
     <HxAlert Color="ThemeColor.Info">You have not created a budget for this year. Create one now:</HxAlert>
-    <HxButton Color="ThemeColor.Primary" @onclick="() => OnBudgetCreateClicked.InvokeAsync(null)">Create Budget for @Year</HxButton>
+    <HxButton Color="ThemeColor.Primary" @onclick="OnBudgetCreateClicked">Create Budget for @Year</HxButton>
 }

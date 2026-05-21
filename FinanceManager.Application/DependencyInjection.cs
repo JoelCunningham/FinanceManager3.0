@@ -54,6 +54,7 @@ public static class DependencyInjection
         // Budget use cases
         services.AddScoped<DeleteBudgetEntry>();
         services.AddScoped<GetPagedBudget>();
+        services.AddScoped<SaveBudget>();
         services.AddScoped<SaveBudgetEntry>();
 
         // Date use cases

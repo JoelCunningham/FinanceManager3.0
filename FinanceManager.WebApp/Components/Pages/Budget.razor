@@ -10,15 +10,23 @@
                EntryTypeFilters="EntryTypeFilters"
                OnPrev="Prev"
                OnToday="Today"
-               OnNext="Next" />
+               OnNext="Next"
+               OnEditYear="EditYear" />
 
-<BudgetGrid Scope="CurrentBudgetYear?.Scope" Year="CurrentYear" Cells="Cells" OnCellClicked="CreateEntry" OnEntryClicked="EditEntry" />
+<BudgetGrid Scope="CurrentBudgetYear?.Scope" Year="CurrentYear" Cells="Cells" OnCellClicked="CreateEntry" OnEntryClicked="EditEntry" OnBudgetCreateClicked="CreateYear" />
 
-<BudgetEntryModal @ref="_budgetEntryModal"
+<BudgetEntryModal @ref="BudgetEntryModal"
                   Entry="CurrentEntry"
                   CurrentBudgetYear="CurrentBudgetYear"
                   IsEditing="IsEditing"
                   Categories="Categories"
                   OnCancel="CloseEditModal"
-                  OnDelete="Delete"
-                  OnSave="Save" />
+                  OnDelete="DeleteEntry"
+                  OnSave="SaveEntry" />
+
+<BudgetYearModal @ref="BudgetYearModal"
+                 Year="CurrentYear"
+                 AvailableScopes="BudgetScopes"
+                 IsEditing="IsEditing"
+                 OnCreate="(args) => SaveBudget(args.Year, args.Scope)"
+                 OnCancel="CloseCreateModal" />

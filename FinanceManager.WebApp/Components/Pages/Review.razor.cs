@@ -2,6 +2,7 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
+using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
 using FinanceManager.WebApp.Utilities;

@@ -26,12 +26,7 @@ public sealed class BudgetYearRepository(FinanceManagerDbContext dbContext) : IB
 
     public async Task CreateAsync(int year, BudgetScope scope)
     {
-        var exists = await dbContext.BudgetYears.AnyAsync(p => p.Year == year);
-        if (exists)
-        {
-            throw new InvalidOperationException($"A budget year for the year {year} already exists.");
-        }
-
         dbContext.BudgetYears.Add(new BudgetYear { Id = Guid.NewGuid(), Year = year, Scope = scope });
     }
+
 }

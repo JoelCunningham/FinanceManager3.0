@@ -7,6 +7,8 @@
     [Parameter] public EventCallback OnPrev { get; set; }
     [Parameter] public EventCallback OnToday { get; set; }
     [Parameter] public EventCallback OnNext { get; set; }
+
+    [Parameter] public EventCallback OnEditYear { get; set; }
 }
 
 <div class="graph-actions">
@@ -22,4 +24,6 @@
               AutoSort="false"
               TextSelector="f => f.ToString()"
               ValueSelector="f => f" />
+
+    <HxButton Color="ThemeColor.Light" OnClick="OnEditYear">Edit Budget</HxButton>
 </div>

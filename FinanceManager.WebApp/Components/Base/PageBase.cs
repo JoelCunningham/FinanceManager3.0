@@ -1,4 +1,4 @@
-namespace FinanceManager. WebApp.Components.Pages;
+namespace FinanceManager.WebApp.Components.Base;
 
 using FinanceManager.Application.UseCases;
 using FinanceManager.WebApp.Models;

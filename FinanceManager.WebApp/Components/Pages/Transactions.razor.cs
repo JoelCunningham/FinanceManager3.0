@@ -4,6 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Transfers;
+using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Transactions;
 using FinanceManager.WebApp.Components.Features.Transfers;
 using FinanceManager.WebApp.Models;
