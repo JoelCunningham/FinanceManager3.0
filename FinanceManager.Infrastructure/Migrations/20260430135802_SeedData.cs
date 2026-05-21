@@ -13,15 +13,6 @@ namespace FinanceManager.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData(
-                table: "BudgetYears",
-                columns: new[] { "Id", "Scope", "Year" },
-                values: new object[,]
-                {
-                    { new Guid("071e6505-028e-67b8-a567-5e6a78f1441e"), 0, 2024 },
-                    { new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), 2, 2026 },
-                    { new Guid("6f8a9e01-2428-ebf5-2bb8-6a6e68ffbae3"), 1, 2025 }
-                });
 
             migrationBuilder.InsertData(
                 table: "CategoryGroups",
@@ -110,129 +101,11 @@ namespace FinanceManager.Infrastructure.Migrations
                     { new Guid("fde256b0-0e08-12cb-43c4-7ad85ef80976"), "#EFEA5A", new Guid("d7f03733-edcb-08d6-7c42-058ddf10c22e"), "Alcohol" }
                 });
 
-            migrationBuilder.InsertData(
-                table: "BudgetEntries",
-                columns: new[] { "Id", "Amount", "BudgetYearId", "CategoryId", "Length", "Notes", "ScopePosition" },
-                values: new object[,]
-                {
-                    { new Guid("11177dae-9d42-ac52-be04-f9fb49f998fc"), 100m, new Guid("6f8a9e01-2428-ebf5-2bb8-6a6e68ffbae3"), new Guid("59a2c369-e974-67c7-d335-b3f9786ba939"), 20, null, 2 },
-                    { new Guid("431638db-b408-e7e3-9f8a-55c8f1337287"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 9 },
-                    { new Guid("5573a051-0da2-9490-f3cc-f8e3166cc49c"), 50m, new Guid("6f8a9e01-2428-ebf5-2bb8-6a6e68ffbae3"), new Guid("a4bf5c0d-95de-99a1-21d5-57439d215eee"), 24, null, 0 },
-                    { new Guid("5aa80d28-32f0-eeef-bce0-b75c8342e1ad"), 4564.85m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("edde9471-7608-76af-dcf9-559581f8a684"), 12, null, 0 },
-                    { new Guid("65a84c8b-151b-f58e-429a-fac0ded1d207"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 0 },
-                    { new Guid("8aceb345-e684-1569-9e20-71d352267586"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 8 },
-                    { new Guid("98f9cfbc-5c58-b7a8-a508-937de00706c7"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("a4bf5c0d-95de-99a1-21d5-57439d215eee"), 8, null, 2 },
-                    { new Guid("9c8ffde0-85ce-e65f-24a3-c4dd504d5e23"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 2 },
-                    { new Guid("9f80f866-e242-df06-bf87-da99cb8da175"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 10 },
-                    { new Guid("b0de3032-d308-49fe-ff7f-efcbc925a3c5"), 100m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("59a2c369-e974-67c7-d335-b3f9786ba939"), 12, null, 0 },
-                    { new Guid("cad01ba1-c8d0-07b6-66c3-dff0ee8dfbdf"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 12 },
-                    { new Guid("e8d71a02-ee25-2f07-9d3c-18784939719c"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 11 },
-                    { new Guid("eeda34ee-9dcd-b6ea-1e24-619f98e5276c"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 1 },
-                    { new Guid("f1876e3c-76b0-944f-3491-a439f25bd493"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 7 },
-                    { new Guid("f3475e30-0f20-6ccb-e1bb-7c0e570e8b6a"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 5 },
-                    { new Guid("f72da5a7-11d7-2579-9576-db25276f548d"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 6 },
-                    { new Guid("f9048b38-24f4-54c4-3b53-6ea1be7a42ba"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 4 },
-                    { new Guid("fb406164-3442-2097-e9c0-f92167139ce6"), 50m, new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"), new Guid("54a2a109-285a-dbee-40a5-861c9aac1700"), 0, null, 3 }
-                });
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("11177dae-9d42-ac52-be04-f9fb49f998fc"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("431638db-b408-e7e3-9f8a-55c8f1337287"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("5573a051-0da2-9490-f3cc-f8e3166cc49c"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("5aa80d28-32f0-eeef-bce0-b75c8342e1ad"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("65a84c8b-151b-f58e-429a-fac0ded1d207"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("8aceb345-e684-1569-9e20-71d352267586"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("98f9cfbc-5c58-b7a8-a508-937de00706c7"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("9c8ffde0-85ce-e65f-24a3-c4dd504d5e23"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("9f80f866-e242-df06-bf87-da99cb8da175"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("b0de3032-d308-49fe-ff7f-efcbc925a3c5"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("cad01ba1-c8d0-07b6-66c3-dff0ee8dfbdf"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("e8d71a02-ee25-2f07-9d3c-18784939719c"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("eeda34ee-9dcd-b6ea-1e24-619f98e5276c"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("f1876e3c-76b0-944f-3491-a439f25bd493"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("f3475e30-0f20-6ccb-e1bb-7c0e570e8b6a"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("f72da5a7-11d7-2579-9576-db25276f548d"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("f9048b38-24f4-54c4-3b53-6ea1be7a42ba"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetEntries",
-                keyColumn: "Id",
-                keyValue: new Guid("fb406164-3442-2097-e9c0-f92167139ce6"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetYears",
-                keyColumn: "Id",
-                keyValue: new Guid("071e6505-028e-67b8-a567-5e6a78f1441e"));
 
             migrationBuilder.DeleteData(
                 table: "Categories",
@@ -513,16 +386,6 @@ namespace FinanceManager.Infrastructure.Migrations
                 table: "Categories",
                 keyColumn: "Id",
                 keyValue: new Guid("fde256b0-0e08-12cb-43c4-7ad85ef80976"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetYears",
-                keyColumn: "Id",
-                keyValue: new Guid("0c07d10a-dc11-ed59-4c90-753a73437fcb"));
-
-            migrationBuilder.DeleteData(
-                table: "BudgetYears",
-                keyColumn: "Id",
-                keyValue: new Guid("6f8a9e01-2428-ebf5-2bb8-6a6e68ffbae3"));
 
             migrationBuilder.DeleteData(
                 table: "Categories",
