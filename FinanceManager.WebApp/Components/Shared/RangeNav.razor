@@ -1,0 +1,13 @@
+﻿@code {
+    [Parameter] public string FixedText { get; set; } = default!;
+
+    [Parameter] public EventCallback OnPreviousRange { get; set; }
+    [Parameter] public EventCallback OnFixed { get; set; }
+    [Parameter] public EventCallback OnNextRange { get; set; }
+}
+
+<HxButtonGroup CssClass="end">
+    <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="OnPreviousRange" />
+    <HxButton Color="ThemeColor.Light" Text="@FixedText" OnClick="OnFixed" />
+    <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="OnNextRange" />
+</HxButtonGroup>

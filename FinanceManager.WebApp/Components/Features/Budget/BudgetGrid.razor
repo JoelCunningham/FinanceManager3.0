@@ -1,9 +1,11 @@
 @code {
     [Parameter] public BudgetScope? Scope { get; set; }
+    [Parameter] public int Year { get; set; }
     [Parameter] public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
 
     [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
     [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
+    [Parameter] public EventCallback<Guid?> OnBudgetCreateClicked { get; set; }
 
     private Guid? HoveredEntryId { get; set; }
 
@@ -84,5 +86,6 @@
 }
 else
 {
-    <p>TODO Add period button</p>
+    <HxAlert Color="ThemeColor.Info">You have not created a budget for this year. Create one now:</HxAlert>
+    <HxButton Color="ThemeColor.Primary" @onclick="() => OnBudgetCreateClicked.InvokeAsync(null)">Create Budget for @Year</HxButton>
 }

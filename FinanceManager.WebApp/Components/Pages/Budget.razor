@@ -3,7 +3,7 @@
 
 <PageTitle>Budget</PageTitle>
 
-<h1 class="page-heading">@(CurrentBudgetYear?.Year.ToString() ?? "TODO get year")</h1>
+<h1 class="page-heading">Budget @CurrentYear</h1>
 
 <BudgetActions EntryTypeFilter="EntryTypeFilter"
                EntryTypeFilterChanged="OnEntryTypeFilterChanged"
@@ -12,7 +12,7 @@
                OnToday="Today"
                OnNext="Next" />
 
-<BudgetGrid Scope="CurrentBudgetYear?.Scope" Cells="Cells" OnCellClicked="CreateEntry" OnEntryClicked="EditEntry" />
+<BudgetGrid Scope="CurrentBudgetYear?.Scope" Year="CurrentYear" Cells="Cells" OnCellClicked="CreateEntry" OnEntryClicked="EditEntry" />
 
 <BudgetEntryModal @ref="_budgetEntryModal"
                   Entry="CurrentEntry"

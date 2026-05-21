@@ -9,12 +9,11 @@ public partial class Budget : PageBase
     public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
     public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
     public BudgetYear? CurrentBudgetYear { get; set; } = null;
+    public int CurrentYear { get; set; } = DateTime.Now.Year;
 
     public BudgetCellEntry? CurrentEntry { get; set; }
     public bool IsEditing { get; set; }
     public BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
-
-    public int CurrentYear => CurrentBudgetYear?.Year ?? DateTime.Now.Year;
 
     private object? _budgetEntryModal;
 
@@ -51,6 +50,7 @@ public partial class Budget : PageBase
         Cells = page.Cells;
         Categories = page.Categories;
         CurrentBudgetYear = page.BudgetYear;
+        CurrentYear = year;
     }
 
     public async Task CreateEntry(BudgetCell cell)

@@ -10,9 +10,7 @@
 }
 
 <div class="graph-actions">
-    <HxButton Color="ThemeColor.Secondary" OnClick="OnPrev">Prev</HxButton>
-    <HxButton Color="ThemeColor.Secondary" OnClick="OnToday">Today</HxButton>
-    <HxButton Color="ThemeColor.Secondary" OnClick="OnNext">Next</HxButton>
+    <RangeNav OnPreviousRange="OnPrev" OnFixed="OnToday" OnNextRange="OnNext" FixedText="Today" />
 
     <HxSelect Value="EntryTypeFilter"
               ValueChanged="EntryTypeFilterChanged"

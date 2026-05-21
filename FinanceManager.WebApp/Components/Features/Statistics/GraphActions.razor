@@ -40,11 +40,6 @@
         </div>
     }
     
-    <HxButtonGroup CssClass="end">
-        <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="OnPreviousRange" />
-        <HxButton Color="ThemeColor.Light" Text="Today" OnClick="OnToday" />
-        <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="OnNextRange" />
-    </HxButtonGroup>
-
-
+    <RangeNav OnPreviousRange="OnPreviousRange" OnFixed="OnToday" OnNextRange="OnNextRange" FixedText="Today" />
+    
 </div>
