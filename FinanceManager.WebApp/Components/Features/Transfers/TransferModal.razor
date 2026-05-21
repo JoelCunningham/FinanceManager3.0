@@ -1,15 +1,11 @@
-@code {
-    private HxModal _modal = default!;
+@inherits ModalBase
 
+@code {
     [Parameter] public TransferDto Transfer { get; set; } = default!;
 
     [Parameter] public EventCallback SeparateFromDetails { get; set; }
 
     private string Source => Transfer.IsUserCreated ? "User created" : "Automatically created";
-
-    public async Task ShowAsync() => await _modal.ShowAsync();
-
-    public async Task HideAsync() => await _modal.HideAsync();
 }
 
 <div class="transfer-modal">

@@ -1,3 +1,5 @@
+@inherits ModalBase
+
 @code {
     [Parameter] public TransactionSummary EditTransaction { get; set; } = default!;
     [Parameter] public ReviewGroup EditTransactionGroup { get; set; } = default!;
@@ -14,8 +16,6 @@
     [Parameter] public EventCallback SaveTransaction { get; set; }
     [Parameter] public EventCallback SaveGroup { get; set; }
 
-    private HxModal _modal = default!;
-
     private bool HasCategoryError => Validation.GetValidationItemIds(ValidationField.Category).Contains(EditTransaction.EntityId);
     private bool HasAmountError => Validation.GetValidationItemIds(ValidationField.Amount).Contains(EditTransaction.EntityId);
     private bool HasDateError => Validation.GetValidationItemIds(ValidationField.Date).Contains(EditTransaction.EntityId);
@@ -24,9 +24,6 @@
     private decimal? MaxAmount => EditTransaction.Record.Amount > 0 ? EditTransaction.Record.Amount : 0;
 
     private bool IsAdvancedMode = false;
-
-    public async Task ShowAsync() => await _modal.ShowAsync();
-    public async Task HideAsync() => await _modal.HideAsync();
 }
 
 <div class="transaction-modal">
