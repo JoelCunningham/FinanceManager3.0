@@ -86,6 +86,7 @@
 }
 else
 {
-    <HxAlert Color="ThemeColor.Info">You have not created a budget for this year. Create one now:</HxAlert>
-    <HxButton Color="ThemeColor.Primary" @onclick="OnBudgetCreateClicked">Create Budget for @Year</HxButton>
+    <NotificationScreen Text="It looks like you haven't created a budget for this year yet - let's get started!">
+        <HxButton Color="ThemeColor.Primary" @onclick="OnBudgetCreateClicked">Create now</HxButton>
+    </NotificationScreen>
 }

@@ -1,0 +1,10 @@
+﻿.notification-screen {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 90%;
+    border-radius: var(--bs-border-radius-2xl);
+    margin-top: .5rem;
+    justify-content: center;
+    align-items: center;
+}
