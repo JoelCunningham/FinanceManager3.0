@@ -1,4 +1,4 @@
-namespace FinanceManager.Application.UseCases.Transactions;
+namespace FinanceManager.Application.UseCases.Categories;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
