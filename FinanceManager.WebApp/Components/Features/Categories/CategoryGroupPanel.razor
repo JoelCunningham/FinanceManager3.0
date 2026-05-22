@@ -5,6 +5,7 @@
     [Parameter] public EventCallback OnEdit { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
+    [Parameter] public EventCallback OnCategoryCreate { get; set; }
     [Parameter] public EventCallback<CategorySummary> OnCategoryEdit { get; set; }
     [Parameter] public EventCallback<CategorySummary> OnCategoryDelete { get; set; }
 
@@ -34,6 +35,8 @@
             <p class="subheading">Financial Area</p>
         </div>
     </div>
+
+    <HxButton Color="ThemeColor.Primary" Text="Add Category" OnClick="OnCategoryCreate" />
 
     @if (ShowCategories)
     {

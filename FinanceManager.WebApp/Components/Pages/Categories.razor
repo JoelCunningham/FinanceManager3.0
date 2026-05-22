@@ -16,7 +16,8 @@
 }
 else
 {
-    <CategoryGroupPanel Group="CurrentGroup" Categories="SelectedGroupCategories" OnEdit="OpenGroupEditModal" OnClose="CloseGroupPanel" />
+    <CategoryGroupPanel Group="CurrentGroup" Categories="SelectedGroupCategories" OnEdit="OpenGroupEditModal" OnClose="CloseGroupPanel" OnCategoryCreate="OpenCategoryCreateModal" OnCategoryEdit="OpenCategoryEditModal" />
 }
 
+<CategoryModal @ref="CategoryModal" IsEditing="IsEditing" Category="CurrentCategory" OnSave="OnCategorySave" OnCancel="CloseCategoryModal" />
 <CategoryGroupModal @ref="GroupModal" IsEditing="IsEditing" Group="CurrentGroup" OnSave="OnGroupSave" OnCancel="CloseGroupModal" />

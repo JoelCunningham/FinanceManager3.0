@@ -15,17 +15,22 @@ public sealed class CategoryRepository(FinanceManagerDbContext dbContext) : ICat
             .ToListAsync();
     }
 
-    public async Task<Category> GetByIdAsync(Guid id)
+    public async Task<Category?> GetOrDefaultAsync(Guid id)
     {
         var category = await dbContext.Categories
             .Include(c => c.Group)
             .FirstOrDefaultAsync(c => c.Id == id);
 
-        if (category is null)
-        {
-            throw new KeyNotFoundException("Category not found");
-        }
-
         return category;
+    }
+
+    public async Task CreateAsync(Category category)
+    {
+        await dbContext.Categories.AddAsync(category);
+    }
+
+    public async Task UpdateAsync(Category category)
+    {
+        dbContext.Categories.Update(category);
     }
 }

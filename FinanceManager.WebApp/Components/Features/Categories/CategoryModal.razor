@@ -1,0 +1,25 @@
+@inherits ModalBase
+
+@code {
+    [Parameter] public bool IsEditing { get; set; }
+
+    [Parameter] public CategorySummary? Category { get; set; }
+    [Parameter] public EventCallback<CategorySummary> CategoryChanged { get; set; }
+
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}
+
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit Area" : "Create Area")">
+    <BodyTemplate>
+        <div class="d-flex flex-column gap-2">
+            @if (Category is not null)
+            {
+                <HxInputText Label="Name" @bind-Value="Category.Name" />
+            }
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnSave="OnSave" />
+    </FooterTemplate>
+</HxModal>

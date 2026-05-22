@@ -2,27 +2,28 @@ namespace FinanceManager.Application.DTOs;
 
 using FinanceManager.Domain.Entities;
 
-public sealed record CategorySummary(
-    Guid Id,
-    string Name,
-    string Colour,
-    Guid GroupId,
-    string GroupName,
-    string GroupColour,
-    bool IsIncome
-)
+public sealed class CategorySummary
 {
+    public Guid Id { get; set; }
+    public required string Name { get; set; }
+    public required string Colour { get; set; }
+    public Guid GroupId { get; set; }
+    public string GroupName { get; set; } = string.Empty;
+    public string GroupColour { get; set; } = string.Empty;
+    public bool IsIncome { get; set; }
+
     public static CategorySummary FromCategory(Category category)
     {
-        return new CategorySummary(
-            category.Id,
-            category.Name,
-            category.Colour,
-            category.GroupId,
-            category.Group.Name,
-            category.Group.Colour,
-            category.Group.IsIncome
-        );
+        return new CategorySummary
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Colour = category.Colour,
+            GroupId = category.GroupId,
+            GroupName = category.Group.Name,
+            GroupColour = category.Group.Colour,
+            IsIncome = category.Group.IsIncome
+        };
     }
 
     public Category ToCategory()

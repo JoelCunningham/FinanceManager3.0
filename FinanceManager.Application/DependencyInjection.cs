@@ -22,6 +22,7 @@ public static class DependencyInjection
         // Categories use cases
         services.AddScoped<GetCategoryGroupList>();
         services.AddScoped<GetCategoryList>();
+        services.AddScoped<SaveCategoryEdit>();
         services.AddScoped<SaveCategoryGroupEdit>();
 
         // Transfers use cases

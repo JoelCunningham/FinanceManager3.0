@@ -34,6 +34,7 @@ public class UseCases(
     SaveBudgetEntry saveBudgetEntry,
     SaveImport saveImport,
     SaveReview saveReview,
+    SaveCategoryEdit saveCategoryEdit,
     SaveCategoryGroupEdit saveCategoryGroupEdit,
     SaveTransactionEdit saveTransactionEdit,
     SeparateTransfer separateTransfer,
@@ -65,6 +66,7 @@ public class UseCases(
     public Task<ParseFileResult> ParseFileAsync(Stream file, string bank, string extension) => parseFile.ExecuteAsync(file, bank, extension);
     public Task<SaveBudgetResult> SaveBudgetAsync(int year, BudgetScope scope, bool isEditing) => saveBudget.ExecuteAsync(year, scope, isEditing);
     public Task<SaveReviewResult> SaveReviewAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
+    public Task<SaveCategoryEditResult> SaveCategoryEditAsync(CategorySummary category) => saveCategoryEdit.ExecuteAsync(category);
     public Task<SaveCategoryGroupEditResult> SaveCategoryGroupEditAsync(CategoryGroupSummary group) => saveCategoryGroupEdit.ExecuteAsync(group);
     public Task<SaveTransactionEditResult> SaveTransactionEditAsync(TransactionSummary transaction) => saveTransactionEdit.ExecuteAsync(transaction);
     public Task<SeparateTransferResult> SeparateTransferAsync(Guid transferId) => separateTransfer.ExecuteAsync(transferId);

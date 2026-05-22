@@ -5,5 +5,7 @@ using FinanceManager.Domain.Entities;
 public interface ICategoryRepository
 {
     Task<IEnumerable<Category>> GetAllAsync();
-    Task<Category> GetByIdAsync(Guid id);
+    Task<Category?> GetOrDefaultAsync(Guid id);
+    Task CreateAsync(Category category);
+    Task UpdateAsync(Category category);
 }

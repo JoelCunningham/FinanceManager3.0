@@ -15,9 +15,11 @@ public partial class Categories : PageBase
     public CategoryGroupMode GroupMode { get; set; } = CategoryGroupMode.All;
 
     public bool IsEditing { get; set; } = false;
+    public CategorySummary? CurrentCategory { get; set; } = null;
     public CategoryGroupSummary? CurrentGroup { get; set; } = null;
     public IEnumerable<CategorySummary> SelectedGroupCategories => AllCategories.Where(c => c.GroupId == CurrentGroup?.Id);
 
+    public CategoryModal CategoryModal { get; set; } = new();
     public CategoryGroupModal GroupModal { get; set; } = new();
 
     public IEnumerable<CategoryGroupSummary> FilteredGroups => CategoryGroups
@@ -44,16 +46,46 @@ public partial class Categories : PageBase
         GroupMode = mode;
     }
 
+    private async Task OnCategorySave()
+    {
+        if (CurrentCategory is null)
+        {
+            return;
+        }
+        await UseCases.SaveCategoryEditAsync(CurrentCategory);
+        AllCategories = (await UseCases.GetCategoryListAsync()).Categories;
+        await CloseCategoryModal();
+    }
+
     private async Task OnGroupSave()
     {
         if (CurrentGroup is null)
         {
             return;
         }
-
         await UseCases.SaveCategoryGroupEditAsync(CurrentGroup);
-
         await CloseGroupModal();
+    }
+
+    private async Task OpenCategoryCreateModal()
+    {
+        CurrentCategory = new CategorySummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, GroupId = CurrentGroup?.Id ?? Guid.Empty };
+        IsEditing = false;
+        await CategoryModal.ShowAsync();
+    }
+
+    private async Task OpenCategoryEditModal(CategorySummary category)
+    {
+        CurrentCategory = category;
+        IsEditing = true;
+        await CategoryModal.ShowAsync();
+    }
+
+    private async Task OpenGroupCreateModal()
+    {
+        CurrentGroup = new CategoryGroupSummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, IsIncome = false };
+        IsEditing = false;
+        await GroupModal.ShowAsync();
     }
 
     private async Task OpenGroupEditModal()
@@ -62,11 +94,9 @@ public partial class Categories : PageBase
         await GroupModal.ShowAsync();
     }
 
-    private async Task OpenGroupCreateModal()
+    private async Task CloseCategoryModal()
     {
-        CurrentGroup = new CategoryGroupSummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, IsIncome = false };
-        IsEditing = false;
-        await GroupModal.ShowAsync();
+        await CategoryModal.HideAsync();
     }
 
     private async Task CloseGroupModal()

@@ -14,13 +14,13 @@
 
     private Expression<Func<CategorySummary?>> CurrentValueExpression => ValueExpression ?? (() => Value);
 
-    private static readonly CategorySummary UncategorisedCategory = new(Guid.Empty, "- Uncategorised -", "", Guid.Empty, string.Empty, "", true);
+    private static readonly CategorySummary UncategorisedCategory = new() { Id = Guid.Empty, Name = "- Uncategorised -", Colour = "", GroupId = Guid.Empty, GroupName = string.Empty, GroupColour = "", IsIncome = true };
 
     private IEnumerable<CategorySummary> GroupedData()
     {
         var grouped = Data.GroupBy(c => c.GroupName).OrderBy(g => g.Key).SelectMany(g =>
         {
-            var header = new CategorySummary(Guid.Empty, $"- {g.Key} -", "", Guid.Empty, string.Empty, "", true);
+            var header = new CategorySummary { Id = Guid.Empty, Name = $"- {g.Key} -", Colour = "", GroupId = Guid.Empty, GroupName = string.Empty, GroupColour = "", IsIncome = true };
             return new[] { header }.Concat(g.OrderBy(c => c.Name));
         });
 
