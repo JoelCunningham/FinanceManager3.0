@@ -3,18 +3,20 @@
 
 <PageTitle>Categories</PageTitle>
 
-<h1 class="page-heading">Category groups</h1>
-
-<CategoryGroupActions SearchQuery="@GroupSearch" SearchQueryChanged="OnGroupSearchChanged" />
-
-@if (!FilteredGroups.Any())
+@if (CurrentGroup is null || !CategoryGroups.Contains(CurrentGroup))
 {
-    <div class="alert alert-light border mb-0">
-        No groups match your search.
-    </div>
+    <h1 class="page-heading">Categories</h1>
+
+    <CategoryGroupActions SearchQuery="@GroupSearch"
+                          GroupMode="@GroupMode"
+                          SearchQueryChanged="OnGroupSearchChanged"
+                          GroupModeChanged="OnGroupModeChanged"
+                          OnCreate="OpenGroupCreateModal" />
+    <CategoryCards Groups="FilteredGroups" OnGroupClicked="OpenGroupPanel" />
 }
 else
 {
-    <CategoryCards Title="Income groups" Groups="IncomeGroups" />
-    <CategoryCards Title="Expense groups" Groups="ExpenseGroups" />
+    <CategoryGroupPanel Group="CurrentGroup" Categories="SelectedGroupCategories" OnEdit="OpenGroupEditModal" OnClose="CloseGroupPanel" />
 }
+
+<CategoryGroupModal @ref="GroupModal" IsEditing="IsEditing" Group="CurrentGroup" OnSave="OnGroupSave" OnCancel="CloseGroupModal" />

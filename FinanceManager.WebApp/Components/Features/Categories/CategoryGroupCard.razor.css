@@ -8,6 +8,7 @@
     border-left: 6px solid var(--group-accent-color);
     border-radius: var(--bs-border-radius);
     background-color: var(--bs-body-bg);
+    cursor: pointer;
 
     .group-card-header {
         display: flex;

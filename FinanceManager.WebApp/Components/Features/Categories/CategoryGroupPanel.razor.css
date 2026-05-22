@@ -1,0 +1,48 @@
+.category-group-panel {
+
+    .actions {
+        display: flex;
+
+        .right {
+            margin-left: auto;
+
+            button {
+                margin-top: 0.75rem;
+                margin-left: 0.5rem;
+            }
+        }
+    }
+
+    .heading {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .icon {
+            font-size: 5rem;
+        }
+
+        .text {
+            display: flex;
+            flex-direction: column;
+
+            h1 {
+                margin: 1rem 0 0 0;
+            }
+        }
+    }
+
+    .category-table {
+        margin-top: 1rem;
+    }
+}
+
+
+::deep .back-button {
+    font-size: 2rem;
+    margin-left: -0.7rem;
+
+    &:active {
+        border: none;
+    }
+}

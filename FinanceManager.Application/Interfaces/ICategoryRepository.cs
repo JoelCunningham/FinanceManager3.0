@@ -1,11 +1,9 @@
-﻿using FinanceManager.Domain.Entities;
+﻿namespace FinanceManager.Application.Interfaces;
 
-namespace FinanceManager.Application.Interfaces
+using FinanceManager.Domain.Entities;
+
+public interface ICategoryRepository
 {
-    public interface ICategoryRepository
-    {
-        Task<IEnumerable<Category>> GetAllAsync();
-        Task<IEnumerable<CategoryGroup>> GetAllGroupsAsync();
-        Task<Category> GetByIdAsync(Guid id);
-    }
+    Task<IEnumerable<Category>> GetAllAsync();
+    Task<Category> GetByIdAsync(Guid id);
 }

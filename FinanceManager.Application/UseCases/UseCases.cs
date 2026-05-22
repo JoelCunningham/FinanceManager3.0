@@ -23,18 +23,19 @@ public class UseCases(
     GetPagedReview getPagedReview, 
     GetPagedTransactions getPagedTransactions, 
     GetPagedTransfers getPagedTransfers,
-    GetParsers getParsers, 
-    GetReimbursementCandidates getReimbursementCandidates, 
+    GetParsers getParsers,
+    GetReimbursementCandidates getReimbursementCandidates,
     GetReviewGroup getReviewGroup,
-    GetTransactionDetails getTransactionDetails, 
+    GetTransactionDetails getTransactionDetails,
     GetTransferCandidates getTransferCandidates,
-    GetUniqueAccounts getUniqueAccounts, 
-    ParseFile parseFile, 
+    GetUniqueAccounts getUniqueAccounts,
+    ParseFile parseFile,
     SaveBudget saveBudget,
-    SaveBudgetEntry saveBudgetEntry, 
+    SaveBudgetEntry saveBudgetEntry,
     SaveImport saveImport,
     SaveReview saveReview,
-    SaveTransactionEdit saveTransactionEdit, 
+    SaveCategoryGroupEdit saveCategoryGroupEdit,
+    SaveTransactionEdit saveTransactionEdit,
     SeparateTransfer separateTransfer,
     UpdateTransactionAmount updateTransactionAmount,
     ValidateReviewGroup validateReviewGroup,
@@ -64,6 +65,7 @@ public class UseCases(
     public Task<ParseFileResult> ParseFileAsync(Stream file, string bank, string extension) => parseFile.ExecuteAsync(file, bank, extension);
     public Task<SaveBudgetResult> SaveBudgetAsync(int year, BudgetScope scope, bool isEditing) => saveBudget.ExecuteAsync(year, scope, isEditing);
     public Task<SaveReviewResult> SaveReviewAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
+    public Task<SaveCategoryGroupEditResult> SaveCategoryGroupEditAsync(CategoryGroupSummary group) => saveCategoryGroupEdit.ExecuteAsync(group);
     public Task<SaveTransactionEditResult> SaveTransactionEditAsync(TransactionSummary transaction) => saveTransactionEdit.ExecuteAsync(transaction);
     public Task<SeparateTransferResult> SeparateTransferAsync(Guid transferId) => separateTransfer.ExecuteAsync(transferId);
     public Task<UpdateTransactionAmountResult> UpdateTransactionAmountAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group) => updateTransactionAmount.ExecuteAsync(transaction, amount, group);

@@ -9,7 +9,7 @@ public sealed record GetCategoryListResult(
     IReadOnlyList<CategoryGroupSummary> Groups
 ) : UseCaseResult;
 
-public sealed class GetCategoryList(ICategoryRepository categoryRepository)
+public sealed class GetCategoryList(ICategoryRepository categoryRepository, ICategoryGroupRepository categoryGroupRepository)
 {
     public async Task<GetCategoryListResult> ExecuteAsync()
     {
@@ -17,7 +17,7 @@ public sealed class GetCategoryList(ICategoryRepository categoryRepository)
             .OrderBy(c => c.Group.Name).ThenBy(c => c.Name)
             .Select(CategorySummary.FromCategory).ToList();
 
-        var groups = (await categoryRepository.GetAllGroupsAsync())
+        var groups = (await categoryGroupRepository.GetAllAsync())
             .OrderBy(g => g.IsIncome ? 0 : 1).ThenBy(g => g.Name)
             .Select(CategoryGroupSummary.FromCategoryGroup).ToList();
 

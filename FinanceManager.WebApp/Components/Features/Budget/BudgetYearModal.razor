@@ -11,7 +11,7 @@
 
     [Parameter] public IEnumerable<BudgetScope> AvailableScopes { get; set; } = [];
 
-    [Parameter] public EventCallback<(int Year, BudgetScope Scope)> OnCreate { get; set; }
+    [Parameter] public EventCallback<(int Year, BudgetScope Scope)> OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 }
 
@@ -24,6 +24,6 @@
     </BodyTemplate>
     <FooterTemplate>
         <HxButton Color="ThemeColor.Secondary" OnClick="OnCancel">Cancel</HxButton>
-        <HxButton Color="ThemeColor.Primary" OnClick="() => OnCreate.InvokeAsync((Year, Scope))">@(IsEditing ? "Save" : "Create")</HxButton>
+        <HxButton Color="ThemeColor.Primary" OnClick="() => OnSave.InvokeAsync((Year, Scope))">@(IsEditing ? "Save" : "Create")</HxButton>
     </FooterTemplate>
 </HxModal>

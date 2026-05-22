@@ -1,0 +1,22 @@
+﻿@code {
+    [Parameter] public bool IsCreating { get; set; } = false;
+
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+}
+
+<HxButtonGroup CssClass="end">
+    @if (OnCancel.HasDelegate)
+    {
+        <HxButton Color="ThemeColor.Secondary" Text="Cancel" OnClick="OnCancel" />
+    }
+    @if (OnDelete.HasDelegate)
+    {
+        <HxButton Color="ThemeColor.Danger" Text="Delete" OnClick="OnDelete" />
+    }
+    @if (OnSave.HasDelegate) 
+    {
+        <HxButton Color="ThemeColor.Primary" Text="@(IsCreating ? "Create" : "Save")" OnClick="OnSave" />
+    }
+</HxButtonGroup>

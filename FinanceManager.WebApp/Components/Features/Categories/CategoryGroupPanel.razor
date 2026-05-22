@@ -1,0 +1,59 @@
+@code {
+    [Parameter] public CategoryGroupSummary Group { get; set; } = default!;
+    [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = default!;
+
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    [Parameter] public EventCallback<CategorySummary> OnCategoryEdit { get; set; }
+    [Parameter] public EventCallback<CategorySummary> OnCategoryDelete { get; set; }
+
+    private bool ShowCategories = true;
+}
+
+<div class="category-group-panel">
+    <div class="actions">
+        <HxButton Icon="BootstrapIcon.ArrowLeft" OnClick="OnClose" CssClass="back-button" />
+        <div class="right">
+            @if (ShowCategories)
+            {
+                <HxButton Color="ThemeColor.Light" Text="Show summary" OnClick="() => ShowCategories = !ShowCategories" />
+            }
+            else
+            {
+                <HxButton Color="ThemeColor.Light" Text="Show categories" OnClick="() => ShowCategories = !ShowCategories" />
+            }
+            <HxButton Color="ThemeColor.Primary" Text="Edit" OnClick="OnEdit" />
+        </div>
+    </div>
+
+    <div class="heading">
+        <HxIcon Icon="@BootstrapIcon.PiggyBank" CssClass="icon" />
+        <div class="text">
+            <h1 class="page-heading">@Group.Name</h1>
+            <p class="subheading">Financial Area</p>
+        </div>
+    </div>
+
+    @if (ShowCategories)
+    {
+        <div class="category-group-panel-category">
+            @foreach (var category in Categories)
+            {
+                <table class="category-table">
+                    <tr>
+                        <td class="category-colour"><span class="rounded-circle p-2" style="background-color: @category.Colour;" /></td>
+                        <td class="category-name">@category.Name</td>
+                        @* <td class="category-amount">@category.Amount.ToString("C")</td> *@
+                        <td class="category-actions">
+                            <HxContextMenu>
+                                <HxContextMenuItem Text="Edit" OnClick="() => OnCategoryEdit.InvokeAsync(category)" Icon="BootstrapIcon.Pencil" />
+                                <HxContextMenuItem Text="Delete" OnClick="() => OnCategoryDelete.InvokeAsync(category)" Icon="BootstrapIcon.Trash" />
+                            </HxContextMenu>
+                        </td>
+                    </tr>
+                </table>
+            }
+        </div>
+    }
+</div>

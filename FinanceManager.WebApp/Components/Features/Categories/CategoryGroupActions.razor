@@ -2,6 +2,13 @@
     [Parameter] public string SearchQuery { get; set; } = default!;
     [Parameter] public EventCallback<string> SearchQueryChanged { get; set; }
 
+    [Parameter] public CategoryGroupMode GroupMode { get; set; }
+    [Parameter] public EventCallback<CategoryGroupMode> GroupModeChanged { get; set; }
+
+    [Parameter] public EventCallback OnCreate { get; set; }
+
+    private IReadOnlyList<CategoryGroupMode> CategoryGroupModes => Enum.GetValues<CategoryGroupMode>().ToArray();
+
     private async Task OnSearchChanged(string value)
     {
         await SearchQueryChanged.InvokeAsync(value ?? string.Empty);
@@ -14,8 +21,19 @@
                      TextQuery="@SearchQuery"
                      TextQueryChanged="OnSearchChanged"
                      MinimumLength="@int.MaxValue"
-                     Placeholder="Search groups" />
+                     Placeholder="Search areas" />
     </div>
 
-    <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.PlusLg" Text="Add group" />
+    <HxSelect Value="GroupMode"
+              ValueChanged="GroupModeChanged"
+              ValueExpression="() => GroupMode"
+              Data="CategoryGroupModes"
+              TItem="CategoryGroupMode"
+              TValue="CategoryGroupMode"
+              Nullable="false"
+              AutoSort="false"
+              TextSelector="f => f.ToString()"
+              ValueSelector="f => f" />
+
+    <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.PlusLg" Text="Add area" OnClick="OnCreate" />
 </div>

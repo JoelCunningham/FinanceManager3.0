@@ -1,0 +1,26 @@
+@inherits ModalBase
+
+@code {
+    [Parameter] public bool IsEditing { get; set; }
+
+    [Parameter] public CategoryGroupSummary? Group { get; set; }
+    [Parameter] public EventCallback<CategoryGroupSummary> GroupChanged { get; set; }
+
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}
+
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit Area" : "Create Area")">
+    <BodyTemplate>
+        <div class="d-flex flex-column gap-2">
+            @if (Group is not null)
+            {
+                <HxInputText Label="Name" @bind-Value="Group.Name" />
+                <HxCheckbox @bind-Value="Group.IsIncome" @bind-Value:after="() => GroupChanged.InvokeAsync(Group)" Text="Is Income" />
+            }
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnSave="OnSave" />
+    </FooterTemplate>
+</HxModal>

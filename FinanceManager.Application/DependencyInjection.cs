@@ -1,8 +1,7 @@
 namespace FinanceManager.Application;
 
-using FinanceManager.Application.UseCases;
-using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Budget;
+using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Dates;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
@@ -23,6 +22,7 @@ public static class DependencyInjection
         // Categories use cases
         services.AddScoped<GetCategoryGroupList>();
         services.AddScoped<GetCategoryList>();
+        services.AddScoped<SaveCategoryGroupEdit>();
 
         // Transfers use cases
         services.AddScoped<GetPagedTransfers>();

@@ -1,5 +1,6 @@
 .category-cards-title {
     margin-bottom: 0.5rem;
+    color: var(--bs-secondary-color);
 }
 
 .category-cards-grid {

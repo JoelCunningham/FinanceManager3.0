@@ -28,5 +28,5 @@
                  Year="CurrentYear"
                  AvailableScopes="BudgetScopes"
                  IsEditing="IsEditing"
-                 OnCreate="(args) => SaveBudget(args.Year, args.Scope)"
+                 OnSave="(args) => SaveBudget(args.Year, args.Scope)"
                  OnCancel="CloseCreateModal" />

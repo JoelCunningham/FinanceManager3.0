@@ -1,8 +1,10 @@
 @code {
     [Parameter] public CategoryGroupSummary Group { get; set; } = default!;
+
+    [Parameter] public EventCallback<CategoryGroupSummary> OnClicked { get; set; }
 }
 
-<div class="group-card" style="--group-accent-color: @Group.Colour;">
+<div class="group-card" style="--group-accent-color: @Group.Colour;" @onclick="() => OnClicked.InvokeAsync(Group)">
     <div class="group-card-header">
         @if (Group.IsIncome)
         {

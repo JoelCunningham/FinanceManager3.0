@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IBankAccountRepository, BankAccountRepository>();
         services.AddScoped<IBankRecordRepository, BankRecordRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICategoryGroupRepository, CategoryGroupRepository>();
         services.AddScoped<IMachineLearningRepository, MachineLearningRepository>();
         services.AddScoped<IBudgetEntryRepository, BudgetEntryRepository>();
         services.AddScoped<IBudgetYearRepository, BudgetYearRepository>();
