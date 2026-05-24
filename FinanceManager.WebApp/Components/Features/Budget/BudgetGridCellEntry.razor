@@ -37,6 +37,7 @@
 
     private static string GetContrastTextColour(string backgroundColour)
     {
+        if (string.IsNullOrWhiteSpace(backgroundColour)) return "#000000";
         var value = backgroundColour[1..];
         var r = int.Parse(value[..2], System.Globalization.NumberStyles.HexNumber);
         var g = int.Parse(value.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);

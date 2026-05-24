@@ -42,12 +42,19 @@ else
             <ReviewRowEntry>
                 @if (transaction.Reimburses is null)
                 {
-                    <CategoryInput @bind-Value:get="transaction.Category" @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))" Data="Categories" IsAutoCategorised="transaction.IsAutoCategorised" HasError="ErrorCategoryIds.Contains(transaction.EntityId)" />
-                } else {
-                    <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" />
+                    <CategoryInput @bind-Value:get="transaction.Category"
+                                      @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))"
+                                      Data="Categories"
+                                      IsAutoCategorised="transaction.IsAutoCategorised"
+                                      HasError="ErrorCategoryIds.Contains(transaction.EntityId)"
+                                      Label="Uncategorised" />
                 }
-                <HxInputDate @bind-Value:get="transaction.Date" 
-                             CalendarIcon="BootstrapIcon.Calendar" 
+                else
+                {
+                    <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" Label="Uncategorised" />
+                }
+                <HxInputDate @bind-Value:get="transaction.Date"
+                             CalendarIcon="BootstrapIcon.Calendar"
                              MaxDate="@TransactionGroup.Record.Date"
                              @bind-Value:set="v => OnDateChange.InvokeAsync((transaction, v))" />
                 <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />

@@ -83,7 +83,7 @@
         <div class="d-flex flex-column gap-2">
             @if (Entry is not null && CurrentBudgetYear is not null)
             {
-                <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" Nullable="false" />
+                <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" />
                 <HxInputNumber @bind-Value="Entry.Amount" Label="Amount" />
 
                 <div class="d-flex gap-3">

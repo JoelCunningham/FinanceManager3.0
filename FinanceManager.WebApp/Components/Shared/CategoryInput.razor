@@ -1,0 +1,175 @@
+﻿@code {
+    [Parameter] public CategorySummary? Value { get; set; }
+    [Parameter] public EventCallback<CategorySummary?> ValueChanged { get; set; }
+    [Parameter] public Expression<Func<CategorySummary?>>? ValueExpression { get; set; }
+
+    [Parameter] public IEnumerable<CategorySummary> Data { get; set; } = [];
+
+    [Parameter] public string? Label { get; set; }
+
+    [Parameter] public bool Nullable { get; set; } = false;
+    [Parameter] public bool IsAutoCategorised { get; set; } = false;
+    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    private bool isOpen = false;
+    private bool isInteractingWithDropdown = false;
+    private string searchText = string.Empty;
+    private string? selectedGroup = null;
+
+    private bool IsSearching => !string.IsNullOrWhiteSpace(searchText);
+
+    private IEnumerable<string> Groups => Data
+        .Select(c => c.GroupName)
+        .Distinct()
+        .OrderBy(g => g);
+
+    private IEnumerable<CategorySummary> CategoriesInSelectedGroup => Data
+        .Where(c => c.GroupName == selectedGroup)
+        .OrderBy(c => c.Name);
+
+    private IEnumerable<IGrouping<string, CategorySummary>> FilteredGroups => Data
+        .Where(c => c.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) || c.GroupName.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+        .GroupBy(c => c.GroupName)
+        .OrderBy(g => g.Key);
+
+    protected override void OnParametersSet()
+    {
+        if (Value != null && string.IsNullOrWhiteSpace(searchText))
+        {
+            searchText = Value.Name;
+        }
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        searchText = e.Value?.ToString() ?? string.Empty;
+        isOpen = true;
+
+        if (IsSearching)
+        {
+            selectedGroup = null;
+        }
+    }
+
+    private void SelectGroup(string group)
+    {
+        selectedGroup = group;
+    }
+
+    private async Task Select(CategorySummary? item)
+    {
+        Value = item;
+        searchText = item?.Name ?? string.Empty;
+        isOpen = false;
+        selectedGroup = null;
+
+        await ValueChanged.InvokeAsync(item);
+    }
+
+    private Task OnBlur(FocusEventArgs _)
+    {
+        isOpen = false;
+
+        if (Value != null)
+        {
+            searchText = Value.Name;
+        }
+
+        selectedGroup = null;
+
+        return Task.CompletedTask;
+    }
+
+    private async Task Clear()
+    {
+        searchText = string.Empty;
+        selectedGroup = null;
+        Value = null;
+
+        isOpen = true;
+
+        await ValueChanged.InvokeAsync(null);
+    }
+}
+
+<div class="category-combobox">
+    <div class="input-wrapper">
+        @if (IsAutoCategorised)
+        {
+            <HxIcon Icon="BootstrapIcon.Stars" />
+        }
+        <input class="form-control @(HasError ? "is-invalid" : "") @(IsAutoCategorised ? "auto-categorised" : "" )"
+               placeholder="@Label"
+               value="@searchText"
+               @oninput="OnInput"
+               @onfocus="() => isOpen = true"
+               @onblur="OnBlur"
+               disabled="@(!Enabled)" />
+
+        @if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            <button class="clear-btn" @onmousedown:preventDefault @onclick="Clear">
+                <HxIcon Icon="BootstrapIcon.X" />
+            </button>
+        }
+    </div>
+
+    @if (isOpen)
+    {
+        <div class="dropdown" @onmousedown:preventDefault>
+            @if (IsSearching)
+            {
+                @if (FilteredGroups.Any())
+                {
+                    @foreach (var group in FilteredGroups)
+                    {
+                        <div class="dropdown-header">@group.Key</div>
+
+                        @foreach (var item in group.OrderBy(c => c.Name))
+                        {
+                            <div class="dropdown-item" @onmousedown="() => Select(item)">
+                                @item.Name
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="dropdown-item disabled">No results</div>
+                }
+            }
+            else
+            {
+                @if (selectedGroup is null)
+                {
+                    @foreach (var group in Groups)
+                    {
+                        <div class="dropdown-item" @onmousedown="() => SelectGroup(group)">
+                            @group
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="dropdown-header back" @onmousedown="() => selectedGroup = null">
+                        <HxIcon Icon="BootstrapIcon.ArrowLeft" /> Back
+                    </div>
+                    @foreach (var item in CategoriesInSelectedGroup)
+                    {
+                        <div class="dropdown-item" @onmousedown="() => Select(item)">
+                            @item.Name
+                        </div>
+                    }
+                }
+            }
+            @if (Nullable)
+            {
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" @onmousedown="() => Select(null)">
+                    Uncategorised
+                </div>
+            }
+        </div>
+    }
+</div>
