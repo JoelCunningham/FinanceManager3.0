@@ -14,6 +14,8 @@ public class UseCases(
     AutoAssignCategories autoAssignCategories, 
     BackdateTransaction backdateTransaction, 
     DeleteBudgetEntry deleteBudgetEntry,
+    DeleteCategory deleteCategory,
+    DeleteCategoryGroup deleteCategoryGroup,
     GetBudgetScopes getBudgetScopes, 
     GetCategoryGroupList getCategoryGroupList,
     GetCategoryList getCategoryList,
@@ -48,6 +50,8 @@ public class UseCases(
     public Task SaveBudgetEntryAsync(BudgetCellEntry entry, int year, bool isEditing) => saveBudgetEntry.ExecuteAsync(entry, year, isEditing);
     public Task<AutoCategoriseResult> AutoCategoriseAsync(IEnumerable<ReviewGroup> groups, IEnumerable<CategorySummary> categories) => autoAssignCategories.ExecuteAsync(groups, categories);
     public Task<BackdateTransactionResult> BackdateTransactionAsync(TransactionSummary transaction, DateTime date, DateTime initialDate) => backdateTransaction.ExecuteAsync(transaction, date, initialDate);
+    public Task<DeleteCategoryResult> DeleteCategoryAsync(Guid id) => deleteCategory.ExecuteAsync(id);
+    public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
     public Task<GetBudgetScopesResult> GetBudgetScopesAsync(ScopedRange range) => getBudgetScopes.ExecuteAsync(range);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroupList.ExecuteAsync();
     public Task<GetCategoryListResult> GetCategoryListAsync() => getCategoryList.ExecuteAsync();

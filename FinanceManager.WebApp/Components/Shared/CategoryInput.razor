@@ -1,7 +1,6 @@
 ﻿@code {
     [Parameter] public CategorySummary? Value { get; set; }
     [Parameter] public EventCallback<CategorySummary?> ValueChanged { get; set; }
-    [Parameter] public Expression<Func<CategorySummary?>>? ValueExpression { get; set; }
 
     [Parameter] public IEnumerable<CategorySummary> Data { get; set; } = [];
 
@@ -13,7 +12,6 @@
     [Parameter] public bool Enabled { get; set; } = true;
 
     private bool isOpen = false;
-    private bool isInteractingWithDropdown = false;
     private string searchText = string.Empty;
     private string? selectedGroup = null;
 

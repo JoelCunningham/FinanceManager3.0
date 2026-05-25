@@ -6,7 +6,11 @@
     [Parameter] public CategorySummary? Category { get; set; }
     [Parameter] public EventCallback<CategorySummary> CategoryChanged { get; set; }
 
+    [Parameter] public bool HasNameError { get; set; }
+    [Parameter] public bool HasColourError { get; set; }
+
     [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 }
 
@@ -15,11 +19,12 @@
         <div class="d-flex flex-column gap-2">
             @if (Category is not null)
             {
-                <HxInputText Label="Name" @bind-Value="Category.Name" />
+                <HxInputText Label="Name" @bind-Value="Category.Name" InputCssClass="@(HasNameError ? "is-invalid" : string.Empty)" />
+                <ColourInput Label="Colour" @bind-Value="Category.Colour" HasError="HasColourError" />
             }
         </div>
     </BodyTemplate>
     <FooterTemplate>
-        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnSave="OnSave" />
+        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnSave="OnSave" OnDelete="OnDelete" />
     </FooterTemplate>
 </HxModal>

@@ -33,4 +33,19 @@ public sealed class CategoryRepository(FinanceManagerDbContext dbContext) : ICat
     {
         dbContext.Categories.Update(category);
     }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var existing = await dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id);
+        if (existing == null)
+        {
+            throw new KeyNotFoundException($"Category with ID {id} not found.");
+        }
+        dbContext.Categories.Remove(existing);
+    }
+
+    public async Task<bool> ExistsWithNameAsync(string name, Guid groupId)
+    {
+        return await dbContext.Categories.AnyAsync(c => c.Name == name && c.GroupId == groupId);
+    }
 }

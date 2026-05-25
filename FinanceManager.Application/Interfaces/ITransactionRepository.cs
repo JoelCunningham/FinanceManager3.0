@@ -17,5 +17,7 @@ namespace FinanceManager.Application.Interfaces
         Task UpdateAsync(Transaction transaction);
         Task DeleteAsync(Guid id);
         Task DeleteOrSkipAsync(Guid id);
+        Task<bool> HasTransactionsForCategoryGroupAsync(Guid categoryGroupId);
+        Task<bool> HasTransactionsForCategoryAsync(Guid categoryId);
     }
 }

@@ -32,9 +32,20 @@
         }
     }
 
-    .category-table {
-        margin-top: 1rem;
+
+    h4 {
+        margin-top: 1.5rem;
     }
+}
+
+::deep .category-col,
+::deep .category-action-col {
+    width: 1%;
+    white-space: nowrap;
+}
+
+::deep .category-action-col {
+    text-align: right;
 }
 
 
@@ -45,4 +56,12 @@
     &:active {
         border: none;
     }
+}
+
+::deep td button {
+    padding: 0;
+}
+
+::deep tr {
+    cursor: default;
 }

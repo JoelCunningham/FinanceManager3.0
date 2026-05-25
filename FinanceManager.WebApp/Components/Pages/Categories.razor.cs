@@ -15,9 +15,11 @@ public partial class Categories : PageBase
     public CategoryGroupMode GroupMode { get; set; } = CategoryGroupMode.All;
 
     public bool IsEditing { get; set; } = false;
-    public CategorySummary? CurrentCategory { get; set; } = null;
+
     public CategoryGroupSummary? CurrentGroup { get; set; } = null;
-    public IEnumerable<CategorySummary> SelectedGroupCategories => AllCategories.Where(c => c.GroupId == CurrentGroup?.Id);
+    public CategoryGroupSummary? EditGroup { get; set; } = null;
+    public CategorySummary? EditCategory { get; set; } = null;
+    public IEnumerable<CategorySummary> CurrentGroupCategories => AllCategories.Where(c => c.GroupId == CurrentGroup?.Id);
 
     public CategoryModal CategoryModal { get; set; } = new();
     public CategoryGroupModal GroupModal { get; set; } = new();
@@ -48,48 +50,105 @@ public partial class Categories : PageBase
 
     private async Task OnCategorySave()
     {
-        if (CurrentCategory is null)
+        Validation.Clear();
+        if (EditCategory is null) return;
+
+        var result = await UseCases.SaveCategoryEditAsync(EditCategory);
+        if (!result.IsSuccess)
         {
-            return;
+            Validation.SetErrors(result.Errors);
         }
-        await UseCases.SaveCategoryEditAsync(CurrentCategory);
-        AllCategories = (await UseCases.GetCategoryListAsync()).Categories;
-        await CloseCategoryModal();
+        else
+        {
+            AllCategories = (await UseCases.GetCategoryListAsync()).Categories;
+            await CloseCategoryModal();
+            Validation.SetSuccess(IsEditing ? "Category updated successfully." : "Category created successfully.");
+        }
+    }
+
+    private async Task OnCategoryDelete()
+    {
+        Validation.Clear();
+        if (EditCategory is null) return;
+
+        var result = await UseCases.DeleteCategoryAsync(EditCategory.Id);
+
+        if (!result.IsSuccess)
+        {
+            Validation.SetErrors(result.Errors);
+        }
+        else
+        {
+            AllCategories = (await UseCases.GetCategoryListAsync()).Categories;
+            await CloseCategoryModal();
+            Validation.SetSuccess("Category deleted successfully.");
+        }
     }
 
     private async Task OnGroupSave()
     {
-        if (CurrentGroup is null)
+        Validation.Clear();
+        if (EditGroup is null) return;
+
+        var result = await UseCases.SaveCategoryGroupEditAsync(EditGroup);
+        if (!result.IsSuccess)
         {
-            return;
+            Validation.SetErrors(result.Errors);
         }
-        await UseCases.SaveCategoryGroupEditAsync(CurrentGroup);
-        await CloseGroupModal();
+        else
+        {
+            CategoryGroups = (await UseCases.GetCategoryListAsync()).Groups;
+            CurrentGroup = CategoryGroups.FirstOrDefault(g => g.Id == EditGroup.Id);
+            await CloseGroupModal();
+            Validation.SetSuccess(IsEditing ? "Area updated successfully." : "Area created successfully.");
+        }
+    }
+
+    private async Task OnGroupDelete()
+    {
+        Validation.Clear();
+        if (EditGroup is null) return;
+
+        var result = await UseCases.DeleteCategoryGroupAsync(EditGroup.Id);
+        if (!result.IsSuccess)
+        {
+            Validation.SetErrors(result.Errors);
+        }
+        else
+        {
+            CategoryGroups = (await UseCases.GetCategoryListAsync()).Groups;
+            CurrentGroup = null;
+            await CloseGroupModal();
+            Validation.SetSuccess("Area deleted successfully.");
+        }
     }
 
     private async Task OpenCategoryCreateModal()
     {
-        CurrentCategory = new CategorySummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, GroupId = CurrentGroup?.Id ?? Guid.Empty };
+        EditCategory = new CategorySummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, GroupId = CurrentGroup?.Id ?? Guid.Empty };
         IsEditing = false;
         await CategoryModal.ShowAsync();
     }
 
     private async Task OpenCategoryEditModal(CategorySummary category)
     {
-        CurrentCategory = category;
+        EditCategory = category;
         IsEditing = true;
         await CategoryModal.ShowAsync();
     }
 
     private async Task OpenGroupCreateModal()
     {
-        CurrentGroup = new CategoryGroupSummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, IsIncome = false };
+        EditGroup = new CategoryGroupSummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, IsIncome = false };
         IsEditing = false;
         await GroupModal.ShowAsync();
     }
 
     private async Task OpenGroupEditModal()
     {
+        if (CurrentGroup is null) return;
+
+        EditGroup = new() { Id = CurrentGroup.Id, Name = CurrentGroup.Name, Colour = CurrentGroup.Colour, IsIncome = CurrentGroup.IsIncome };
         IsEditing = true;
         await GroupModal.ShowAsync();
     }

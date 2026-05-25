@@ -187,7 +187,19 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         }
     }
 
-    private async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query, IQueryable<Transaction> transactions)
+    public async Task<bool> HasTransactionsForCategoryGroupAsync(Guid categoryGroupId)
+    {
+        return await dbContext.Transactions
+            .Include(t => t.Category)
+            .AnyAsync(t => t.Category != null && t.Category.GroupId == categoryGroupId);
+    }
+
+    public async Task<bool> HasTransactionsForCategoryAsync(Guid categoryId)
+    {
+        return await dbContext.Transactions.AnyAsync(t => t.CategoryId == categoryId);
+    }
+
+    private static async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query, IQueryable<Transaction> transactions)
     {
         transactions = ApplyFilters(transactions, query);
 
@@ -286,7 +298,7 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         return query.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize);
     }
 
-    private Task ApplyUpdatesAsync(Transaction existing, Transaction source)
+    private static Task ApplyUpdatesAsync(Transaction existing, Transaction source)
     {
         existing.Description = source.Description;
         existing.Amount = source.Amount;

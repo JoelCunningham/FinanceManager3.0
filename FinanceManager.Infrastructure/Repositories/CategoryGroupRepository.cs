@@ -38,4 +38,19 @@ public sealed class CategoryGroupRepository(FinanceManagerDbContext dbContext) :
         }
         dbContext.CategoryGroups.Update(categoryGroup);
     }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var existing = await dbContext.CategoryGroups.FirstOrDefaultAsync(g => g.Id == id);
+        if (existing == null)
+        {
+            throw new KeyNotFoundException($"Category group with ID {id} not found.");
+        }
+        dbContext.CategoryGroups.Remove(existing);
+    }
+
+    public async Task<bool> ExistsWithNameAsync(string name)
+    {
+        return await dbContext.CategoryGroups.AnyAsync(g => g.Name == name);
+    }
 }

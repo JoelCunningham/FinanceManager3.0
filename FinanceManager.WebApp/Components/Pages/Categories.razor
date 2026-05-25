@@ -1,23 +1,45 @@
 ﻿@page "/Categories"
 @inherits PageBase
 
-<PageTitle>Categories</PageTitle>
+<PageTitle>Category areas</PageTitle>
 
-@if (CurrentGroup is null || !CategoryGroups.Contains(CurrentGroup))
+@if (CurrentGroup is null || !CategoryGroups.Any(g => g.Id == CurrentGroup.Id))
 {
-    <h1 class="page-heading">Categories</h1>
+    <h1 class="page-heading">Category areas</h1>
 
     <CategoryGroupActions SearchQuery="@GroupSearch"
                           GroupMode="@GroupMode"
                           SearchQueryChanged="OnGroupSearchChanged"
                           GroupModeChanged="OnGroupModeChanged"
                           OnCreate="OpenGroupCreateModal" />
+
     <CategoryCards Groups="FilteredGroups" OnGroupClicked="OpenGroupPanel" />
 }
 else
 {
-    <CategoryGroupPanel Group="CurrentGroup" Categories="SelectedGroupCategories" OnEdit="OpenGroupEditModal" OnClose="CloseGroupPanel" OnCategoryCreate="OpenCategoryCreateModal" OnCategoryEdit="OpenCategoryEditModal" />
+    <CategoryGroupPanel Group="CurrentGroup"
+                        Categories="CurrentGroupCategories"
+                        OnEdit="OpenGroupEditModal"
+                        OnClose="CloseGroupPanel"
+                        OnCategoryCreate="OpenCategoryCreateModal"
+                        OnCategoryEdit="OpenCategoryEditModal" />
 }
 
-<CategoryModal @ref="CategoryModal" IsEditing="IsEditing" Category="CurrentCategory" OnSave="OnCategorySave" OnCancel="CloseCategoryModal" />
-<CategoryGroupModal @ref="GroupModal" IsEditing="IsEditing" Group="CurrentGroup" OnSave="OnGroupSave" OnCancel="CloseGroupModal" />
+<CategoryModal @ref="CategoryModal"
+               IsEditing="IsEditing"
+               Category="EditCategory"
+               HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditCategory?.Id ?? Guid.Empty)"
+               HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditCategory?.Id ?? Guid.Empty)"
+               OnSave="OnCategorySave"
+               OnCancel="CloseCategoryModal"
+               OnDelete="OnCategoryDelete" />
+
+<CategoryGroupModal @ref="GroupModal"
+                    IsEditing="IsEditing"
+                    Group="EditGroup"
+                    HasIsIncomeError="@Validation.GetValidationItemIds(ValidationField.IsIncome).Contains(EditGroup?.Id ?? Guid.Empty)"
+                    HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditGroup?.Id ?? Guid.Empty)"
+                    HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditGroup?.Id ?? Guid.Empty)"
+                    OnSave="OnGroupSave"
+                    OnCancel="CloseGroupModal"
+                    OnDelete="OnGroupDelete" />

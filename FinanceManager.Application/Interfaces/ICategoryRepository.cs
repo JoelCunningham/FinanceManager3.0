@@ -8,4 +8,6 @@ public interface ICategoryRepository
     Task<Category?> GetOrDefaultAsync(Guid id);
     Task CreateAsync(Category category);
     Task UpdateAsync(Category category);
+    Task DeleteAsync(Guid id);
+    Task<bool> ExistsWithNameAsync(string name, Guid groupId);
 }

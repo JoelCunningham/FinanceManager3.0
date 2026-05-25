@@ -5,4 +5,7 @@ public enum ValidationField
     Amount,
     Category,
     Date,
+    Name,
+    Colour,
+    IsIncome,
 }

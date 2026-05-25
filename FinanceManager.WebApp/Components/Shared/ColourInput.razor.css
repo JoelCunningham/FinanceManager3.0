@@ -1,0 +1,16 @@
+.colour-input {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    .colour-picker {
+        width: 3.5rem;
+        height: 2.5rem;
+        padding: 0.25rem;
+    }
+
+    .colour-value {
+        flex: 1;
+        min-width: 0;
+    }
+}

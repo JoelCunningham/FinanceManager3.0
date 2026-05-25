@@ -1,6 +1,7 @@
 namespace FinanceManager.Application.UseCases.Categories;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
 
@@ -10,12 +11,25 @@ public sealed class SaveCategoryEdit(ICategoryRepository categoryRepository, IDa
 {
     public async Task<SaveCategoryEditResult> ExecuteAsync(CategorySummary category)
     {
+        if (string.IsNullOrEmpty(category.Name)) {
+            return new SaveCategoryEditResult([new UseCaseValidationError(category.Id, ValidationField.Name, "Name is required.")]);
+        }
+        if (string.IsNullOrEmpty(category.Colour))
+        {
+            return new SaveCategoryEditResult([new UseCaseValidationError(category.Id, ValidationField.Colour, "Colour is required.")]);
+        }
+
         try
         {
             var entity = await categoryRepository.GetOrDefaultAsync(category.Id);
 
             if (entity is null)
             {
+                if (await categoryRepository.ExistsWithNameAsync(category.Name, category.GroupId))
+                {
+                    return new SaveCategoryEditResult([new UseCaseValidationError(category.Id, ValidationField.Name, $"A category with the name '{category.Name}' already exists in this group.")]);
+                }
+
                 entity = new()
                 {
                     Id = category.Id,

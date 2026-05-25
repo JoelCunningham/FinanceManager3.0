@@ -7,9 +7,19 @@
 
     [Parameter] public EventCallback OnCategoryCreate { get; set; }
     [Parameter] public EventCallback<CategorySummary> OnCategoryEdit { get; set; }
-    [Parameter] public EventCallback<CategorySummary> OnCategoryDelete { get; set; }
 
     private bool ShowCategories = true;
+    private HxGrid<CategorySummary>? Grid;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Grid is not null)  await Grid.RefreshDataAsync();
+    }
+
+    private Task<GridDataProviderResult<CategorySummary>> GetGridData(GridDataProviderRequest<CategorySummary> request)
+    {
+        return Task.FromResult(request.ApplyTo(Categories));
+    }
 }
 
 <div class="category-group-panel">
@@ -24,39 +34,48 @@
             {
                 <HxButton Color="ThemeColor.Light" Text="Show categories" OnClick="() => ShowCategories = !ShowCategories" />
             }
+            <HxButton Color="ThemeColor.Info" Text="Add category" OnClick="OnCategoryCreate" />
             <HxButton Color="ThemeColor.Primary" Text="Edit" OnClick="OnEdit" />
+
         </div>
     </div>
 
     <div class="heading">
-        <HxIcon Icon="@BootstrapIcon.PiggyBank" CssClass="icon" />
+        @if (Group.IsIncome)
+        {
+            <HxIcon Icon="@BootstrapIcon.PiggyBank" CssClass="icon" />
+        } else
+        {
+            <HxIcon Icon="@BootstrapIcon.Wallet" CssClass="icon" />
+        }
         <div class="text">
             <h1 class="page-heading">@Group.Name</h1>
-            <p class="subheading">Financial Area</p>
+            <p class="subheading">
+                Financial Area • @(Group.IsIncome ? "Income" : "Expense") •
+                <span class="rounded-circle d-inline-block" style="width: 15px; height: 15px; margin-bottom: -2px; background-color: @Group.Colour"></span>
+            </p>
         </div>
     </div>
 
-    <HxButton Color="ThemeColor.Primary" Text="Add Category" OnClick="OnCategoryCreate" />
 
     @if (ShowCategories)
     {
-        <div class="category-group-panel-category">
-            @foreach (var category in Categories)
-            {
-                <table class="category-table">
-                    <tr>
-                        <td class="category-colour"><span class="rounded-circle p-2" style="background-color: @category.Colour;" /></td>
-                        <td class="category-name">@category.Name</td>
-                        @* <td class="category-amount">@category.Amount.ToString("C")</td> *@
-                        <td class="category-actions">
-                            <HxContextMenu>
-                                <HxContextMenuItem Text="Edit" OnClick="() => OnCategoryEdit.InvokeAsync(category)" Icon="BootstrapIcon.Pencil" />
-                                <HxContextMenuItem Text="Delete" OnClick="() => OnCategoryDelete.InvokeAsync(category)" Icon="BootstrapIcon.Trash" />
-                            </HxContextMenu>
-                        </td>
-                    </tr>
-                </table>
-            }
-        </div>
+        <h4>Categories</h4>
+        <HxGrid @ref="Grid" TItem="CategorySummary" DataProvider="GetGridData" Responsive="false" Hover="true" PageSize="20" >
+            <Columns>
+                <HxGridColumn HeaderCssClass="category-col" ItemCssClass="category-col">
+                    <ItemTemplate Context="category">
+                        <span class="rounded-circle d-inline-block" style="width: 20px; height: 20px; margin-bottom: -5px; background-color: @category.Colour"></span>
+                    </ItemTemplate>
+                </HxGridColumn>
+                <HxGridColumn HeaderText="Name" SortString="Name" SortKeySelector="@(c => c.Name)" ItemTextSelector="@(c => c.Name)" />
+                <HxContextMenuGridColumn Context="category" ItemCssClass="category-action-col">
+                    <HxContextMenu>
+                        <HxContextMenuItem Text="View transactions" OnClick="() => OnCategoryEdit.InvokeAsync(category)" Icon="BootstrapIcon.List" />
+                        <HxContextMenuItem Text="Edit" OnClick="() => OnCategoryEdit.InvokeAsync(category)" Icon="BootstrapIcon.PencilSquare" />
+                    </HxContextMenu>
+                </HxContextMenuGridColumn>
+            </Columns>
+        </HxGrid>
     }
 </div>

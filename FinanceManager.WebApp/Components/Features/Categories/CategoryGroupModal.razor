@@ -6,8 +6,13 @@
     [Parameter] public CategoryGroupSummary? Group { get; set; }
     [Parameter] public EventCallback<CategoryGroupSummary> GroupChanged { get; set; }
 
+    [Parameter] public bool HasIsIncomeError { get; set; }
+    [Parameter] public bool HasNameError { get; set; }
+    [Parameter] public bool HasColourError { get; set; }
+
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
 }
 
 <HxModal @ref="_modal" Title="@(IsEditing ? "Edit Area" : "Create Area")">
@@ -15,12 +20,13 @@
         <div class="d-flex flex-column gap-2">
             @if (Group is not null)
             {
-                <HxInputText Label="Name" @bind-Value="Group.Name" />
-                <HxCheckbox @bind-Value="Group.IsIncome" @bind-Value:after="() => GroupChanged.InvokeAsync(Group)" Text="Is Income" />
+                <HxInputText Label="Name" @bind-Value="Group.Name" InputCssClass="@(HasNameError ? "is-invalid" : string.Empty)" />
+                <HxCheckbox @bind-Value="Group.IsIncome" @bind-Value:after="() => GroupChanged.InvokeAsync(Group)" Text="Is Income" InputCssClass="@(HasIsIncomeError ? "is-invalid" : string.Empty)" />
+                <ColourInput Label="Colour" @bind-Value="Group.Colour" HasError="HasColourError" />
             }
         </div>
     </BodyTemplate>
     <FooterTemplate>
-        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnSave="OnSave" />
+        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnSave="OnSave" OnDelete="OnDelete" />
     </FooterTemplate>
 </HxModal>

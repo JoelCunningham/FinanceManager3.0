@@ -11,7 +11,7 @@
     {
         <HxButton Color="ThemeColor.Secondary" Text="Cancel" OnClick="OnCancel" />
     }
-    @if (OnDelete.HasDelegate)
+    @if (OnDelete.HasDelegate && !IsCreating)
     {
         <HxButton Color="ThemeColor.Danger" Text="Delete" OnClick="OnDelete" />
     }
