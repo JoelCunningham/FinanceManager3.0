@@ -83,3 +83,7 @@
 .hx-input-date input {
     padding-right: 2rem !important;
 }
+
+input[type="checkbox"] {
+    cursor: pointer;
+}

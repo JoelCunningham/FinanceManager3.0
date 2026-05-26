@@ -11,9 +11,13 @@ public partial class Budget : PageBase
 {
     public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
     public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
+    public bool HideEmptyCategories { get; set; }
 
     public BudgetYear? CurrentBudgetYear { get; set; } = null;
     public int CurrentYear { get; set; } = DateTime.Now.Year;
+    public decimal TotalBudget { get; set; }
+    public decimal TotalIncome { get; set; }
+    public decimal TotalExpense { get; set; }
 
     public BudgetCellEntry? CurrentEntry { get; set; }
     public bool IsEditing { get; set; }
@@ -58,13 +62,16 @@ public partial class Budget : PageBase
         Cells = page.Cells;
         Categories = page.Categories;
         CurrentBudgetYear = page.BudgetYear;
+        TotalBudget = page.TotalBudget;
+        TotalIncome = page.TotalIncome;
+        TotalExpense = page.TotalExpense;
         CurrentYear = year;
     }
 
-    public async Task CreateEntry(BudgetCell cell)
+    public async Task CreateEntry(BudgetCell cell, CategorySummary category)
     {
         Validation.Clear();
-        CurrentEntry = new BudgetCellEntry { OverallScopePosition = cell.Index, OverallLength = 1 };
+        CurrentEntry = new BudgetCellEntry { OverallScopePosition = cell.Index, OverallLength = 1, Category = category };
         IsEditing = false;
         await OpenEditModal();
     }

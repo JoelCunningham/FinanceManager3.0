@@ -105,7 +105,7 @@
                @onblur="OnBlur"
                disabled="@(!Enabled)" />
 
-        @if (!string.IsNullOrWhiteSpace(searchText))
+        @if (!string.IsNullOrWhiteSpace(searchText) && Enabled)
         {
             <button class="clear-btn" @onmousedown:preventDefault @onclick="Clear">
                 <HxIcon Icon="BootstrapIcon.X" />

@@ -2,8 +2,11 @@
     margin-bottom: 1rem;
     display: flex;
     gap: 1rem;
-}
 
-::deep button {
-    margin-left: auto;
+    .right {
+        display: flex;
+        gap: 1rem;
+        margin-left: auto;
+        align-items: center;
+    }
 }

@@ -83,7 +83,7 @@
         <div class="d-flex flex-column gap-2">
             @if (Entry is not null && CurrentBudgetYear is not null)
             {
-                <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" />
+                <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" Enabled="false" />
                 <HxInputNumber @bind-Value="Entry.Amount" Label="Amount" />
 
                 <div class="d-flex gap-3">
@@ -112,11 +112,6 @@
         </div>
     </BodyTemplate>
     <FooterTemplate>
-        <HxButton Color="ThemeColor.Secondary" OnClick="OnCancel">Cancel</HxButton>
-        @if (IsEditing)
-        {
-            <HxButton Color="ThemeColor.Danger" OnClick="OnDelete">Delete</HxButton>
-        }
-        <HxButton Color="ThemeColor.Primary" OnClick="OnSave">Save</HxButton>
+        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnDelete="OnDelete" OnSave="OnSave" />
     </FooterTemplate>
 </HxModal>

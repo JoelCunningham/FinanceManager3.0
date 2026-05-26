@@ -9,7 +9,10 @@ using FinanceManager.Domain.Utilities;
 public sealed record GetPagedBudgetResult(
     BudgetYear? BudgetYear,
     IReadOnlyList<BudgetCell> Cells,
-    IReadOnlyList<CategorySummary> Categories
+    IReadOnlyList<CategorySummary> Categories,
+    decimal TotalBudget,
+    decimal TotalIncome,
+    decimal TotalExpense
 );
 
 public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository)
@@ -23,12 +26,13 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
 
         if (budgetYear == null)
         {
-            return new GetPagedBudgetResult(null, [], categorySummaries);
+            return new GetPagedBudgetResult(null, [], categorySummaries, 0m, 0m, 0m);
         }
         else
         {
             var cells = BuildCells(budgetYear);
             var entries = (await budgetEntryRepository.GetByBudgetYearAsync(budgetYear.Id)).ToList();
+            var totals = entries.Aggregate(new BudgetTotals(), (current, entry) => current.Add(entry));
 
             entries = mode switch
             {
@@ -39,7 +43,16 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
 
             var poplulatedCells = PopulateCells(cells, entries);
 
-            return new GetPagedBudgetResult(budgetYear, poplulatedCells, categorySummaries);
+            return new GetPagedBudgetResult(budgetYear, poplulatedCells, categorySummaries, totals.Income - totals.Expense, totals.Income, totals.Expense);
+        }
+    }
+
+    private sealed record BudgetTotals(decimal Income = 0m, decimal Expense = 0m)
+    {
+        public BudgetTotals Add(BudgetEntry entry)
+        {
+            var amount = entry.Amount * entry.Length;
+            return entry.Category.Group.IsIncome ? this with { Income = Income + amount } : this with { Expense = Expense + amount };
         }
     }
 
@@ -61,11 +74,7 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
 
     private static List<BudgetCell> PopulateCells(List<BudgetCell> cells, List<BudgetEntry> entries)
     {
-        entries = [.. entries
-            .OrderByDescending(e => e.Length)
-            .ThenByDescending(e => e.Category.Group.IsIncome)
-            .ThenBy(e => e.Category.Group.Name)
-            .ThenBy(e => e.Category.Name)];
+        entries = [.. entries.OrderByDescending(e => e.Category.Group.IsIncome).ThenBy(e => e.Category.Group.Name).ThenBy(e => e.Category.Name)];
 
         for (var i = 0; i < entries.Count; i++)
         {

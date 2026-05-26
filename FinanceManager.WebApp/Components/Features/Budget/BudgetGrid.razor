@@ -2,19 +2,16 @@
     [Parameter] public BudgetScope? Scope { get; set; }
     [Parameter] public int Year { get; set; }
     [Parameter] public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
+    [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
+    [Parameter] public bool HideEmptyCategories { get; set; }
 
-    [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
+    [Parameter] public EventCallback<(BudgetCell, CategorySummary)> OnCellClicked { get; set; }
     [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
     [Parameter] public EventCallback OnBudgetCreateClicked { get; set; }
 
     private Guid? HoveredEntryId { get; set; }
 
-    private IReadOnlyDictionary<int, decimal> RowHeights => GetRowHeights();
-    private IReadOnlyDictionary<int, decimal> RowTopOffsets => GetRowTopOffsets(RowHeights);
-
-    private const decimal MinEntryHeight = 1.6m;
-    private const decimal MaxEntryHeight = 3.2m;
-    private const decimal EntryGap = 0.2m;
+    private IReadOnlyList<CategoryGroupRow> GroupRows => GetGroupRows();
 
     private string GridCssClass => Scope switch
     {
@@ -30,58 +27,155 @@
         return Task.CompletedTask;
     }
 
-    private IReadOnlyDictionary<int, decimal> GetRowHeights()
+    private decimal GetColumnTotal(BudgetCell cell)
     {
-        var rows = Cells
-            .SelectMany(cell => cell.Entries)
-            .GroupBy(entry => entry.YIndex)
+        return cell.Entries
+            .Where(entry => entry.EntityId.HasValue)
+            .GroupBy(entry => entry.EntityId!.Value)
             .Select(group => group.First())
-            .OrderBy(entry => entry.YIndex)
+            .Sum(entry => entry.Category?.IsIncome == true ? entry.Amount : -entry.Amount);
+    }
+
+    private decimal GetRowTotal(CategorySummary category)
+    {
+        return Cells
+            .SelectMany(cell => cell.Entries)
+            .Where(entry => entry.Category?.Id == category.Id && entry.EntityId.HasValue)
+            .GroupBy(entry => entry.EntityId!.Value)
+            .Select(group => group.First())
+            .Sum(entry => (entry.Category?.IsIncome == true ? entry.Amount : -entry.Amount) * entry.OverallLength);
+    }
+
+    private decimal GetGrandTotal()
+    {
+        return Cells.Sum(GetColumnTotal);
+    }
+
+
+    private IReadOnlyList<CategoryGroupRow> GetGroupRows()
+    {
+        var sortedCategories = Categories
+            .OrderByDescending(category => category.IsIncome)
+            .ThenBy(category => category.GroupName)
+            .ThenBy(category => category.Name)
             .ToList();
 
-        if (rows.Count == 0)
+        var rows = sortedCategories
+            .GroupBy(category => category.GroupName)
+            .OrderByDescending(group => group.First().IsIncome)
+            .ThenBy(group => group.Key)
+            .Select(group => new CategoryGroupRow(group.Key, group.First().GroupColour, group
+                .OrderBy(category => category.Name)
+                .ToList()))
+            .ToList();
+
+        if (!HideEmptyCategories)
         {
-            return new Dictionary<int, decimal>();
+            return rows;
         }
 
-        var minAmount = rows.Min(entry => entry.Amount);
-        var maxAmount = rows.Max(entry => entry.Amount);
-        var amountRange = maxAmount - minAmount;
+        var populatedCategoryIds = Cells
+            .SelectMany(cell => cell.Entries)
+            .Where(entry => entry.IsFirst)
+            .Select(entry => entry.Category?.Id)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .ToHashSet();
 
-        var rowHeights = new Dictionary<int, decimal>(rows.Count);
-
-        foreach (var entry in rows)
-        {
-            rowHeights[entry.YIndex] = amountRange == 0m
-                ? (MinEntryHeight + MaxEntryHeight) / 2m
-                : MinEntryHeight + ((entry.Amount - minAmount) / amountRange) * (MaxEntryHeight - MinEntryHeight);
-        }
-
-        return rowHeights;
+        return rows
+            .Select(group => group with
+            {
+                Categories = group.Categories
+                    .Where(category => populatedCategoryIds.Contains(category.Id))
+                    .ToList()
+            })
+            .Where(group => group.Categories.Count > 0)
+            .ToList();
     }
 
-    private IReadOnlyDictionary<int, decimal> GetRowTopOffsets(IReadOnlyDictionary<int, decimal> rowHeights)
-    {
-        var rowTopOffsets = new Dictionary<int, decimal>(rowHeights.Count);
-        var currentTop = 0m;
-
-        foreach (var rowIndex in rowHeights.Keys.OrderBy(rowIndex => rowIndex))
-        {
-            rowTopOffsets[rowIndex] = currentTop;
-            currentTop += rowHeights[rowIndex] + EntryGap;
-        }
-
-        return rowTopOffsets;
-    }
+    private sealed record CategoryGroupRow(string Name, string Colour, IReadOnlyList<CategorySummary> Categories);
 }
 
 @if (Scope is not null)
 {
-    <div class="@GridCssClass">
-        @foreach (var cell in Cells)
-        {
-            <BudgetGridCell Cell="cell" RowHeights="RowHeights" RowTopOffsets="RowTopOffsets" HoveredEntryId="HoveredEntryId" OnCellClicked="OnCellClicked" OnEntryClicked="OnEntryClicked" OnEntryHoverChanged="HandleEntryHoverChanged" />
-        }
+    <div class="budget-grid-wrapper">
+        <div class="budget-grid" style="grid-template-columns: auto repeat(@Cells.Count, 1fr) auto;">
+            <div class="budget-grid-cell budget-grid-label-header" />
+            @foreach (var cell in Cells)
+            {
+                <div class="budget-grid-cell budget-grid-period-header">
+                    <p>@cell.Label</p>
+                    @if (cell.SubLabel is not null)
+                    {
+                        <p>@cell.SubLabel</p>
+                    }
+                </div>
+            }
+            <div class="budget-grid-cell budget-grid-label-header" />
+
+            @foreach (var group in GroupRows)
+            {
+                <div class="budget-grid-cell budget-grid-group-cell">
+                    <span style="@CategoryUtilities.GetElementStyle(group.Colour)" title="@group.Name">
+                        @group.Name
+                    </span>
+                </div>
+                @for (int i = 0; i < Cells.Count; i++)
+                {
+                    <div class="budget-grid-cell group" />
+                }
+
+                <div class="budget-grid-cell group" />
+
+                @foreach (var category in group.Categories)
+                {
+                    <div class="budget-grid-cell budget-grid-label-cell" title="@category.Name">
+                        @category.Name
+                    </div>
+
+                    @for (var periodIndex = 0; periodIndex < Cells.Count; periodIndex++)
+                    {
+                        var cell = Cells[periodIndex];
+                        var entry = cell.Entries.FirstOrDefault(e => e.Category?.Id == category.Id && e.ScopePosition == cell.Index);
+
+                        if (entry is null)
+                        {
+                            <div class="budget-grid-cell budget-grid-entry-cell">
+                                <div class="budget-grid-cell-contents empty" @onclick="() => OnCellClicked.InvokeAsync((cell, category))" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="budget-grid-cell budget-grid-entry-cell budget-grid-entry-filled" style="grid-column: span @entry.OverallLength;">
+                                <div class="budget-grid-cell-contents" style="@CategoryUtilities.GetElementStyle(entry.Category?.Colour);" @onclick="() => OnEntryClicked.InvokeAsync(entry)">
+                                    <span class="budget-grid-entry-amount">
+                                        @entry.Amount.ToString("C")
+                                    </span>
+                                </div>
+                            </div>
+                            periodIndex += entry.OverallLength - 1;
+                        }
+                    }
+
+                    <div class="budget-grid-cell budget-grid-entry-cell total">
+                        @GetRowTotal(category).ToString("C")
+                    </div>
+                }
+
+            }
+
+            <div class="budget-grid-cell budget-grid-label-header" />
+            @for (int i = 0; i < Cells.Count; i++)
+            {
+                <div class="budget-grid-cell end">
+                    @GetColumnTotal(Cells[i]).ToString("C")
+                </div>
+            }
+
+            <div class="budget-grid-cell budget-grid-entry-cell total end">
+                @GetGrandTotal().ToString("C")
+            </div>
+        </div>
     </div>
 }
 else

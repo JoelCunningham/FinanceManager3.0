@@ -12,8 +12,16 @@ public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
     public string Label => Scope switch
     {
         BudgetScope.Monthly => StartDate.ToString("MMM"),
-        BudgetScope.Fortnightly => $"F{Index + 1:00} ({StartDate:dd/MM})",
-        BudgetScope.Weekly => $"W{Index + 1:00} ({StartDate:dd/MM})",
+        BudgetScope.Fortnightly => $"F{Index + 1:00}",
+        BudgetScope.Weekly => $"W{Index + 1:00}",
         _ => StartDate.ToString("dd/MM/yyyy")
+    };
+
+    public string? SubLabel => Scope switch
+    {
+        BudgetScope.Monthly => null,
+        BudgetScope.Fortnightly => $"{StartDate:dd/MM}",
+        BudgetScope.Weekly => $"{StartDate:dd/MM}",
+        _ => null
     };
 }

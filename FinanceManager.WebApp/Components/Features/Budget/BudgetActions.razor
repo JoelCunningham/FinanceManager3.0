@@ -1,7 +1,10 @@
 @code {
     [Parameter] public BudgetGridMode EntryTypeFilter { get; set; }
     [Parameter] public EventCallback<BudgetGridMode> EntryTypeFilterChanged { get; set; }
-        
+
+    [Parameter] public bool HideEmptyCategories { get; set; }
+    [Parameter] public EventCallback<bool> HideEmptyCategoriesChanged { get; set; }
+
     [Parameter] public IReadOnlyList<BudgetGridMode> EntryTypeFilters { get; set; } = [];
 
     [Parameter] public EventCallback OnPrev { get; set; }
@@ -25,5 +28,8 @@
               TextSelector="f => f.ToString()"
               ValueSelector="f => f" />
 
-    <HxButton Color="ThemeColor.Light" OnClick="OnEditYear">Edit Budget</HxButton>
+    <div class="right">
+        <HxCheckbox Text="Hide empty categories" Value="HideEmptyCategories" ValueChanged="HideEmptyCategoriesChanged" ValueExpression="() => HideEmptyCategories" />
+        <HxButton Color="ThemeColor.Primary" OnClick="OnEditYear">Edit Budget</HxButton>
+    </div>
 </div>

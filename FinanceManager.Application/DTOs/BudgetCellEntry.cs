@@ -19,12 +19,6 @@ public sealed class BudgetCellEntry()
     public int ScopePosition => OverallScopePosition + XIndex;
 
     public bool IsFirst => XIndex == 0;
-    public bool IsStartOfRow => ScopePosition % ROW_LENGTH == 0;
-    public bool IsFirstInRow => IsFirst || IsStartOfRow;
-
-    public int RowLength => Math.Min(ROW_LENGTH - (ScopePosition % ROW_LENGTH), OverallLength - XIndex);
-
-    private const int ROW_LENGTH = 4;
 
     public static BudgetCellEntry FromBudgetEntry(BudgetEntry entry, int xIndex, int yIndex)
     {

@@ -27,7 +27,7 @@
                             }
                             else
                             {
-                                <span class="category-bubble" style="@CategoryUtilities.GetCategoryStyle(transaction)">@CategoryUtilities.GetCategoryFullName(transaction)</span>
+                                <span class="category-bubble" style="@CategoryUtilities.GetElementStyle(transaction.Category.Colour)">@CategoryUtilities.GetCategoryFullName(transaction)</span>
                             }
                         </ItemTemplate>
                     </HxGridColumn>

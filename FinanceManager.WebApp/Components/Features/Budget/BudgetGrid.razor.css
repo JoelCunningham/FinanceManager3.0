@@ -1,29 +1,96 @@
-.budget-grid {
-    display: grid;
-    gap: .5rem;
+.budget-grid-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
 
-    &.budget-grid-month {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+    .budget-grid {
+        display: grid;
+        width: max-content;
+        min-width: 100%;
 
-    &.budget-grid-fortnight {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+        .budget-grid-cell {
+            padding: 2px 4px;
+            border: 1px solid #ddd;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin: 0 2px;
+            border: none;
+            background-color: var(--bs-secondary-bg);
+            min-width: 4.75rem;
 
-    &.budget-grid-week {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-}
+            .budget-grid-cell-contents {
+                cursor: pointer;
+                padding: 0 10px;
+                border-radius: var(--bs-border-radius-lg);
+                height: stretch;
+                transition-duration: 0.1s;
+                height: 1.5rem;
 
-@media (max-width: 1200px) {
-    .budget-grid-month {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-}
+                &:hover {
+                    background-color: var(--hover-color) !important;
+                }
 
-@media (max-width: 768px) {
-    .budget-grid-fortnight,
-    .budget-grid-week {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+                &.empty:hover {
+                    background-color: var(--bs-gray-400) !important;
+                }
+            }
+
+            &.group {
+                background-color: transparent;
+                border-top: 4px solid var(--bs-secondary-bg);
+                border-bottom: 25px solid var(--bs-secondary-bg);
+            }
+
+            &.end {
+                border-radius: 0 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg);
+                text-align: center;
+                margin-top: 4px;
+            }
+
+            &.total {
+                text-align: center;
+            }
+        }
+
+        .budget-grid-period-header {
+            text-align: center;
+            background-color: var(--bs-secondary-bg);
+            border-radius: var(--bs-border-radius-lg) var(--bs-border-radius-lg) 0 0;
+
+            p {
+                margin: 0;
+            }
+        }
+
+        .budget-grid-label-cell,
+        .budget-grid-group-cell,
+        .budget-grid-label-header {
+            white-space: nowrap;
+            background-color: transparent;
+            text-align: right;
+            line-height: 1.1rem;
+            align-self: center;
+            width: 8rem;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: var(--bs-body-bg);
+        }
+
+        .budget-grid-group-cell {
+            margin-top: 0.75rem;
+            margin-bottom: -2px;
+
+            span {
+                font-weight: 600;
+                opacity: 0.85;
+                font-size: 0.85rem;
+                padding: 2px 8px;
+                border-radius: var(--bs-border-radius);
+            }
+        }
     }
 }
