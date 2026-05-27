@@ -46,6 +46,11 @@
             .Sum(entry => (entry.Category?.IsIncome == true ? entry.Amount : -entry.Amount) * entry.OverallLength);
     }
 
+    private decimal GetGroupTotal(CategoryGroupRow group)
+    {
+        return group.Categories.Sum(GetRowTotal);
+    }
+
     private decimal GetGrandTotal()
     {
         return Cells.Sum(GetColumnTotal);
@@ -122,10 +127,12 @@
                 </div>
                 @for (int i = 0; i < Cells.Count; i++)
                 {
-                    <div class="budget-grid-cell group" />
+                    <div class="budget-grid-cell group" style="@CategoryUtilities.GetElementStyle(group.Colour)" />
                 }
 
-                <div class="budget-grid-cell group" />
+                <div class="budget-grid-cell group total" style="@CategoryUtilities.GetElementStyle(group.Colour)">
+                    @GetGroupTotal(group).ToString("C")
+                </div>
 
                 @foreach (var category in group.Categories)
                 {
@@ -146,7 +153,7 @@
                         }
                         else
                         {
-                            <div class="budget-grid-cell budget-grid-entry-cell budget-grid-entry-filled" style="grid-column: span @entry.OverallLength;">
+                            <div class="budget-grid-cell budget-grid-entry-cell budget-grid-entry-filled" style="grid-column: span @entry.OverallLength; @(entry.OverallLength == 1 ? "text-align: center" : "")">
                                 <div class="budget-grid-cell-contents" style="@CategoryUtilities.GetElementStyle(entry.Category?.Colour);" @onclick="() => OnEntryClicked.InvokeAsync(entry)">
                                     <span class="budget-grid-entry-amount">
                                         @entry.Amount.ToString("C")
@@ -157,8 +164,10 @@
                         }
                     }
 
-                    <div class="budget-grid-cell budget-grid-entry-cell total">
-                        @GetRowTotal(category).ToString("C")
+                    <div class="budget-grid-cell budget-grid-entry-cell total" style="@CategoryUtilities.GetElementStyle(category.Colour)">
+                        <div class="budget-grid-cell-contents" >
+                            @GetRowTotal(category).ToString("C")
+                        </div>
                     </div>
                 }
 

@@ -21,7 +21,13 @@ public class CategoryUtilities
     {
         if (baseColour is null) return string.Empty;
 
-        return $"background-color: {baseColour}; color: {GetContrastTextColour(baseColour)}; --hover-color: {GetHoverColour(baseColour)};";
+        return $"""
+            background-color: {baseColour}; 
+            color: {GetContrastTextColour(baseColour)}; 
+            --background-color: {baseColour};
+            --hover-color: {GetHoverColour(baseColour)};
+        """;
+
     }
 
     private static string GetContrastTextColour(string backgroundColour)
