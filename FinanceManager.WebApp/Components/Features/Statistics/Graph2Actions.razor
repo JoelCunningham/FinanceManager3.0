@@ -36,10 +36,15 @@
         var nextStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, Chart.Range.Length);
         await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, nextStart, Chart.Range.Length));
     }
+
+    private async Task OnResetAsync()
+    {
+        await OnRangeChangedAsync(Chart.InitialRange);
+    }
 }
 
-<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync">
-    <Actions>
+<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync" OnReset="OnResetAsync">
+    <Dropdowns>
         @if (Chart.Range.Scope == BudgetScope.Monthly)
         {
             <MonthSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" />
@@ -52,5 +57,5 @@
         {
             <FortnightSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" />
         }
-    </Actions>
+    </Dropdowns>
 </GraphActions>

@@ -2,13 +2,15 @@
 {
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public RenderFragment? Dropdowns { get; set; }
 
     [Parameter] public IReadOnlyList<TransactionsGraphMode> Modes { get; set; } = [];
 
     [Parameter] public EventCallback OnPreviousRange { get; set; }
     [Parameter] public EventCallback OnToday { get; set; }
     [Parameter] public EventCallback OnNextRange { get; set; }
+
+    [Parameter] public EventCallback OnReset { get; set; }
 
     private async Task OnModeChangedAsync(TransactionsGraphMode mode)
     {
@@ -18,10 +20,9 @@
 }
 
 <div class="graph-actions">
-    @Actions
+    <RangeNav OnPreviousRange="OnPreviousRange" OnFixed="OnToday" OnNextRange="OnNextRange" FixedText="Today" />
 
-    <HxSelect Label="Mode"
-              Value="Chart.Mode"
+    <HxSelect Value="Chart.Mode"
               ValueChanged="OnModeChangedAsync"
               ValueExpression="() => Chart.Mode"
               Data="Modes"
@@ -33,13 +34,19 @@
               TextSelector="m => m.ToString()"
               ValueSelector="m => m" />
 
+    <HxButton Text="Reset" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="OnReset" />
+
     @if (Chart.IsCategoryLevel)
     {
         <div class="mt-2">
             <HxButton Text="Back to groups" Icon="BootstrapIcon.ArrowLeft" OnClick="Chart.ClearDrilldownAsync" />
         </div>
     }
-    
-    <RangeNav OnPreviousRange="OnPreviousRange" OnFixed="OnToday" OnNextRange="OnNextRange" FixedText="Today" />
-    
+
+    <HxDropdownButtonGroup>
+        <HxDropdownToggleButton Color="ThemeColor.Secondary">Advanced</HxDropdownToggleButton>
+        <HxDropdownContent CssClass="px-4 py-3">
+            @Dropdowns
+        </HxDropdownContent>
+    </HxDropdownButtonGroup>
 </div>

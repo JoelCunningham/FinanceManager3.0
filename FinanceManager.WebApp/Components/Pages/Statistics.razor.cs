@@ -18,13 +18,14 @@ public partial class Statistics : PageBase
     private const string UncategorisedLabel = "Uncategorised";
 
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
+    private static readonly DateOnly YearStart = new(Today.Year, 1, 1);
 
     protected override async Task OnInitializedAsync()
     {
-        var initialRange = new ScopedRange(BudgetScope.Monthly, Today.AddMonths(-5), DateConstants.MONTHS_IN_YEAR);
+        var initialRange = new ScopedRange(BudgetScope.Monthly, YearStart, DateConstants.MONTHS_IN_YEAR);
         var currentScope = (await UseCases.GetBudgetScopesAsync(initialRange)).GreatestScopeInRange;
 
-        Chart1 = new(currentScope, Today, ReloadChart1Async, DateConstants.MONTHS_IN_YEAR);
+        Chart1 = new(currentScope, YearStart, ReloadChart1Async, DateConstants.MONTHS_IN_YEAR);
         Chart2 = new(currentScope, Today, ReloadChart2Async);
 
         CategoryGroups = [.. (await UseCases.GetCategoryGroupsAsync()).Groups];
@@ -180,9 +181,9 @@ public partial class Statistics : PageBase
 
         Chart1.Title = (Chart1.Mode, isCategoryDrilldown) switch
         {
-            (TransactionsGraphMode.Expense, false) => "Expenses by group",
-            (TransactionsGraphMode.Income, false) => "Income by group",
-            (TransactionsGraphMode.Net, false) => "Net by group",
+            (TransactionsGraphMode.Expense, false) => $"Expenses by group between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
+            (TransactionsGraphMode.Income, false) => $"Income by group between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
+            (TransactionsGraphMode.Net, false) => $"Net by group between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
             (_, true) => $"{drilldownGroupName ?? "Group"} by category",
             _ => "Transactions"
         };
@@ -262,7 +263,7 @@ public partial class Statistics : PageBase
         var remainingColor = isIncome ? "#dc3545" : "#198754";
         var overColor = isIncome ? "#198754" : "#dc3545";
 
-        Chart2.Title = $"{levelText} {modeText} vs budget";
+        Chart2.Title = $"{levelText} {modeText} vs budget for {Chart2.Range.StartDate:MMM yyyy}";
         Chart2.Options = new
         {
             tooltip = new { trigger = "axis", axisPointer = new { type = "shadow" } },

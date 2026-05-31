@@ -1,11 +1,19 @@
 ﻿@code
 {
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
+    private static readonly DateOnly YearStart = new(Today.Year, 1, 1);
 
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
     [Parameter] public ScopedRange Range { get; set; } = default!;
     [Parameter] public EventCallback<ScopedRange> RangeChanged { get; set; }
+
+    private bool IsYtd { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        IsYtd = Chart.Range.EndDate == Today && Chart.Range.StartDate == YearStart;
+    }
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -37,11 +45,26 @@
         var nextStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, Chart.Range.Length);
         await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, nextStart, Chart.Range.Length));
     }
+
+    private async Task OnResetAsync()
+    {
+        await OnRangeChangedAsync(Chart.InitialRange);
+    }
+
+    private async Task OnYtdChangedAsync(bool isYtd)
+    {
+        var range = isYtd
+            ? new ScopedRange(BudgetScope.Monthly, YearStart, Today.Month)
+            : new ScopedRange(BudgetScope.Monthly, YearStart, 12);
+
+        await OnRangeChangedAsync(range);
+    }
 }
 
-<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync">
-    <Actions>
-        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="From month" YearLabel="From year" ChangeLength />
-        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="To month" YearLabel="To year" ChangeEndDate ChangeLength />
-    </Actions>
+<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync" OnReset="OnResetAsync">
+    <Dropdowns>
+        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="From" YearLabel=" " ChangeLength />
+        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="To" YearLabel=" " ChangeEndDate ChangeLength />
+        <HxCheckbox Text="YTD" @bind-Value="IsYtd" @bind-Value:after="() => OnYtdChangedAsync(IsYtd)" />
+    </Dropdowns>
 </GraphActions>

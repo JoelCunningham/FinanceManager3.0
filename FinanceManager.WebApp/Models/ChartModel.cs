@@ -8,6 +8,7 @@ public sealed class ChartModel(BudgetScope scope, DateOnly containingDate, Func<
 {
     public object? Options { get; set; }
     public ScopedRange Range { get; set; } = new(scope, containingDate, length);
+    public ScopedRange InitialRange { get; set; } = new(scope, containingDate, length);
     public string? Title { get; set; }
 
     public TransactionsGraphMode Mode { get; set; } = TransactionsGraphMode.Expense;

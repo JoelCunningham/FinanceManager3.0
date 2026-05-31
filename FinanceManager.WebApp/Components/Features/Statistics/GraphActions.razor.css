@@ -4,11 +4,17 @@
     gap: 1rem;
     align-items: end;
 
-    .end {
+    .dropdown {
+        display: flex;
+        gap: 0.5rem;
         margin-left: auto;
     }
+}
 
-    ::deep button {
-        padding-left: 0rem !important;
-    }
+::deep .dropdown-menu {
+    width: max-content;
+}
+
+::deep .hx-form-group:last-child label {
+    visibility: visible;
 }
