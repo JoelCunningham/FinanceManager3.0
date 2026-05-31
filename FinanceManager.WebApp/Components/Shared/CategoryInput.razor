@@ -14,6 +14,7 @@
     private bool isOpen = false;
     private string searchText = string.Empty;
     private string? selectedGroup = null;
+    private int navigatedIndex = -1;
 
     private bool IsSearching => !string.IsNullOrWhiteSpace(searchText);
 
@@ -31,6 +32,41 @@
         .GroupBy(c => c.GroupName)
         .OrderBy(g => g.Key);
 
+    private IList<object> NavigableItems
+    {
+        get
+        {
+            var items = new List<object>();
+
+            if (IsSearching)
+            {
+                foreach (var group in FilteredGroups)
+                    foreach (var item in group.OrderBy(c => c.Name))
+                        items.Add(item);
+            }
+            else if (selectedGroup is null)
+            {
+                foreach (var group in Groups)
+                    items.Add(group);
+            }
+            else
+            {
+                foreach (var item in CategoriesInSelectedGroup)
+                    items.Add(item);
+            }
+
+            return items;
+        }
+    }
+
+    private bool IsNavigated(object item)
+    {
+        var items = NavigableItems;
+        return navigatedIndex >= 0
+            && navigatedIndex < items.Count
+            && items[navigatedIndex] == item;
+    }
+
     protected override void OnParametersSet()
     {
         if (Value != null && string.IsNullOrWhiteSpace(searchText))
@@ -39,9 +75,79 @@
         }
     }
 
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (!isOpen)
+        {
+            if (e.Key is "ArrowDown" or "ArrowUp")
+            {
+                isOpen = true;
+                navigatedIndex = -1;
+            }
+            return;
+        }
+
+        var items = NavigableItems;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                navigatedIndex = items.Count == 0
+                    ? -1
+                    : (navigatedIndex + 1) % items.Count;
+                break;
+
+            case "ArrowUp":
+                navigatedIndex = items.Count == 0
+                    ? -1
+                    : (navigatedIndex - 1 + items.Count) % items.Count;
+                break;
+
+            case "ArrowRight":
+            case "Enter":
+                if (navigatedIndex >= 0 && navigatedIndex < items.Count)
+                {
+                    var target = items[navigatedIndex];
+                    if (target is string groupName && selectedGroup is null && !IsSearching)
+                    {
+                        SelectGroup(groupName);
+                    }
+                    else if (target is CategorySummary category)
+                    {
+                        await Select(category);
+                    }
+                }
+                else if (e.Key == "Enter")
+                {
+                    var first = items.OfType<CategorySummary>().FirstOrDefault();
+                    if (first is not null) await Select(first);
+                }
+                break;
+
+            case "ArrowLeft":
+            case "Backspace":
+                if (selectedGroup is not null)
+                {
+                    selectedGroup = null;
+                    navigatedIndex = -1;
+                }
+                break;
+
+            case "Escape":
+                isOpen = false;
+                searchText = string.Empty;
+                selectedGroup = null;
+                navigatedIndex = -1;
+                Value = null;
+                await ValueChanged.InvokeAsync(null);
+                break;
+        }
+    }
+
     private void OnInput(ChangeEventArgs e)
     {
         searchText = e.Value?.ToString() ?? string.Empty;
+        navigatedIndex = -1;
         isOpen = true;
 
         if (IsSearching)
@@ -53,6 +159,7 @@
     private void SelectGroup(string group)
     {
         selectedGroup = group;
+        navigatedIndex = -1;
     }
 
     private async Task Select(CategorySummary? item)
@@ -61,6 +168,7 @@
         searchText = item?.Name ?? string.Empty;
         isOpen = false;
         selectedGroup = null;
+        navigatedIndex = -1;
 
         await ValueChanged.InvokeAsync(item);
     }
@@ -68,6 +176,7 @@
     private Task OnBlur(FocusEventArgs _)
     {
         isOpen = false;
+        navigatedIndex = -1;
 
         if (Value != null)
         {
@@ -83,6 +192,7 @@
     {
         searchText = string.Empty;
         selectedGroup = null;
+        navigatedIndex = -1;
         Value = null;
 
         isOpen = true;
@@ -97,12 +207,13 @@
         {
             <HxIcon Icon="BootstrapIcon.Stars" />
         }
-        <input class="form-control @(HasError ? "is-invalid" : "") @(IsAutoCategorised ? "auto-categorised" : "" )"
+        <input class="form-control @(HasError ? "is-invalid" : "") @(IsAutoCategorised ? "auto-categorised" : "")"
                placeholder="@Label"
                value="@searchText"
                @oninput="OnInput"
                @onfocus="() => isOpen = true"
                @onblur="OnBlur"
+               @onkeydown="OnKeyDown"
                disabled="@(!Enabled)" />
 
         @if (!string.IsNullOrWhiteSpace(searchText) && Enabled)
@@ -126,7 +237,7 @@
 
                         @foreach (var item in group.OrderBy(c => c.Name))
                         {
-                            <div class="dropdown-item" @onmousedown="() => Select(item)">
+                            <div class="dropdown-item @(IsNavigated(item) ? "navigated" : "")" @onmousedown="() => Select(item)">
                                 @item.Name
                             </div>
                         }
@@ -143,19 +254,19 @@
                 {
                     @foreach (var group in Groups)
                     {
-                        <div class="dropdown-item" @onmousedown="() => SelectGroup(group)">
+                        <div class="dropdown-item @(IsNavigated(group) ? "navigated" : "")" @onmousedown="() => SelectGroup(group)">
                             @group
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="dropdown-header back" @onmousedown="() => selectedGroup = null">
+                    <div class="dropdown-header back" @onmousedown="() => { selectedGroup = null; navigatedIndex = -1; }">
                         <HxIcon Icon="BootstrapIcon.ArrowLeft" /> Back
                     </div>
                     @foreach (var item in CategoriesInSelectedGroup)
                     {
-                        <div class="dropdown-item" @onmousedown="() => Select(item)">
+                        <div class="dropdown-item @(IsNavigated(item) ? "navigated" : "")" @onmousedown="() => Select(item)">
                             @item.Name
                         </div>
                     }

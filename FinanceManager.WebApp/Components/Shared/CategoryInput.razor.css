@@ -25,13 +25,17 @@
                 background-color: #f5f5f5;
             }
 
-            .dropdown-item.back {
+            &.back {
                 font-weight: bold;
                 border-bottom: 1px solid #ddd;
 
                 .bi-arrow-left {
                     margin-right: 5px;
                 }
+            }
+
+            &.navigated {
+                background-color: var(--bs-primary-bg-subtle);
             }
         }
     }
