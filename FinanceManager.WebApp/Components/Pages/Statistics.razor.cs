@@ -255,7 +255,7 @@ public partial class Statistics : PageBase
         var modeText = Chart2.Mode == TransactionsGraphMode.Income ? "incomes" : "expenses";
         var levelText = drilldownGroupName is null ? "All" : drilldownGroupName;
 
-        var baseLabel = isIncome ? "Earned" : "Spent";
+        var baseLabel = isIncome ? "Earned within budget" : "Spent within budget";
         var remainingLabel = isIncome ? "Remaining budget" : "Remaining budget";
         var overLabel = isIncome ? "Above budget" : "Over budget";
 

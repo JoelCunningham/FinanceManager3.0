@@ -57,7 +57,7 @@ else
                              CalendarIcon="BootstrapIcon.Calendar"
                              MaxDate="@TransactionGroup.Record.Date"
                              @bind-Value:set="v => OnDateChange.InvokeAsync((transaction, v))" />
-                <HxInputText @bind-Value="transaction.Description" @bind-Value:event="oninput" title="@transaction.Description" />
+                <HxInputText Value="@transaction.Description" ValueChanged="v => transaction.Description = v" title="@transaction.Description" ValueExpression="@(() => transaction.Description)" />
                 @if (transaction.EntityId == TransactionGroup.Transactions.First().EntityId)
                 {
                     <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01" Enabled="false" />

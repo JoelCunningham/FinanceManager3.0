@@ -43,6 +43,10 @@
         padding-top: 2px;
     }
 
+        .transaction-group ::deep .action-buttons button:focus {
+            border: 1px solid var(--bs-black);
+        }
+
         .transaction-group ::deep .action-buttons button .bi-check-lg {
             font-size: 1.4rem;
             color: var( --bs-success);

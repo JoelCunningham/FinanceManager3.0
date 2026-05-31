@@ -40,19 +40,15 @@
 
             if (IsSearching)
             {
-                foreach (var group in FilteredGroups)
-                    foreach (var item in group.OrderBy(c => c.Name))
-                        items.Add(item);
+                foreach (var group in FilteredGroups) foreach (var item in group.OrderBy(c => c.Name)) items.Add(item);
             }
             else if (selectedGroup is null)
             {
-                foreach (var group in Groups)
-                    items.Add(group);
+                foreach (var group in Groups) items.Add(group);
             }
             else
             {
-                foreach (var item in CategoriesInSelectedGroup)
-                    items.Add(item);
+                foreach (var item in CategoriesInSelectedGroup) items.Add(item);
             }
 
             return items;
@@ -62,9 +58,7 @@
     private bool IsNavigated(object item)
     {
         var items = NavigableItems;
-        return navigatedIndex >= 0
-            && navigatedIndex < items.Count
-            && items[navigatedIndex] == item;
+        return navigatedIndex >= 0 && navigatedIndex < items.Count && items[navigatedIndex] == item;
     }
 
     protected override void OnParametersSet()
@@ -119,9 +113,14 @@
                 }
                 else if (e.Key == "Enter")
                 {
-                    var first = items.OfType<CategorySummary>().FirstOrDefault();
-                    if (first is not null) await Select(first);
+                    var enter_first = items.OfType<CategorySummary>().FirstOrDefault();
+                    if (enter_first is not null) await Select(enter_first);
                 }
+                break;
+
+            case "Tab":
+                var tab_first = items.OfType<CategorySummary>().FirstOrDefault();
+                if (tab_first is not null) await Select(tab_first);
                 break;
 
             case "ArrowLeft":
