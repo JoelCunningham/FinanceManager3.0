@@ -17,13 +17,13 @@
     private int StartScopePosition
     {
         get => _startScopePosition;
-        set => SetRange(value, _endScopePosition);
+        set => SetRange(value, Math.Max(value, _endScopePosition));
     }
 
     private int EndScopePosition
     {
         get => _endScopePosition;
-        set => SetRange(_startScopePosition, value);
+        set => SetRange(Math.Min(_startScopePosition, value), value);
     }
 
     protected override void OnParametersSet()
