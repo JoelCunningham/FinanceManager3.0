@@ -221,11 +221,12 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
     {
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            var search = request.SearchTerm.Trim();
+            var search = request.SearchTerm.Trim().ToLower();
             query = query.Where(t =>
-                t.Description.Contains(search) ||
-                t.Record.BankAccount.Bank.Contains(search) ||
-                (t.Record.BankAccount.AccountNumber != null && t.Record.BankAccount.AccountNumber.Contains(search)));
+                t.Description.ToLower().Contains(search) ||
+                t.Record.BankAccount.Bank.ToLower().Contains(search) ||
+                t.Category != null && t.Category.Name.ToLower().Contains(search) ||
+                t.Record.BankAccount.AccountNumber != null && t.Record.BankAccount.AccountNumber.ToLower().Contains(search));
         }
 
         if (request.FilterCategory != null)
