@@ -8,12 +8,7 @@
     [Parameter] public ScopedRange Range { get; set; } = default!;
     [Parameter] public EventCallback<ScopedRange> RangeChanged { get; set; }
 
-    private bool IsYtd { get; set; }
-
-    protected override void OnParametersSet()
-    {
-        IsYtd = Chart.Range.EndDate == Today && Chart.Range.StartDate == YearStart;
-    }
+    private bool IsYtd { get; set; } = false;
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -37,7 +32,7 @@
 
     private async Task OnTodayAsync()
     {
-        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, Today, Chart.Range.Length));
+        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, YearStart, IsYtd ? Today.Month : DateConstants.MONTHS_IN_YEAR));
     }
 
     private async Task OnNextAsync()
@@ -53,11 +48,8 @@
 
     private async Task OnYtdChangedAsync(bool isYtd)
     {
-        var range = isYtd
-            ? new ScopedRange(BudgetScope.Monthly, YearStart, Today.Month)
-            : new ScopedRange(BudgetScope.Monthly, YearStart, 12);
-
-        await OnRangeChangedAsync(range);
+        IsYtd = isYtd;
+        await OnRangeChangedAsync(new ScopedRange(BudgetScope.Monthly, YearStart, IsYtd ? Today.Month : DateConstants.MONTHS_IN_YEAR));
     }
 }
 
