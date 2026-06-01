@@ -135,7 +135,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
                 await transactionRepository.CreateOrUpdateAsync(transactionEntity);
                 if (categoryId is not null)
                 {
-                    await machineLearningRepository.CreateAsync(categoryId.Value, transaction.Description);
+                    await machineLearningRepository.CreateAsync(categoryId.Value, transaction.Record.Description);
                 }
             }
 

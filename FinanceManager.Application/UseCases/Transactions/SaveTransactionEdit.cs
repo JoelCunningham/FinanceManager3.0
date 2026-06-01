@@ -18,17 +18,17 @@ public sealed class SaveTransactionEdit(ITransactionRepository transactionReposi
         {
             var entity = await transactionRepository.GetByIdAsync(transaction.EntityId);
 
+            if (transaction.Category.Id != entity.CategoryId && entity.CategoryId is not null)
+            {
+                await machineLearningRepository.CreateAsync(entity.CategoryId.Value, entity.Record.Description);
+            }
+
             entity.Date = transaction.Date;
             entity.Description = transaction.Description;
             entity.Amount = transaction.Amount;
             entity.CategoryId = transaction.Category.Id;
             
-            await transactionRepository.UpdateAsync(entity);
-            
-            if (transaction.Category.Id != entity.CategoryId && entity.CategoryId is not null)
-            {
-                await machineLearningRepository.CreateAsync(entity.CategoryId.Value, entity.Description);
-            }
+            await transactionRepository.UpdateAsync(entity);     
 
             await dataStore.SaveAsync();
             return new SaveTransactionEditResult([]);
