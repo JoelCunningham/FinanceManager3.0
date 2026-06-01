@@ -29,7 +29,7 @@
                         OnFindTransfer="OnFindTransfer"
                         OnFindReimbursement="(args) => OnFindReimbursement(args.Item1, args.Item2)"
                         @bind-IsAutoAssignEnabled="IsAutoAssignEnabled"
-                        @bind-IsAutoAssignEnabled:after="Data.UpdateAsync" />
+                        @bind-IsAutoAssignEnabled:after="OnIsAutoAssignEnabledChanged" />
 
 <FindTransferModal @ref="TransferModal" TransferData="TransferData" Categories="Categories" SetTransfer="SetTransfer"  />
 

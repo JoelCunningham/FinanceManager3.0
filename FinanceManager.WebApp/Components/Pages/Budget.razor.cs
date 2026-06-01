@@ -37,6 +37,7 @@ public partial class Budget : PageBase
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
+        HideEmptyCategories = await Preferences.HideEmptyBudgetCategories;
         await ReloadAsync(DateTime.Now.Year);
     }
 
@@ -48,6 +49,12 @@ public partial class Budget : PageBase
     {
         EntryTypeFilter = mode;
         await ReloadAsync(CurrentYear);
+    }
+
+    public async Task OnHideEmptyCategoriesChanged(bool value)
+    {
+        HideEmptyCategories = value;
+        await Preferences.Set(PreferenceNames.HideEmptyBudgetCategories, value);
     }
 
     public async Task OpenEditModal() => await BudgetEntryModal.ShowAsync();

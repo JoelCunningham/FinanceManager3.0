@@ -16,6 +16,7 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
     public DbSet<MachineLearning> MachineLearning => Set<MachineLearning>();
     public DbSet<BudgetYear> BudgetYears => Set<BudgetYear>();
     public DbSet<BudgetEntry> BudgetEntries => Set<BudgetEntry>();
+    public DbSet<Preference> Preferences => Set<Preference>();
 
     public Task SaveAsync() { return SaveChangesAsync(); }
     public ITransactionScope BeginTransaction() { return new TransactionScope(Database.BeginTransaction()); }

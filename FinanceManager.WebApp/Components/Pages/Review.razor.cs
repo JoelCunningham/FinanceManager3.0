@@ -6,6 +6,7 @@ using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
 using FinanceManager.WebApp.Utilities;
+using FinanceManager.Domain.Enums;
 
 public partial class Review : PageBase
 {
@@ -35,7 +36,14 @@ public partial class Review : PageBase
         TransferData.GetDataFunc = GetTransferData;
         ReimburseData.GetDataFunc = GetReimburseData;
 
+        IsAutoAssignEnabled = await Preferences.AutoAssignCategories;
         Categories = (await UseCases.GetCategoryListAsync()).Categories;
+    }
+
+    public async Task OnIsAutoAssignEnabledChanged()
+    {
+        await Preferences.Set(PreferenceNames.AutoAssignCategories, IsAutoAssignEnabled);
+        await Data.UpdateAsync();
     }
 
     private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)

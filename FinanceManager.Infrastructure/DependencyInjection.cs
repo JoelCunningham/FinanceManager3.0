@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IMachineLearningRepository, MachineLearningRepository>();
         services.AddScoped<IBudgetEntryRepository, BudgetEntryRepository>();
         services.AddScoped<IBudgetYearRepository, BudgetYearRepository>();
+        services.AddScoped<IPreferenceRepository, PreferenceRepository>();
 
         // Parsers
         services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();

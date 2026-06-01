@@ -1,5 +1,6 @@
 namespace FinanceManager.Application;
 
+using FinanceManager.Application.Common;
 using FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Dates;
@@ -64,6 +65,8 @@ public static class DependencyInjection
         services.AddScoped<GetFortnightRanges>();
         services.AddScoped<GetMonthRanges>();
         services.AddScoped<GetWeekRanges>();
+        
+        services.AddScoped<Preferences>();
 
         services.AddScoped<ChartHelper>();
 
