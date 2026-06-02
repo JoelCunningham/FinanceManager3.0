@@ -74,10 +74,7 @@
                 .ToList()))
             .ToList();
 
-        if (!HideEmptyCategories)
-        {
-            return rows;
-        }
+        if (!HideEmptyCategories) return rows;
 
         var populatedCategoryIds = Cells
             .SelectMany(cell => cell.Entries)
@@ -86,6 +83,8 @@
             .Where(id => id.HasValue)
             .Select(id => id!.Value)
             .ToHashSet();
+
+        if (populatedCategoryIds.Count == 0) return rows;
 
         return rows
             .Select(group => group with

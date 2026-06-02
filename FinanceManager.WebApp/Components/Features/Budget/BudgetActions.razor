@@ -2,6 +2,7 @@
     [Parameter] public BudgetGridMode EntryTypeFilter { get; set; }
     [Parameter] public EventCallback<BudgetGridMode> EntryTypeFilterChanged { get; set; }
 
+    [Parameter] public bool HasPopulatedCategories { get; set; }
     [Parameter] public bool HideEmptyCategories { get; set; }
     [Parameter] public EventCallback<bool> HideEmptyCategoriesChanged { get; set; }
 
@@ -29,7 +30,12 @@
               ValueSelector="f => f" />
 
     <div class="right">
-        <HxCheckbox Text="Hide empty categories" Value="HideEmptyCategories" ValueChanged="HideEmptyCategoriesChanged" ValueExpression="() => HideEmptyCategories" />
+        <HxCheckbox Text="Hide empty categories"
+                    Value="HideEmptyCategories"
+                    ValueChanged="HideEmptyCategoriesChanged"
+                    ValueExpression="() => HideEmptyCategories"
+                    Enabled="HasPopulatedCategories" />
+
         <HxButton Color="ThemeColor.Primary" OnClick="OnEditYear">Edit Budget</HxButton>
     </div>
 </div>

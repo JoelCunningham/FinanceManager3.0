@@ -21,11 +21,14 @@ public partial class Budget : PageBase
 
     public BudgetCellEntry? CurrentEntry { get; set; }
     public bool IsEditing { get; set; }
+
     public BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
     public IReadOnlyList<BudgetScope> BudgetScopes = [BudgetScope.Monthly, BudgetScope.Fortnightly, BudgetScope.Weekly];
 
     private BudgetYearModal BudgetYearModal = new();
     private BudgetEntryModal BudgetEntryModal = new();
+
+    public bool HasPopulatedCategories => Cells.Any(c => c.Entries.Count != 0);
 
     private static readonly BudgetGridMode[] EntryTypeFilters =
     [
@@ -37,8 +40,8 @@ public partial class Budget : PageBase
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
-        HideEmptyCategories = await Preferences.HideEmptyBudgetCategories;
         await ReloadAsync(DateTime.Now.Year);
+        HideEmptyCategories = HasPopulatedCategories && await Preferences.HideEmptyBudgetCategories;
     }
 
     public async Task Prev() => await ReloadAsync(CurrentYear - 1);
