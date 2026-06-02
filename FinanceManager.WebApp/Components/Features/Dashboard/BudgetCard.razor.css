@@ -1,0 +1,14 @@
+﻿.card {
+    width: 100%;
+    padding: 1rem;
+
+    .budget-category-usage {
+
+        .category-name {
+            display: inline-block;
+            width: 15%;
+            text-overflow: ellipsis;
+            text-wrap: nowrap;
+        }
+    }
+}

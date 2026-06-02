@@ -1,0 +1,17 @@
+﻿.card {
+    width: 100%;
+    padding: 1rem;
+
+    .card-description {
+        margin: 0;
+    }
+
+    &.action {
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--bs-gray-100);
+            transition-duration: 0.1s;
+        }
+    }
+}

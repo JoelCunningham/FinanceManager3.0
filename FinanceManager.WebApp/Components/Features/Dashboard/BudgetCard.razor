@@ -1,0 +1,19 @@
+﻿@code {
+    [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
+}
+
+<div class="card">
+    <h5 class="card-title>">Budget usage by category</h5>
+    @foreach (var categoryUsage in CategoryUsages)
+    {
+        <div class="budget-category-usage">
+            <span class="category-name">@categoryUsage.CategoryName</span>
+            <HxProgress>
+                <HxProgressBar Value="(float)categoryUsage.Proportion * 100" Color="@ColourUtilities.GetUsageColor(categoryUsage.Proportion)" />
+            </HxProgress>
+            <span class="category-proportion">
+                @categoryUsage.Proportion.ToString("P0", CultureInfo.InvariantCulture)
+            </span>
+        </div>
+    }
+</div>
