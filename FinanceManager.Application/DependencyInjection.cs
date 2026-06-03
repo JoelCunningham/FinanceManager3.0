@@ -1,6 +1,7 @@
 namespace FinanceManager.Application;
 
 using FinanceManager.Application.Common;
+using FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Dates;
@@ -43,6 +44,9 @@ public static class DependencyInjection
         services.AddScoped<GetBudgetScopes>();
         services.AddScoped<GetChart1Data>();
         services.AddScoped<GetChart2Data>();
+
+        // Dashboard use cases
+        services.AddScoped<GetDashboardData>();
 
         // Review use cases
         services.AddScoped<AutoAssignCategories>();

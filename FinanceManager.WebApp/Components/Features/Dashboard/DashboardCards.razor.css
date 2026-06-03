@@ -1,0 +1,23 @@
+﻿.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.cards ::deep > * {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+@media (max-width: 576px) {
+    .cards {
+        flex-direction: column;
+    }
+
+    .cards ::deep > * {
+        flex-basis: auto;
+        width: 100%;
+    }
+}

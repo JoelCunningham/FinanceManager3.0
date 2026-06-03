@@ -2,13 +2,38 @@
     width: 100%;
     padding: 1rem;
 
+    .heading {
+        display: flex;
+        justify-content: space-between;
+    }
+
     .budget-category-usage {
 
         .category-name {
             display: inline-block;
-            width: 15%;
+            width: 100%;
             text-overflow: ellipsis;
             text-wrap: nowrap;
+            overflow: hidden;
+        }
+
+        .bar {
+            display: grid;
+            grid-template-columns: 1fr 50px;
+
+            .category-proportion {
+                margin-left: auto;
+                transform: translateY(-5px);
+            }
+        }
+    }
+
+    .empty-text {
+        height: 21rem;
+        align-content: center;
+
+        p {
+            text-align: center;
         }
     }
 }

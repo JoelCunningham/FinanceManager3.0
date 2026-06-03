@@ -3,7 +3,16 @@
     padding: 1rem;
 
     .chart {
-        margin-top: -3rem;
+        margin-top: -5rem;
         height: 21rem;
+    }
+
+    .empty-text {
+        height: 21rem;
+        align-content: center;
+
+        p {
+            text-align: center;
+        }
     }
 }

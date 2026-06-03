@@ -2,6 +2,7 @@ namespace FinanceManager.Application.UseCases;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
+using FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Import;
@@ -19,6 +20,7 @@ public class UseCases(
     GetBudgetScopes getBudgetScopes, 
     GetCategoryGroupList getCategoryGroupList,
     GetCategoryList getCategoryList,
+    GetDashboardData getDashboardData,
     GetChart1Data getChart1Data, 
     GetChart2Data getChart2Data, 
     GetPagedBudget getBudgetPage, 
@@ -55,6 +57,7 @@ public class UseCases(
     public Task<GetBudgetScopesResult> GetBudgetScopesAsync(ScopedRange range) => getBudgetScopes.ExecuteAsync(range);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroupList.ExecuteAsync();
     public Task<GetCategoryListResult> GetCategoryListAsync() => getCategoryList.ExecuteAsync();
+    public Task<GetDashboardDataResult> GetDashboardDataAsync() => getDashboardData.ExecuteAsync();
     public Task<GetChart1DataResult> GetChart1DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);
     public Task<GetChart2DataResult> GetChart2DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart2Data.ExecuteAsync(range, drilldownGroupId, mode);
     public Task<GetPagedBudgetResult> GetPagedBudgetAsync(int year, BudgetGridMode mode = BudgetGridMode.Net) => getBudgetPage.ExecuteAsync(year, mode);

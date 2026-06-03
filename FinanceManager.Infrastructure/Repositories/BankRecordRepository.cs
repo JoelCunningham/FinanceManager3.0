@@ -58,6 +58,11 @@ public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IB
         return records.Where(r => keySet.Contains(new BankRecordKey(r.Amount, r.Date, r.BankAccount.Bank, r.BankAccount.AccountNumber, r.Description, r.Type, r.Reference)));
     }
 
+    public async Task<DateTime?> GetLatestDateAsync()
+    {
+        return await dbContext.BankRecords.MaxAsync(br => (DateTime?)br.Date);
+    }
+
     public Task CreateAsync(IEnumerable<BankRecord> bankRecords)
     {
         dbContext.BulkInsertAsync(bankRecords);

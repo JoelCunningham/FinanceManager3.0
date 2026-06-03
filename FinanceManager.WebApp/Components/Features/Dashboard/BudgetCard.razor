@@ -1,19 +1,64 @@
 ﻿@code {
     [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
+
+    private const int PageSize = 5;
+    private int CurrentPage { get; set; } = 1;
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(CategoryUsages.Count / (double)PageSize));
+
+    private IReadOnlyList<BudgetCategoryUsage> PageCategoryUsages => CategoryUsages
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+
+    protected override void OnParametersSet()
+    {
+        CurrentPage = Math.Min(CurrentPage, TotalPages);
+    }
+
+    private void PreviousPage()
+    {
+        if (CurrentPage > 1) CurrentPage--;
+    }
+
+    private void NextPage()
+    {
+        if (CurrentPage < TotalPages) CurrentPage++;
+    }
 }
 
 <div class="card">
-    <h5 class="card-title>">Budget usage by category</h5>
-    @foreach (var categoryUsage in CategoryUsages)
-    {
-        <div class="budget-category-usage">
-            <span class="category-name">@categoryUsage.CategoryName</span>
-            <HxProgress>
-                <HxProgressBar Value="(float)categoryUsage.Proportion * 100" Color="@ColourUtilities.GetUsageColor(categoryUsage.Proportion)" />
-            </HxProgress>
-            <span class="category-proportion">
-                @categoryUsage.Proportion.ToString("P0", CultureInfo.InvariantCulture)
-            </span>
+    <div class="heading">
+        <h5 class="card-title>">Budget usage by category</h5>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <HxButtonGroup>
+                <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="PreviousPage" Enabled="CurrentPage > 1" />
+                <HxButton Color="ThemeColor.Light" Text="@($"{CurrentPage} / {TotalPages}")" Enabled="false" />
+                <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="NextPage" Enabled="CurrentPage < TotalPages" />
+            </HxButtonGroup>
         </div>
+    </div>
+    @if (!CategoryUsages.Any())
+    {
+        <div class="empty-text">
+            <p class="text-muted">No budgeted activities have been recorded for this month.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var categoryUsage in PageCategoryUsages)
+        {
+            <div class="budget-category-usage">
+                <span class="category-name">@categoryUsage.CategoryName</span>
+                <div class="bar">
+                    <HxProgress>
+                        <HxProgressBar Value="(float)categoryUsage.Proportion * 100" Color="@ColourUtilities.GetUsageColor(categoryUsage.Proportion)" />
+                    </HxProgress>
+                    <span class="category-proportion">
+                        @categoryUsage.Proportion.ToString("P0", CultureInfo.InvariantCulture)
+                    </span>
+                </div>
+            </div>
+        }
     }
 </div>

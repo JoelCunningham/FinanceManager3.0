@@ -1,44 +1,85 @@
 ﻿@code {
     [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
 
+    private const int MaxCategories = 5;
+
     private decimal TotalSpending => CategoryUsages.Sum(c => c.Amount);
+
+    private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryUsages => CategoryUsages
+        .OrderByDescending(c => c.Amount)
+        .Take(MaxCategories)
+        .Concat(GetOtherCategoryUsage())
+        .ToList();
+
     private decimal GetAmountProportion(decimal amount) => TotalSpending == 0 ? 0 : amount / TotalSpending;
+
+    private IEnumerable<BudgetCategoryUsage> GetOtherCategoryUsage()
+    {
+        var otherAmount = CategoryUsages
+            .OrderByDescending(c => c.Amount)
+            .Skip(MaxCategories)
+            .Sum(c => c.Amount);
+
+        if (otherAmount <= 0m) return [];
+
+        return [new BudgetCategoryUsage
+        {
+            CategoryName = "Other",
+            Amount = otherAmount,
+            Proportion = GetAmountProportion(otherAmount),
+        }];
+    }
 
     private object GetChartOptions()
     {
         var options = new
         {
-            tooltip = new { trigger = "item", formatter = "{b}: {d}%" },
-            legend = new { orient = "vertical", right = "right", top = "center" },
+            tooltip = new { show = false, trigger = "item", formatter = "{b}: {d}%" },
+            legend = new
+            {
+                orient = "vertical",
+                left = "60%",
+                top = "center",
+            },
+            title = new
+            {
+                text = TotalSpending.ToString("C0"),
+                left = "29%",
+                top = "50%",
+                textAlign = "center",
+                textVerticalAlign = "middle",
+                textStyle = new { fontSize = 20, fontWeight = "bold" },
+            },
             series = new[]
             {
                 new
                 {
                     name = "Spending",
                     type = "pie",
-                    radius = new List<string>() { "40%", "70%" },
-                    center = new List<string>() { "40%", "50%" },
-                    data = CategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName }),
+                    radius = new List<string>() { "35%", "50%" },
+                    center = new List<string>() { "30%", "50%" },
+                    data = DisplayCategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName }),
                     label = new { show = false },
-                    emphasis = new
-                    {
-                        itemStyle = new
-                        {
-                            shadowBlur = 10,
-                            shadowOffsetX = 0,
-                            shadowColor = "rgba(0, 0, 0, 0.5)"
-                        }
-                    }
+                    silent = true,
                 }
-            }
+            },
         };
         return options;
     }
 }
 
 <div class="card">
-    <h5 class="card-title>">Spending by group</h5>
-    <div class="chart">
-        <HxEChart Options="@GetChartOptions()" AutoResize="true" />
-    </div>
+    <h5 class="card-title>">Spending by category</h5>
+    @if (!CategoryUsages.Any())
+    {
+        <div class="empty-text">
+        <p class="text-muted">No spending activities have been recorded for this month.</p>
+        </div>
+    }
+    else
+    {
+        <div class="chart">
+            <HxEChart Options="@GetChartOptions()" AutoResize="true" />
+        </div>
+    }
 </div>
