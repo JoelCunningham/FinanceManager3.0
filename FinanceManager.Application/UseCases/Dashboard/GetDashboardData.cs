@@ -70,7 +70,8 @@ public sealed class GetDashboardData(
 
                 return new BudgetCategoryUsage
                 {
-                    CategoryName = $"{category.GroupName} - {category.Name}",
+                    CategoryName = category.Name,
+                    GroupName = category.GroupName,
                     BudgetedAmount = budgetedAmount,
                     Amount = spentAmount,
                     Proportion = budgetedAmount <= 0m ? (spentAmount > 0m ? 1m : 0m) : spentAmount / budgetedAmount,

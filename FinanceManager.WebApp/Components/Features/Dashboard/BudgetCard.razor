@@ -49,7 +49,7 @@
         @foreach (var categoryUsage in PageCategoryUsages)
         {
             <div class="budget-category-usage">
-                <span class="category-name">@categoryUsage.CategoryName</span>
+                <span class="category-name">@categoryUsage.DisplayName</span>
                 <div class="bar">
                     <HxProgress>
                         <HxProgressBar Value="(float)categoryUsage.Proportion * 100" Color="@ColourUtilities.GetUsageColor(categoryUsage.Proportion)" />

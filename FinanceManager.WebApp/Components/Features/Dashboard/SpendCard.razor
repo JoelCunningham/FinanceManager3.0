@@ -1,15 +1,37 @@
 ﻿@code {
     [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
 
-    private const int MaxCategories = 5;
+    private bool IsByGroupView { get; set; } = true;
 
     private decimal TotalSpending => CategoryUsages.Sum(c => c.Amount);
 
+    private const int MaxResults = 5;
+
     private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryUsages => CategoryUsages
         .OrderByDescending(c => c.Amount)
-        .Take(MaxCategories)
+        .Take(MaxResults)
         .Concat(GetOtherCategoryUsage())
         .ToList();
+
+    private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryGroupUsages => CategoryUsages
+        .GroupBy(c => c.GroupName)
+        .Select(g => new BudgetCategoryUsage
+        {
+            GroupName = g.Key,
+            CategoryName = g.First().CategoryName,
+            Amount = g.Sum(c => c.Amount),
+            Proportion = GetAmountProportion(g.Sum(c => c.Amount)),
+        })
+        .OrderByDescending(c => c.Amount)
+        .Take(MaxResults)
+        .Concat(GetOtherCategoryUsage())
+        .ToList();
+
+
+    private void ToggleView()
+    {
+        IsByGroupView = !IsByGroupView;
+    }
 
     private decimal GetAmountProportion(decimal amount) => TotalSpending == 0 ? 0 : amount / TotalSpending;
 
@@ -17,7 +39,7 @@
     {
         var otherAmount = CategoryUsages
             .OrderByDescending(c => c.Amount)
-            .Skip(MaxCategories)
+            .Skip(MaxResults)
             .Sum(c => c.Amount);
 
         if (otherAmount <= 0m) return [];
@@ -30,7 +52,7 @@
         }];
     }
 
-    private object GetChartOptions()
+    private object GetChartOptions(bool isByGroupView)
     {
         var options = new
         {
@@ -58,7 +80,9 @@
                     type = "pie",
                     radius = new List<string>() { "35%", "50%" },
                     center = new List<string>() { "30%", "50%" },
-                    data = DisplayCategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName }),
+                    data = isByGroupView
+                        ? DisplayCategoryGroupUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName == "Other" ? "Other" : c.GroupName })
+                        : DisplayCategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName == "Other" ? "Other" : c.DisplayName }),
                     label = new { show = false },
                     silent = true,
                 }
@@ -69,17 +93,22 @@
 }
 
 <div class="card">
-    <h5 class="card-title>">Spending by category</h5>
+    <div class="heading">
+        <h5 class="card-title>">Budget usage by @(IsByGroupView ? "group" : "category")</h5>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <HxButton Color="ThemeColor.Light" OnClick="ToggleView">@(IsByGroupView ? "View by category" : "View by group")</HxButton>
+        </div>
+    </div>
     @if (!CategoryUsages.Any())
     {
         <div class="empty-text">
-        <p class="text-muted">No spending activities have been recorded for this month.</p>
+            <p class="text-muted">No spending activities have been recorded for this month.</p>
         </div>
     }
     else
     {
         <div class="chart">
-            <HxEChart Options="@GetChartOptions()" AutoResize="true" />
+            <HxEChart Options="@GetChartOptions(IsByGroupView)" AutoResize="true" />
         </div>
     }
 </div>

@@ -2,6 +2,12 @@
     width: 100%;
     padding: 1rem;
 
+    .heading {
+        display: flex;
+        justify-content: space-between;
+        z-index: 1;
+    }
+
     .chart {
         margin-top: -5rem;
         height: 21rem;
