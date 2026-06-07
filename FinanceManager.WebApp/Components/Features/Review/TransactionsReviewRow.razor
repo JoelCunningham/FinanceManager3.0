@@ -25,12 +25,12 @@
         <ReviewRowEntry Label="Transfers from">
             <HxInputDate @bind-Value="TransactionGroup.Record.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
             <HxInputText @bind-Value="TransactionGroup.Record.Description" title="@TransactionGroup.Record.Description" Enabled="false" />
-            <HxInputNumber @bind-Value="TransactionGroup.Record.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+            <HxInputNumber @bind-Value="TransactionGroup.Record.Amount" Type="InputType.Number" InputMode="InputMode.Decimal" InputGroupStartText="$" Decimals="2" Enabled="false" />
         </ReviewRowEntry>
         <ReviewRowEntry Label="To">
             <HxInputDate @bind-Value="TransactionGroup.Transfers.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
             <HxInputText @bind-Value="TransactionGroup.Transfers.Description" title="@TransactionGroup.Transfers.Description" Enabled="false" />
-            <HxInputNumber @bind-Value="TransactionGroup.Transfers.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+            <HxInputNumber @bind-Value="TransactionGroup.Transfers.Amount" Type="InputType.Number" InputMode="InputMode.Decimal" InputGroupStartText="$" Decimals="2" Enabled="false" />
         </ReviewRowEntry>
     </ReviewRow>
 }
@@ -43,28 +43,45 @@ else
                 @if (transaction.Reimburses is null)
                 {
                     <CategoryInput @bind-Value:get="transaction.Category"
-                                      @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))"
-                                      Data="Categories"
-                                      IsAutoCategorised="transaction.IsAutoCategorised"
-                                      HasError="ErrorCategoryIds.Contains(transaction.EntityId)"
-                                      Label="Uncategorised" />
+                                   @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))"
+                                   Data="Categories"
+                                   IsAutoCategorised="transaction.IsAutoCategorised"
+                                   HasError="ErrorCategoryIds.Contains(transaction.EntityId)"
+                                   Label="Uncategorised" />
                 }
                 else
                 {
                     <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" Label="Uncategorised" />
                 }
+
                 <HxInputDate @bind-Value:get="transaction.Date"
                              CalendarIcon="BootstrapIcon.Calendar"
                              MaxDate="@TransactionGroup.Record.Date"
                              @bind-Value:set="v => OnDateChange.InvokeAsync((transaction, v))" />
-                <HxInputText Value="@transaction.Description" ValueChanged="v => transaction.Description = v" title="@transaction.Description" ValueExpression="@(() => transaction.Description)" />
+
+                <HxInputText Value="@transaction.Description"
+                             ValueChanged="v => transaction.Description = v"
+                             title="@transaction.Description"
+                             ValueExpression="@(() => transaction.Description)" />
+
                 @if (transaction.EntityId == TransactionGroup.Transactions.First().EntityId)
                 {
-                    <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01" Enabled="false" />
+                    <HxInputNumber @bind-Value:get="transaction.Amount"
+                                   Type="InputType.Number" InputMode="InputMode.Decimal"
+                                   InputGroupStartText="$" D
+                                   ecimals="2"
+                                   step="0.01"
+                                   Enabled="false" />
                 }
                 else
                 {
-                    <HxInputNumber @bind-Value:get="transaction.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" step="0.01"
+                    <HxInputNumber @bind-Value:get="transaction.Amount"
+                                   Type="InputType.Number"
+                                   InputMode="InputMode.Decimal"
+                                   InputGroupStartText="$"
+                                   Decimals="2"
+                                   SmartKeyboard="false"
+                                   step="0.01"
                                    min="@(TransactionGroup.Record.Amount < 0 ? TransactionGroup.Record.Amount : null)"
                                    max="@(TransactionGroup.Record.Amount > 0 ? TransactionGroup.Record.Amount : null)"
                                    @bind-Value:set="v => OnAmountChange.InvokeAsync((transaction, v))" />
@@ -90,7 +107,7 @@ else
                 <ReviewRowEntry Label=" ↳ Reimburses">
                     <HxInputDate @bind-Value="transaction.Reimburses.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
                     <HxInputText @bind-Value="transaction.Reimburses.Description" title="@transaction.Reimburses.Description" Enabled="false" />
-                    <HxInputNumber @bind-Value="transaction.Reimburses.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+                    <HxInputNumber @bind-Value="transaction.Reimburses.Amount" Type="InputType.Number" InputMode="InputMode.Decimal" InputGroupStartText="$" Decimals="2" Enabled="false" />
                     <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.XLg" OnClick="() => transaction.Reimburses = null" />
                 </ReviewRowEntry>
             }
@@ -101,7 +118,7 @@ else
                     <ReviewRowEntry Label=" ↳ Reimbursed by">
                         <HxInputDate @bind-Value="reimbursement.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
                         <HxInputText @bind-Value="reimbursement.Description" title="@reimbursement.Description" Enabled="false" />
-                        <HxInputNumber @bind-Value="reimbursement.Amount" Type="InputType.Number" InputGroupStartText="$" Decimals="2" Enabled="false" />
+                        <HxInputNumber @bind-Value="reimbursement.Amount" Type="InputType.Number" InputMode="InputMode.Decimal" InputGroupStartText="$" Decimals="2" Enabled="false" />
                         <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.XLg" OnClick="() => transaction.Reimbursements = transaction.Reimbursements.Where(r => r != reimbursement)" />
                     </ReviewRowEntry>
                 }

@@ -47,7 +47,15 @@
     </DashboardCards>
 
     <DashboardCards Count="2">
-        <BasicCard Title="Incomes make up" Value="@(DashboardData.IncomeShare.ToString("P0", CultureInfo.CurrentCulture))" Description="of transacted value" Colour="var(--bs-primary)" />
-        <BasicCard Title="Last import" Value="@(DashboardData.DaysSinceLastImport == 0 ? "today" : $"{DashboardData.DaysSinceLastImport} days ago")" Description="click to import now" Colour="var(--bs-primary)" OnClick="@(() => NavigationManager.NavigateTo("/Import"))" />
+        <BasicCard Title="Incomes make up"
+                   Value="@(DashboardData.IncomeShare.ToString("P0", CultureInfo.CurrentCulture))"
+                   Description="of transacted value"
+                   Colour="var(--bs-primary)" />
+
+        <BasicCard Title="Last transaction date"
+                   Value="@(DashboardData.DaysSinceLastImport == 0 ? "today" : $"{DashboardData.DaysSinceLastImport} days ago")"
+                   Description="@($"on {DateTime.Today.AddDays(-DashboardData.DaysSinceLastImport):yyyy-MM-dd}")"
+                   Colour="var(--bs-primary)"
+                   OnClick="@(() => NavigationManager.NavigateTo("/Import"))" />
     </DashboardCards>
 }

@@ -226,6 +226,7 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
                 t.Description.ToLower().Contains(search) ||
                 t.Record.BankAccount.Bank.ToLower().Contains(search) ||
                 t.Category != null && t.Category.Name.ToLower().Contains(search) ||
+                t.Category != null && t.Category.Group.Name.ToLower().Contains(search) ||
                 t.Record.BankAccount.AccountNumber != null && t.Record.BankAccount.AccountNumber.ToLower().Contains(search));
         }
 
