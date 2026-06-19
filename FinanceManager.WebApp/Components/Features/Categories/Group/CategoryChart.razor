@@ -1,0 +1,136 @@
+﻿@inject NavigationManager NavigationManager
+@inject UseCases UseCases
+
+@code
+{
+    [Parameter] public CategoryGroupSummary Group { get; set; } = default!;
+    [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
+
+    [Parameter] public int Length { get; set; }
+    [Parameter] public BudgetScope Scope { get; set; }
+
+    private ChartModel Chart { get; set; } = default!;
+
+    private DateOnly StartDate => ScopeHelper.AddPeriod(DateOnly.FromDateTime(DateTime.Today), Scope, -Length);
+    private ScopedRange Range => new ScopedRange(Scope, StartDate, Length + 1);
+    private string ScopeText => LanguageUtilities.Pluralise(ScopeHelper.GetScopeDescription(Scope, true), Length);
+
+    private CategoryGraphMode CurrentGraphMode = CategoryGraphMode.ActualAndBudget;
+    private IEnumerable<CategoryGraphMode> SupportedGraphModes = [CategoryGraphMode.Actual, CategoryGraphMode.Budget, CategoryGraphMode.ActualAndBudget];
+
+    private bool IsEmpty = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Categories.Any())
+        {
+            if (Chart is null) Chart = new ChartModel(Scope, StartDate, ReloadChart, Range.Length);
+            await ReloadChart();
+        }
+    }
+
+    public async Task SetScope(BudgetScope newScope)
+    {
+        if (newScope == Scope) return;
+        Scope = newScope;
+        Chart.Range = Range;
+        await ReloadChart();
+    }
+
+    private async Task ReloadChart()
+    {
+        if (!Categories.Any()) return;
+
+        var result = await UseCases.GetCategoryGraphAsync(Categories, Chart.Range);
+
+        var hasBudget = result.BudgetSeries.Any(s => s.Value.Any(v => v != 0.00m));
+        var hasActual = result.ActualSeries.Any(s => s.Value.Any(v => v != 0.00m));
+
+        IsEmpty = !hasActual && !hasBudget;
+        if (IsEmpty) return;
+
+        var periods = Chart.Range.Periods.ToList();
+        var labels = periods.Select(p => p.StartDate.ToString("yyyy-MM")).ToArray();
+
+        var series = new List<object>();
+
+        if (CurrentGraphMode != CategoryGraphMode.Budget)
+        {
+            series.AddRange(result.ActualSeries
+                .Where(s => s.Value.Any(v => v != 0.00m))
+                .Select(s =>
+                    new { name = s.Key.Name, type = "line", lineStyle = new { type = "solid" }, itemStyle = new { color = s.Key.Colour }, smooth = true, data = Group.IsIncome ? s.Value : s.Value.Select(v => -v).ToArray() }
+                ).ToArray());
+        }
+        if (CurrentGraphMode != CategoryGraphMode.Actual)
+        {
+            series.AddRange(result.BudgetSeries
+            .Where(s => s.Value.Any(v => v != 0.00m))
+            .Select(s =>
+                new { name = s.Key.Name + " Budget", type = "line", lineStyle = new { type = "dashed" }, itemStyle = new { color = s.Key.Colour }, smooth = true, data = s.Value }
+            ).ToArray());
+        }
+
+        Chart.Title = $"{Group.Name} categories actual vs budget for {Chart.Range.StartDate:MMM yyyy} - {Chart.Range.EndDate:MMM yyyy}";
+        Chart.Options = new
+        {
+            tooltip = new { trigger = "axis" },
+            legend = new { show = false },
+            grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
+            xAxis = new { type = "category", data = labels },
+            yAxis = new { type = "value" },
+            series = series.ToArray()
+        };
+    }
+
+    private async Task OnRangeChangedAsync(ScopedRange newRange)
+    {
+        Chart.Range = newRange;
+        await ReloadChart();
+    }
+
+    private async Task OnModeChangedAsync(CategoryGraphMode newMode)
+    {
+        CurrentGraphMode = newMode;
+        await ReloadChart();
+    }
+
+    private string GetModeDescription(CategoryGraphMode mode)
+    {
+        return mode switch
+        {
+            CategoryGraphMode.Actual => "Actual",
+            CategoryGraphMode.Budget => "Budget",
+            CategoryGraphMode.ActualAndBudget => "Actual and Budget",
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
+    }
+}
+
+@if (!IsEmpty)
+{
+    <div class="actions">
+        <HxSelect Value="CurrentGraphMode"
+                  ValueChanged="OnModeChangedAsync"
+                  ValueExpression="() => CurrentGraphMode"
+                  TItem="CategoryGraphMode"
+                  TValue="CategoryGraphMode"
+                  Data="SupportedGraphModes"
+                  Nullable="false"
+                  AutoSort="false"
+                  TextSelector="f => GetModeDescription(f)"
+                  ValueSelector="f => f" />
+        <MonthSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" MonthLabel="" YearLabel="" ChangeLength />
+        <HxIcon Icon="BootstrapIcon.ArrowRight" CssClass="icon" />
+        <MonthSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" MonthLabel="" YearLabel="" ChangeEndDate ChangeLength />
+    </div>
+    <Chart Options="Chart.Options" Range="Chart.Range" OnItemClick="Chart.OnDrilldownClickAsync" />
+}
+else
+{
+    <HxAlert Color="ThemeColor.Info" style="margin-top: 5rem;">
+        <HxIcon Icon="BootstrapIcon.InfoCircle" />
+        You have no transactions or budgets for <b>@Group.Name</b> categories over the last @Length @ScopeText. You can create a budget on the
+        <a href="/Budget">budget page</a>.
+    </HxAlert>
+}

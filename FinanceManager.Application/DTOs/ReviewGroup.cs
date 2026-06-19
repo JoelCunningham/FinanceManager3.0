@@ -81,7 +81,7 @@ public class ReviewTransaction : TransactionSummary
     public IEnumerable<ReviewTransaction> Reimbursements { get; set; } = []; // Used for editing reimbursements of an existing transaction
     public bool IsAutoCategorised { get; set; }
 
-    public static ReviewTransaction FromTransaction(Transaction transaction)
+    public static new ReviewTransaction FromTransaction(Transaction transaction)
     {
         var record = BankRecordSummary.FromBankRecord(transaction.Record);
         var category = transaction.Category != null ? CategorySummary.FromCategory(transaction.Category) : null;

@@ -6,12 +6,10 @@ namespace FinanceManager.Application.Interfaces
     public interface ITransactionRepository
     {
         Task<Transaction> GetByIdAsync(Guid id);
-        Task<Transaction?> GetOrDefaultAsync(Guid id);
         Task<IEnumerable<Transaction>> GetByRecordIdAsync(Guid recordId, Guid? excludeId = null);
         Task<IEnumerable<Transaction>> GetReimbursementsAsync(IEnumerable<Guid> reimbursedTransactionIds);
+        Task<IEnumerable<Transaction>> GetTransactionsAsync(FilterQuery query);
         Task<PagedResult<Transaction>> GetPagedTransactionsAsync(FilterQuery query);
-        Task<PagedResult<Transaction>> GetPagedReimbursementsAsync(FilterQuery query);
-        Task CreateAsync(Transaction transaction);
         Task CreateAsync(IEnumerable<Transaction> transactions);
         Task CreateOrUpdateAsync(Transaction transaction);
         Task UpdateAsync(Transaction transaction);

@@ -17,20 +17,20 @@ public static class ScopeHelper
         };
     }
 
-    public static string GetScopeDescription(BudgetScope scope)
+    public static string GetScopeDescription(BudgetScope scope, bool plural = false)
     {
         return scope switch
         {
-            BudgetScope.Weekly => "week",
-            BudgetScope.Fortnightly => "fortnight",
-            BudgetScope.Monthly => "month",
+            BudgetScope.Weekly => plural ? "weeks" : "week",
+            BudgetScope.Fortnightly => plural ? "fortnights" : "fortnight",
+            BudgetScope.Monthly => plural ? "months" : "month",
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
     }
 
     public static DateOnly GetRangeStart(BudgetScope scope, DateOnly date)
     {
-       return GetPeriodStart(scope, date, 0);
+        return GetPeriodStart(scope, date, 0);
     }
 
     public static DateOnly GetPeriodStart(BudgetScope scope, DateOnly date, int offset)
@@ -72,6 +72,28 @@ public static class ScopeHelper
             BudgetScope.Weekly => DateOnly.FromDateTime(ISOWeek.ToDateTime(year, 1, DayOfWeek.Monday)),
             BudgetScope.Fortnightly => DateOnly.FromDateTime(ISOWeek.ToDateTime(year, 1, DayOfWeek.Monday)),
             BudgetScope.Monthly => new DateOnly(year, 1, 1),
+            _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
+        };
+    }
+
+    public static DateOnly AddPeriod(DateOnly date, BudgetScope scope, int periods)
+    {
+        return scope switch
+        {
+            BudgetScope.Weekly => date.AddDays(DateConstants.DAYS_IN_WEEK * periods),
+            BudgetScope.Fortnightly => date.AddDays(DateConstants.DAYS_IN_FORTNIGHT * periods),
+            BudgetScope.Monthly => date.AddMonths(periods),
+            _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
+        };
+    }
+
+    public static string GetPeriodName(DateOnly date, BudgetScope scope)
+    {
+        return scope switch
+        {
+            BudgetScope.Weekly => $"W{DateHelper.GetWeekIndex(date):00} {date.Year}",
+            BudgetScope.Fortnightly => $"F{DateHelper.GetFortnightIndex(date):00} {date.Year}",
+            BudgetScope.Monthly => date.ToString("MMMM yyyy"),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
     }

@@ -3,11 +3,19 @@ namespace FinanceManager.WebApp.Components.Pages;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
+using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Categories;
+using FinanceManager.WebApp.Components.Features.Categories.Group;
+using FinanceManager.WebApp.Enums;
+using FinanceManager.WebApp.Models;
+using Microsoft.AspNetCore.Components;
+using System.Text.RegularExpressions;
 
 public partial class Categories : PageBase
 {
+    [Parameter] public string? GroupName { get; set; }
+
     public IReadOnlyList<CategorySummary> AllCategories { get; set; } = [];
     public IReadOnlyList<CategoryGroupSummary> CategoryGroups { get; set; } = [];
 
@@ -16,13 +24,18 @@ public partial class Categories : PageBase
 
     public bool IsEditing { get; set; } = false;
 
-    public CategoryGroupSummary? CurrentGroup { get; set; } = null;
     public CategoryGroupSummary? EditGroup { get; set; } = null;
-    public CategorySummary? EditCategory { get; set; } = null;
-    public IEnumerable<CategorySummary> CurrentGroupCategories => AllCategories.Where(c => c.GroupId == CurrentGroup?.Id);
+    public CategoryPeriodDetails? EditCategory { get; set; } = null;
+
+    public CategoryGroupDetails? CurrentGroup { get; set; } = null;
+    public CategorySummary? CurrentCategory { get; set; } = null;
 
     public CategoryModal CategoryModal { get; set; } = new();
     public CategoryGroupModal GroupModal { get; set; } = new();
+    public TransactionsModal TransactionsModal { get; set; } = new();
+
+    public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(20);
+    public int PeriodOffset { get; set; } = 0;
 
     public IEnumerable<CategoryGroupSummary> FilteredGroups => CategoryGroups
         .Where(g => string.IsNullOrWhiteSpace(GroupSearch) || g.Name.Contains(GroupSearch, StringComparison.OrdinalIgnoreCase))
@@ -33,9 +46,24 @@ public partial class Categories : PageBase
     {
         Validation.Messenger = Messenger;
 
-        var categoriesResult = await UseCases.GetCategoryListAsync();
-        CategoryGroups = categoriesResult.Groups;
-        AllCategories = categoriesResult.Categories;
+        var allCategories = await UseCases.GetCategoriesAsync();
+        CategoryGroups = allCategories.Groups;
+        AllCategories = allCategories.Categories;
+
+        TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        CurrentGroup = null;
+        if (GroupName is not null)
+        {
+            var groupId = CategoryGroups.FirstOrDefault(g => g.Name == GroupName)?.Id;
+            if (groupId is not null)
+            {
+                CurrentGroup = (await UseCases.GetCategoryGroupDetailsAsync(groupId.Value, PeriodOffset)).GroupDetails;
+            }
+        }
     }
 
     private void OnGroupSearchChanged(string value)
@@ -60,7 +88,7 @@ public partial class Categories : PageBase
         }
         else
         {
-            AllCategories = (await UseCases.GetCategoryListAsync()).Categories;
+            AllCategories = (await UseCases.GetCategoriesAsync()).Categories;
             await CloseCategoryModal();
             Validation.SetSuccess(IsEditing ? "Category updated successfully." : "Category created successfully.");
         }
@@ -79,7 +107,7 @@ public partial class Categories : PageBase
         }
         else
         {
-            AllCategories = (await UseCases.GetCategoryListAsync()).Categories;
+            AllCategories = (await UseCases.GetCategoriesAsync()).Categories;
             await CloseCategoryModal();
             Validation.SetSuccess("Category deleted successfully.");
         }
@@ -97,8 +125,8 @@ public partial class Categories : PageBase
         }
         else
         {
-            CategoryGroups = (await UseCases.GetCategoryListAsync()).Groups;
-            CurrentGroup = CategoryGroups.FirstOrDefault(g => g.Id == EditGroup.Id);
+            CategoryGroups = (await UseCases.GetCategoriesAsync()).Groups;
+            GroupName = EditGroup.Name;
             await CloseGroupModal();
             Validation.SetSuccess(IsEditing ? "Area updated successfully." : "Area created successfully.");
         }
@@ -116,8 +144,8 @@ public partial class Categories : PageBase
         }
         else
         {
-            CategoryGroups = (await UseCases.GetCategoryListAsync()).Groups;
-            CurrentGroup = null;
+            CategoryGroups = (await UseCases.GetCategoriesAsync()).Groups;
+            GroupName = null;
             await CloseGroupModal();
             Validation.SetSuccess("Area deleted successfully.");
         }
@@ -125,12 +153,12 @@ public partial class Categories : PageBase
 
     private async Task OpenCategoryCreateModal()
     {
-        EditCategory = new CategorySummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, GroupId = CurrentGroup?.Id ?? Guid.Empty };
+        EditCategory = new CategoryPeriodDetails { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, GroupId = CurrentGroup?.Id ?? Guid.Empty };
         IsEditing = false;
         await CategoryModal.ShowAsync();
     }
 
-    private async Task OpenCategoryEditModal(CategorySummary category)
+    private async Task OpenCategoryEditModal(CategoryPeriodDetails category)
     {
         EditCategory = category;
         IsEditing = true;
@@ -165,11 +193,35 @@ public partial class Categories : PageBase
 
     private void OpenGroupPanel(CategoryGroupSummary group)
     {
-        CurrentGroup = group;
+        Navigation.NavigateTo($"{Pages.Categories}/{group.Name}");
     }
 
     private void CloseGroupPanel()
     {
-        CurrentGroup = null;
+        Navigation.NavigateTo($"{Pages.Categories}");
+    }
+
+    private async Task OpenTransactionsModal(CategoryPeriodDetails category)
+    {
+        CurrentCategory = category;
+        TransactionData.Query.FilterCategory = CategorySummary.FromCategory(category.ToCategory());
+        await TransactionsModal.ShowAsync();
+    }
+
+    private async Task AdjustOffset(int offset)
+    {
+        if (offset == 0)
+        {
+            PeriodOffset = 0;
+        }
+        else
+        {
+            PeriodOffset += offset;
+        }
+
+        if (CurrentGroup is not null)
+        {
+            CurrentGroup = (await UseCases.GetCategoryGroupDetailsAsync(CurrentGroup.Id, PeriodOffset)).GroupDetails;
+        }
     }
 }

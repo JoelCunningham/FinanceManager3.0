@@ -29,18 +29,6 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         return transaction;
     }
 
-    public async Task<Transaction?> GetOrDefaultAsync(Guid id)
-    {
-        return await dbContext.Transactions
-            .Include(t => t.Record)
-            .ThenInclude(r => r.BankAccount)
-            .Include(t => t.Category)
-            .ThenInclude(c => c!.Group)
-            .Include(t => t.Reimbursements)
-            .Include(t => t.Reimburses)
-            .FirstOrDefaultAsync(t => t.Id == id);
-    }
-
     public async Task<IEnumerable<Transaction>> GetByRecordIdAsync(Guid recordId, Guid? excludeId = null)
     {
         var query = dbContext.Transactions
@@ -76,6 +64,34 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Transaction>> GetTransactionsAsync(FilterQuery query)
+    {
+        var queryable = dbContext.Transactions
+            .Include(t => t.Record)
+            .ThenInclude(r => r.BankAccount)
+            .Include(t => t.Category)
+            .ThenInclude(c => c!.Group)
+            .Include(t => t.Reimbursements)
+            .AsQueryable();
+
+        if (query.FilterCategory != null)
+        {
+            queryable = queryable.Where(t => t.CategoryId == query.FilterCategory.Id);
+        }
+
+        if (query.FilterDateFrom != null)
+        {
+            queryable = queryable.Where(t => t.Date >= query.FilterDateFrom.Value);
+        }
+
+        if (query.FilterDateTo != null)
+        {
+            queryable = queryable.Where(t => t.Date <= query.FilterDateTo.Value);
+        }
+
+        return await queryable.ToListAsync();
+    }   
+
     public async Task<PagedResult<Transaction>> GetPagedTransactionsAsync(FilterQuery query)
     {
         var queryable = dbContext.Transactions
@@ -88,26 +104,6 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
 
         queryable = queryable.Where(t => t.ReimbursesId == null);
         return await GetPagedAsync(query, queryable);
-    }
-
-    public async Task<PagedResult<Transaction>> GetPagedReimbursementsAsync(FilterQuery query)
-    {
-        var queryable = dbContext.Transactions
-            .Include(t => t.Record)
-            .ThenInclude(r => r.BankAccount)
-            .Include(t => t.Category)
-            .ThenInclude(c => c!.Group)
-            .Include(t => t.Reimburses)
-            .AsQueryable();
-
-        queryable = queryable.Where(t => t.ReimbursesId != null);
-        return await GetPagedAsync(query, queryable);
-    }
-
-    public Task CreateAsync(Transaction transaction)
-    {
-        dbContext.Transactions.Add(transaction);
-        return Task.CompletedTask;
     }
 
     public Task CreateAsync(IEnumerable<Transaction> transactions)

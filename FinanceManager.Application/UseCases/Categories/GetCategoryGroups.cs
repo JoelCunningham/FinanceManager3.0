@@ -6,7 +6,7 @@ using FinanceManager.Application.UseCases;
 
 public sealed record GetCategoryGroupsResult(IReadOnlyList<CategoryGroupSummary> Groups) : UseCaseResult;
 
-public sealed class GetCategoryGroupList(ICategoryGroupRepository categoryGroupRepository)
+public sealed class GetCategoryGroups(ICategoryGroupRepository categoryGroupRepository)
 {
     public async Task<GetCategoryGroupsResult> ExecuteAsync()
     {

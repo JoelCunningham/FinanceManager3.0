@@ -8,12 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 public sealed class BudgetYearRepository(FinanceManagerDbContext dbContext) : IBudgetYearRepository
 {
-    public async Task<BudgetYear?> GetCurrentAsync()
-    {
-        var currentYear = DateTime.Now.Year;
-        return await dbContext.BudgetYears.FirstOrDefaultAsync(p => p.Year == currentYear);
-    }
-
     public async Task<BudgetYear?> GetByYearAsync(int year)
     {
         return await dbContext.BudgetYears.FirstOrDefaultAsync(p => p.Year == year);

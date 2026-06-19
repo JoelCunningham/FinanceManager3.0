@@ -10,6 +10,7 @@ using FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.Domain.Enums;
+using FinanceManager.Application.UseCases.Statistics;
 
 public class UseCases(
     AutoAssignCategories autoAssignCategories, 
@@ -17,9 +18,11 @@ public class UseCases(
     DeleteBudgetEntry deleteBudgetEntry,
     DeleteCategory deleteCategory,
     DeleteCategoryGroup deleteCategoryGroup,
-    GetBudgetScopes getBudgetScopes, 
-    GetCategoryGroupList getCategoryGroupList,
-    GetCategoryList getCategoryList,
+    GetBudgetScopes getBudgetScopes,
+    GetCategoryGraph getCategoryGraph,
+    GetCategoryGroupDetails getCategoryGroupDetails,
+    GetCategoryGroups getCategoryGroups,
+    GetCategories getCategories,
     GetDashboardData getDashboardData,
     GetChart1Data getChart1Data, 
     GetChart2Data getChart2Data, 
@@ -55,8 +58,10 @@ public class UseCases(
     public Task<DeleteCategoryResult> DeleteCategoryAsync(Guid id) => deleteCategory.ExecuteAsync(id);
     public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
     public Task<GetBudgetScopesResult> GetBudgetScopesAsync(ScopedRange range) => getBudgetScopes.ExecuteAsync(range);
-    public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroupList.ExecuteAsync();
-    public Task<GetCategoryListResult> GetCategoryListAsync() => getCategoryList.ExecuteAsync();
+    public Task<GetCategoryGraphResult> GetCategoryGraphAsync(IEnumerable<CategorySummary> categories, ScopedRange range) => getCategoryGraph.ExecuteAsync(categories, range);
+    public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(Guid groupId, int periodOffset) => getCategoryGroupDetails.ExecuteAsync(groupId, periodOffset);
+    public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroups.ExecuteAsync();
+    public Task<GetCategoriesResult> GetCategoriesAsync() => getCategories.ExecuteAsync();
     public Task<GetDashboardDataResult> GetDashboardDataAsync() => getDashboardData.ExecuteAsync();
     public Task<GetChart1DataResult> GetChart1DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);
     public Task<GetChart2DataResult> GetChart2DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart2Data.ExecuteAsync(range, drilldownGroupId, mode);

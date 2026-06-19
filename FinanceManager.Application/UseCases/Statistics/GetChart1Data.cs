@@ -1,7 +1,9 @@
-namespace FinanceManager.Application.UseCases.Transactions;
+namespace FinanceManager.Application.UseCases.Statistics;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
+using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.Utilities;
 
@@ -14,7 +16,7 @@ public sealed record GetChart1DataResult(
     decimal[]? ExpenseBudgetSeries
 ) : UseCaseResult;
 
-public sealed class GetChart1Data(ChartHelper transactionHelper, GetCategoryList getCategoryList)
+public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCategoryList, ITransactionRepository transactionRepository)
 {
     public async Task<GetChart1DataResult> ExecuteAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {
@@ -25,7 +27,7 @@ public sealed class GetChart1Data(ChartHelper transactionHelper, GetCategoryList
             FilterStatus = ReviewStatus.Reviewed
         };
 
-        var transactions = await transactionHelper.GetTransactionsForRange(query);
+        var transactions = (await transactionRepository.GetTransactionsAsync(query)).Select(TransactionSummary.FromTransaction).ToList();
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
 
         var incomeCategories = categories.Where(c => c.IsIncome).ToList();
@@ -45,17 +47,17 @@ public sealed class GetChart1Data(ChartHelper transactionHelper, GetCategoryList
         {
             if (drilldownGroupId is null || incomeCategories.Count != 0)
             {
-                budgetIncomeSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(range, incomeCategories, false);
+                budgetIncomeSeriesData = await chartHelper.GetBudgetPerMonthForCategories(range, incomeCategories, false);
             }
             if (drilldownGroupId is null || expenseCategories.Count != 0)
             {
-                budgetExpenseSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(range, expenseCategories, true);
+                budgetExpenseSeriesData = await chartHelper.GetBudgetPerMonthForCategories(range, expenseCategories, true);
             }
         }
         else
         {
             var relevantCategories = mode == TransactionsGraphMode.Income ? incomeCategories : expenseCategories;
-            budgetSeriesData = await transactionHelper.GetBudgetPerMonthForCategories(range, relevantCategories, false);
+            budgetSeriesData = await chartHelper.GetBudgetPerMonthForCategories(range, relevantCategories, false);
         }
 
         return new GetChart1DataResult(transactions, incomeCategories, expenseCategories, budgetSeriesData, budgetIncomeSeriesData, budgetExpenseSeriesData);

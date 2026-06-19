@@ -1,0 +1,11 @@
+﻿.actions {
+    margin-top: 2rem;
+    margin-bottom: -2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+
+    .icon {
+        padding: 0.5rem 0;
+    }
+}

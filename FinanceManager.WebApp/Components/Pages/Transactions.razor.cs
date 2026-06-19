@@ -34,7 +34,7 @@ public partial class Transactions : PageBase
         Validation.Messenger = Messenger;
 
         UniqueAccounts = (await UseCases.GetUniqueAccountsAsync()).Accounts;
-        Categories = (await UseCases.GetCategoryListAsync()).Categories;
+        Categories = (await UseCases.GetCategoriesAsync()).Categories;
 
         TransactionData.Query.FilterStatus = ReviewStatus.Reviewed;
         TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;

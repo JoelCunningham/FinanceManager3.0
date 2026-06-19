@@ -1,4 +1,5 @@
 ﻿@page "/Statistics"
+@page "/Statistics/{Tab}"
 @inherits PageBase
 
 <PageTitle>Statistics</PageTitle>
@@ -6,23 +7,19 @@
 <h1 class="page-heading">Statistics</h1>
 
 <div class="transaction-graph">
-    <HxTabPanel>
-        <HxTab Title="Spend by category">
+    <HxTabPanel @bind-ActiveTabId="Tab" @bind-ActiveTabId:after="OnTabChanged">
+        <HxTab Title="Spend by category" Id="@ValidTabs.ElementAt(0)">
             <Content>
                 <Graph2Actions Chart="Chart2" @bind-Range="Chart2.Range" />
                 <Chart Options="Chart2.Options" Range="Chart2.Range" Title="@Chart2.Title" OnItemClick="Chart2.OnDrilldownClickAsync" />
             </Content>
         </HxTab>
 
-        <HxTab Title="Spend over time">
+        <HxTab Title="Spend over time" Id="@ValidTabs.ElementAt(1)">
             <Content>
                 <Graph1Actions Chart="Chart1" @bind-Range="Chart1.Range" />
                 <Chart Options="Chart1.Options" Range="Chart1.Range" Title="@Chart1.Title" OnItemClick="Chart1.OnDrilldownClickAsync" />
             </Content>
-        </HxTab>
-
-        <HxTab Title="Chart 3">
-            <Content>This is the third tab.</Content>
         </HxTab>
     </HxTabPanel>
 </div>

@@ -11,6 +11,7 @@ using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.Application.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using FinanceManager.Application.UseCases.Statistics;
 
 public static class DependencyInjection
 {
@@ -24,8 +25,10 @@ public static class DependencyInjection
         // Categories use cases
         services.AddScoped<DeleteCategory>();
         services.AddScoped<DeleteCategoryGroup>();
-        services.AddScoped<GetCategoryGroupList>();
-        services.AddScoped<GetCategoryList>();
+        services.AddScoped<GetCategoryGraph>();
+        services.AddScoped<GetCategoryGroups>();
+        services.AddScoped<GetCategories>();
+        services.AddScoped<GetCategoryGroupDetails>();
         services.AddScoped<SaveCategoryEdit>();
         services.AddScoped<SaveCategoryGroupEdit>();
 

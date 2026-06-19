@@ -15,7 +15,7 @@ public sealed class GetPagedTransactions(ITransactionRepository transactionRepos
         (
             new PagedResult<TransactionSummary>
             {
-                Items = [.. pagedTransactions.Items.Select(TransactionSummary.FromTransactions)],
+                Items = [.. pagedTransactions.Items.Select(TransactionSummary.FromTransaction)],
                 TotalItems = pagedTransactions.TotalItems,
                 CurrentPage = pagedTransactions.CurrentPage,
                 PageSize = pagedTransactions.PageSize

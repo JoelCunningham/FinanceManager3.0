@@ -11,6 +11,7 @@ public partial class PageBase : ComponentBase
     [Inject] public UseCases UseCases { get; set; } = default!;
     [Inject] public Preferences Preferences { get; set; } = default!;
     [Inject] public IHxMessengerService Messenger { get; set; } = default!;
-    
+    [Inject] public NavigationManager Navigation { get; set; } = default!;
+
     public ValidationModel Validation { get; set; } = new();
 }

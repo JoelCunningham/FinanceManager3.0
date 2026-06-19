@@ -15,10 +15,10 @@ public sealed class GetTransactionDetails(ITransactionRepository transactionRepo
 
         var transactionDetails = new TransactionDetails
         {
-            TransactionSummary = TransactionSummary.FromTransactions(transaction),
+            TransactionSummary = TransactionSummary.FromTransaction(transaction),
             RecordSummary = BankRecordSummary.FromBankRecord(transaction.Record),
-            Reimbursements = reimbursements.Select(TransactionSummary.FromTransactions),
-            Siblings = siblings.Select(TransactionSummary.FromTransactions),
+            Reimbursements = reimbursements.Select(TransactionSummary.FromTransaction),
+            Siblings = siblings.Select(TransactionSummary.FromTransaction),
         };
 
         return new GetTransactionDetailsResult(transactionDetails);

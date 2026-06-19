@@ -11,7 +11,7 @@ public class TransactionSummary
     public required DateTime Date { get; set; }
     public required BankRecordSummary Record { get; set; }
 
-    public static TransactionSummary FromTransactions(Transaction transaction)
+    public static TransactionSummary FromTransaction(Transaction transaction)
     {
         return new TransactionSummary
         {

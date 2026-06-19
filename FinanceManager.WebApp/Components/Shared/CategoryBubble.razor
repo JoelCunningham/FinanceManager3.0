@@ -1,0 +1,12 @@
+﻿@code {
+    [Parameter] public CategorySummary? Category { get; set; }
+}
+
+@if (Category is null)
+{
+    <span class="text-body-tertiary">Uncategorised</span>
+}
+else
+{
+    <span class="category-bubble" style="@CategoryUtilities.GetElementStyle(Category.Colour)">@CategoryUtilities.GetCategoryFullName(Category)</span>
+}

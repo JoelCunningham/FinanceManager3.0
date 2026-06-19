@@ -5,20 +5,31 @@ using FinanceManager.Application.Enums;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
+using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
+using Microsoft.AspNetCore.Components;
 using System.Globalization;
 
 public partial class Statistics : PageBase
 {
+    [Parameter] public string Tab { get; set; } = ValidTabs.First();
+    [Parameter][SupplyParameterFromQuery] public string? Name { get; set; }
+    [Parameter][SupplyParameterFromQuery] public string? Group { get; set; }
+
     public ChartModel Chart1 { get; set; } = default!;
     public ChartModel Chart2 { get; set; } = default!;
 
+    public CategorySummary? SelectedCategory { get; set; }
+
     private List<CategoryGroupSummary> CategoryGroups { get; set; } = [];
+    public List<CategorySummary> AvailableCategories { get; set; } = [];
 
     private const string UncategorisedLabel = "Uncategorised";
 
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
     private static readonly DateOnly YearStart = new(Today.Year, 1, 1);
+
+    private static readonly HashSet<string> ValidTabs = [Tabs.Legacy1.ToString(), Tabs.Legacy2.ToString(), Tabs.Category.ToString()];
 
     protected override async Task OnInitializedAsync()
     {
@@ -29,9 +40,28 @@ public partial class Statistics : PageBase
         Chart2 = new(currentScope, Today, ReloadChart2Async);
 
         CategoryGroups = [.. (await UseCases.GetCategoryGroupsAsync()).Groups];
+        AvailableCategories = [.. (await UseCases.GetCategoriesAsync()).Categories];
 
         await Chart1.RefreshAsync();
         await Chart2.RefreshAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Tab == Tabs.Category.ToString() && Name is not null && Group is not null)
+        {
+            SelectedCategory = AvailableCategories.FirstOrDefault(c =>
+                string.Equals(c.Name, Name, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(c.GroupName, Group, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+    }
+
+    private async Task OnTabChanged()
+    {
+        SelectedCategory = null;
+
+        Navigation.NavigateTo($"{Pages.Statistics}/{Tab}");
     }
 
     private async Task ReloadChart1Async()

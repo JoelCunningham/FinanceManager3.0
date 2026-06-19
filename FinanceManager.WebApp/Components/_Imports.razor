@@ -12,6 +12,7 @@
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.JSInterop
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 
@@ -28,10 +29,13 @@
 @using FinanceManager.Application.Common
 @using FinanceManager.Application.DTOs
 @using FinanceManager.Application.Enums
-@using FinanceManager.Application.UseCases.Import
+@using FinanceManager.Application.UseCases
+@using FinanceManager.Application.UseCases.Budget
+@using FinanceManager.Application.UseCases.Categories
+@using FinanceManager.Application.UseCases.Dates
 @using FinanceManager.Application.UseCases.Transactions
 @using FinanceManager.Application.UseCases.Transfers
-@using FinanceManager.Application.UseCases.Dates
+@using FinanceManager.Application.UseCases.Import
 @using FinanceManager.Application.Utilities
 
 @using FinanceManager.WebApp
@@ -40,6 +44,7 @@
 @using FinanceManager.WebApp.Components.Features
 @using FinanceManager.WebApp.Components.Features.Budget
 @using FinanceManager.WebApp.Components.Features.Categories
+@using FinanceManager.WebApp.Components.Features.Categories.Group
 @using FinanceManager.WebApp.Components.Features.Dashboard
 @using FinanceManager.WebApp.Components.Features.Import
 @using FinanceManager.WebApp.Components.Features.Review
@@ -49,5 +54,6 @@
 @using FinanceManager.WebApp.Components.Layout
 @using FinanceManager.WebApp.Components.Shared
 @using FinanceManager.WebApp.Components.Shared.Selects
+@using FinanceManager.WebApp.Enums
 @using FinanceManager.WebApp.Models
 @using FinanceManager.WebApp.Utilities

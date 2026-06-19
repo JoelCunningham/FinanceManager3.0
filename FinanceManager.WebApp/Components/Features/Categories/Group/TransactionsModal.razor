@@ -1,0 +1,33 @@
+@inherits ModalBase
+
+@code {
+    [Parameter] public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new();
+}
+
+<HxModal @ref="_modal" Title="View activities" Size="ModalSize.ExtraLarge">
+    <BodyTemplate>
+        <ListLayout TItem="TransactionSummary" Data="TransactionData">
+            <FilterTemplate Context="query">
+                <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />
+                <HxInputDate Label="Date to" @bind-Value="query.FilterDateTo" MinDate="query.FilterDateFrom" MaxDate="DateTime.Today" CalendarIcon="BootstrapIcon.Calendar" />
+                <HxInputNumber Label="Min amount" @bind-Value="query.FilterAmountMin" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" max="@query.FilterAmountMax" />
+                <HxInputNumber Label="Max amount" @bind-Value="query.FilterAmountMax" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" min="@query.FilterAmountMin" />
+            </FilterTemplate>
+
+            <DataTemplate>
+                <HxGrid @ref="TransactionData.Grid" DataProvider="TransactionData.GetGridData" TItem="TransactionSummary" PageSize="TransactionData.Query.PageSize" PreserveSelection="false" Responsive="false">
+                    <Columns>
+                        <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => CategoryUtilities.GetCategoryName(t))">
+                            <ItemTemplate Context="transaction">
+                                <CategoryBubble Category="transaction.Category" />
+                            </ItemTemplate>
+                        </HxGridColumn>
+                        <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
+                        <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col"><ItemTemplate Context="transaction"><span title="@transaction.Description">@transaction.Description</span></ItemTemplate></HxGridColumn>
+                        <HxGridColumn HeaderText="Amount" SortString="Amount" SortKeySelector="@(t => t.Amount)" ItemTextSelector="@(t => t.Amount.ToString("C"))" HeaderCssClass="text-end" ItemCssClass="text-end" />
+                    </Columns>
+                </HxGrid>
+            </DataTemplate>
+        </ListLayout>
+    </BodyTemplate>
+</HxModal>

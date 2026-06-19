@@ -4,7 +4,6 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases.Categories;
-using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 
@@ -22,11 +21,10 @@ public sealed record GetDashboardDataResult(
 ) : UseCaseResult;
 
 public sealed class GetDashboardData(
-    ChartHelper chartHelper,
     ITransactionRepository transactionRepository,
     IBudgetEntryRepository budgetEntryRepository,
     IBankRecordRepository bankRecordRepository,
-    GetCategoryList getCategoryList)
+    GetCategories getCategoryList)
 {
     public async Task<GetDashboardDataResult> ExecuteAsync()
     {
@@ -120,7 +118,7 @@ public sealed class GetDashboardData(
             FilterStatus = ReviewStatus.Reviewed,
         };
 
-        return await chartHelper.GetTransactionsForRange(query);
+        return [.. (await transactionRepository.GetTransactionsAsync(query)).Select(TransactionSummary.FromTransaction)];
     }
 
     private async Task<int> GetUnassignedTransactionCountAsync()

@@ -1,8 +1,11 @@
-namespace FinanceManager.Application.UseCases.Transactions;
+namespace FinanceManager.Application.UseCases.Statistics;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
+using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.Utilities;
 
 public sealed record GetChart2DataResult(
@@ -12,7 +15,7 @@ public sealed record GetChart2DataResult(
     bool HasLargerScopedBudgets
 ) : UseCaseResult;
 
-public sealed class GetChart2Data(ChartHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategoryList getCategoryList)
+public sealed class GetChart2Data(ChartHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategories getCategoryList, ITransactionRepository transactionRepository)
 {
     public async Task<GetChart2DataResult> ExecuteAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {
@@ -23,7 +26,7 @@ public sealed class GetChart2Data(ChartHelper transactionHelper, GetBudgetScopes
             FilterStatus = ReviewStatus.Reviewed
         };
 
-        var transactions = await transactionHelper.GetTransactionsForRange(query);
+        var transactions = (await transactionRepository.GetTransactionsAsync(query)).Select(TransactionSummary.FromTransaction).ToList();
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
 
         var relevantCategories = mode == TransactionsGraphMode.Income

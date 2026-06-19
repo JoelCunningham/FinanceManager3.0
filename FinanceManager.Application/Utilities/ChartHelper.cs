@@ -6,33 +6,18 @@ using FinanceManager.Domain.Utilities;
 
 public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
 {
-    public async Task<List<TransactionSummary>> GetTransactionsForRange(FilterQuery query)
-    {
-        var results = new List<TransactionSummary>();
-        var page = 1;
+    public async Task<List<decimal>> GetTransactionsPerPeriod(FilterQuery query, ScopedRange range) {
+        var transactions = await transactionRepository.GetTransactionsAsync(query);
 
-        while (true)
-        {
-            query.Page = page;
-            var pagedTransactions = await transactionRepository.GetPagedTransactionsAsync(query);
-            var pageResult = new PagedResult<TransactionSummary>
-            {
-                Items = [.. pagedTransactions.Items.Select(TransactionSummary.FromTransactions)],
-                TotalItems = pagedTransactions.TotalItems,
-                CurrentPage = pagedTransactions.CurrentPage,
-                PageSize = pagedTransactions.PageSize
-            };
+        var periods = range.Periods.ToList();
 
-            if (pageResult.Items.Count == 0) break;
-            results.AddRange(pageResult.Items);
+        var transactionsPerPeriod = periods.Select(p => transactions
+            .Where(t => DateOnly.FromDateTime(t.Date) >= p.StartDate && DateOnly.FromDateTime(t.Date) <= p.EndDate)
+            .Sum(t => t.Amount)
+        );
 
-            if (results.Count >= pageResult.TotalItems) break;
-            page++;
-        }
-
-        return results;
+        return [.. transactionsPerPeriod];
     }
-
     public async Task<decimal[]> GetBudgetPerMonthForCategories(ScopedRange range, List<CategorySummary> categories, bool asExpense)
     {
         if (categories.Count == 0) return [];

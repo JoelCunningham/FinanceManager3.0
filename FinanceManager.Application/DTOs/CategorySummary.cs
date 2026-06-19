@@ -2,7 +2,7 @@ namespace FinanceManager.Application.DTOs;
 
 using FinanceManager.Domain.Entities;
 
-public sealed class CategorySummary
+public class CategorySummary
 {
     public Guid Id { get; set; }
     public required string Name { get; set; }

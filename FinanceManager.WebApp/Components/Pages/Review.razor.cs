@@ -37,7 +37,7 @@ public partial class Review : PageBase
         ReimburseData.GetDataFunc = GetReimburseData;
 
         IsAutoAssignEnabled = await Preferences.AutoAssignCategories;
-        Categories = (await UseCases.GetCategoryListAsync()).Categories;
+        Categories = (await UseCases.GetCategoriesAsync()).Categories;
     }
 
     public async Task OnIsAutoAssignEnabledChanged()

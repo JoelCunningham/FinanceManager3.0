@@ -1,0 +1,13 @@
+@code {
+    [Parameter] public EventCallback OnEdit { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnCategoryCreate { get; set; }
+}
+
+<div class="actions">
+    <HxButton Icon="BootstrapIcon.ArrowLeft" OnClick="OnClose" CssClass="back-button" />
+    <div class="right">
+        <HxButton Color="ThemeColor.Info" Text="Add category" OnClick="OnCategoryCreate" />
+        <HxButton Color="ThemeColor.Primary" Text="Edit" OnClick="OnEdit" />
+    </div>
+</div>

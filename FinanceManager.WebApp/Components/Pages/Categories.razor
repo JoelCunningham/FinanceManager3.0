@@ -1,4 +1,5 @@
 ﻿@page "/Categories"
+@page "/Categories/{GroupName}"
 @inherits PageBase
 
 <PageTitle>Category areas</PageTitle>
@@ -18,11 +19,12 @@
 else
 {
     <CategoryGroupPanel Group="CurrentGroup"
-                        Categories="CurrentGroupCategories"
                         OnEdit="OpenGroupEditModal"
                         OnClose="CloseGroupPanel"
                         OnCategoryCreate="OpenCategoryCreateModal"
-                        OnCategoryEdit="OpenCategoryEditModal" />
+                        OnCategoryEdit="OpenCategoryEditModal"
+                        OnShowTransactions="OpenTransactionsModal"
+                        AdjustOffset="AdjustOffset" />
 }
 
 <CategoryModal @ref="CategoryModal"
@@ -43,3 +45,5 @@ else
                     OnSave="OnGroupSave"
                     OnCancel="CloseGroupModal"
                     OnDelete="OnGroupDelete" />
+
+<TransactionsModal @ref="TransactionsModal" TransactionData="TransactionData" />

@@ -4,14 +4,14 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
 
-public sealed record GetCategoryListResult(
+public sealed record GetCategoriesResult(
     IReadOnlyList<CategorySummary> Categories,
     IReadOnlyList<CategoryGroupSummary> Groups
 ) : UseCaseResult;
 
-public sealed class GetCategoryList(ICategoryRepository categoryRepository, ICategoryGroupRepository categoryGroupRepository)
+public sealed class GetCategories(ICategoryRepository categoryRepository, ICategoryGroupRepository categoryGroupRepository)
 {
-    public async Task<GetCategoryListResult> ExecuteAsync()
+    public async Task<GetCategoriesResult> ExecuteAsync()
     {
         var categories = (await categoryRepository.GetAllAsync())
             .OrderBy(c => c.Group.Name).ThenBy(c => c.Name)
@@ -21,6 +21,6 @@ public sealed class GetCategoryList(ICategoryRepository categoryRepository, ICat
             .OrderBy(g => g.IsIncome ? 0 : 1).ThenBy(g => g.Name)
             .Select(CategoryGroupSummary.FromCategoryGroup).ToList();
 
-        return new GetCategoryListResult(categories, groups);
+        return new GetCategoriesResult(categories, groups);
     }
 }

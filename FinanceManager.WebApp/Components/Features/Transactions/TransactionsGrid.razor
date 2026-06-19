@@ -25,14 +25,7 @@
                 <Columns>
                     <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => CategoryUtilities.GetCategoryName(t))">
                         <ItemTemplate Context="transaction">
-                            @if (transaction.Category is null)
-                            {
-                                <span class="text-body-tertiary">Uncategorised</span>
-                            }
-                            else
-                            {
-                                <span class="category-bubble" style="@CategoryUtilities.GetElementStyle(transaction.Category.Colour)">@CategoryUtilities.GetCategoryFullName(transaction)</span>
-                            }
+                            <CategoryBubble Category="transaction.Category" />
                         </ItemTemplate>
                     </HxGridColumn>
                     <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />

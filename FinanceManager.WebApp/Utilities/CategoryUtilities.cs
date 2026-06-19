@@ -12,9 +12,14 @@ public class CategoryUtilities
 
     public static string GetCategoryFullName(TransactionSummary transaction)
     {
-        return transaction.Category is null
+        return GetCategoryFullName(transaction.Category);
+    }
+
+    public static string GetCategoryFullName(CategorySummary? category)
+    {
+        return category is null
             ? "Uncategorised"
-            : $"{transaction.Category.GroupName} - {transaction.Category.Name}";
+            : $"{category.GroupName} - {category.Name}";
     }
 
     public static string GetElementStyle(string? baseColour)
