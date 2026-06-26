@@ -1,39 +1,68 @@
 ﻿.card {
-    width: 100%;
-    padding: 1rem;
+    flex: 3;
 
     .heading {
         display: flex;
         justify-content: space-between;
+        margin-bottom: var(--space-small);
     }
 
     .budget-category-usage {
+        display: grid;
+        gap: var(--space-small);
+        grid-template-columns: 30% auto 3rem;
+        margin-bottom: var(--space-small);
+        align-items: center;
 
-        .category-name {
+        span a {
+            color: var(--colour-grey);
+            font-weight: var(--fontweight-semibold);
             display: inline-block;
             width: 100%;
+            text-decoration: none;
             text-overflow: ellipsis;
             text-wrap: nowrap;
             overflow: hidden;
         }
-
-        .bar {
-            display: grid;
-            grid-template-columns: 1fr 50px;
-
-            .category-proportion {
-                margin-left: auto;
-                transform: translateY(-5px);
-            }
-        }
     }
 
     .empty-text {
-        height: 21rem;
         align-content: center;
 
         p {
             text-align: center;
         }
+    }
+}
+
+::deep .progress {
+    height: 0.75rem !important;
+}
+
+::deep .progress-bar.success {
+    background-color: var(--colour-success);
+}
+
+::deep .progress-bar.danger {
+    background-color: var(--colour-danger);
+}
+
+::deep .progress-bar.normal {
+    background-color: var(--colour-secondary);
+}
+
+.category-proportion {
+    font-weight: var(--fontweight-semibold);
+
+    &.success {
+        color: var(--colour-success) !important;
+    }
+
+    &.danger {
+        color: var(--colour-danger) !important;
+    }
+
+    &.normal {
+        color: var(--colour-secondary) !important;
     }
 }

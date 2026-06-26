@@ -5,7 +5,7 @@
 
     private decimal TotalSpending => CategoryUsages.Sum(c => c.Amount);
 
-    private const int MaxResults = 5;
+    private const int MaxResults = 6;
 
     private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryUsages => CategoryUsages
         .OrderByDescending(c => c.Amount)
@@ -59,14 +59,14 @@
             tooltip = new { show = false, trigger = "item", formatter = "{b}: {d}%" },
             legend = new
             {
-                orient = "vertical",
-                left = "60%",
-                top = "center",
+                orient = "horizontal",
+                bottom = "30",
+                left = "center",
             },
             title = new
             {
-                text = TotalSpending.ToString("C0"),
-                left = "29%",
+                text = TotalSpending.ToString("C"),
+                left = "49%",
                 top = "50%",
                 textAlign = "center",
                 textVerticalAlign = "middle",
@@ -79,7 +79,7 @@
                     name = "Spending",
                     type = "pie",
                     radius = new List<string>() { "35%", "50%" },
-                    center = new List<string>() { "30%", "50%" },
+                    center = new List<string>() { "50%", "50%" },
                     data = isByGroupView
                         ? DisplayCategoryGroupUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName == "Other" ? "Other" : c.GroupName })
                         : DisplayCategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName == "Other" ? "Other" : c.DisplayName }),
@@ -94,15 +94,15 @@
 
 <div class="card">
     <div class="heading">
-        <h5 class="card-title>">Budget usage by @(IsByGroupView ? "group" : "category")</h5>
+        <h5 class="card-title>">Budget usage</h5>
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <HxButton Color="ThemeColor.Light" OnClick="ToggleView">@(IsByGroupView ? "View by category" : "View by group")</HxButton>
+            <HxButton Color="ThemeColor.Light" OnClick="ToggleView">@(!IsByGroupView ? "By category" : "By area")</HxButton>
         </div>
     </div>
     @if (!CategoryUsages.Any())
     {
         <div class="empty-text">
-            <p class="text-muted">No spending activities have been recorded for this month.</p>
+            <p class="text-muted">No spending activities have been recorded for this period.</p>
         </div>
     }
     else

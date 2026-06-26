@@ -1,7 +1,7 @@
 ﻿@code {
     [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
 
-    private const int PageSize = 5;
+    private const int PageSize = 8;
     private int CurrentPage { get; set; } = 1;
 
     private int TotalPages => Math.Max(1, (int)Math.Ceiling(CategoryUsages.Count / (double)PageSize));
@@ -32,9 +32,9 @@
         <h5 class="card-title>">Budget usage by category</h5>
         <div class="d-flex justify-content-between align-items-center mb-2">
             <HxButtonGroup>
-                <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="PreviousPage" Enabled="CurrentPage > 1" />
-                <HxButton Color="ThemeColor.Light" Text="@($"{CurrentPage} / {TotalPages}")" Enabled="false" />
-                <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="NextPage" Enabled="CurrentPage < TotalPages" />
+                <HxButton Icon="BootstrapIcon.ArrowLeft" OnClick="PreviousPage" Enabled="CurrentPage > 1" />
+                <HxButton Text="@($"{CurrentPage} / {TotalPages}")" Enabled="false" />
+                <HxButton Icon="BootstrapIcon.ArrowRight" OnClick="NextPage" Enabled="CurrentPage < TotalPages" />
             </HxButtonGroup>
         </div>
     </div>
@@ -49,15 +49,17 @@
         @foreach (var categoryUsage in PageCategoryUsages)
         {
             <div class="budget-category-usage">
-                <span class="category-name">@categoryUsage.DisplayName</span>
-                <div class="bar">
-                    <HxProgress>
-                        <HxProgressBar Value="(float)categoryUsage.Proportion * 100" Color="@ColourUtilities.GetUsageColor(categoryUsage.Proportion)" />
-                    </HxProgress>
-                    <span class="category-proportion">
-                        @categoryUsage.Proportion.ToString("P0", CultureInfo.InvariantCulture)
-                    </span>
-                </div>
+                <HxTooltip Text="@categoryUsage.DisplayName">
+                    <a href="/Categories/@categoryUsage.GroupName">
+                        @categoryUsage.DisplayName
+                    </a>
+                </HxTooltip>
+                <HxProgress>
+                    <HxProgressBar Value="(float)categoryUsage.Proportion * 100" CssClass="@ColourUtilities.GetUsageStyle(categoryUsage.Proportion)" />
+                </HxProgress>
+                <span class="@("category-proportion " + ColourUtilities.GetUsageStyle(categoryUsage.Proportion))">
+                    @categoryUsage.Proportion.ToString("P0", CultureInfo.InvariantCulture)
+                </span>
             </div>
         }
     }

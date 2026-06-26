@@ -1,27 +1,39 @@
 ﻿:root {
     --colour-primary: #13294b;
-    --colour-secoundary: #126b76;
+    --colour-secondary: #126b76;
     --colour-accent: #2b3f5d;
     --colour-background: #f4f6f8;
     /**/
     --colour-danger: #a81e2e;
     --colour-warning: #8a5a06;
+    --colour-warning-light: #fdf7ea;
     --colour-info: #0dcaf0;
     --colour-success: #15723f;
     /**/
     --colour-white: #ffffff;
+    --colour-black: #000000;
+    --colour-grey: #65728a;
     --colour-lightgrey: #a5adba;
     /**/
     /**/
-    --fontsize-accent: 1.25rem;
+    --fontsize-heading: 2em;
+    --fontsize-subheading: 1rem;
+    --fontsize-accent: 1.25em;
     /**/
     /**/
     --fontweight-black: 700;
+    --fontweight-semiblack: 650;
     --fontweight-bold: 600;
     --fontweight-semibold: 500;
     /**/
     /**/
     --space-large: 2rem;
+    --space-medium: 1rem;
+    --space-small: 0.5rem;
+    --space-tiny: 0.25rem;
+    /**/
+    /**/
+    --shadow-medium: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
 
@@ -34,7 +46,21 @@ main {
     }
 
     .page-heading {
+        font-size: var(--fontsize-heading);
         font-weight: var(--fontweight-black);
+        margin-bottom: var(--space-medium);
+    }
+
+    .page-subheading {
+        display: flex;
+        font-size: var(--fontsize-subheading);
+        color: var(--colour-grey);
+        margin-top: calc(var(--space-medium) * -1);
+        margin-bottom: var(--space-medium);
+
+        p {
+            margin-right: auto;
+        }
     }
 }
 
@@ -47,7 +73,7 @@ main {
         .hx-sidebar-brand-shortname {
             font-size: var(--fontsize-accent);
             font-weight: var(--fontweight-bold);
-            background-color: var(--colour-secoundary);
+            background-color: var(--colour-secondary);
         }
 
         .hx-sidebar-brand-name {
@@ -100,4 +126,47 @@ main {
             }
         }
     }
+}
+
+
+/*Alerts*/
+.alert {
+    &.alert-warning {
+        background-color: var(--colour-warning-light);
+        color: var(--colour-warning);
+        border-color: var(--colour-warning);
+    }
+
+    a {
+        color: var(--colour-warning);
+        font-weight: var(--fontweight-semibold);
+    }
+}
+
+
+/*Cards*/
+.card {
+    padding: var(--space-medium);
+    box-shadow: var(--shadow-medium);
+}
+
+
+/*Buttons*/
+button.btn {
+    border: 1px solid var(--colour-lightgrey) !important;
+    padding: 0.25rem 0.75rem;
+    font-weight: var(--fontweight-semibold);
+    background-color: transparent !important;
+
+    &:disabled {
+        color: var(--colour-lightgrey)
+    }
+
+    &:nth-child(2n) {
+        color: var(--colour-black)
+    }
+}
+
+select.form-select {
+    padding: 0.25rem 0.75rem;
 }

@@ -1,13 +1,12 @@
 ﻿.cards {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-evenly;
-    gap: 0.5rem;
-    margin: 0.5rem 0;
+    gap: var(--space-medium);
+    margin: var(--space-medium) 0;
 }
 
 .cards ::deep > * {
-    flex: 1 1 16rem;
+    flex: 1 1 14rem;
     min-width: 0;
 }
 

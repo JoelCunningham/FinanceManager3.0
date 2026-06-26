@@ -1,9 +1,21 @@
 ﻿.card {
-    width: 100%;
-    padding: 1rem;
+    padding: var(--space-medium);
+    box-shadow: var(--shadow-medium);
+
+    .card-title {
+        text-transform: uppercase;
+        font-size: var(--fontsize-subheading);
+        color: var(--colour-grey);
+    }
+
+    .card-value {
+        font-size: var(--fontsize-heading);
+        font-weight: var(--fontweight-semiblack);
+    }
 
     .card-description {
         margin: 0;
+        color: var(--colour-grey);
     }
 
     &.action {

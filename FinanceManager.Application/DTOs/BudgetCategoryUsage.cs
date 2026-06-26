@@ -8,5 +8,5 @@ public class BudgetCategoryUsage
     public decimal Amount { get; set; }
     public decimal BudgetedAmount { get; set; }
 
-    public string DisplayName => $"{GroupName} - {CategoryName}";
+    public string DisplayName => $"{CategoryName} · {GroupName}";
 }

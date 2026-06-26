@@ -17,19 +17,25 @@ public sealed record GetDashboardDataResult(
     int DaysSinceLastImport,
     string? TopOverBudgetCategory,
     decimal TopOverBudgetAmount,
-    decimal TopOverBudgetProportion
+    decimal TopOverBudgetProportion,
+    IReadOnlyList<ScopedPeriod> AvailablePeriods
 ) : UseCaseResult;
 
 public sealed class GetDashboardData(
     ITransactionRepository transactionRepository,
     IBudgetEntryRepository budgetEntryRepository,
     IBankRecordRepository bankRecordRepository,
+    IBudgetYearRepository budgetYearRepository,
     GetCategories getCategoryList)
 {
-    public async Task<GetDashboardDataResult> ExecuteAsync()
+    public async Task<GetDashboardDataResult> ExecuteAsync(ScopedPeriod? period = null)
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var monthRange = new ScopedRange(BudgetScope.Monthly, today);
+        var availablePeriods = (await GetAllPeriods(12)).ToList();
+
+        period ??= availablePeriods.FirstOrDefault(p => p.Includes(today)) ?? availablePeriods.FirstOrDefault() ?? new ScopedPeriod(BudgetScope.Monthly, today, 0);
+
+        var monthRange = new ScopedRange(period.Scope, period.StartDate);
 
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
         var expenseCategories = categories.Where(category => !category.IsIncome).ToList();
@@ -106,7 +112,9 @@ public sealed class GetDashboardData(
             daysSinceLastImport,
             topOverBudget?.CategoryName,
             topOverBudget is null ? 0m : Math.Max(0m, topOverBudget.Amount - topOverBudget.BudgetedAmount),
-            topOverBudget?.Proportion ?? 0m);
+            topOverBudget?.Proportion ?? 0m,
+            availablePeriods
+        );
     }
 
     private async Task<List<TransactionSummary>> GetReviewedTransactionsAsync(ScopedRange monthRange)
@@ -139,5 +147,50 @@ public sealed class GetDashboardData(
         if (latestImportDate is null) return 0;
 
         return Math.Max(0, DateOnly.FromDateTime(DateTime.Today).DayNumber - DateOnly.FromDateTime(latestImportDate.Value).DayNumber);
+    }
+
+    private async Task<IEnumerable<ScopedPeriod>> GetAllPeriods(int limit)
+    {
+        var periods = new List<ScopedPeriod>();
+        var currentYear = DateTime.Today.Year;
+
+        while (periods.Count < limit)
+        {
+            var currentScope = (await budgetYearRepository.GetByYearAsync(currentYear))?.Scope ?? BudgetScope.Monthly;
+            var entryPeriods = BudgetYearHelper.GetPeriods(currentYear, currentScope);
+
+            if (currentYear == DateTime.Today.Year)
+            {
+                entryPeriods = [.. entryPeriods.Where(period => period.StartDate <= DateOnly.FromDateTime(DateTime.Today))];
+            }
+
+            periods.AddRange(entryPeriods.Select(period => new ScopedPeriod
+            {
+                Scope = currentScope,
+                StartDate = period.StartDate,
+                EndDate = period.EndDate,
+            }));
+
+            currentYear--;
+        }
+
+        periods = periods.OrderByDescending(period => period.StartDate).ThenByDescending(period => period.EndDate).ToList();
+
+        if (periods.Count > limit)
+        {
+            periods.RemoveRange(limit, periods.Count - limit);
+        }
+
+        if (periods.Count == 0)
+        {
+            periods.Add(new ScopedPeriod
+            {
+                Scope = BudgetScope.Monthly,
+                StartDate = DateOnly.FromDateTime(DateTime.Today).AddMonths(-1),
+                EndDate = DateOnly.FromDateTime(DateTime.Today),
+            });
+        }
+
+        return periods;
     }
 }

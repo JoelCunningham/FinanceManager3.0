@@ -62,7 +62,7 @@ public class UseCases(
     public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(Guid groupId, int periodOffset) => getCategoryGroupDetails.ExecuteAsync(groupId, periodOffset);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroups.ExecuteAsync();
     public Task<GetCategoriesResult> GetCategoriesAsync() => getCategories.ExecuteAsync();
-    public Task<GetDashboardDataResult> GetDashboardDataAsync() => getDashboardData.ExecuteAsync();
+    public Task<GetDashboardDataResult> GetDashboardDataAsync(ScopedPeriod? period = null) => getDashboardData.ExecuteAsync(period);
     public Task<GetChart1DataResult> GetChart1DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);
     public Task<GetChart2DataResult> GetChart2DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart2Data.ExecuteAsync(range, drilldownGroupId, mode);
     public Task<GetPagedBudgetResult> GetPagedBudgetAsync(int year, BudgetGridMode mode = BudgetGridMode.Net) => getBudgetPage.ExecuteAsync(year, mode);

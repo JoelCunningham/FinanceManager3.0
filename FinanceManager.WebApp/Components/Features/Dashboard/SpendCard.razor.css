@@ -1,6 +1,5 @@
 ﻿.card {
-    width: 100%;
-    padding: 1rem;
+    flex: 1;
 
     .heading {
         display: flex;
@@ -10,11 +9,10 @@
 
     .chart {
         margin-top: -5rem;
-        height: 21rem;
+        margin-bottom: -2rem;
     }
 
     .empty-text {
-        height: 21rem;
         align-content: center;
 
         p {

@@ -1,6 +1,7 @@
 namespace FinanceManager.Domain.Utilities;
 
 using FinanceManager.Domain.Entities;
+using FinanceManager.Domain.Enums;
 
 public static class BudgetYearHelper
 {
@@ -14,6 +15,17 @@ public static class BudgetYearHelper
             var daysInPeriod = periodEnd.DayNumber - periodStart.DayNumber + 1;
             yield return new BudgetEntryPeriod(periodStart, periodEnd, entry.Amount / daysInPeriod);
         }
+    }
+
+    public static IEnumerable<BudgetEntryPeriod> GetPeriods(int year, BudgetScope scope)
+    {
+        return Enumerable.Range(0, ScopeHelper.GetPeriodCount(scope, year))
+            .Select(i =>
+            {
+                var periodStart = ScopeHelper.GetPeriodStart(scope, new DateOnly(year, 1, 1), i);
+                var periodEnd = ScopeHelper.GetPeriodEnd(scope, periodStart);
+                return new BudgetEntryPeriod(periodStart, periodEnd, 0m);
+            });
     }
 
     public static IEnumerable<BudgetEntryDayAmount> GetOverlappingDays(BudgetEntry entry, DateOnly rangeStart, DateOnly rangeEnd)

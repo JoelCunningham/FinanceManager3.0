@@ -6,9 +6,37 @@
 
 <h1 class="page-heading">Dashboard</h1>
 
+<div class="page-subheading">
+    <p>@DateTime.Today.ToString("dddd, dd MMMM yyyy", CultureInfo.CurrentCulture)</p>
+    <HxSelect TItem="ScopedPeriod"
+              TValue="ScopedPeriod"
+              @bind-Value="CurrentPeriod"
+              @bind-Value:after="OnPeriodChange"
+              Data="DashboardData?.AvailablePeriods ?? [CurrentPeriod]"
+              TextSelector="@(period => ScopeHelper.GetPeriodName(period.StartDate, period.Scope))"
+              AutoSort="false"
+              Nullable="false" 
+              style="width: 10rem;"/>
+</div>
+
 @if (DashboardData is not null)
 {
+    @if (DashboardData.TopOverBudgetCategory is not null)
+    {
+        <HxAlert Color="ThemeColor.Warning" CssClass="m-0 d-flex">
+            <HxIcon Icon="BootstrapIcon.ExclamationTriangle" CssClass="px-1" />
+            <span>@GetWarningText()</span>
+            <span class="ms-auto"><a href="/Budget">Review budget <HxIcon Icon="BootstrapIcon.ArrowRight" /></a></span>
+        </HxAlert>
+    }
+
     <DashboardCards Count="4">
+        <BasicCard Title="Over budget"
+                   Value="@($"{DashboardData.OverBudgetCategories} {LanguageUtilities.Pluralise("categories", DashboardData.OverBudgetCategories)}")"
+                   Description="@($"{LanguageUtilities.Pluralise("needs", DashboardData.OverBudgetCategories, true)} attention")"
+                   Colour="@(DashboardData.OverBudgetCategories > 0 ? ColourUtilities.DangerColour : ColourUtilities.PrimaryColour)"
+                   OnClick="@(() => NavigationManager.NavigateTo("/Statistics/Legacy1"))" />
+
         <BasicCard Title="Spent this month"
                    Value="@(DashboardData.SpentThisMonth.ToString("C", CultureInfo.CurrentCulture))"
                    Description="@($"of {DashboardData.BudgetedThisMonth.ToString("C", CultureInfo.CurrentCulture)} budgeted")"
@@ -17,29 +45,16 @@
 
         <BasicCard Title="Remaining"
                    Value="@((DashboardData.BudgetedThisMonth - DashboardData.SpentThisMonth).ToString("C", CultureInfo.CurrentCulture))"
-                   Description="@($"{(DashboardData.BudgetedThisMonth == 0m ? 0m : DashboardData.SpentThisMonth / DashboardData.BudgetedThisMonth):P0} through month")"
+                   Description="@($"{(DashboardData.BudgetedThisMonth == 0m ? 0m : DashboardData.SpentThisMonth / DashboardData.BudgetedThisMonth):P0} through budget")"
                    Colour="@(DashboardData.BudgetedThisMonth - DashboardData.SpentThisMonth <= 0m ? ColourUtilities.DangerColour : ColourUtilities.SuccessColour)"
                    OnClick="@(() => NavigationManager.NavigateTo("/Budget"))" />
 
-        <BasicCard Title="Over budget"
-                   Value="@($"{DashboardData.OverBudgetCategories} {LanguageUtilities.Pluralise("categories", DashboardData.OverBudgetCategories)}")"
-                   Description="@($"{LanguageUtilities.Pluralise("needs", DashboardData.OverBudgetCategories, true)} attention")"
-                   Colour="@(DashboardData.OverBudgetCategories > 0 ? ColourUtilities.WarningColour : ColourUtilities.PrimaryColour)"
-                   OnClick="@(() => NavigationManager.NavigateTo("/Statistics"))" />
-
         <BasicCard Title="Unassigned"
-                   Value="@($"{DashboardData.UnassignedTransactions} {LanguageUtilities.Pluralise("txns", DashboardData.UnassignedTransactions)}")"
-                   Description="@($"{LanguageUtilities.Pluralise("needs", DashboardData.UnassignedTransactions)} categorising")"
+                   Value="@($"{DashboardData.UnassignedTransactions} {LanguageUtilities.Pluralise("activities", DashboardData.UnassignedTransactions)}")"
+                   Description="@($"{LanguageUtilities.Pluralise("needs", DashboardData.UnassignedTransactions, true)} categorising")"
                    Colour="@(DashboardData.UnassignedTransactions > 0 ? ColourUtilities.WarningColour : ColourUtilities.PrimaryColour)"
                    OnClick="@(() => NavigationManager.NavigateTo("/Review"))" />
     </DashboardCards>
-
-    @if (DashboardData.TopOverBudgetCategory is not null)
-    {
-        <HxAlert Color="ThemeColor.Warning" CssClass="m-0">
-            <HxIcon Icon="BootstrapIcon.ExclamationTriangle" CssClass="px-1" /> @DashboardData.TopOverBudgetCategory is @((DashboardData.TopOverBudgetProportion * 100m).ToString("F0", CultureInfo.InvariantCulture))% of budget - @DashboardData.TopOverBudgetAmount.ToString("C0", CultureInfo.CurrentCulture) over.
-        </HxAlert>
-    }
 
     <DashboardCards Count="2">
         <BudgetCard CategoryUsages="BudgetCategoryUsages.OrderByDescending(x => x.Proportion).ToList()" />
@@ -47,15 +62,16 @@
     </DashboardCards>
 
     <DashboardCards Count="2">
-        <BasicCard Title="Incomes make up"
+        <BasicCard Title="Income share"
                    Value="@(DashboardData.IncomeShare.ToString("P0", CultureInfo.CurrentCulture))"
                    Description="of transacted value"
-                   Colour="var(--bs-primary)" />
+                   Colour="@(ColourUtilities.PrimaryColour)"
+                   OnClick="@(() => NavigationManager.NavigateTo("/Activities"))" />
 
-        <BasicCard Title="Last transaction date"
+        <BasicCard Title="Last transaction"
                    Value="@(DashboardData.DaysSinceLastImport == 0 ? "today" : $"{DashboardData.DaysSinceLastImport} days ago")"
                    Description="@($"on {DateTime.Today.AddDays(-DashboardData.DaysSinceLastImport):yyyy-MM-dd}")"
-                   Colour="var(--bs-primary)"
+                   Colour="@(ColourUtilities.PrimaryColour)"
                    OnClick="@(() => NavigationManager.NavigateTo("/Import"))" />
     </DashboardCards>
 }

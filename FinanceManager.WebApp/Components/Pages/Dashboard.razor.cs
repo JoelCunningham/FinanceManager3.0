@@ -9,8 +9,40 @@ public partial class Dashboard : PageBase
     public GetDashboardDataResult? DashboardData { get; set; }
     public IReadOnlyList<BudgetCategoryUsage> BudgetCategoryUsages => DashboardData?.BudgetCategoryUsages ?? [];
 
+    private ScopedPeriod CurrentPeriod { get; set; } = new ScopedPeriod();
+
     protected override async Task OnInitializedAsync()
     {
         DashboardData = await UseCases.GetDashboardDataAsync();
+        CurrentPeriod = DashboardData?.AvailablePeriods.FirstOrDefault() ?? new ScopedPeriod();
+    }
+
+    public async Task OnPeriodChange()
+    {
+        DashboardData = await UseCases.GetDashboardDataAsync(CurrentPeriod);
+    }
+
+    public string GetWarningText()
+    {
+        var text = string.Empty;
+
+        if (DashboardData == null) return text;
+
+        if (DashboardData.OverBudgetCategories > 0)
+        {
+            text += $"{DashboardData.OverBudgetCategories} over budget categories. ";
+        }
+
+        if (DashboardData.UnassignedTransactions > 0)
+        {
+            text += $"{DashboardData.UnassignedTransactions} unassigned transactions. ";
+        }
+
+        if (DashboardData.DaysSinceLastImport > 14)
+        {
+            text += $"Last transaction was {DashboardData.DaysSinceLastImport} days ago. ";
+        }
+
+        return text;
     }
 }
