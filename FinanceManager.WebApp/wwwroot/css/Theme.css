@@ -1,0 +1,103 @@
+﻿:root {
+    --colour-primary: #13294b;
+    --colour-secoundary: #126b76;
+    --colour-accent: #2b3f5d;
+    --colour-background: #f4f6f8;
+    /**/
+    --colour-danger: #a81e2e;
+    --colour-warning: #8a5a06;
+    --colour-info: #0dcaf0;
+    --colour-success: #15723f;
+    /**/
+    --colour-white: #ffffff;
+    --colour-lightgrey: #a5adba;
+    /**/
+    /**/
+    --fontsize-accent: 1.25rem;
+    /**/
+    /**/
+    --fontweight-black: 700;
+    --fontweight-bold: 600;
+    --fontweight-semibold: 500;
+    /**/
+    /**/
+    --space-large: 2rem;
+}
+
+
+/* Main */
+main {
+    background-color: var(--colour-background);
+
+    &.p-4 {
+        padding: var(--space-large) !important;
+    }
+
+    .page-heading {
+        font-weight: var(--fontweight-black);
+    }
+}
+
+/* Sidebar */
+.hx-sidebar.bg-body-secondary {
+    background-color: var(--colour-primary) !important;
+
+    .hx-sidebar-brand {
+
+        .hx-sidebar-brand-shortname {
+            font-size: var(--fontsize-accent);
+            font-weight: var(--fontweight-bold);
+            background-color: var(--colour-secoundary);
+        }
+
+        .hx-sidebar-brand-name {
+            font-size: var(--fontsize-accent);
+            font-weight: var(--fontweight-bold);
+            color: var(--colour-white);
+        }
+    }
+
+    a.nav-link {
+        font-weight: var(--fontweight-semibold);
+        color: var(--colour-lightgrey);
+
+        .hx-sidebar-item-icon {
+            color: var(--colour-lightgrey);
+        }
+
+        &.active {
+            font-weight: var(--fontweight-semibold);
+            color: var(--colour-white);
+            background-color: var(--colour-accent);
+
+            .hx-sidebar-item-icon {
+                color: var(--colour-white);
+            }
+
+            &:hover .hx-sidebar-item-icon {
+                color: var(--colour-white);
+            }
+        }
+
+        &:hover {
+            color: var(--colour-white);
+            background-color: var(--colour-accent) !important;
+
+            .hx-sidebar-item-icon {
+                color: var(--colour-white);
+            }
+        }
+    }
+
+    .hx-sidebar-toggler {
+        .hx-sidebar-toggler-arrow {
+            background-color: var(--colour-accent);
+        }
+
+        &:hover {
+            .hx-sidebar-toggler-arrow {
+                background-color: var(--colour-accent);
+            }
+        }
+    }
+}
