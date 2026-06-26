@@ -2,6 +2,7 @@
     --colour-primary: #13294b;
     --colour-secondary: #126b76;
     --colour-accent: #2b3f5d;
+    --colour-highlight: #f1f8f8;
     --colour-background: #f4f6f8;
     /**/
     --colour-danger: #a81e2e;
@@ -18,6 +19,7 @@
     /**/
     --fontsize-heading: 2em;
     --fontsize-subheading: 1rem;
+    --fontsize-heading2: 1.75em;
     --fontsize-accent: 1.25em;
     /**/
     /**/
@@ -34,6 +36,10 @@
     /**/
     /**/
     --shadow-medium: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    /**/
+    /**/
+    --radius-medium: 0.5rem;
+    --radius-large: 1rem;
 }
 
 
@@ -48,6 +54,7 @@ main {
     .page-heading {
         font-size: var(--fontsize-heading);
         font-weight: var(--fontweight-black);
+        color: var(--colour-primary);
         margin-bottom: var(--space-medium);
     }
 
@@ -169,4 +176,48 @@ button.btn {
 
 select.form-select {
     padding: 0.25rem 0.75rem;
+}
+
+
+/*Modals*/
+.modal {
+    .modal-title {
+        font-size: var(--fontsize-heading2);
+        color: var(--colour-primary);
+    }
+
+    .btn-close {
+        opacity: 0.9 !important;
+    }
+}
+
+/*Grid*/
+.hx-grid {
+    th {
+        color: var(--colour-primary);
+
+        .hx-grid-sort-icon {
+            color: var(--colour-secondary) !important;
+        }
+    }
+}
+
+/*Pagination*/
+.pagination {
+    .page-item {
+        button {
+            border: 1px solid var(--colour-lightgrey);
+            color: var(--colour-primary);
+        }
+
+        &.active span {
+            background-color: var(--colour-primary);
+            border: 1px solid var(--colour-primary);
+        }
+
+        &.disabled button {
+            color: var(--colour-lightgrey);
+            border: 1px solid var(--colour-lightgrey);
+        }
+    }
 }

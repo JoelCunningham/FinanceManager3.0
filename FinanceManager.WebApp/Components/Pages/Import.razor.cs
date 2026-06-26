@@ -26,6 +26,7 @@ public partial class Import : PageBase
     {
         Validation.Messenger = Messenger;
         AvailableParsers = UseCases.GetParsers().Parsers;
+        SelectedParser = AvailableParsers.FirstOrDefault();
     }
 
     protected void Reset()

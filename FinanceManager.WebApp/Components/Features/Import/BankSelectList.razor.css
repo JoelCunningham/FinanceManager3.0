@@ -12,3 +12,19 @@
         object-fit: contain;
     }
 }
+
+.bank-list ::deep .btn {
+    color: var(--colour-primary);
+    border: 1px solid var(--colour-lightgrey);
+}
+
+    .bank-list ::deep .btn:hover {
+        color: var(--colour-primary);
+        border: 1px solid var(--colour-lightgrey);
+    }
+
+    .bank-list ::deep .btn:has(.active) {
+        border: 2px solid var(--colour-primary);
+        background-color: var(--colour-highlight);
+        color: var(--colour-primary);
+    }

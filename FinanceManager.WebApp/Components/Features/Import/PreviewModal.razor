@@ -15,7 +15,7 @@
         <HxGrid TItem="ParsedTransaction" DataProvider="GetGridData" Responsive="true" Hover="true" PageSize="10">
             <Columns>
                 <HxGridColumn HeaderText="Account"
-                              ItemTextSelector="@(t => t.AccountNumber)"
+                              ItemTextSelector="@(t => (t.AccountNumber is not null ? t.AccountNumber : "N/A"))"
                               SortKeySelector="@(t => t.AccountNumber)" />
                 <HxGridColumn HeaderText="Date"
                               ItemTextSelector="@(t => t.Date.ToShortDateString())"

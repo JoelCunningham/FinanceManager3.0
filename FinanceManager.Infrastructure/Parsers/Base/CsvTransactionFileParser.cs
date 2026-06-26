@@ -21,7 +21,7 @@ namespace FinanceManager.Infrastructure.Parsers.Base
                 using var streamReader = new StreamReader(fileStream, leaveOpen: true);
                 using var csvReader = new CsvReader(streamReader, GetCsvConfiguration());
 
-                csvReader.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = ["dd/MM/yyyy"];
+                csvReader.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = ["dd-MMM-yyyy"];
 
                 var fileRecords = await csvReader.GetRecordsAsync<T>().ToListAsync();
                 return StandardiseRecords(fileRecords);

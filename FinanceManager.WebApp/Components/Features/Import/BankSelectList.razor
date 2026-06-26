@@ -6,22 +6,24 @@
     [Parameter] public EventCallback<BankParser?> SelectedBankChanged { get; set; }
 }
 
-<HxRadioButtonList Label="Select your bank:"
-                   TItem="BankParser"
-                   TValue="BankParser"
-                   Data="AvailableParsers"
-                   Value="SelectedBank"
-                   ValueChanged="SelectedBankChanged"
-                   ValueExpression="() => SelectedBank"
-                   Color="ThemeColor.Primary"
-                   Outline="true"
-                   Inline="true"
-                   RenderMode="RadioButtonListRenderMode.ToggleButtons"
-                   ItemTextCssClass="me-2">
-    <ItemTemplate Context="p">
-        <div class="bank-select-content">
-            <BankLogo BankName="@p.BankName" />
-            <span>@p.BankName</span>
-        </div>
-    </ItemTemplate>
-</HxRadioButtonList>
+<div class="bank-list">
+    <HxRadioButtonList Label="Select your bank"
+                       TItem="BankParser"
+                       TValue="BankParser"
+                       Data="AvailableParsers"
+                       Value="SelectedBank"
+                       ValueChanged="SelectedBankChanged"
+                       ValueExpression="() => SelectedBank"
+                       Color="ThemeColor.Primary"
+                       Outline="true"
+                       Inline="true"
+                       RenderMode="RadioButtonListRenderMode.ToggleButtons"
+                       ItemTextCssClass="me-2">
+        <ItemTemplate Context="p">
+            <div class="@("bank-select-content " + (SelectedBank == p ? "active" : ""))">
+                <BankLogo BankName="@p.BankName" />
+                <span>@p.BankName</span>
+            </div>
+        </ItemTemplate>
+    </HxRadioButtonList>
+</div>

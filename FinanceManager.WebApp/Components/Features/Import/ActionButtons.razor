@@ -1,13 +1,13 @@
 ﻿@code {
+    [Parameter] public bool Active { get; set; }
+
     [Parameter] public EventCallback Reset { get; set; }
-
     [Parameter] public EventCallback ShowPreview { get; set; }
-
     [Parameter] public EventCallback ImportTransactions { get; set; }
 }
 
-<div class="ms-auto">
-    <HxButton Color="ThemeColor.Secondary" OnClick="Reset">Cancel</HxButton>
-    <HxButton Color="ThemeColor.Info" OnClick="ShowPreview">Preview</HxButton>
-    <HxSubmit Color="ThemeColor.Primary" OnClick="ImportTransactions">Import</HxSubmit>
+<div class="action-buttons">
+    <HxButton CssClass="reset" OnClick="Reset">Cancel</HxButton>
+    <HxButton CssClass="preview" OnClick="ShowPreview" Enabled="Active" Tooltip="@(Active ? "Preview transactions" : "Upload a file first")">Preview</HxButton>
+    <HxSubmit CssClass="import" OnClick="ImportTransactions" Enabled="Active" Tooltip="@(Active ? "Import transactions" : "Upload a file first")">Import</HxSubmit>
 </div>

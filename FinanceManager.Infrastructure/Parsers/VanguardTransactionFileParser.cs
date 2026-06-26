@@ -17,7 +17,7 @@ namespace FinanceManager.Infrastructure.Parsers
                     Bank = GetBankName(),
                     Date = record.Date,
                     Amount = record.Total,
-                    Description = $"{record.ProductName} ({record.ProductId}) - {record.ProductType} - {record.Units} units",
+                    Description = $"{record.ProductName} ({record.ProductId}) - {record.ProductType}{(record.Units is not null ? $" - {record.Units} units" : string.Empty)}",
                     Type = record.Type,
                     Reference = null,
                     IsInternalTransfer = false
@@ -34,7 +34,7 @@ namespace FinanceManager.Infrastructure.Parsers
         public required string ProductType { get; set; }
         public required string ProductName { get; set; }
         public required string ProductId { get; set; }
-        public int Units { get; set; }
+        public int? Units { get; set; }
         public decimal Total { get; set; }
     }
 }
