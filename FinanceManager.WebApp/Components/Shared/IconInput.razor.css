@@ -1,0 +1,38 @@
+.icon-preview {
+    margin-right: var(--space-medium);
+    border-radius: var(--radius-medium);
+    border: 1px solid var(--colour-lightgrey);
+    width: 3.5rem;
+    display: flex;
+}
+
+::deep i {
+    margin: auto;
+    font-size: var(--fontsize-icon);
+}
+
+::deep .dropdown {
+    width: 100%;
+}
+
+::deep .dropdown-menu.show {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+::deep .icon-button {
+    text-decoration: none;
+    color: var(--colour-black);
+    justify-content: start !important;
+}
+
+    ::deep .icon-button:hover, 
+    ::deep .icon-button:focus, 
+    ::deep .icon-button:active {
+        color: var(--colour-black) !important;
+    }
+
+    ::deep .icon-button::after {
+        margin-left: auto !important;
+    }

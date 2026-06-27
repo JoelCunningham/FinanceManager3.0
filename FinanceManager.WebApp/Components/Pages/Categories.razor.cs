@@ -167,7 +167,7 @@ public partial class Categories : PageBase
 
     private async Task OpenGroupCreateModal()
     {
-        EditGroup = new CategoryGroupSummary { Id = Guid.NewGuid(), Name = string.Empty, Colour = string.Empty, IsIncome = false };
+        EditGroup = CategoryGroupSummary.Empty(Guid.NewGuid());
         IsEditing = false;
         await GroupModal.ShowAsync();
     }
@@ -176,7 +176,7 @@ public partial class Categories : PageBase
     {
         if (CurrentGroup is null) return;
 
-        EditGroup = new() { Id = CurrentGroup.Id, Name = CurrentGroup.Name, Colour = CurrentGroup.Colour, IsIncome = CurrentGroup.IsIncome };
+        EditGroup = new() { Id = CurrentGroup.Id, Name = CurrentGroup.Name, Colour = CurrentGroup.Colour, Icon = CurrentGroup.Icon, IsIncome = CurrentGroup.IsIncome };
         IsEditing = true;
         await GroupModal.ShowAsync();
     }

@@ -16,6 +16,7 @@ public class CategoryGroupDetails : CategoryGroupSummary
             Id = group.Id,
             Name = group.Name,
             Colour = group.Colour,
+            Icon = group.Icon,
             IsIncome = group.IsIncome,
             CategoryCount = group.Categories?.Count ?? 0,
             PeriodScope = periodScope,

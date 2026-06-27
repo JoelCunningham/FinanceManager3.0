@@ -1,0 +1,110 @@
+@using System.Linq
+@using System.Reflection
+@using Havit.Blazor.Components.Web.Bootstrap
+
+@code {
+    [Parameter] public required string Value { get; set; } = default!;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool HasError { get; set; } = false;
+
+    private string InputCssClass => HasError ? "is-invalid" : string.Empty;
+    private bool ShowAllOptions = false;
+
+    private IEnumerable<string> IconOptions => [
+        "Airplane",
+        "Backpack",
+        "Balloon",
+        "Bandaid",
+        "Bank",
+        "Basket",
+        "Beaker",
+        "Book",
+        "Boombox",
+        "Briefcase",
+        "Brush",
+        "Building",
+        "BusFront",
+        "Cake",
+        "Camera",
+        "Capsule",
+        "CarFront",
+        "Cart",
+        "Cash",
+        "Coin",
+        "Controller",
+        "CreditCard",
+        "Cup",
+        "DoorClosed",
+        "Duffle",
+        "Easel",
+        "ForkKnife",
+        "FuelPump",
+        "GraphUpArrow",
+        "Gift",
+        "Hammer",
+        "Handbag",
+        "House",
+        "Luggage",
+        "Mortarboard",
+        "Person",
+        "PiggyBank",
+        "Shop",
+        "Telephone",
+        "TrainFront",
+        "Wallet",
+    ];
+
+    private async Task OnSelectChange(string newValue)
+    {
+        Value = newValue ?? string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private List<string> FilterIcons(List<string> icons)
+    {
+        return icons
+        .Where(i =>
+            i.Contains("Fill") &&
+            !i.Contains("Arrow") &&
+            i.All(c => !char.IsDigit(c))
+        )
+        .OrderBy(i => i)
+        .ToList();
+    }
+
+    private string GetIconDisplayName(string iconName)
+    {
+        return iconName != "" ?
+            LanguageUtilities.AddSpacesToSentence(iconName, true).Replace(" Fill", "").Trim() :
+            "Select icon";
+    }
+}
+
+<div class="hx-form-group">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="form-label">@Label</label>
+    }
+
+    <div class="icon-input d-flex align-items-center">
+        <div class="icon-preview" title="Preview">
+            <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(Value)" />
+        </div>
+
+        <HxDropdownButtonGroup AutoClose="DropdownAutoClose.True">
+            <HxDropdownToggleButton CssClass="icon-button">@GetIconDisplayName(Value)</HxDropdownToggleButton>
+            <HxDropdownContent>
+                @foreach (var icon in IconOptions)
+                {
+                    <HxButton OnClick="() => OnSelectChange(icon)">
+                        <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(icon)" />
+                    </HxButton>
+                }
+            </HxDropdownContent>
+        </HxDropdownButtonGroup>
+    </div>
+</div>

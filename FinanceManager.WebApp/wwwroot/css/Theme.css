@@ -1,11 +1,14 @@
 ﻿:root {
     --colour-primary: #13294b;
     --colour-secondary: #126b76;
+    --colour-secondary-hover: #0c535c;
     --colour-accent: #2b3f5d;
+    --colour-accent-hover: #213047;
     --colour-highlight: #f1f8f8;
     --colour-background: #f4f6f8;
     /**/
     --colour-danger: #a81e2e;
+    --colour-danger-hover: #7a1621;
     --colour-warning: #8a5a06;
     --colour-warning-light: #fdf7ea;
     --colour-info: #0dcaf0;
@@ -15,12 +18,14 @@
     --colour-black: #000000;
     --colour-grey: #65728a;
     --colour-lightgrey: #a5adba;
+    --colour-offwhite: #f8f9fa;
     /**/
     /**/
     --fontsize-heading: 2em;
     --fontsize-subheading: 1rem;
     --fontsize-heading2: 1.75em;
     --fontsize-accent: 1.25em;
+    --fontsize-icon: 1.5rem;
     /**/
     /**/
     --fontweight-black: 700;
@@ -36,10 +41,14 @@
     /**/
     /**/
     --shadow-medium: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-large: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
     /**/
     /**/
     --radius-medium: 0.5rem;
     --radius-large: 1rem;
+    /**/
+    /**/
+    --duration-short: 0.1s;
 }
 
 
@@ -166,15 +175,58 @@ button.btn {
     background-color: transparent !important;
 
     &:disabled {
-        color: var(--colour-lightgrey)
+        color: var(--colour-white) !important;
+        background-color: var(--colour-lightgrey) !important;
+        border: 1px solid var(--colour-lightgrey) !important;
+    }
+
+    &:hover {
+        z-index: 0 !important;
     }
 
     &:nth-child(2n) {
         color: var(--colour-black)
     }
+
+    &.btn-primary {
+        color: var(--colour-white);
+        background-color: var(--colour-secondary) !important;
+        border: 1px solid var(--colour-secondary) !important;
+
+        &:hover {
+            background-color: var(--colour-secondary-hover) !important;
+            border: 1px solid var(--colour-secondary-hover) !important;
+        }
+    }
+
+    &.btn-secondary {
+        color: var(--colour-white);
+        background-color: var(--colour-accent) !important;
+        border: 1px solid var(--colour-accent) !important;
+
+        &:hover {
+            background-color: var(--colour-accent-hover) !important;
+            border: 1px solid var(--colour-accent-hover) !important;
+        }
+    }
+
+    &.btn-danger {
+        color: var(--colour-white);
+        background-color: var(--colour-danger) !important;
+        border: 1px solid var(--colour-danger) !important;
+
+        &:hover {
+            background-color: var(--colour-danger-hover) !important;
+            border: 1px solid var(--colour-danger-hover) !important;
+        }
+    }
 }
 
 select.form-select {
+    padding: 0.25rem 0.75rem;
+}
+
+input[inputmode=search] {
     padding: 0.25rem 0.75rem;
 }
 

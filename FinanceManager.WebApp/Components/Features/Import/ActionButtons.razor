@@ -7,7 +7,7 @@
 }
 
 <div class="action-buttons">
-    <HxButton CssClass="reset" OnClick="Reset">Cancel</HxButton>
-    <HxButton CssClass="preview" OnClick="ShowPreview" Enabled="Active" Tooltip="@(Active ? "Preview transactions" : "Upload a file first")">Preview</HxButton>
-    <HxSubmit CssClass="import" OnClick="ImportTransactions" Enabled="Active" Tooltip="@(Active ? "Import transactions" : "Upload a file first")">Import</HxSubmit>
+    <HxButton Color="ThemeColor.Secondary" OnClick="Reset" Enabled="Active" Tooltip="@(Active ? "Reset import" : "No import in progress")">Cancel</HxButton>
+    <HxButton Color="ThemeColor.Secondary" OnClick="ShowPreview" Enabled="Active" Tooltip="@(Active ? "Preview transactions" : "Upload a file first")">Preview</HxButton>
+    <HxSubmit Color="ThemeColor.Primary" OnClick="ImportTransactions" Enabled="Active" Tooltip="@(Active ? "Import transactions" : "Upload a file first")">Import</HxSubmit>
 </div>

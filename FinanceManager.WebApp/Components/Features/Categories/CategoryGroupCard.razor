@@ -5,27 +5,14 @@
 }
 
 <div class="group-card" style="--group-accent-color: @Group.Colour;" @onclick="() => OnClicked.InvokeAsync(Group)">
-    <div class="group-card-header">
-        @if (Group.IsIncome)
-        {
-            <div class="group-card-icon group-card-icon-income">
-                <HxTooltip Text="Income">
-                    <HxIcon Icon="BootstrapIcon.GraphUpArrow" />
-                </HxTooltip>
-            </div>
-        }
-        else
-        {
-            <div class="group-card-icon group-card-icon-expense">
-                <HxTooltip Text="Expense">
-                    <HxIcon Icon="BootstrapIcon.GraphDownArrow" />
-                </HxTooltip>
-            </div>
-        }
-        <div class="group-card-title" title="@Group.Name">@Group.Name</div>
+    <div class="card-title">
+        <HxIcon Icon="CategoryUtilities.GetCategroyGroupIcon(Group.Icon)" CssClass="fs-2 me-1" />
+        <div class="group-card-header">
+            <div class="group-card-title" title="@Group.Name">@Group.Name</div>
+            <div class="group-card-subtitle">@(Group.IsIncome ? "Income" : "Expense") · @Group.CategoryCount categories</div>
+        </div>
     </div>
-
-    <div class="group-card-subtitle">
-        @Group.CategoryCount categories
-    </div>
+    <HxProgress>
+        <HxProgressBar Value="@Group.CategoryCount" Color="ThemeColor.Light" />
+    </HxProgress>
 </div>

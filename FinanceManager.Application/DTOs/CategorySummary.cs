@@ -10,6 +10,7 @@ public class CategorySummary
     public Guid GroupId { get; set; }
     public string GroupName { get; set; } = string.Empty;
     public string GroupColour { get; set; } = string.Empty;
+    public string GroupIcon { get; set; } = string.Empty;
     public bool IsIncome { get; set; }
 
     public static CategorySummary FromCategory(Category category)
@@ -22,6 +23,7 @@ public class CategorySummary
             GroupId = category.GroupId,
             GroupName = category.Group.Name,
             GroupColour = category.Group.Colour,
+            GroupIcon = category.Group.Icon,
             IsIncome = category.Group.IsIncome
         };
     }
@@ -38,8 +40,9 @@ public class CategorySummary
             {
                 Id = GroupId,
                 Name = GroupName,
-                IsIncome = IsIncome,
-                Colour = GroupColour
+                Icon = GroupIcon,
+                Colour = GroupColour,
+                IsIncome = IsIncome
             }
         };
     }

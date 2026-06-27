@@ -7,5 +7,6 @@ public enum ValidationField
     Date,
     Name,
     Colour,
+    Icon,
     IsIncome,
 }

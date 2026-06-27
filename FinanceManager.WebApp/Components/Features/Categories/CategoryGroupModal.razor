@@ -9,20 +9,22 @@
     [Parameter] public bool HasIsIncomeError { get; set; }
     [Parameter] public bool HasNameError { get; set; }
     [Parameter] public bool HasColourError { get; set; }
+    [Parameter] public bool HasIconError { get; set; }
 
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
 }
 
-<HxModal @ref="_modal" Title="@(IsEditing ? "Edit Area" : "Create Area")">
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit area" : "Create area")">
     <BodyTemplate>
         <div class="d-flex flex-column gap-2">
             @if (Group is not null)
             {
                 <HxInputText Label="Name" @bind-Value="Group.Name" InputCssClass="@(HasNameError ? "is-invalid" : string.Empty)" />
-                <HxCheckbox @bind-Value="Group.IsIncome" @bind-Value:after="() => GroupChanged.InvokeAsync(Group)" Text="Is Income" InputCssClass="@(HasIsIncomeError ? "is-invalid" : string.Empty)" />
+                <HxCheckbox @bind-Value="Group.IsIncome" @bind-Value:after="() => GroupChanged.InvokeAsync(Group)" Text="Is Income" Reverse="true" InputCssClass="@(HasIsIncomeError ? "is-invalid" : string.Empty)" CssClass="me-auto" />
                 <ColourInput Label="Colour" @bind-Value="Group.Colour" HasError="HasColourError" />
+                <IconInput Label="Icon" @bind-Value="Group.Icon" HasError="HasIconError" />
             }
         </div>
     </BodyTemplate>

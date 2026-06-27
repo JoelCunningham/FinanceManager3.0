@@ -9,10 +9,19 @@
     border-radius: var(--bs-border-radius);
     background-color: var(--bs-body-bg);
     cursor: pointer;
+    box-shadow: var(--shadow-medium);
+
+    &:hover {
+        box-shadow: var(--shadow-large);
+        transition-duration: var(--duration-short);
+    }
+
+    .card-title {
+        display: flex;
+        gap: var(--space-small);
+    }
 
     .group-card-header {
-        display: flex;
-        align-items: flex-start;
         gap: 0.5rem;
 
         .group-card-icon {
@@ -37,7 +46,6 @@
     }
 
     .group-card-subtitle {
-        margin-top: 1rem;
         color: var(--bs-secondary-color);
     }
 }

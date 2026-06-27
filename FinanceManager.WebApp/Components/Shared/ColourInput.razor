@@ -46,7 +46,7 @@
                disabled="@(!Enabled)" />
         <input type="text"
                class="form-control colour-value @InputCssClass"
-               value="@Value"
+               value="@(Value == "" ? "#000000" : Value)"
                @oninput="OnTextInput"
                disabled="@(!Enabled)" />
     </div>

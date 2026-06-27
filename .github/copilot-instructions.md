@@ -14,3 +14,7 @@ However, if the question does not relate to writing C#, Blazor, or CSS, you do n
 ## Health Check
 
 To confirm you are reading this file correctly, whenever I say the word `health check`, please respond with the following message: "`.github/copilot-instructions.md` read and understood"
+
+## Understading Requests
+
+If you are provided with a URL, you MUST read the entire content of that URL before responding. If the URL is a GitHub repository, you MUST read the README.md file and any other documentation files in the root of the repository.

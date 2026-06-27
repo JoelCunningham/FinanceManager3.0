@@ -7,12 +7,15 @@
 @if (CurrentGroup is null || !CategoryGroups.Any(g => g.Id == CurrentGroup.Id))
 {
     <h1 class="page-heading">Category areas</h1>
+    <div class="page-subheading">
+        <p>@CategoryGroups.Count() areas · @CategoryGroups.Sum(g => g.CategoryCount) categories</p>
+        <CategoryGroupActions SearchQuery="@GroupSearch"
+                              GroupMode="@GroupMode"
+                              SearchQueryChanged="OnGroupSearchChanged"
+                              GroupModeChanged="OnGroupModeChanged"
+                              OnCreate="OpenGroupCreateModal" />
+    </div>
 
-    <CategoryGroupActions SearchQuery="@GroupSearch"
-                          GroupMode="@GroupMode"
-                          SearchQueryChanged="OnGroupSearchChanged"
-                          GroupModeChanged="OnGroupModeChanged"
-                          OnCreate="OpenGroupCreateModal" />
 
     <CategoryCards Groups="FilteredGroups" OnGroupClicked="OpenGroupPanel" />
 }
@@ -42,6 +45,7 @@ else
                     HasIsIncomeError="@Validation.GetValidationItemIds(ValidationField.IsIncome).Contains(EditGroup?.Id ?? Guid.Empty)"
                     HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditGroup?.Id ?? Guid.Empty)"
                     HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditGroup?.Id ?? Guid.Empty)"
+                    HasIconError="@Validation.GetValidationItemIds(ValidationField.Icon).Contains(EditGroup?.Id ?? Guid.Empty)"
                     OnSave="OnGroupSave"
                     OnCancel="CloseGroupModal"
                     OnDelete="OnGroupDelete" />

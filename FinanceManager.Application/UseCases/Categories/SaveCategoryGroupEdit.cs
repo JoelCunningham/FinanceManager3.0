@@ -11,12 +11,17 @@ public sealed class SaveCategoryGroupEdit(ICategoryGroupRepository categoryGroup
 {
     public async Task<SaveCategoryGroupEditResult> ExecuteAsync(CategoryGroupSummary group)
     {
-        if (string.IsNullOrEmpty(group.Name)) {
+        if (string.IsNullOrEmpty(group.Name))
+        {
             return new SaveCategoryGroupEditResult([new UseCaseValidationError(group.Id, ValidationField.Name, "Name is required.")]);
         }
         if (string.IsNullOrEmpty(group.Colour))
         {
             return new SaveCategoryGroupEditResult([new UseCaseValidationError(group.Id, ValidationField.Colour, "Colour is required.")]);
+        }
+        if (string.IsNullOrEmpty(group.Icon))
+        {
+            return new SaveCategoryGroupEditResult([new UseCaseValidationError(group.Id, ValidationField.Icon, "Icon is required.")]);
         }
 
         try
@@ -35,6 +40,7 @@ public sealed class SaveCategoryGroupEdit(ICategoryGroupRepository categoryGroup
                     Id = group.Id,
                     Name = group.Name,
                     Colour = group.Colour,
+                    Icon = group.Icon,
                     IsIncome = group.IsIncome,
                 };
 
@@ -49,6 +55,7 @@ public sealed class SaveCategoryGroupEdit(ICategoryGroupRepository categoryGroup
 
                 entity.Name = group.Name;
                 entity.Colour = group.Colour;
+                entity.Icon = group.Icon;
                 entity.IsIncome = group.IsIncome;
 
                 await categoryGroupRepository.UpdateAsync(entity);

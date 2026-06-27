@@ -1,7 +1,9 @@
 namespace FinanceManager.WebApp.Utilities;
 
 using FinanceManager.Application.DTOs;
+using Havit.Blazor.Components.Web.Bootstrap;
 using System.Drawing;
+using System.Reflection;
 
 public class CategoryUtilities
 {
@@ -20,6 +22,17 @@ public class CategoryUtilities
         return category is null
             ? "Uncategorised"
             : $"{category.GroupName} - {category.Name}";
+    }
+
+    public static BootstrapIcon GetCategroyGroupIcon(string iconName)
+    {
+        if (!string.IsNullOrWhiteSpace(iconName))
+        {
+            var prop = typeof(BootstrapIcon).GetProperty(iconName, BindingFlags.Public | BindingFlags.Static | BindingFlags.IgnoreCase);
+            if (prop?.GetValue(null) is BootstrapIcon icon) return icon;
+        }
+
+        return BootstrapIcon.QuestionCircle;
     }
 
     public static string GetElementStyle(string? baseColour)
