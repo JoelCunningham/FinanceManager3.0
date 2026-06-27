@@ -223,6 +223,7 @@ button.btn {
 }
 
 select.form-select {
+    cursor: pointer;
     padding: 0.25rem 0.75rem;
 }
 
