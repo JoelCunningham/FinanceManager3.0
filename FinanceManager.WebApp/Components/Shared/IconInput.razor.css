@@ -4,6 +4,7 @@
     border: 1px solid var(--colour-lightgrey);
     width: 3.5rem;
     display: flex;
+    border: 1px solid var(--colour-border);
 }
 
 ::deep i {
@@ -21,14 +22,21 @@
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
 }
 
+::deep .hx-button {
+    border: 1px solid var(--colour-border);
+}
+
+
 ::deep .icon-button {
     text-decoration: none;
     color: var(--colour-black);
     justify-content: start !important;
+    border: 1px solid var(--colour-border) !important;
+    font-weight: normal !important;
 }
 
-    ::deep .icon-button:hover, 
-    ::deep .icon-button:focus, 
+    ::deep .icon-button:hover,
+    ::deep .icon-button:focus,
     ::deep .icon-button:active {
         color: var(--colour-black) !important;
     }

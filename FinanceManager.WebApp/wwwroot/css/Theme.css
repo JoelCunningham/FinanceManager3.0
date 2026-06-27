@@ -6,6 +6,7 @@
     --colour-accent-hover: #213047;
     --colour-highlight: #f1f8f8;
     --colour-background: #f4f6f8;
+    --colour-border: #dee2e6;
     /**/
     --colour-danger: #a81e2e;
     --colour-danger-hover: #7a1621;
@@ -42,6 +43,7 @@
     /**/
     --shadow-medium: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     --shadow-large: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    --shadow-focus: 0 0 0 0.2rem rgba(18, 107, 118, 0.25);
     /**/
     /**/
     --radius-medium: 0.5rem;
@@ -225,6 +227,12 @@ button.btn {
 select.form-select {
     cursor: pointer;
     padding: 0.25rem 0.75rem;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    box-shadow: var(--shadow-focus) !important;
 }
 
 input[inputmode=search] {
