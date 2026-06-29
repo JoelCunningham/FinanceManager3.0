@@ -10,9 +10,8 @@ using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
 
-public partial class Statistics : PageBase
+public partial class Statistics() : TabbedPageBase(Pages.Statistics, [Tabs.Legacy1.ToString(), Tabs.Legacy2.ToString(), Tabs.Category.ToString()])
 {
-    [Parameter] public string Tab { get; set; } = ValidTabs.First();
     [Parameter][SupplyParameterFromQuery] public string? Name { get; set; }
     [Parameter][SupplyParameterFromQuery] public string? Group { get; set; }
 
@@ -28,8 +27,6 @@ public partial class Statistics : PageBase
 
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
     private static readonly DateOnly YearStart = new(Today.Year, 1, 1);
-
-    private static readonly HashSet<string> ValidTabs = [Tabs.Legacy1.ToString(), Tabs.Legacy2.ToString(), Tabs.Category.ToString()];
 
     protected override async Task OnInitializedAsync()
     {
@@ -55,13 +52,6 @@ public partial class Statistics : PageBase
                 string.Equals(c.GroupName, Group, StringComparison.OrdinalIgnoreCase)
             );
         }
-    }
-
-    private async Task OnTabChanged()
-    {
-        SelectedCategory = null;
-
-        Navigation.NavigateTo($"{Pages.Statistics}/{Tab}");
     }
 
     private async Task ReloadChart1Async()

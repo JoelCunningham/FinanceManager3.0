@@ -1,0 +1,7 @@
+﻿.list-layout ::deep .clear-button {
+    margin-right: auto;
+    border: none !important;
+    color: var(--colour-grey);
+    padding: 0;
+    margin-left: calc(var(--space-tiny) * -1);
+}

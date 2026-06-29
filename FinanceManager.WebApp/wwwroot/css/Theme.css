@@ -4,9 +4,9 @@
     --colour-secondary-hover: #0c535c;
     --colour-accent: #2b3f5d;
     --colour-accent-hover: #213047;
-    --colour-highlight: #f1f8f8;
+    --colour-highlight: #def1f1;
     --colour-background: #f4f6f8;
-    --colour-border: #dee2e6;
+    --colour-border: #dbdddf;
     /**/
     --colour-danger: #a81e2e;
     --colour-danger-light: #f8d7da;
@@ -27,6 +27,7 @@
     /**/
     --fontsize-heading: 2em;
     --fontsize-subheading: 1rem;
+    --fontsize-tableheading: 0.75rem;
     --fontsize-heading2: 1.75em;
     --fontsize-accent: 1.25em;
     --fontsize-icon: 1.5rem;
@@ -49,7 +50,7 @@
     --shadow-focus: 0 0 0 0.2rem rgba(18, 107, 118, 0.25);
     /**/
     /**/
-    --radius-medium: 0.5rem;
+    --radius-medium: 0.6rem;
     --radius-large: 1rem;
     /**/
     /**/
@@ -210,23 +211,11 @@ main {
 
 /*Buttons*/
 button.btn {
-    border: 1px solid var(--colour-lightgrey) !important;
     padding: 0.25rem 0.75rem;
     font-weight: var(--fontweight-semibold);
-    background-color: transparent !important;
-
-    &:disabled {
-        color: var(--colour-white) !important;
-        background-color: var(--colour-lightgrey) !important;
-        border: 1px solid var(--colour-lightgrey) !important;
-    }
 
     &:hover {
         z-index: 0 !important;
-    }
-
-    &:nth-child(2n) {
-        color: var(--colour-black)
     }
 
     &.btn-primary {
@@ -280,30 +269,26 @@ input[inputmode=search] {
 
 
 /*Modals*/
-.modal {
-    .modal-title {
+.modal .modal-header,
+.offcanvas, .offcanvas-header {
+    .modal-title,
+    .offcanvas-title {
         font-size: var(--fontsize-heading2);
         color: var(--colour-primary);
     }
 
     .btn-close {
         opacity: 0.9 !important;
-    }
-}
-
-/*Grid*/
-.hx-grid {
-    th {
-        color: var(--colour-primary);
-
-        .hx-grid-sort-icon {
-            color: var(--colour-secondary) !important;
-        }
+        margin-top: 0;
+        margin-bottom: auto;
+        padding-top: 0;
     }
 }
 
 /*Pagination*/
 .pagination {
+    background-color: none;
+
     .page-item {
         button {
             border: 1px solid var(--colour-lightgrey);
@@ -323,6 +308,98 @@ input[inputmode=search] {
 
     .page-link:focus {
         box-shadow: none;
-        background-color: inherit;
+        background-color: var(--colour-white);
+    }
+}
+
+/*Nav*/
+.nav {
+    a {
+        color: var(--colour-secondary);
+
+        &:hover {
+            color: var(--colour-primary);
+        }
+    }
+
+    &.nav-tabs .nav-link.active {
+        color: var(--colour-primary);
+    }
+
+    &.nav-pills .nav-link.active {
+        color: var(--colour-secondary);
+        background-color: var(--colour-highlight);
+
+        &:hover {
+            color: var(--colour-primary);
+        }
+    }
+}
+
+/*Table*/
+.hx-grid.table {
+    background-color: var(--colour-white);
+    border-radius: var(--radius-medium);
+
+    thead {
+        th {
+            vertical-align: initial;
+            padding-bottom: 0.25rem;
+
+            &.text-end .hx-grid-header-cell-template {
+                padding-top: 3px;
+            }
+
+            .hx-grid-header-cell-template {
+                color: var(--colour-grey);
+                font-size: var(--fontsize-tableheading);
+                text-transform: uppercase;
+            }
+
+            .hx-icon {
+                color: var(--colour-secondary);
+            }
+        }
+    }
+}
+
+.hx-list-layout .card .hx-button.btn-light {
+    background-color: var(--colour-white) !important;
+    border: 1px solid var(--colour-border) !important;
+    color: var(--colour-primary) !important;
+
+    i::after {
+        margin-right: var(--space-small);
+    }
+}
+
+/*Calendar*/
+.hx-input-date-wrapper {
+    .hx-calendar {
+        .hx-calendar-week {
+            .hx-calendar-day-today {
+                color: var(--colour-secondary);
+                background-color: var(--colour-highlight);
+            }
+
+            .hx-calendar-day {
+                &.hx-calendar-day-selected {
+                    background-color: var(--colour-secondary);
+                }
+
+                &:focus {
+                    box-shadow: var(--shadow-focus) !important;
+                }
+            }
+        }
+    }
+
+    .hx-input-date-dropdown-buttons button {
+        text-decoration: none;
+        color: var(--colour-grey);
+
+        &:hover {
+            color: var(--colour-primary);
+        }
     }
 }

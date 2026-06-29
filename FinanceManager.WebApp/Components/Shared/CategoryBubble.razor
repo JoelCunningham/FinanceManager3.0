@@ -4,9 +4,15 @@
 
 @if (Category is null)
 {
-    <span class="text-body-tertiary">Uncategorised</span>
+    <p class="text-body-tertiary">
+        <HxIcon Icon="BootstrapIcon.QuestionCircle" />
+        <span>Uncategorised</span>
+    </p>
 }
 else
 {
-    <span class="category-bubble" style="@CategoryUtilities.GetElementStyle(Category.Colour)">@CategoryUtilities.GetCategoryFullName(Category)</span>
+    <a class="category-bubble" href="/Categories/@Category.GroupName" style="@CategoryUtilities.GetElementStyle(Category.Colour)">
+        <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(Category.GroupIcon)" />
+        <span>@Category.Name</span>
+    </a>
 }

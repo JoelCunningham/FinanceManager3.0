@@ -8,12 +8,12 @@ using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Transactions;
 using FinanceManager.WebApp.Components.Features.Transfers;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Enums;
 
-public partial class Transactions : PageBase
+public partial class Transactions() : TabbedPageBase(Pages.Activities, [Tabs.Activities.ToString(), Tabs.Transfers.ToString()])
 {
-    public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(20);
-    public DataGridModel<FilterQuery, TransferDto> TransferData { get; set; } = new(20);
-    public DataGridModel<FilterQuery, ReviewGroup> ReviewData { get; set; } = new(20);
+    public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(16);
+    public DataGridModel<FilterQuery, TransferDto> TransferData { get; set; } = new(16);
 
     public IReadOnlyList<string> UniqueAccounts { get; set; } = [];
     public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
@@ -27,6 +27,8 @@ public partial class Transactions : PageBase
     public EditTransactionModal EditModal { get; set; } = new();
     public TransferModal TransferModal { get; set; } = new();
 
+    public string Subheading => GetSubheading();
+
     public int UnreviewedCount = 0;
 
     protected override async Task OnInitializedAsync()
@@ -37,8 +39,12 @@ public partial class Transactions : PageBase
         Categories = (await UseCases.GetCategoriesAsync()).Categories;
 
         TransactionData.Query.FilterStatus = ReviewStatus.Reviewed;
+
         TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
+        TransactionData.UpdateViewState = StateHasChanged;
+
         TransferData.GetDataFunc = async (query) => (await UseCases.GetPagedTransfersAsync(query)).Page;
+        TransferData.UpdateViewState = StateHasChanged;
 
         UnreviewedCount = (await UseCases.GetPagedReviewAsync(new FilterQuery { FilterStatus = ReviewStatus.Unreviewed })).Page.TotalItems;
     }
@@ -79,7 +85,7 @@ public partial class Transactions : PageBase
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Date);
         var result = UseCases.BackdateTransactionAsync(transaction, value, recordDate).Result;
-        
+
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
 
@@ -87,7 +93,7 @@ public partial class Transactions : PageBase
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Amount);
         var result = await UseCases.UpdateTransactionAmountAsync(transaction, value, group);
-      
+
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
 
@@ -157,6 +163,23 @@ public partial class Transactions : PageBase
         {
             await SeparateTransfer(SelectedTransfer);
             await TransferModal.HideAsync();
+        }
+    }
+
+    private string GetSubheading()
+    {
+        if (TransactionData.Result is not null && TransferData.Result is not null)
+        {
+            var showingCount =
+                Tab == ValidTabs.ElementAt(0) ? TransactionData.Result.Items.Count :
+                Tab == ValidTabs.ElementAt(1) ? TransferData.Result.Items.Count :
+                0;
+
+            return TransactionData.Result.TotalItems + " Activities · " + TransferData.Result.TotalItems + " Transfers · Showing " + showingCount;
+        }
+        else
+        {
+            return "No activities found.";
         }
     }
 }

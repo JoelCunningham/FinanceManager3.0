@@ -18,24 +18,52 @@
         border: var(--bs-card-border-width) solid var(--bs-card-border-color);
         border-radius: var(--bs-card-border-radius);
 
-        tbody tr td {
-            padding-top: 0.7rem;
-            padding-bottom: 0.7rem;
-            background-color: transparent;
+        table {
+            margin-bottom: 0;
+
+            tbody tr td {
+                padding-top: 0.7rem;
+                padding-bottom: 0.7rem;
+                background-color: transparent;
+            }
+
+            tbody tr:last-child {
+                border-bottom-color: transparent;
+            }
+
+            thead tr th {
+                background-color: transparent;
+            }
+        }
+    }
+
+    .hx-button.btn-light i {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        &::after {
+            font-style: normal;
+            content: "Filters";
+            order: 1;
         }
 
-        tbody tr:last-child {
-            border-bottom-color: transparent;
+        &::before {
+            order: 2;
         }
+    }
 
-        thead tr th {
-            background-color: transparent;
-        }
+    .hx-chip-list {
+        display: none;
+    }
+
+    .pagination {
+        margin: 1rem 0;
     }
 }
 
 .hx-grid-container.grid-invisible {
-    border: none !important; 
+    border: none !important;
     height: 0;
 
     table {
@@ -61,10 +89,10 @@
         position: relative;
     }
 
-    .hx-form-group select:focus {
-        z-index: 1;
-        border-right-width: var(--bs-border-width);
-    }
+        .hx-form-group select:focus {
+            z-index: 1;
+            border-right-width: var(--bs-border-width);
+        }
 
 
     .hx-form-group:first-child select {

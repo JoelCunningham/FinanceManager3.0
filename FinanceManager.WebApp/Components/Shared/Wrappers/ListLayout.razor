@@ -4,27 +4,35 @@
     [Parameter] public DataGridModel<FilterQuery, TItem> Data { get; set; } = new();
 
     [Parameter] public RenderFragment AdditionalCommands { get; set; } = default!;
-
     [Parameter] public RenderFragment<FilterQuery> FilterTemplate { get; set; } = default!;
-
     [Parameter] public RenderFragment DataTemplate { get; set; } = default!;
+
+    [Parameter] public string SearchPlaceholder { get; set; } = "Search";
+
+    private async Task OnSearchChanged(string value)
+    {
+        Data.Query.SearchTerm = value ?? string.Empty;
+        await Data.UpdateAsync();
+    }
 }
 
-<HxListLayout TFilterModel="FilterQuery" FilterModel="Data.Query" FilterModelChanged="Data.HandleFilterChanged">
-    <SearchTemplate>
-        <HxInputText Placeholder="Search" Type="InputType.Search" BindEvent="BindEvent.OnInput" @bind-Value="Data.Query.SearchTerm" @bind-Value:after="Data.UpdateAsync" />
-    </SearchTemplate>
+<div class="list-layout">
+    <HxListLayout TFilterModel="FilterQuery" FilterModel="Data.Query" FilterModelChanged="Data.HandleFilterChanged">
+        <SearchTemplate>
+            <HxSearchBox TItem="string" Placeholder="@SearchPlaceholder" TextQuery="@Data.Query.SearchTerm" TextQueryChanged="OnSearchChanged" MinimumLength="@int.MaxValue" />
+        </SearchTemplate>
 
-    <CommandsTemplate>
-        @AdditionalCommands
-        <HxButton Text="Clear filters" Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="Data.HandleFilterCleared" />
-    </CommandsTemplate>
+        <CommandsTemplate>
+            @AdditionalCommands
+            <HxButton CssClass="clear-button" Text="Clear filters" Color="ThemeColor.None" OnClick="Data.HandleFilterCleared" />
+        </CommandsTemplate>
 
-    <FilterTemplate Context="query">
-        @FilterTemplate(query)
-    </FilterTemplate>
+        <FilterTemplate Context="query">
+            @FilterTemplate(query)
+        </FilterTemplate>
 
-    <DataTemplate>
-        @DataTemplate
-    </DataTemplate>
-</HxListLayout>
+        <DataTemplate>
+            @DataTemplate
+        </DataTemplate>
+    </HxListLayout>
+</div>

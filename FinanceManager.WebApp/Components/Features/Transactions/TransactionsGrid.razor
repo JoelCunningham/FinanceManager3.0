@@ -10,8 +10,8 @@
 }
 
 <div class="transactions-grid">
-    <ListLayout TItem="TransactionSummary" Data="Data">
-        <FilterTemplate Context="query">
+    <ListLayout TItem="TransactionSummary" Data="Data" SearchPlaceholder="Search by description, account, or category">
+        <FilterTemplate Context="query" >
             <CategoryInput Label="Category" @bind-Value="query.FilterCategory" Data="Categories" Nullable="true" />
             <HxSelect Label="Account" @bind-Value="query.FilterAccountFrom" Data="Accounts" Nullable="true" NullText="- Any -" />
             <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />

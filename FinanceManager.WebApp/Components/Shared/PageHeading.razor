@@ -1,0 +1,12 @@
+﻿@code {
+    [Parameter] public string Heading { get; set; } = default!;
+    [Parameter] public string Subheading { get; set; } = default!;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
+
+<h1 class="page-heading">@Heading</h1>
+<div class="page-subheading">
+    <p>@Subheading</p>
+    @ChildContent
+</div>

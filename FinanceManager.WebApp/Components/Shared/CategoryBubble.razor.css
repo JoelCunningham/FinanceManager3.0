@@ -6,4 +6,17 @@
     font-size: 0.85rem;
     line-height: 1.2;
     white-space: nowrap;
+    text-decoration: none;
+    transition-duration: var(--duration-short);
+    width: 100%;
+    justify-content: center;
+
+    span {
+        margin-left: var(--space-tiny);
+    }
+
+    &:hover {
+        margin: -0.2rem 0rem;
+        padding: 0.4rem 0.6rem;
+    }
 }

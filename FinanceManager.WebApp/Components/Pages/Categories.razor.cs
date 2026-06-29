@@ -3,14 +3,12 @@ namespace FinanceManager.WebApp.Components.Pages;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
-using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Categories;
 using FinanceManager.WebApp.Components.Features.Categories.Group;
 using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
-using System.Text.RegularExpressions;
 
 public partial class Categories : PageBase
 {

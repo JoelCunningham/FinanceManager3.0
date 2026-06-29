@@ -3,11 +3,7 @@
 @inject NavigationManager NavigationManager
 
 <PageTitle>Dashboard</PageTitle>
-
-<h1 class="page-heading">Dashboard</h1>
-
-<div class="page-subheading">
-    <p>@DateTime.Today.ToString("dddd, dd MMMM yyyy", CultureInfo.CurrentCulture)</p>
+<PageHeading Heading="Dashboard" Subheading="@DateTime.Today.ToString("dddd, dd MMMM yyyy", CultureInfo.CurrentCulture)">
     <HxSelect TItem="ScopedPeriod"
               TValue="ScopedPeriod"
               @bind-Value="CurrentPeriod"
@@ -15,9 +11,9 @@
               Data="DashboardData?.AvailablePeriods ?? [CurrentPeriod]"
               TextSelector="@(period => ScopeHelper.GetPeriodName(period.StartDate, period.Scope))"
               AutoSort="false"
-              Nullable="false" 
-              style="width: 10rem;"/>
-</div>
+              Nullable="false"
+              style="width: 10rem;" />
+</PageHeading>
 
 @if (DashboardData is not null)
 {
