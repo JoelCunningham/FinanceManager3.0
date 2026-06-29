@@ -10,11 +10,8 @@
 		<Content>
 			@if (UnreviewedCount > 0)
 			{
-			<HxAlert Color="ThemeColor.Info">
-				<HxIcon Icon="@BootstrapIcon.ExclamationTriangleFill" CssClass="me-2" />
-				You have @UnreviewedCount unreviewed activities. You can review them <a href="/Review">here</a>.
-			</HxAlert>
-			}
+                <Alert Level="AlertLevel.Info">You have @UnreviewedCount unreviewed activities. You can review them <a href="/Review">here</a>.</Alert>
+            }
 			<TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
 		</Content>
 	</HxTab>

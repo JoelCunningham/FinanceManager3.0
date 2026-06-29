@@ -5,10 +5,10 @@
 
 <h1 class="page-heading">Review activities</h1>
 
-<HxAlert Color="ThemeColor.Info">
-    <HxIcon Icon="@BootstrapIcon.InfoCircleFill" />
-    Review and correct activities to help the automatic categorisation get smarter and more accurate.
-</HxAlert>
+@if (Data.HasResults && Data.Result is not null && Data.Query?.HasFilters == false)
+{
+    <Alert Level="AlertLevel.Info">Review and correct activities to help the automatic categorisation get smarter and more accurate.</Alert>
+}
 
 @if (Data.HasResults && Data.Result is not null)
 {
@@ -31,7 +31,7 @@
                         @bind-IsAutoAssignEnabled="IsAutoAssignEnabled"
                         @bind-IsAutoAssignEnabled:after="OnIsAutoAssignEnabledChanged" />
 
-<FindTransferModal @ref="TransferModal" TransferData="TransferData" Categories="Categories" SetTransfer="SetTransfer"  />
+<FindTransferModal @ref="TransferModal" TransferData="TransferData" Categories="Categories" SetTransfer="SetTransfer" />
 
 <FindReimburseModal @ref="ReimburseModal" ReimburseData="ReimburseData" Categories="Categories" SetReimburse="SetReimburse" />
 
@@ -39,16 +39,10 @@
 {
     if (Data.Query?.HasFilters == true)
     {
-        <HxAlert Color="ThemeColor.Info">
-            <HxIcon Icon="@BootstrapIcon.InfoCircleFill" />
-            No activities found matching the current filters.
-        </HxAlert>
+        <Alert Level="AlertLevel.Info">No activities found matching the current filters.</Alert>
     }
     else
     {
-        <HxAlert Color="ThemeColor.Success">
-            <HxIcon Icon="@BootstrapIcon.CheckCircleFill" />
-            You are up to date! All transactions have been reviewed.
-        </HxAlert>
+        <Alert Level="AlertLevel.Success">You're up to date! All activities have been reviewed.</Alert>
     }
 }

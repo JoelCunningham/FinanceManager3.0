@@ -34,9 +34,7 @@
 <div class="chart-wrapper">
     @if (Options is null)
     {
-        <HxAlert Color="ThemeColor.Info">
-            There are no transactions or budgets in the selected @Range.ScopeDescription.
-        </HxAlert>
+        <Alert Level="AlertLevel.Info">There are no transactions or budgets in the selected @Range.ScopeDescription.</Alert>
     }
     else
     {

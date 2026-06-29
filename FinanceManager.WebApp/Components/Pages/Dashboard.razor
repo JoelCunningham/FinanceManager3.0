@@ -23,11 +23,10 @@
 {
     @if (DashboardData.TopOverBudgetCategory is not null)
     {
-        <HxAlert Color="ThemeColor.Warning" CssClass="m-0 d-flex">
-            <HxIcon Icon="BootstrapIcon.ExclamationTriangle" CssClass="px-1" />
+        <Alert Level="AlertLevel.Warning">
             <span>@GetWarningText()</span>
             <span class="ms-auto"><a href="/Budget">Review budget <HxIcon Icon="BootstrapIcon.ArrowRight" /></a></span>
-        </HxAlert>
+        </Alert>
     }
 
     <DashboardCards Count="4">

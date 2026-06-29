@@ -41,10 +41,7 @@
                     <Content>
                         @if (Details.Reimbursements.Count() == 0)
                         {
-                            <HxAlert Color="ThemeColor.Info">
-                                <HxIcon Icon="@BootstrapIcon.InfoCircleFill" />
-                                This activity has no associated reimbursements. Edit the activity to add reimbursements.
-                            </HxAlert>
+                            <Alert Level="AlertLevel.Info">This activity has no associated reimbursements. Edit the activity to add reimbursements.</Alert>
                         }
                         else
                         {
@@ -75,7 +72,7 @@
 
                             <HxInputDate Label="Date" Value="@Details.RecordSummary.Date" ValueExpression="@(() => Details.RecordSummary.Date)" CalendarIcon="BootstrapIcon.Calendar" />
                             <HxInputNumber Label="Amount" Value="@Details.RecordSummary.Amount" ValueExpression="@(() => Details.RecordSummary.Amount)" InputGroupStartText="$" Decimals="2" />
-                    
+
                             <HxInputText Label="Type" Value="@Details.RecordSummary.Type" ValueExpression="@(() => Details.RecordSummary.Type)" />
                             <HxInputText Label="Reference" Value="@Details.RecordSummary.Reference" ValueExpression="@(() => Details.RecordSummary.Reference)" />
                             <HxInputTextArea Label="Narrative" Value="@Details.RecordSummary.Description" ValueExpression="@(() => Details.RecordSummary.Description)" CssClass="full-width" />

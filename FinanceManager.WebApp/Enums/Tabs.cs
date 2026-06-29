@@ -1,9 +1,8 @@
-﻿namespace FinanceManager.WebApp.Enums
+﻿namespace FinanceManager.WebApp.Enums;
+
+public enum Tabs
 {
-    public enum Tabs
-    {
-        Legacy1,
-        Legacy2,
-        Category,
-    }
+    Legacy1,
+    Legacy2,
+    Category,
 }

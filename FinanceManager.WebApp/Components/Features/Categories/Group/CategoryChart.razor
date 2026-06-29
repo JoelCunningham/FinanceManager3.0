@@ -128,9 +128,10 @@
 }
 else
 {
-    <HxAlert Color="ThemeColor.Info" style="margin-top: 5rem;">
-        <HxIcon Icon="BootstrapIcon.InfoCircle" />
-        You have no transactions or budgets for <b>@Group.Name</b> categories over the last @Length @ScopeText. You can create a budget on the
-        <a href="/Budget">budget page</a>.
-    </HxAlert>
+    <div class="message">
+        <Alert Level="AlertLevel.Info">
+            You have no transactions or budgets for <b>@Group.Name</b> categories over the last @Length @ScopeText. You can create a budget on the
+            <a href="/Budget">budget page</a>.
+        </Alert>
+    </div>
 }

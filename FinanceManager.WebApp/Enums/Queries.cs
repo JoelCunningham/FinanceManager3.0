@@ -1,8 +1,7 @@
-﻿namespace FinanceManager.WebApp.Enums
+﻿namespace FinanceManager.WebApp.Enums;
+
+public enum Queries
 {
-    public enum Queries
-    {
-        Group,
-        Name,
-    }
+    Group,
+    Name,
 }

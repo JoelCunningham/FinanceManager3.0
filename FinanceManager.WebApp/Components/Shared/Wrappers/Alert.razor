@@ -1,0 +1,33 @@
+﻿@code {
+    [Parameter] public AlertLevel Level { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+
+    private ThemeColor GetThemeColor()
+    {
+        return Level switch
+        {
+            AlertLevel.Info => ThemeColor.Info,
+            AlertLevel.Warning => ThemeColor.Warning,
+            AlertLevel.Error => ThemeColor.Danger,
+            AlertLevel.Success => ThemeColor.Success,
+            _ => ThemeColor.Info
+        };
+    }
+
+    private BootstrapIcon GetIcon()
+    {
+        return Level switch
+        {
+            AlertLevel.Info => BootstrapIcon.InfoCircle,
+            AlertLevel.Warning => BootstrapIcon.ExclamationTriangle,
+            AlertLevel.Error => BootstrapIcon.ExclamationCircle,
+            AlertLevel.Success => BootstrapIcon.CheckCircle,
+            _ => BootstrapIcon.InfoCircle
+        };
+    }
+}
+
+<HxAlert Color="GetThemeColor()" >
+    <HxIcon Icon="@GetIcon()" />
+    @ChildContent
+</HxAlert>
