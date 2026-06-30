@@ -10,7 +10,7 @@
 		<Content>
 			@if (UnreviewedCount > 0)
 			{
-                <Alert Level="AlertLevel.Info">You have @UnreviewedCount unreviewed activities. You can review them <a href="/Review">here</a>.</Alert>
+                <Alert Level="AlertLevel.Info" ActionText="Review activities" ActionUrl="/Review">You have @UnreviewedCount unreviewed activities.</Alert>
             }
 			<TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
 		</Content>

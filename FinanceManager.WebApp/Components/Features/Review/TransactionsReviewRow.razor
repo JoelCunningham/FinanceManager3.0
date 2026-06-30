@@ -6,6 +6,7 @@
     [Parameter] public IEnumerable<Guid> ErrorAmountIds { get; set; } = [];
 
     [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnReset { get; set; }
 
     [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> OnCategoryChange { get; set; }
     [Parameter] public EventCallback<(ReviewTransaction, decimal)> OnAmountChange { get; set; }
@@ -15,13 +16,16 @@
     [Parameter] public EventCallback OnFindTransfer { get; set; }
 
     [Parameter] public bool IsReviewed { get; set; } = false;
+}
 
-    private ReviewTransaction? CurrentTransaction { get; set; }
+@if (TransactionGroup is null || TransactionGroup.Transactions is null || !TransactionGroup.Transactions.Any())
+{
+    return;
 }
 
 @if (TransactionGroup.Transfers is not null)
 {
-    <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave">
+    <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave" OnReset="OnReset">
         <ReviewRowEntry Label="Transfers from">
             <HxInputDate @bind-Value="TransactionGroup.Record.Date" CalendarIcon="BootstrapIcon.Calendar" Enabled="false" />
             <HxInputText @bind-Value="TransactionGroup.Record.Description" title="@TransactionGroup.Record.Description" Enabled="false" />
@@ -36,7 +40,7 @@
 }
 else
 {
-    <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave" ShowActions="!IsReviewed">
+    <ReviewRow TransactionGroup="TransactionGroup" OnSave="OnSave" OnReset="OnReset" ShowActions="!IsReviewed">
         @foreach (var transaction in TransactionGroup.Transactions)
         {
             <ReviewRowEntry>
@@ -86,7 +90,7 @@ else
                                    max="@(TransactionGroup.Record.Amount > 0 ? TransactionGroup.Record.Amount : null)"
                                    @bind-Value:set="v => OnAmountChange.InvokeAsync((transaction, v))" />
                 }
-                <HxContextMenu>
+                <HxContextMenu Icon="BootstrapIcon.Sliders">
                     <HxContextMenuItem OnClick="() => TransactionGroup.Split(transaction)">Split</HxContextMenuItem>
                     @if (transaction.EntityId != TransactionGroup.Transactions.First().EntityId)
                     {

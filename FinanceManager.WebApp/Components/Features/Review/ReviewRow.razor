@@ -3,6 +3,7 @@
     [Parameter] public ReviewGroup TransactionGroup { get; set; } = default!;
 
     [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnReset { get; set; }
 
     [Parameter] public bool ShowActions { get; set; } = true;
 }
@@ -14,7 +15,7 @@
     @if (ShowActions)
     {
         <div class="action-buttons">
-            <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="TransactionGroup.Reset" />
+            <HxButton Color="ThemeColor.None" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="() => OnReset.InvokeAsync()" />
             <HxSubmit Color="ThemeColor.None" Icon="BootstrapIcon.CheckLg" OnClick="() => OnSave.InvokeAsync()" />
         </div>
     }

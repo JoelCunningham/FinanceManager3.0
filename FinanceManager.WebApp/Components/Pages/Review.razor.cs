@@ -25,6 +25,8 @@ public partial class Review : PageBase
     public bool IsFirstAutoAssign { get; set; } = true;
     public bool IsAutoAssignEnabled { get; set; } = true;
 
+    public IEnumerable<TransactionSummary> CurrentlyTransferring { get; set; } = [];
+
     protected override async Task OnInitializedAsync()
     {
         Validation.Messenger = Messenger;
@@ -100,6 +102,16 @@ public partial class Review : PageBase
         if (showMessage) Validation.SetSuccess("Activity saved successfully");
     }
 
+    private async Task ResetGroup(ReviewGroup group)
+    {
+        if (group.Transfers is not null)
+        {
+            CurrentlyTransferring = [.. CurrentlyTransferring.Where(t => t != group.Transfers)];
+        }
+        group.Reset();
+        await Data.UpdateAsync();
+    }
+
     public async Task SetReimburse(TransactionSummary transaction)
     {
         if (CurrentTransaction is null) return;
@@ -111,6 +123,7 @@ public partial class Review : PageBase
     {
         if (CurrentGroup is null) return;
         CurrentGroup.Transfers = transaction;
+        CurrentlyTransferring = [transaction];
         await TransferModal.HideAsync();
     }
 
@@ -125,7 +138,7 @@ public partial class Review : PageBase
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Date);
         var result = UseCases.BackdateTransactionAsync(transaction, value, group.Record.Date).Result;
-        
+
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
 
@@ -133,7 +146,7 @@ public partial class Review : PageBase
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Amount);
         var result = await UseCases.UpdateTransactionAmountAsync(transaction, value, group);
-      
+
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
 

@@ -1,6 +1,7 @@
 @code {
     [Parameter] public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new();
     [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
+    [Parameter] public IEnumerable<TransactionSummary> Exclusions { get; set; } = [];
     [Parameter] public ValidationModel Validation { get; set; } = new();
 
     [Parameter] public EventCallback<(ReviewTransaction, CategorySummary?)> SetCategory { get; set; }
@@ -8,6 +9,7 @@
     [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction, DateTime)> SetDate { get; set; }
 
     [Parameter] public EventCallback<ReviewGroup> SaveGroup { get; set; }
+    [Parameter] public EventCallback<ReviewGroup> ResetGroup { get; set; }
 
     [Parameter] public EventCallback<ReviewGroup> OnFindTransfer { get; set; }
     [Parameter] public EventCallback<(ReviewGroup, ReviewTransaction)> OnFindReimbursement { get; set; }
@@ -21,8 +23,8 @@
 
 <ListLayout TItem="ReviewGroup" Data="Data">
     <AdditionalCommands>
-        <HxCheckbox @bind-Value="Data.Query.SortDescending" @bind-Value:after="() => Data.UpdateAsync()" Text="Newest First" CssClass="pe-3"/>
-        <HxCheckbox @bind-Value="IsAutoAssignEnabled" @bind-Value:after="() => IsAutoAssignEnabledChanged.InvokeAsync(IsAutoAssignEnabled)" Text="Auto assign categories" />
+        <HxCheckbox @bind-Value="Data.Query.SortDescending" @bind-Value:after="() => Data.UpdateAsync()" Text="Newest first" CssClass="pe-2" />
+        <HxCheckbox @bind-Value="IsAutoAssignEnabled" @bind-Value:after="() => IsAutoAssignEnabledChanged.InvokeAsync(IsAutoAssignEnabled)" Text="Auto-assign categories" CssClass="pe-2" />
     </AdditionalCommands>
 
     <FilterTemplate Context="query">
@@ -33,20 +35,33 @@
     </FilterTemplate>
 
     <DataTemplate>
+        @if (Data.Result is not null)
+        {
+            <div class="text-muted d-flex mb-2 ms-1">
+                <span class="align-self-end">
+                    Showing @Data.Result.StartItem - @Data.Result.EndItem of @Data.Result.TotalItems unreviewed activities
+                </span>
+            </div>
+        }
+
         <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" TItem="ReviewGroup" PageSize="Data.Query.PageSize" SelectionEnabled="false" Responsive="false" TableContainerCssClass="grid-invisible">
             <Columns>
                 <HxGridColumn>
                     <ItemTemplate Context="group">
-                        <TransactionsReviewRow TransactionGroup="group"
-                                               Categories="group.IsIncome ? IncomeCategories : ExpenseCategories"
-                                               ErrorCategoryIds="Validation.GetValidationItemIds(ValidationField.Category)"
-                                               ErrorAmountIds="Validation.GetValidationItemIds(ValidationField.Amount)"
-                                               OnCategoryChange="args => SetCategory.InvokeAsync((args.Item1, args.Item2))"
-                                               OnAmountChange="args => SetAmount.InvokeAsync((group, args.Item1, args.Item2))"
-                                               OnDateChange="args => SetDate.InvokeAsync((group, args.Item1, args.Item2))"
-                                               OnSave="() => SaveGroup.InvokeAsync(group)"
-                                               OnFindTransfer="() => OnFindTransfer.InvokeAsync(group)"
-                                               OnFindReimbursement="(t) => OnFindReimbursement.InvokeAsync((group, t))" />
+                        @if (!Exclusions.Select(t => t.EntityId).Intersect(group.InitialTransactions.Select(t => t.EntityId)).Any())
+                        {
+                            <TransactionsReviewRow TransactionGroup="group"
+                                                   Categories="group.IsIncome ? IncomeCategories : ExpenseCategories"
+                                                   ErrorCategoryIds="Validation.GetValidationItemIds(ValidationField.Category)"
+                                                   ErrorAmountIds="Validation.GetValidationItemIds(ValidationField.Amount)"
+                                                   OnCategoryChange="args => SetCategory.InvokeAsync((args.Item1, args.Item2))"
+                                                   OnAmountChange="args => SetAmount.InvokeAsync((group, args.Item1, args.Item2))"
+                                                   OnDateChange="args => SetDate.InvokeAsync((group, args.Item1, args.Item2))"
+                                                   OnSave="() => SaveGroup.InvokeAsync(group)"
+                                                   OnReset="() => ResetGroup.InvokeAsync(group)"
+                                                   OnFindTransfer="() => OnFindTransfer.InvokeAsync(group)"
+                                                   OnFindReimbursement="(t) => OnFindReimbursement.InvokeAsync((group, t))" />
+                        }
                     </ItemTemplate>
                 </HxGridColumn>
             </Columns>
@@ -54,4 +69,4 @@
             </EmptyDataTemplate>
         </HxGrid>
     </DataTemplate>
-</ListLayout> 
+</ListLayout>

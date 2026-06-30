@@ -2,30 +2,17 @@
 @inherits PageBase
 
 <PageTitle>Review Activities</PageTitle>
-
-<h1 class="page-heading">Review activities</h1>
-
-@if (Data.HasResults && Data.Result is not null && Data.Query?.HasFilters == false)
-{
-    <Alert Level="AlertLevel.Info">Review and correct activities to help the automatic categorisation get smarter and more accurate.</Alert>
-}
-
-@if (Data.HasResults && Data.Result is not null)
-{
-    <div class="text-muted d-flex mb-2">
-        <span class="align-self-end">
-            Showing @Data.Result.StartItem - @Data.Result.EndItem of @Data.Result.TotalItems unreviewed activities
-        </span>
-    </div>
-}
+<PageHeading Heading="Review activities" Subheading="Review and correct activities to help the automatic categorisation get smarter and more accurate." />
 
 <TransactionsReviewGrid Data="Data"
                         Categories="Categories"
+                        Exclusions="CurrentlyTransferring"
                         Validation="Validation"
                         SetCategory="(args) => SetCategory(args.Item1, args.Item2)"
                         SetDate="(args) => SetDate(args.Item1, args.Item2, args.Item3)"
                         SetAmount="(args) => SetAmount(args.Item1, args.Item2, args.Item3)"
                         SaveGroup="(g) => SaveGroup(g)"
+                        ResetGroup="(g) => ResetGroup(g)"
                         OnFindTransfer="OnFindTransfer"
                         OnFindReimbursement="(args) => OnFindReimbursement(args.Item1, args.Item2)"
                         @bind-IsAutoAssignEnabled="IsAutoAssignEnabled"
@@ -43,6 +30,6 @@
     }
     else
     {
-        <Alert Level="AlertLevel.Success">You're up to date! All activities have been reviewed.</Alert>
+        <Alert Level="AlertLevel.Success" ActionText="Import more" ActionUrl="/Import">You're up to date! All activities have been reviewed.</Alert>
     }
 }

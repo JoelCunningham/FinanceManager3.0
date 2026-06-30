@@ -9,5 +9,12 @@
     {
         <span class="transaction-label">@Label</span>
     }
-    @ChildContent
+    <ErrorBoundary>
+        <ChildContent>
+            @ChildContent
+        </ChildContent>
+        <ErrorContent>
+            <p>An error occurred while rendering the content.</p>
+        </ErrorContent>
+    </ErrorBoundary>
 </div>

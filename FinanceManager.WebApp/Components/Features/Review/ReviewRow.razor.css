@@ -18,7 +18,7 @@
 
     .action-buttons {
         display: flex;
-        gap: 1rem;
+        gap: var(--space-small);
         justify-content: end;
         padding: 0.75rem 1rem 0.75rem 0;
     }
@@ -28,26 +28,49 @@
     }
 }
 
-    .transaction-group ::deep button {
-        margin: auto;
+    .transaction-group ::deep .action-buttons button,
+    .transaction-group ::deep div[role=button] {
         padding: var(--hx-context-menu-button-padding);
         border-radius: var(--hx-context-menu-button-border-radius);
+        color: var(--colour-white);
     }
 
-        .transaction-group ::deep button:hover {
+        .transaction-group ::deep .action-buttons button:hover,
+        .transaction-group ::deep div[role=button]:hover {
             background-color: var(--hx-context-menu-button-hover-background);
         }
 
-    .transaction-group ::deep .action-buttons button {
-        font-size: 1.2rem;
-        padding-top: 2px;
-    }
-
-        .transaction-group ::deep .action-buttons button:focus {
-            border: 1px solid var(--bs-black);
-        }
-
-        .transaction-group ::deep .action-buttons button .bi-check-lg {
+        .transaction-group ::deep .action-buttons button[type=submit] {
+            background-color: var(--colour-secondary);
+            border-color: var(--colour-secondary);
             font-size: 1.4rem;
-            color: var( --bs-success);
         }
+
+            .transaction-group ::deep .action-buttons button[type=submit]:hover {
+                background-color: var(--colour-secondary-hover);
+                border-color: var(--colour-secondary-hover);
+            }
+
+            .transaction-group ::deep .action-buttons button[type=submit] i {
+                padding-right: 1px;
+                padding-bottom: 2px;
+                color: var(--colour-white);
+            }
+
+        .transaction-group ::deep div[role=button],
+        .transaction-group ::deep .action-buttons button[type=button] {
+            background-color: var(--colour-accent);
+            border-color: var(--colour-accent);
+            font-size: 1.2rem;
+        }
+
+            .transaction-group ::deep div[role=button]:hover,
+            .transaction-group ::deep .action-buttons button[type=button]:hover
+            {
+                background-color: var(--colour-accent-hover);
+                border-color: var(--colour-accent-hover);
+            }
+
+            .transaction-group ::deep .action-buttons button[type=button] i {
+                padding: 0 2px;
+            }

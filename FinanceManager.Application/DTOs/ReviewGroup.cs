@@ -32,7 +32,7 @@ public class ReviewGroup
         {
             Record = BankRecordSummary.FromBankRecord(record),
             Transactions = reviewTransactions,
-            InitialTransactions = reviewTransactions,
+            InitialTransactions = [.. reviewTransactions],
         };
     }
 

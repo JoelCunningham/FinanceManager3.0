@@ -19,10 +19,7 @@
 {
     @if (DashboardData.TopOverBudgetCategory is not null)
     {
-        <Alert Level="AlertLevel.Warning">
-            <span>@GetWarningText()</span>
-            <span class="ms-auto"><a href="/Budget">Review budget <HxIcon Icon="BootstrapIcon.ArrowRight" /></a></span>
-        </Alert>
+        <Alert Level="AlertLevel.Warning" ActionText="Review budget" ActionUrl="/Budget">@GetWarningText()</Alert>
     }
 
     <DashboardCards Count="4">

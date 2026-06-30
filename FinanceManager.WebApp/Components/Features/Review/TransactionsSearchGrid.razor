@@ -23,7 +23,11 @@
     <DataTemplate>
         <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" TItem="TransactionSummary" PageSize="Data.Query.PageSize" PreserveSelection="false" Responsive="false" SelectedDataItemChanged="OnSelect">
             <Columns>
-                <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => CategoryUtilities.GetCategoryName(t))" ItemTextSelector="@(t => CategoryUtilities.GetCategoryName(t))" />
+                <HxGridColumn HeaderText="Category" SortString="Category" SortKeySelector="@(t => CategoryUtilities.GetCategoryName(t))">
+                    <ItemTemplate Context="transaction">
+                        <CategoryBubble Category="transaction.Category" />
+                    </ItemTemplate>
+                </HxGridColumn>
                 <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
                 <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col"><ItemTemplate Context="transaction"><span title="@transaction.Description">@transaction.Description</span></ItemTemplate></HxGridColumn>
                 @if (!IsTransferMode)

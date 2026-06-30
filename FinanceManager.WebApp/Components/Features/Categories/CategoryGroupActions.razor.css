@@ -1,13 +1,8 @@
 .actions-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-small);
     justify-content: space-between;
     align-items: flex-end;
     margin-bottom: 1rem;
-}
-
-.search-container {
-    min-width: 18rem;
-    flex: 1 1 18rem;
 }

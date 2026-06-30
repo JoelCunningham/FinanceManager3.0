@@ -201,6 +201,50 @@ main {
     }
 }
 
+/*Toast*/
+.toast {
+    margin-bottom: var(--space-small);
+
+    &.bg-info {
+        background-color: var(--colour-info-light) !important;
+        color: var(--colour-info) !important;
+        border-color: var(--colour-info);
+
+        .btn-close {
+            color: var(--colour-info);
+        }
+    }
+
+    &.bg-success {
+        background-color: var(--colour-success-light) !important;
+        color: var(--colour-success) !important;
+        border-color: var(--colour-success);
+
+        .btn-close {
+            color: var(--colour-success);
+        }
+    }
+
+    &.bg-warning {
+        background-color: var(--colour-warning-light) !important;
+        color: var(--colour-warning) !important;
+        border-color: var(--colour-warning);
+
+        .btn-close {
+            color: var(--colour-warning);
+        }
+    }
+
+    &.bg-danger {
+        background-color: var(--colour-danger-light) !important;
+        color: var(--colour-danger) !important;
+        border-color: var(--colour-danger);
+
+        .btn-close {
+            color: var(--colour-danger);
+        }
+    }
+}
 
 /*Cards*/
 .card {
@@ -255,6 +299,11 @@ button.btn {
 select.form-select {
     cursor: pointer;
     padding: 0.25rem 0.75rem;
+}
+
+.form-check .form-check-input:checked {
+    background-color: var(--colour-secondary);
+    border-color: var(--colour-secondary);
 }
 
 .form-control:focus,
@@ -373,6 +422,17 @@ input[inputmode=search] {
     }
 }
 
+.hx-grid-container.grid-invisible {
+    .hx-grid.table {
+        background-color: transparent;
+
+        tbody tr td > div {
+            border-radius: var(--radius-medium);
+            background-color: var(--colour-white);
+        }
+    }
+}
+
 /*Calendar*/
 .hx-input-date-wrapper {
     .hx-calendar {
@@ -392,6 +452,10 @@ input[inputmode=search] {
                 }
             }
         }
+    }
+
+   .hx-calendar-navigation-button:focus {
+        box-shadow: var(--shadow-focus) !important;
     }
 
     .hx-input-date-dropdown-buttons button {

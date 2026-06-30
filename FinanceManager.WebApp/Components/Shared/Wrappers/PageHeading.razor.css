@@ -1,1 +1,5 @@
-﻿
+﻿.page-subheading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-small);
+}

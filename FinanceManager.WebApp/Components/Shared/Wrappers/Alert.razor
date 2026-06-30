@@ -2,6 +2,9 @@
     [Parameter] public AlertLevel Level { get; set; }
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
 
+    [Parameter] public string? ActionText { get; set; }
+    [Parameter] public string? ActionUrl { get; set; }
+
     private ThemeColor GetThemeColor()
     {
         return Level switch
@@ -30,4 +33,8 @@
 <HxAlert Color="GetThemeColor()">
     <HxIcon Icon="@GetIcon()" />
     <p>@ChildContent</p>
+    @if (ActionUrl is not null && ActionText is not null)
+    {
+        <a href="@ActionUrl">@ActionText <HxIcon Icon="BootstrapIcon.ArrowRight" /></a>
+    }
 </HxAlert>

@@ -129,9 +129,8 @@
 else
 {
     <div class="message">
-        <Alert Level="AlertLevel.Info">
-            You have no transactions or budgets for <b>@Group.Name</b> categories over the last @Length @ScopeText. You can create a budget on the
-            <a href="/Budget">budget page</a>.
+        <Alert Level="AlertLevel.Info" ActionText="Create budget" ActionUrl="/Budget">
+            You have no transactions or budgets for <b>@Group.Name</b> categories over the last @Length @ScopeText.
         </Alert>
     </div>
 }
