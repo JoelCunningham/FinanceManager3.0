@@ -61,7 +61,7 @@
                    OnClick="@(() => NavigationManager.NavigateTo("/Activities"))" />
 
         <BasicCard Title="Last transaction"
-                   Value="@(DashboardData.DaysSinceLastImport == 0 ? "today" : $"{DashboardData.DaysSinceLastImport} days ago")"
+                   Value="@(DashboardData.DaysSinceLastImport == 0 ? "today" : $"{DashboardData.DaysSinceLastImport} {LanguageUtilities.Pluralise("days", DashboardData.DaysSinceLastImport)} ago")"
                    Description="@($"on {DateTime.Today.AddDays(-DashboardData.DaysSinceLastImport):yyyy-MM-dd}")"
                    Colour="@(ColourUtilities.PrimaryColour)"
                    OnClick="@(() => NavigationManager.NavigateTo("/Import"))" />

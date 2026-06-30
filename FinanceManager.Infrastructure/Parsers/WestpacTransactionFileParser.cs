@@ -6,6 +6,7 @@ namespace FinanceManager.Infrastructure.Parsers
     public class WestpacTransactionFileParser : CsvTransactionFileParser<WestpacTransactionFile>
     {
         public override string GetBankName() => "Westpac";
+        public override string GetDateFormat() => "dd/MM/yyyy";
         public override IEnumerable<string> GetFileExtensions() => [".csv"];
         public override IEnumerable<ParsedTransaction> StandardiseRecords(IEnumerable<WestpacTransactionFile> file)
         {

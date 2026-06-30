@@ -14,11 +14,15 @@
         .ToList();
 
     private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryGroupUsages => CategoryUsages
-        .GroupBy(c => c.GroupName)
+        .GroupBy(c => c.Summary.GroupName)
         .Select(g => new BudgetCategoryUsage
         {
-            GroupName = g.Key,
-            CategoryName = g.First().CategoryName,
+            Summary = new CategorySummary
+            {
+                Name = g.Key,
+                GroupName = g.Key,
+                Colour = g.First().Summary.GroupColour,
+            },
             Amount = g.Sum(c => c.Amount),
             Proportion = GetAmountProportion(g.Sum(c => c.Amount)),
         })
@@ -46,7 +50,12 @@
 
         return [new BudgetCategoryUsage
         {
-            CategoryName = "Other",
+            Summary = new CategorySummary
+            {
+                Name = "Other",
+                GroupName = "Other",
+                Colour = ""
+            },
             Amount = otherAmount,
             Proportion = GetAmountProportion(otherAmount),
         }];
@@ -66,7 +75,7 @@
             title = new
             {
                 text = TotalSpending.ToString("C"),
-                left = "49%",
+                left = "49.5%",
                 top = "50%",
                 textAlign = "center",
                 textVerticalAlign = "middle",
@@ -81,8 +90,8 @@
                     radius = new List<string>() { "35%", "50%" },
                     center = new List<string>() { "50%", "50%" },
                     data = isByGroupView
-                        ? DisplayCategoryGroupUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName == "Other" ? "Other" : c.GroupName })
-                        : DisplayCategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.CategoryName == "Other" ? "Other" : c.DisplayName }),
+                        ? DisplayCategoryGroupUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.Summary.Name == "Other" ? "Other" : c.Summary.GroupName })
+                        : DisplayCategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.Summary.Name == "Other" ? "Other" : c.DisplayName }),
                     label = new { show = false },
                     silent = true,
                 }

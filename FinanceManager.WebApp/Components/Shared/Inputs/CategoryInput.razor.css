@@ -45,7 +45,7 @@
 
         .auto-categorised {
             padding-left: 26px;
-            box-shadow: 0 0 0 .25rem rgba(13,202,240, .25);
+            box-shadow: var(--shadow-info);
             border-radius: var(--bs-border-radius);
         }
 
@@ -72,4 +72,5 @@
     left: 8px;
     top: 6px;
     z-index: 1;
+    color: var(--colour-primary);
 }

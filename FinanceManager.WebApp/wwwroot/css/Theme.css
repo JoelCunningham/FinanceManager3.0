@@ -47,7 +47,8 @@
     /**/
     --shadow-medium: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     --shadow-large: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-    --shadow-focus: 0 0 0 0.2rem rgba(18, 107, 118, 0.25);
+    --shadow-focus: 0 0 0 0.25rem rgba(18, 107, 118, 0.25);
+    --shadow-info: 0 0 0 0.25rem rgba(102, 211, 224, 0.25);
     /**/
     /**/
     --radius-medium: 0.6rem;
@@ -294,176 +295,174 @@ button.btn {
             border: 1px solid var(--colour-danger-hover) !important;
         }
     }
-}
 
-select.form-select {
-    cursor: pointer;
-    padding: 0.25rem 0.75rem;
-}
-
-.form-check .form-check-input:checked {
-    background-color: var(--colour-secondary);
-    border-color: var(--colour-secondary);
-}
-
-.form-control:focus,
-.form-select:focus,
-.form-check-input:focus {
-    box-shadow: var(--shadow-focus) !important;
-}
-
-input[inputmode=search] {
-    padding: 0.25rem 0.75rem;
-}
-
-
-/*Modals*/
-.modal .modal-header,
-.offcanvas, .offcanvas-header {
-    .modal-title,
-    .offcanvas-title {
-        font-size: var(--fontsize-heading2);
-        color: var(--colour-primary);
-    }
-
-    .btn-close {
-        opacity: 0.9 !important;
-        margin-top: 0;
-        margin-bottom: auto;
-        padding-top: 0;
-    }
-}
-
-/*Pagination*/
-.pagination {
-    background-color: none;
-
-    .page-item {
-        button {
-            border: 1px solid var(--colour-lightgrey);
-            color: var(--colour-primary);
-        }
-
-        &.active span {
-            background-color: var(--colour-primary);
-            border: 1px solid var(--colour-primary);
-        }
-
-        &.disabled button {
-            color: var(--colour-lightgrey);
-            border: 1px solid var(--colour-lightgrey);
-        }
-    }
-
-    .page-link:focus {
-        box-shadow: none;
+    &.btn-light {
         background-color: var(--colour-white);
-    }
-}
-
-/*Nav*/
-.nav {
-    a {
-        color: var(--colour-secondary);
-
-        &:hover {
-            color: var(--colour-primary);
-        }
+        border: 1px solid var(--colour-grey) !important;
     }
 
-    &.nav-tabs .nav-link.active {
-        color: var(--colour-primary);
+    select.form-select {
+        cursor: pointer;
+        padding: 0.25rem 0.75rem;
     }
 
-    &.nav-pills .nav-link.active {
-        color: var(--colour-secondary);
-        background-color: var(--colour-highlight);
-
-        &:hover {
-            color: var(--colour-primary);
-        }
-    }
-}
-
-/*Table*/
-.hx-grid.table {
-    background-color: var(--colour-white);
-    border-radius: var(--radius-medium);
-
-    thead {
-        th {
-            vertical-align: initial;
-            padding-bottom: 0.25rem;
-
-            &.text-end .hx-grid-header-cell-template {
-                padding-top: 3px;
-            }
-
-            .hx-grid-header-cell-template {
-                color: var(--colour-grey);
-                font-size: var(--fontsize-tableheading);
-                text-transform: uppercase;
-            }
-
-            .hx-icon {
-                color: var(--colour-secondary);
-            }
-        }
-    }
-}
-
-.hx-list-layout .card .hx-button.btn-light {
-    background-color: var(--colour-white) !important;
-    border: 1px solid var(--colour-border) !important;
-    color: var(--colour-primary) !important;
-
-    i::after {
-        margin-right: var(--space-small);
-    }
-}
-
-.hx-grid-container.grid-invisible {
-    .hx-grid.table {
-        background-color: transparent;
-
-        tbody tr td > div {
-            border-radius: var(--radius-medium);
-            background-color: var(--colour-white);
-        }
-    }
-}
-
-/*Calendar*/
-.hx-input-date-wrapper {
-    .hx-calendar {
-        .hx-calendar-week {
-            .hx-calendar-day-today {
-                color: var(--colour-secondary);
-                background-color: var(--colour-highlight);
-            }
-
-            .hx-calendar-day {
-                &.hx-calendar-day-selected {
-                    background-color: var(--colour-secondary);
-                }
-
-                &:focus {
-                    box-shadow: var(--shadow-focus) !important;
-                }
-            }
-        }
+    .form-check .form-check-input:checked {
+        background-color: var(--colour-secondary);
+        border-color: var(--colour-secondary);
     }
 
-   .hx-calendar-navigation-button:focus {
+    .form-control:focus,
+    .form-select:focus,
+    .form-check-input:focus {
         box-shadow: var(--shadow-focus) !important;
     }
 
-    .hx-input-date-dropdown-buttons button {
-        text-decoration: none;
-        color: var(--colour-grey);
-
-        &:hover {
+    input[inputmode=search] {
+        padding: 0.25rem 0.75rem;
+    }
+    /*Modals*/
+    .modal .modal-header,
+    .offcanvas, .offcanvas-header {
+        .modal-title,
+        .offcanvas-title {
+            font-size: var(--fontsize-heading2);
             color: var(--colour-primary);
         }
+
+        .btn-close {
+            opacity: 0.9 !important;
+            margin-top: 0;
+            margin-bottom: auto;
+            padding-top: 0;
+        }
     }
-}
+    /*Pagination*/
+    .pagination {
+        background-color: none;
+
+        .page-item {
+            button {
+                border: 1px solid var(--colour-lightgrey);
+                color: var(--colour-primary);
+            }
+
+            &.active span {
+                background-color: var(--colour-primary);
+                border: 1px solid var(--colour-primary);
+            }
+
+            &.disabled button {
+                color: var(--colour-lightgrey);
+                border: 1px solid var(--colour-lightgrey);
+            }
+        }
+
+        .page-link:focus {
+            box-shadow: none;
+            background-color: var(--colour-white);
+        }
+    }
+    /*Nav*/
+    .nav {
+        a {
+            color: var(--colour-secondary);
+
+            &:hover {
+                color: var(--colour-primary);
+            }
+        }
+
+        &.nav-tabs .nav-link.active {
+            color: var(--colour-primary);
+        }
+
+        &.nav-pills .nav-link.active {
+            color: var(--colour-secondary);
+            background-color: var(--colour-highlight);
+
+            &:hover {
+                color: var(--colour-primary);
+            }
+        }
+    }
+    /*Table*/
+    .hx-grid.table {
+        background-color: var(--colour-white);
+        border-radius: var(--radius-medium);
+
+        thead {
+            th {
+                vertical-align: initial;
+                padding-bottom: 0.25rem;
+
+                &.text-end .hx-grid-header-cell-template {
+                    padding-top: 3px;
+                }
+
+                .hx-grid-header-cell-template {
+                    color: var(--colour-grey);
+                    font-size: var(--fontsize-tableheading);
+                    text-transform: uppercase;
+                }
+
+                .hx-icon {
+                    color: var(--colour-secondary);
+                }
+            }
+        }
+    }
+
+    .hx-list-layout .card .hx-button.btn-light {
+        background-color: var(--colour-white) !important;
+        border: 1px solid var(--colour-border) !important;
+        color: var(--colour-primary) !important;
+
+        i::after {
+            margin-right: var(--space-small);
+        }
+    }
+
+    .hx-grid-container.grid-invisible {
+        .hx-grid.table {
+            background-color: transparent;
+
+            tbody tr td > div {
+                border-radius: var(--radius-medium);
+                background-color: var(--colour-white);
+            }
+        }
+    }
+    /*Calendar*/
+    .hx-input-date-wrapper {
+        .hx-calendar {
+            .hx-calendar-week {
+                .hx-calendar-day-today {
+                    color: var(--colour-secondary);
+                    background-color: var(--colour-highlight);
+                }
+
+                .hx-calendar-day {
+                    &.hx-calendar-day-selected {
+                        background-color: var(--colour-secondary);
+                    }
+
+                    &:focus {
+                        box-shadow: var(--shadow-focus) !important;
+                    }
+                }
+            }
+        }
+
+        .hx-calendar-navigation-button:focus {
+            box-shadow: var(--shadow-focus) !important;
+        }
+
+        .hx-input-date-dropdown-buttons button {
+            text-decoration: none;
+            color: var(--colour-grey);
+
+            &:hover {
+                color: var(--colour-primary);
+            }
+        }
+    }

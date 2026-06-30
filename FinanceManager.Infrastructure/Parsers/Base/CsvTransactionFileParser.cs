@@ -9,6 +9,7 @@ namespace FinanceManager.Infrastructure.Parsers.Base
     public abstract class CsvTransactionFileParser<T> : ITransactionFileParser
     {
         public abstract string GetBankName();
+        public abstract string GetDateFormat();
         public abstract IEnumerable<string> GetFileExtensions();
         public abstract IEnumerable<ParsedTransaction> StandardiseRecords(IEnumerable<T> file);
 
@@ -21,7 +22,7 @@ namespace FinanceManager.Infrastructure.Parsers.Base
                 using var streamReader = new StreamReader(fileStream, leaveOpen: true);
                 using var csvReader = new CsvReader(streamReader, GetCsvConfiguration());
 
-                csvReader.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = ["dd-MMM-yyyy"];
+                csvReader.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = [GetDateFormat()];
 
                 var fileRecords = await csvReader.GetRecordsAsync<T>().ToListAsync();
                 return StandardiseRecords(fileRecords);

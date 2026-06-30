@@ -10,7 +10,7 @@
     .budget-category-usage {
         display: grid;
         gap: var(--space-small);
-        grid-template-columns: 30% auto 3rem;
+        grid-template-columns: 10rem auto 4rem;
         margin-bottom: var(--space-small);
         align-items: center;
 

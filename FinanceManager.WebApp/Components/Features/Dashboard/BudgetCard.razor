@@ -32,9 +32,9 @@
         <h5 class="card-title>">Budget usage by category</h5>
         <div class="d-flex justify-content-between align-items-center mb-2">
             <HxButtonGroup>
-                <HxButton Icon="BootstrapIcon.ArrowLeft" OnClick="PreviousPage" Enabled="CurrentPage > 1" />
+                <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="PreviousPage" Enabled="CurrentPage > 1" />
                 <HxButton Text="@($"{CurrentPage} / {TotalPages}")" Enabled="false" />
-                <HxButton Icon="BootstrapIcon.ArrowRight" OnClick="NextPage" Enabled="CurrentPage < TotalPages" />
+                <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="NextPage" Enabled="CurrentPage < TotalPages" />
             </HxButtonGroup>
         </div>
     </div>
@@ -49,11 +49,7 @@
         @foreach (var categoryUsage in PageCategoryUsages)
         {
             <div class="budget-category-usage">
-                <HxTooltip Text="@categoryUsage.DisplayName">
-                    <a href="/Categories/@categoryUsage.GroupName">
-                        @categoryUsage.DisplayName
-                    </a>
-                </HxTooltip>
+                <CategoryBubble Category="@categoryUsage.Summary" />
                 <HxProgress>
                     <HxProgressBar Value="(float)categoryUsage.Proportion * 100" CssClass="@ColourUtilities.GetUsageStyle(categoryUsage.Proportion)" />
                 </HxProgress>

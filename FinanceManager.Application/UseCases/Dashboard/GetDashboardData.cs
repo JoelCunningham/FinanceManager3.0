@@ -74,8 +74,7 @@ public sealed class GetDashboardData(
 
                 return new BudgetCategoryUsage
                 {
-                    CategoryName = category.Name,
-                    GroupName = category.GroupName,
+                    Summary = category,
                     BudgetedAmount = budgetedAmount,
                     Amount = spentAmount,
                     Proportion = budgetedAmount <= 0m ? (spentAmount > 0m ? 1m : 0m) : spentAmount / budgetedAmount,
@@ -110,7 +109,7 @@ public sealed class GetDashboardData(
             unassignedTransactions,
             incomeShare,
             daysSinceLastImport,
-            topOverBudget?.CategoryName,
+            topOverBudget?.Summary.Name,
             topOverBudget is null ? 0m : Math.Max(0m, topOverBudget.Amount - topOverBudget.BudgetedAmount),
             topOverBudget?.Proportion ?? 0m,
             availablePeriods

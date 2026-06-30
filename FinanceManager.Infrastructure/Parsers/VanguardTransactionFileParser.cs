@@ -6,6 +6,7 @@ namespace FinanceManager.Infrastructure.Parsers
     public class VanguardTransactionFileParser : CsvTransactionFileParser<VanguardTransactionFile>
     {
         public override string GetBankName() => "Vanguard";
+        public override string GetDateFormat() => "dd-MM-yyyy";
         public override IEnumerable<string> GetFileExtensions() => [".csv"];
         public override IEnumerable<ParsedTransaction> StandardiseRecords(IEnumerable<VanguardTransactionFile> file)
         {
