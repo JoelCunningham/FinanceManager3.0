@@ -10,7 +10,7 @@ using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
 
-public partial class Statistics() : TabbedPageBase(Pages.Statistics, [Tabs.Legacy1.ToString(), Tabs.Legacy2.ToString(), Tabs.Category.ToString()])
+public partial class Statistics : PageBase
 {
     [Parameter][SupplyParameterFromQuery] public string? Name { get; set; }
     [Parameter][SupplyParameterFromQuery] public string? Group { get; set; }
@@ -45,7 +45,7 @@ public partial class Statistics() : TabbedPageBase(Pages.Statistics, [Tabs.Legac
 
     protected override void OnParametersSet()
     {
-        if (Tab == Tabs.Category.ToString() && Name is not null && Group is not null)
+        if (ActiveTabId == Tabs.Category.ToString() && Name is not null && Group is not null)
         {
             SelectedCategory = AvailableCategories.FirstOrDefault(c =>
                 string.Equals(c.Name, Name, StringComparison.OrdinalIgnoreCase) &&

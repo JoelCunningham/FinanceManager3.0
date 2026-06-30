@@ -13,5 +13,7 @@ public partial class PageBase : ComponentBase
     [Inject] public IHxMessengerService Messenger { get; set; } = default!;
     [Inject] public NavigationManager Navigation { get; set; } = default!;
 
+    [Parameter] public string? ActiveTabId { get; set; }
+
     public ValidationModel Validation { get; set; } = new();
 }

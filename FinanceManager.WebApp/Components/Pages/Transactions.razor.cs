@@ -7,10 +7,10 @@ using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Transactions;
 using FinanceManager.WebApp.Components.Features.Transfers;
-using FinanceManager.WebApp.Models;
 using FinanceManager.WebApp.Enums;
+using FinanceManager.WebApp.Models;
 
-public partial class Transactions() : TabbedPageBase(Pages.Activities, [Tabs.Activities.ToString(), Tabs.Transfers.ToString()])
+public partial class Transactions : PageBase
 {
     public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(16);
     public DataGridModel<FilterQuery, TransferDto> TransferData { get; set; } = new(16);
@@ -171,8 +171,8 @@ public partial class Transactions() : TabbedPageBase(Pages.Activities, [Tabs.Act
         if (TransactionData.Result is not null && TransferData.Result is not null)
         {
             var showingCount =
-                Tab == ValidTabs.ElementAt(0) ? TransactionData.Result.Items.Count :
-                Tab == ValidTabs.ElementAt(1) ? TransferData.Result.Items.Count :
+                ActiveTabId == Tabs.Activities.ToString() ? TransactionData.Result.Items.Count :
+                ActiveTabId == Tabs.Transfers.ToString() ? TransferData.Result.Items.Count :
                 0;
 
             return TransactionData.Result.TotalItems + " Activities · " + TransferData.Result.TotalItems + " Transfers · Showing " + showingCount;

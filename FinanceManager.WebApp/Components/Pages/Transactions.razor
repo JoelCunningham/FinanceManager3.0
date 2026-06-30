@@ -1,12 +1,12 @@
 @page "/Activities"
-@page "/Activities/{Tab}"
-@inherits TabbedPageBase
+@page "/Activities/{ActiveTabId}"
+@inherits PageBase
 
 <PageTitle>Activities</PageTitle>
 <PageHeading Heading="Activities" Subheading="@Subheading" />
 
-<HxTabPanel NavVariant="NavVariant.Pills" @bind-ActiveTabId="Tab" @bind-ActiveTabId:after="OnTabChanged">
-	<HxTab Title="Activities" Id="@ValidTabs.ElementAt(0)">
+<TabPanel @bind-ActiveTabId="ActiveTabId" Page="Pages.Activities" NavVariant="NavVariant.Pills">
+	<HxTab Title="Activities" Id="@Tabs.Activities.ToString()">
 		<Content>
 			@if (UnreviewedCount > 0)
 			{
@@ -15,12 +15,12 @@
 			<TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
 		</Content>
 	</HxTab>
-	<HxTab Title="Transfers" Id="@ValidTabs.ElementAt(1)">
+	<HxTab Title="Transfers" Id="@Tabs.Transfers.ToString()">
 		<Content>
 			<TransfersGrid @bind-Data="TransferData" Accounts="UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="OpenTransferDetailsModal" />
 		</Content>
 	</HxTab>
-</HxTabPanel>
+</TabPanel>
 
 <TransactionDetailsModal @ref="DetailsModal" Details="SelectedDetails" OnEdit="OpenEditModal" />
 

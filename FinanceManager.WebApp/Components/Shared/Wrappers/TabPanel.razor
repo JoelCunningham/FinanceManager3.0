@@ -1,0 +1,20 @@
+﻿@inject NavigationManager NavigationManager
+
+@code {
+    [Parameter] public Pages Page { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public string ActiveTabId { get; set; } = default!;
+    [Parameter] public EventCallback<string> ActiveTabIdChanged { get; set; }
+
+    [Parameter] public NavVariant NavVariant { get; set; } = NavVariant.Tabs;
+
+    protected async Task OnTabChanged()
+    {
+        NavigationManager.NavigateTo($"{Page}/{ActiveTabId}");
+    }
+}
+
+<HxTabPanel @bind-ActiveTabId="ActiveTabId" @bind-ActiveTabId:after="OnTabChanged" NavVariant="@NavVariant">
+    @ChildContent
+</HxTabPanel>
