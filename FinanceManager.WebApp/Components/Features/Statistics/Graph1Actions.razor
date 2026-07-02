@@ -57,6 +57,6 @@
     <Dropdowns>
         <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="From" YearLabel=" " ChangeLength />
         <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="To" YearLabel=" " ChangeEndDate ChangeLength />
-        <HxCheckbox Text="YTD" @bind-Value="IsYtd" @bind-Value:after="() => OnYtdChangedAsync(IsYtd)" />
+        <HxCheckbox Text="YTD" Reverse="true" @bind-Value="IsYtd" @bind-Value:after="() => OnYtdChangedAsync(IsYtd)" CssClass="me-auto"/>
     </Dropdowns>
 </GraphActions>

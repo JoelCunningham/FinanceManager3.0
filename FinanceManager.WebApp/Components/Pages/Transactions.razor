@@ -5,7 +5,7 @@
 <PageTitle>Activities</PageTitle>
 <PageHeading Heading="Activities" Subheading="@Subheading" />
 
-<TabPanel @bind-ActiveTabId="ActiveTabId" Page="Pages.Activities" NavVariant="NavVariant.Pills">
+<TabPanel @bind-ActiveTabId="ActiveTabId" Page="Pages.Activities">
 	<HxTab Title="Activities" Id="@Tabs.Activities.ToString()">
 		<Content>
 			@if (UnreviewedCount > 0)

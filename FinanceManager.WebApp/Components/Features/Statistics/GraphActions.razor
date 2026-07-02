@@ -34,17 +34,17 @@
               TextSelector="m => m.ToString()"
               ValueSelector="m => m" />
 
-    <HxButton Text="Reset" Icon="BootstrapIcon.ArrowCounterclockwise" OnClick="OnReset" />
+    <HxButton Text="Reset" OnClick="OnReset" CssClass="reset" />
 
     @if (Chart.IsCategoryLevel)
     {
-        <div class="mt-2">
-            <HxButton Text="Back to groups" Icon="BootstrapIcon.ArrowLeft" OnClick="Chart.ClearDrilldownAsync" />
+        <div>
+            <HxButton Text="Back to areas" Icon="BootstrapIcon.ArrowLeft" OnClick="Chart.ClearDrilldownAsync" />
         </div>
     }
 
     <HxDropdownButtonGroup>
-        <HxDropdownToggleButton Color="ThemeColor.Secondary">Advanced</HxDropdownToggleButton>
+        <HxDropdownToggleButton Color="ThemeColor.Primary">Options</HxDropdownToggleButton>
         <HxDropdownContent CssClass="px-4 py-3">
             @Dropdowns
         </HxDropdownContent>

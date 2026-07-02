@@ -116,6 +116,7 @@ public partial class Statistics : PageBase
 
         foreach (var transaction in transactions)
         {
+            if (transaction.Amount == 0m) continue;
             if (!Chart1.Range.Includes(DateOnly.FromDateTime(transaction.Date)))
             {
                 continue;
@@ -169,7 +170,16 @@ public partial class Statistics : PageBase
                 ? null
                 : (groupIdByName.TryGetValue(name, out var id) ? id.ToString() : null);
 
-            series.Add(CreateBarSeries(name, amountsByCategory[name], key));
+            var colour = isCategoryDrilldown
+                ? AvailableCategories.FirstOrDefault(c => c.Name == name)?.Colour ?? "#000000"
+                : CategoryGroups.FirstOrDefault(g => g.Name == name)?.Colour ?? "#000000";
+
+            if (!CategoryGroups.Any(g => g.Name == name) && !AvailableCategories.Any(c => c.Name == name))
+            {
+                colour = "#000000";
+            }
+
+            series.Add(CreateBarSeries(name, colour, amountsByCategory[name], key));
         }
 
         var groupBudgetPrefix = isCategoryDrilldown ? (drilldownGroupName ?? "Group") : null;
@@ -201,9 +211,9 @@ public partial class Statistics : PageBase
 
         Chart1.Title = (Chart1.Mode, isCategoryDrilldown) switch
         {
-            (TransactionsGraphMode.Expense, false) => $"Expenses by group between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
-            (TransactionsGraphMode.Income, false) => $"Income by group between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
-            (TransactionsGraphMode.Net, false) => $"Net by group between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
+            (TransactionsGraphMode.Expense, false) => $"Expenses by area between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
+            (TransactionsGraphMode.Income, false) => $"Income by area between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
+            (TransactionsGraphMode.Net, false) => $"Net by area between {Chart1.Range.StartDate:MMM yyyy} and {Chart1.Range.EndDate:MMM yyyy}",
             (_, true) => $"{drilldownGroupName ?? "Group"} by category",
             _ => "Transactions"
         };
@@ -279,9 +289,9 @@ public partial class Statistics : PageBase
         var remainingLabel = isIncome ? "Remaining budget" : "Remaining budget";
         var overLabel = isIncome ? "Above budget" : "Over budget";
 
-        var baseColor = "#009de0";
-        var remainingColor = isIncome ? "#dc3545" : "#198754";
-        var overColor = isIncome ? "#198754" : "#dc3545";
+        var baseColor = "#126b76";
+        var remainingColor = isIncome ? "#a81e2e" : "#15723f";
+        var overColor = isIncome ? "#15723f" : "#a81e2e";
 
         Chart2.Title = $"{levelText} {modeText} vs budget for {Chart2.Range.StartDate:MMM yyyy}";
         Chart2.Options = new
@@ -379,11 +389,12 @@ public partial class Statistics : PageBase
         return string.IsNullOrWhiteSpace(groupName) ? UncategorisedLabel : groupName;
     }
 
-    private static object CreateBarSeries(string name, decimal[] values, string? key) => new
+    private static object CreateBarSeries(string name, string colour, decimal[] values, string? key) => new
     {
         name,
         type = "bar",
         stack = "total",
+        color = colour,
         emphasis = new { focus = "series" },
         data = key is null
             ? values.Select(v => (object)(double)v).ToArray()
@@ -394,7 +405,7 @@ public partial class Statistics : PageBase
     {
         name,
         type = "line",
-        smooth = true,
+        smooth = false,
         symbol = "circle",
         symbolSize,
         z = 20,

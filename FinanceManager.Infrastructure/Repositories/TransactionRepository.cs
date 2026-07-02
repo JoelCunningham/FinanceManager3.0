@@ -89,6 +89,7 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
             queryable = queryable.Where(t => t.Date <= query.FilterDateTo.Value);
         }
 
+        queryable = queryable.Where(t => t.ReimbursesId == null);
         return await queryable.ToListAsync();
     }   
 

@@ -160,12 +160,12 @@ main {
 
     .hx-sidebar-toggler {
         .hx-sidebar-toggler-arrow {
-            background-color: var(--colour-accent);
+            background-color: var(--colour-grey);
         }
 
         &:hover {
             .hx-sidebar-toggler-arrow {
-                background-color: var(--colour-accent);
+                background-color: var(--colour-grey);
             }
         }
     }
@@ -410,8 +410,21 @@ input[inputmode=search] {
         }
     }
 
-    &.nav-tabs .nav-link.active {
-        color: var(--colour-primary);
+    &.nav-tabs {
+        border-bottom: none;
+        font-weight: var(--fontweight-semibold);
+        gap: var(--space-medium);
+
+        .nav-link {
+            border: none;
+            padding: 0.5rem 0.2rem;
+
+            &.active {
+                color: var(--colour-secondary);
+                background-color: transparent;
+                border-bottom: 2px solid var(--colour-secondary);
+            }
+        }
     }
 
     &.nav-pills .nav-link.active {
