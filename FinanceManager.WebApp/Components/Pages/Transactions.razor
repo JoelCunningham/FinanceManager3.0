@@ -3,37 +3,41 @@
 @inherits PageBase
 
 <PageTitle>Activities</PageTitle>
-<PageHeading Heading="Activities" Subheading="@Subheading" />
+<PageHeading Heading="Activities" Subheading="@Subheading">
+    <Actions>
+        <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" />
+    </Actions>
+</PageHeading>
 
 <TabPanel @bind-ActiveTabId="ActiveTabId" Page="Pages.Activities">
-	<HxTab Title="Activities" Id="@Tabs.Activities.ToString()">
-		<Content>
-			@if (UnreviewedCount > 0)
-			{
+    <HxTab Title="Activities" Id="@Tabs.Activities.ToString()">
+        <Content>
+            @if (UnreviewedCount > 0)
+            {
                 <Alert Level="AlertLevel.Info" ActionText="Review activities" ActionUrl="/Review">You have @UnreviewedCount unreviewed activities.</Alert>
             }
-			<TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
-		</Content>
-	</HxTab>
-	<HxTab Title="Transfers" Id="@Tabs.Transfers.ToString()">
-		<Content>
-			<TransfersGrid @bind-Data="TransferData" Accounts="UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="OpenTransferDetailsModal" />
-		</Content>
-	</HxTab>
+            <TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
+        </Content>
+    </HxTab>
+    <HxTab Title="Transfers" Id="@Tabs.Transfers.ToString()">
+        <Content>
+            <TransfersGrid @bind-Data="TransferData" Accounts="UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="OpenTransferDetailsModal" />
+        </Content>
+    </HxTab>
 </TabPanel>
 
 <TransactionDetailsModal @ref="DetailsModal" Details="SelectedDetails" OnEdit="OpenEditModal" />
 
 <EditTransactionModal @ref="EditModal"
-					  EditTransaction="EditTransaction"
-					  EditTransactionGroup="EditTransactionGroup"
-					  Categories="Categories"
-					  Validation="Validation"
-					  SetCategory="SetCategory"
-					  SetGroupCategory="(args) => SetCategory(args.Item1, args.Item2)"
-					  SetGroupAmount="(args) => SetAmount(args.Item1, args.Item2, args.Item3)"
-					  SetGroupDate="(args) => SetDate(args.Item1, args.Item2, args.Item3)"
-					  SaveTransaction="SaveEdit"
-					  SaveGroup="SaveGroupEdit" />
+                      EditTransaction="EditTransaction"
+                      EditTransactionGroup="EditTransactionGroup"
+                      Categories="Categories"
+                      Validation="Validation"
+                      SetCategory="SetCategory"
+                      SetGroupCategory="(args) => SetCategory(args.Item1, args.Item2)"
+                      SetGroupAmount="(args) => SetAmount(args.Item1, args.Item2, args.Item3)"
+                      SetGroupDate="(args) => SetDate(args.Item1, args.Item2, args.Item3)"
+                      SaveTransaction="SaveEdit"
+                      SaveGroup="SaveGroupEdit" />
 
 <TransferModal @ref="TransferModal" Transfer="SelectedTransfer" SeparateFromDetails="SeparateFromDetails" />

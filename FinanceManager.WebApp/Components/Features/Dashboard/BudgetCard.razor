@@ -51,9 +51,9 @@
             <div class="budget-category-usage">
                 <CategoryBubble Category="@categoryUsage.Summary" />
                 <HxProgress>
-                    <HxProgressBar Value="(float)categoryUsage.Proportion * 100" CssClass="@ColourUtilities.GetUsageStyle(categoryUsage.Proportion)" />
+                    <HxProgressBar Value="(float)categoryUsage.Proportion * 100" CssClass="@ColourUtilities.GetUsageStyle(categoryUsage.Proportion, true)" />
                 </HxProgress>
-                <span class="@("category-proportion " + ColourUtilities.GetUsageStyle(categoryUsage.Proportion))">
+                <span class="@("category-proportion " + ColourUtilities.GetUsageStyle(categoryUsage.Proportion, true))">
                     @categoryUsage.Proportion.ToString("P0", CultureInfo.InvariantCulture)
                 </span>
             </div>

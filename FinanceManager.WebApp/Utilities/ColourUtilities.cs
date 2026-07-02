@@ -2,8 +2,18 @@ namespace FinanceManager.WebApp.Utilities;
 
 public class ColourUtilities
 {
-    public static string GetUsageStyle(decimal proportion)
+    public static string GetUsageStyle(decimal proportion, bool generous = false)
     {
+        if (generous)
+        {
+            return proportion switch
+            {
+                > 1.005m => "danger",
+                < 0.995m => "success",
+                _ => "normal",
+            };
+        }
+
         return proportion switch
         {
             > 1.0m => "danger",
