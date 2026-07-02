@@ -32,6 +32,7 @@ public class TransactionHelper()
         return errors;
     }
 
+    //TODO delete
     public static void SetTransactionAmount(decimal amount, TransactionSummary summary, List<TransactionSummary> siblings, BankRecord record)
     {
         if (!siblings.Contains(summary))

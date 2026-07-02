@@ -7,11 +7,13 @@
 @if (CurrentGroup is null || !CategoryGroups.Any(g => g.Id == CurrentGroup.Id))
 {
     <PageHeading Heading="Category areas" Subheading="@($"{CategoryGroups.Count()} areas · {CategoryGroups.Sum(g => g.CategoryCount)} categories")">
-        <CategoryGroupActions SearchQuery="@GroupSearch"
-                              GroupMode="@GroupMode"
-                              SearchQueryChanged="OnGroupSearchChanged"
-                              GroupModeChanged="OnGroupModeChanged"
-                              OnCreate="OpenGroupCreateModal" />
+        <Actions>
+            <CategoryGroupActions SearchQuery="@GroupSearch"
+                                  GroupMode="@GroupMode"
+                                  SearchQueryChanged="OnGroupSearchChanged"
+                                  GroupModeChanged="OnGroupModeChanged"
+                                  OnCreate="OpenGroupCreateModal" />
+        </Actions>
     </PageHeading>
 
     <CategoryCards Groups="FilteredGroups" OnGroupClicked="OpenGroupPanel" />

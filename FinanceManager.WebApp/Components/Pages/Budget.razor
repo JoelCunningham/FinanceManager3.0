@@ -2,25 +2,29 @@
 @inherits PageBase
 
 <PageTitle>Budget</PageTitle>
-
-<h1 class="page-heading">
-    Budget @CurrentYear
-    <h4>
-        @(CurrentBudgetYear is not null ? $"{TotalBudget.ToString("C")} (+ {TotalIncome.ToString("C")} - {TotalExpense.ToString("C")})" : "")
-    </h4>
-</h1>
-
-
-<BudgetActions EntryTypeFilter="EntryTypeFilter"
-               EntryTypeFilterChanged="OnEntryTypeFilterChanged"
-               HasPopulatedCategories="HasPopulatedCategories"
-               EntryTypeFilters="EntryTypeFilters"
-               HideEmptyCategories="HideEmptyCategories"
-               HideEmptyCategoriesChanged="OnHideEmptyCategoriesChanged"
-               OnPrev="Prev"
-               OnToday="Today"
-               OnNext="Next"
-               OnEditYear="EditYear" />
+<PageHeading Heading="@("Budget " + CurrentYear)">
+    <ComplexSubheading>
+        <p>
+            <span>Net <span class="bold-primary">@TotalBudget.ToString("C")</span></span>
+            <span> · </span>
+            <span>Total in <span class="bold-success">@TotalIncome.ToString("C")</span></span>
+            <span> · </span>
+            <span>Total out <span class="bold-danger">@TotalExpense.ToString("C")</span></span>
+        </p>
+    </ComplexSubheading>
+    <Actions>
+        <BudgetActions EntryTypeFilter="EntryTypeFilter"
+                       EntryTypeFilterChanged="OnEntryTypeFilterChanged"
+                       HasPopulatedCategories="HasPopulatedCategories"
+                       EntryTypeFilters="EntryTypeFilters"
+                       HideEmptyCategories="HideEmptyCategories"
+                       HideEmptyCategoriesChanged="OnHideEmptyCategoriesChanged"
+                       OnPrev="Prev"
+                       OnToday="Today"
+                       OnNext="Next"
+                       OnEditYear="EditYear" />
+    </Actions>
+</PageHeading>
 
 <BudgetGrid Scope="CurrentBudgetYear?.Scope"
             Year="CurrentYear"

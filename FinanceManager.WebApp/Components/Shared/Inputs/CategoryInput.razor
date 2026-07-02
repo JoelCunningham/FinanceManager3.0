@@ -16,6 +16,8 @@
     private string? selectedGroup = null;
     private int navigatedIndex = -1;
 
+    private Guid? lastValueId;
+
     private bool IsSearching => !string.IsNullOrWhiteSpace(searchText);
 
     private IEnumerable<string> Groups => Data
@@ -63,6 +65,16 @@
 
     protected override void OnParametersSet()
     {
+        if (Value?.Id != lastValueId)
+        {
+            searchText = Value?.Name ?? string.Empty;
+            lastValueId = Value?.Id;
+            selectedGroup = null;
+            navigatedIndex = -1;
+            isOpen = false;
+            return;
+        }
+
         if (Value != null && string.IsNullOrWhiteSpace(searchText))
         {
             searchText = Value.Name;
@@ -206,8 +218,8 @@
         {
             <HxIcon Icon="BootstrapIcon.Stars" />
         }
+        <label class="form-label">@Label</label>
         <input class="form-control @(HasError ? "is-invalid" : "") @(IsAutoCategorised ? "auto-categorised" : "")"
-               placeholder="@Label"
                value="@searchText"
                @oninput="OnInput"
                @onfocus="() => isOpen = true"

@@ -5,8 +5,9 @@
     --colour-accent: #2b3f5d;
     --colour-accent-hover: #213047;
     --colour-highlight: #def1f1;
+    --colour-highlight-light: #e1e9f5;
     --colour-background: #f4f6f8;
-    --colour-border: #dbdddf;
+    --colour-border: #dee2e6;
     /**/
     --colour-danger: #a81e2e;
     --colour-danger-light: #f8d7da;
@@ -22,21 +23,23 @@
     --colour-black: #000000;
     --colour-grey: #65728a;
     --colour-lightgrey: #a5adba;
-    --colour-offwhite: #f8f9fa;
+    --colour-offwhite: #f1f4f7;
     /**/
     /**/
     --fontsize-heading: 2em;
-    --fontsize-subheading: 1rem;
-    --fontsize-tableheading: 0.75rem;
+    --fontsize-subheading: 1em;
+    --fontsize-tableheading: 0.75em;
+    --fontsize-tablecontent: 0.85em;
     --fontsize-heading2: 1.75em;
     --fontsize-accent: 1.25em;
-    --fontsize-icon: 1.5rem;
+    --fontsize-icon: 1.5em;
     /**/
     /**/
     --fontweight-black: 700;
     --fontweight-semiblack: 650;
     --fontweight-bold: 600;
     --fontweight-semibold: 500;
+    --fontweight-normal: 400;
     /**/
     /**/
     --space-large: 2rem;
@@ -51,6 +54,7 @@
     --shadow-info: 0 0 0 0.25rem rgba(102, 211, 224, 0.25);
     /**/
     /**/
+    --radius-small: 0.25rem;
     --radius-medium: 0.6rem;
     --radius-large: 1rem;
     /**/
@@ -82,8 +86,24 @@ main {
         margin-bottom: var(--space-medium);
 
         p {
+            margin: 0;
             margin-right: auto;
         }
+    }
+
+    .bold-primary {
+        font-weight: var(--fontweight-semibold);
+        color: var(--colour-secondary);
+    }
+
+    .bold-success {
+        font-weight: var(--fontweight-semibold);
+        color: var(--colour-success);
+    }
+
+    .bold-danger {
+        font-weight: var(--fontweight-semibold);
+        color: var(--colour-danger);
     }
 }
 
@@ -148,6 +168,10 @@ main {
                 background-color: var(--colour-accent);
             }
         }
+    }
+
+    .hx-sidebar-navbar-toggler .hx-icon {
+        color: var(--colour-white);
     }
 }
 
@@ -298,171 +322,187 @@ button.btn {
 
     &.btn-light {
         background-color: var(--colour-white);
-        border: 1px solid var(--colour-grey) !important;
+        border: 1px solid var(--colour-border) !important;
+        font-weight: var(--fontweight-normal);
+
+        &:disabled {
+            color: var(--colour-lightgrey);
+        }
+
+        &.enabled {
+            color: var(--colour-primary);
+            opacity: 1;
+        }
+    }
+}
+
+select.form-select {
+    cursor: pointer;
+    padding: 0.25rem 2.25rem 0.25rem 0.75rem;
+}
+
+.form-check .form-check-input:checked {
+    background-color: var(--colour-secondary);
+    border-color: var(--colour-secondary);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    box-shadow: var(--shadow-focus) !important;
+}
+
+input[inputmode=search] {
+    padding: 0.25rem 0.75rem;
+}
+
+/*Modals*/
+.modal .modal-header,
+.offcanvas, .offcanvas-header {
+    .modal-title,
+    .offcanvas-title {
+        font-size: var(--fontsize-heading2);
+        color: var(--colour-primary);
     }
 
-    select.form-select {
-        cursor: pointer;
-        padding: 0.25rem 0.75rem;
+    .btn-close {
+        opacity: 0.9 !important;
+        margin-top: 0;
+        margin-bottom: auto;
+        padding-top: 0;
     }
+}
 
-    .form-check .form-check-input:checked {
-        background-color: var(--colour-secondary);
-        border-color: var(--colour-secondary);
-    }
+/*Pagination*/
+.pagination {
+    background-color: none;
 
-    .form-control:focus,
-    .form-select:focus,
-    .form-check-input:focus {
-        box-shadow: var(--shadow-focus) !important;
-    }
-
-    input[inputmode=search] {
-        padding: 0.25rem 0.75rem;
-    }
-    /*Modals*/
-    .modal .modal-header,
-    .offcanvas, .offcanvas-header {
-        .modal-title,
-        .offcanvas-title {
-            font-size: var(--fontsize-heading2);
+    .page-item {
+        button {
+            border: 1px solid var(--colour-border);
             color: var(--colour-primary);
         }
 
-        .btn-close {
-            opacity: 0.9 !important;
-            margin-top: 0;
-            margin-bottom: auto;
-            padding-top: 0;
-        }
-    }
-    /*Pagination*/
-    .pagination {
-        background-color: none;
-
-        .page-item {
-            button {
-                border: 1px solid var(--colour-lightgrey);
-                color: var(--colour-primary);
-            }
-
-            &.active span {
-                background-color: var(--colour-primary);
-                border: 1px solid var(--colour-primary);
-            }
-
-            &.disabled button {
-                color: var(--colour-lightgrey);
-                border: 1px solid var(--colour-lightgrey);
-            }
+        &.active span {
+            background-color: var(--colour-primary);
+            border: none;
         }
 
-        .page-link:focus {
-            box-shadow: none;
+        &.disabled button {
+            color: var(--colour-lightgrey);
             background-color: var(--colour-white);
         }
     }
-    /*Nav*/
-    .nav {
-        a {
-            color: var(--colour-secondary);
 
-            &:hover {
-                color: var(--colour-primary);
-            }
-        }
+    .page-link:focus {
+        box-shadow: none;
+        background-color: var(--colour-white);
+    }
+}
 
-        &.nav-tabs .nav-link.active {
+/*Nav*/
+.nav {
+    a {
+        color: var(--colour-secondary);
+
+        &:hover {
             color: var(--colour-primary);
         }
+    }
 
-        &.nav-pills .nav-link.active {
-            color: var(--colour-secondary);
-            background-color: var(--colour-highlight);
+    &.nav-tabs .nav-link.active {
+        color: var(--colour-primary);
+    }
 
-            &:hover {
-                color: var(--colour-primary);
+    &.nav-pills .nav-link.active {
+        color: var(--colour-secondary);
+        background-color: var(--colour-highlight);
+
+        &:hover {
+            color: var(--colour-primary);
+        }
+    }
+}
+
+/*Table*/
+.hx-grid.table {
+    background-color: var(--colour-white);
+    border-radius: var(--radius-medium);
+
+    thead {
+        th {
+            vertical-align: initial;
+            padding-bottom: 0.25rem;
+
+            &.text-end .hx-grid-header-cell-template {
+                padding-top: 3px;
+            }
+
+            .hx-grid-header-cell-template {
+                color: var(--colour-grey);
+                font-size: var(--fontsize-tableheading);
+                text-transform: uppercase;
+            }
+
+            .hx-icon {
+                color: var(--colour-secondary);
             }
         }
     }
-    /*Table*/
+}
+
+.hx-list-layout .card .hx-button.btn-light {
+    background-color: var(--colour-white) !important;
+    border: 1px solid var(--colour-border) !important;
+    color: var(--colour-primary) !important;
+
+    i::after {
+        margin-right: var(--space-small);
+    }
+}
+
+.hx-grid-container.grid-invisible {
     .hx-grid.table {
-        background-color: var(--colour-white);
-        border-radius: var(--radius-medium);
+        background-color: transparent;
 
-        thead {
-            th {
-                vertical-align: initial;
-                padding-bottom: 0.25rem;
+        tbody tr td > div {
+            border-radius: var(--radius-medium);
+            background-color: var(--colour-white);
+        }
+    }
+}
 
-                &.text-end .hx-grid-header-cell-template {
-                    padding-top: 3px;
+/*Calendar*/
+.hx-input-date-wrapper {
+    .hx-calendar {
+        .hx-calendar-week {
+            .hx-calendar-day-today {
+                color: var(--colour-secondary);
+                background-color: var(--colour-highlight);
+            }
+
+            .hx-calendar-day {
+                &.hx-calendar-day-selected {
+                    background-color: var(--colour-secondary);
                 }
 
-                .hx-grid-header-cell-template {
-                    color: var(--colour-grey);
-                    font-size: var(--fontsize-tableheading);
-                    text-transform: uppercase;
-                }
-
-                .hx-icon {
-                    color: var(--colour-secondary);
+                &:focus {
+                    box-shadow: var(--shadow-focus) !important;
                 }
             }
         }
     }
 
-    .hx-list-layout .card .hx-button.btn-light {
-        background-color: var(--colour-white) !important;
-        border: 1px solid var(--colour-border) !important;
-        color: var(--colour-primary) !important;
-
-        i::after {
-            margin-right: var(--space-small);
-        }
+    .hx-calendar-navigation-button:focus {
+        box-shadow: var(--shadow-focus) !important;
     }
 
-    .hx-grid-container.grid-invisible {
-        .hx-grid.table {
-            background-color: transparent;
+    .hx-input-date-dropdown-buttons button {
+        text-decoration: none;
+        color: var(--colour-grey);
 
-            tbody tr td > div {
-                border-radius: var(--radius-medium);
-                background-color: var(--colour-white);
-            }
+        &:hover {
+            color: var(--colour-primary);
         }
     }
-    /*Calendar*/
-    .hx-input-date-wrapper {
-        .hx-calendar {
-            .hx-calendar-week {
-                .hx-calendar-day-today {
-                    color: var(--colour-secondary);
-                    background-color: var(--colour-highlight);
-                }
-
-                .hx-calendar-day {
-                    &.hx-calendar-day-selected {
-                        background-color: var(--colour-secondary);
-                    }
-
-                    &:focus {
-                        box-shadow: var(--shadow-focus) !important;
-                    }
-                }
-            }
-        }
-
-        .hx-calendar-navigation-button:focus {
-            box-shadow: var(--shadow-focus) !important;
-        }
-
-        .hx-input-date-dropdown-buttons button {
-            text-decoration: none;
-            color: var(--colour-grey);
-
-            &:hover {
-                color: var(--colour-primary);
-            }
-        }
-    }
+}

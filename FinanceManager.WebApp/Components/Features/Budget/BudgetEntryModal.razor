@@ -10,7 +10,7 @@
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
-    
+
     private int _startScopePosition = 0;
     private int _endScopePosition = 0;
 
@@ -42,7 +42,7 @@
 
         _startScopePosition = Math.Clamp(Math.Min(startScopePosition, endScopePosition), 0, maxScopePosition);
         _endScopePosition = Math.Clamp(Math.Max(startScopePosition, endScopePosition), _startScopePosition, maxScopePosition);
-      
+
         Entry.OverallScopePosition = _startScopePosition;
         Entry.OverallLength = _endScopePosition - _startScopePosition + 1;
     }
@@ -78,7 +78,7 @@
     }
 }
 
-<HxModal @ref="_modal" Title="@(IsEditing ? "Edit budget entry" : "Create budget entry")">
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit category budget" : "Create category budget")">
     <BodyTemplate>
         <div class="d-flex flex-column gap-2">
             @if (Entry is not null && CurrentBudgetYear is not null)

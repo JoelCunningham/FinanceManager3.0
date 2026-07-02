@@ -33,7 +33,7 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
             <HxButtonGroup>
                 <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="PreviousPage" Enabled="CurrentPage > 1" />
-                <HxButton Text="@($"{CurrentPage} / {TotalPages}")" Enabled="false" />
+                <HxButton Color="ThemeColor.Light" Text="@($"{CurrentPage} / {TotalPages}")" Enabled="false" CssClass="enabled" />
                 <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="NextPage" Enabled="CurrentPage < TotalPages" />
             </HxButtonGroup>
         </div>

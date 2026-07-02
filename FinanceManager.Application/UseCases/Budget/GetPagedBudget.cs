@@ -4,6 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
+using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 
 public sealed record GetPagedBudgetResult(
@@ -15,7 +16,7 @@ public sealed record GetPagedBudgetResult(
     decimal TotalExpense
 );
 
-public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository)
+public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository, ITransactionRepository transactionRepository)
 {
     public async Task<GetPagedBudgetResult> ExecuteAsync(int year, BudgetGridMode mode = BudgetGridMode.Net)
     {
@@ -41,7 +42,7 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
                 _ => entries
             };
 
-            var poplulatedCells = PopulateCells(cells, entries);
+            var poplulatedCells = await PopulateCells(cells, entries);
 
             return new GetPagedBudgetResult(budgetYear, poplulatedCells, categorySummaries, totals.Income - totals.Expense, totals.Income, totals.Expense);
         }
@@ -72,7 +73,7 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
         return cells;
     }
 
-    private static List<BudgetCell> PopulateCells(List<BudgetCell> cells, List<BudgetEntry> entries)
+    private async Task<List<BudgetCell>> PopulateCells(List<BudgetCell> cells, List<BudgetEntry> entries)
     {
         entries = [.. entries.OrderByDescending(e => e.Category.Group.IsIncome).ThenBy(e => e.Category.Group.Name).ThenBy(e => e.Category.Name)];
 
@@ -80,7 +81,18 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
         {
             for (var j = 0; j < entries[i].Length; j++)
             {
-                cells[j + entries[i].ScopePosition].Entries.Add(BudgetCellEntry.FromBudgetEntry(entries[i], j, i));
+                var cell = cells[j + entries[i].ScopePosition];
+
+                var query = new FilterQuery
+                {
+                    FilterDateFrom = cell.StartDate.ToDateTime(TimeOnly.MinValue),
+                    FilterDateTo = ScopeHelper.GetPeriodEnd(cell.Scope ?? BudgetScope.Monthly, cell.StartDate).ToDateTime(TimeOnly.MaxValue),
+                    FilterCategory = CategorySummary.FromCategory(entries[i].Category)
+                };
+
+                var realAmount = (await transactionRepository.GetTransactionsAsync(query)).Sum(t => t.Amount);
+
+                cell.Entries.Add(BudgetCellEntry.FromBudgetEntry(entries[i], j, i, realAmount));
             }
         }
 

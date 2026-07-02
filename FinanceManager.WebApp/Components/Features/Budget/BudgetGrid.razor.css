@@ -1,48 +1,112 @@
 .budget-grid-wrapper {
     width: 100%;
     max-width: 100%;
-    min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
+    background-color: var(--colour-white);
+    border: 1px solid var(--colour-border);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-medium);
+
 
     .budget-grid {
         display: grid;
         width: max-content;
         min-width: 100%;
+        font-size: var(--fontsize-tablecontent);
 
         .budget-grid-cell {
-            padding: 0 4px;
-            border: 1px solid #ddd;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            margin: 0 2px;
-            border: none;
-            background-color: var(--bs-secondary-bg);
-            min-width: 4.75rem;
-            font-size: 0.85rem;
+            border: 1px solid var(--colour-offwhite);
+            padding: 0.25rem 0.5rem;
 
-            .budget-grid-cell-contents {
+            &:has(.start) {
+                border-right: 0;
+            }
+
+            &:has(.middle) {
+                border-left: 0;
+                border-right: 0;
+            }
+
+            &:has(.end) {
+                border-left: 0;
+            }
+
+            &.budget-grid-entry-cell {
                 cursor: pointer;
-                padding: 0 10px;
-                border-radius: var(--bs-border-radius-lg);
-                height: stretch;
-                transition-duration: 0.1s;
-                height: 1.3rem;
+                text-transform: none;
 
-                &:hover {
-                    background-color: var(--hover-color) !important;
+                span {
+                    display: block;
+                    height: 100%;
+                    border-radius: var(--radius-small);
+                    text-align: center;
+                    align-content: center;
+                    font-weight: var(--fontweight-semibold);
+                    transition-duration: var(--duration-short);
+
+                    &.start,
+                    &.middle {
+                        margin-right: -10px;
+                        padding-right: 10px;
+                        border-top-right-radius: 0;
+                        border-bottom-right-radius: 0;
+                    }
+
+                    &.end,
+                    &.middle {
+                        margin-left: -10px;
+                        padding-left: 10px;
+                        border-top-left-radius: 0;
+                        border-bottom-left-radius: 0;
+                    }
                 }
 
-                &.empty:hover {
-                    background-color: var(--bs-gray-400) !important;
+                &.budget-grid-entry-empty span:hover {
+                    background-color: var(--colour-border);
+                }
+
+                &.positive span {
+                    color: var(--colour-success);
+                    background-color: var(--colour-success-light) !important;
+
+                    &:hover {
+                        background-color: var(--colour-success) !important;
+                        color: var(--colour-white);
+                    }
+                }
+
+                &.negative span {
+                    color: var(--colour-danger);
+                    background-color: var(--colour-danger-light) !important;
+
+                    &:hover {
+                        background-color: var(--colour-danger) !important;
+                        color: var(--colour-white);
+                    }
+                }
+
+                &.future span {
+                    color: var(--colour-secondary);
+                    background-color: var(--colour-highlight) !important;
+
+                    &:hover {
+                        background-color: var(--colour-secondary) !important;
+                        color: var(--colour-white);
+                    }
                 }
             }
 
+            p {
+                margin: 0;
+            }
+
             &.group {
-                border-top: 4px solid var(--bs-white);
                 position: relative;
-                background-color: var(--bs-secondary-bg) !important;
+                background-color: var(--colour-offwhite);
 
                 &::after {
                     content: "";
@@ -50,80 +114,89 @@
                     top: calc(50% + 2px);
                     left: 0;
                     width: 100%;
-                    border-top: 4px solid var(--background-color);
                     transform: translateY(-50%);
                     pointer-events: none;
                 }
             }
 
             &.total {
-                text-align: center;
-                border-radius: 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg) 0;
-                border-top: 4px solid var(--bs-white);
-                border-bottom: 4px solid var(--bs-white);
-                margin-top: 0px;
-                margin-bottom: -4px;
-                background-color: var(--background-color) !important;
-
-                .budget-grid-cell-contents:hover {
-                    background-color: var(--background-color) !important;
-                    cursor: auto;
-                }
-
-                &::after {
-                    display: none;
-                }
+                text-align: right;
+                cursor: auto;
+                font-weight: var(--fontweight-black);
             }
 
             &.end {
-                border-radius: 0 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg);
                 text-align: center;
-                margin-top: 4px;
+                background-color: var(--colour-offwhite);
             }
 
-            &.total.end {
-                border-radius: var(--bs-border-radius-lg);
-                background-color: var(--bs-gray-400) !important;
-                margin-top: 0px;
-            }
+                &.end.positive,
+                &.total.positive {
+                    font-weight: var(--fontweight-semiblack);
+                    color: var(--colour-success);
+                }
+
+                &.end.negative,
+                &.total.negative {
+                    font-weight: var(--fontweight-semiblack);
+                    color: var(--colour-danger);
+                }
+
+                &.end.total {
+                    font-weight: var(--fontweight-black);
+                    color: var(--colour-secondary);
+                }
         }
 
         .budget-grid-period-header {
             text-align: center;
-            background-color: var(--bs-secondary-bg);
-            border-radius: var(--bs-border-radius-lg) var(--bs-border-radius-lg) 0 0;
+        }
 
-            p {
-                margin: 0;
-            }
+        .budget-grid-category-header {
+            text-align: left;
+            border-top: none;
+            border-left: none;
+        }
+
+        .budget-grid-total-header {
+            text-align: right;
+            border-top: none;
+            border-right: none;
+        }
+
+        .budget-grid-total-footer {
+            background-color: var(--colour-offwhite);
+        }
+
+        .budget-grid-period-header, .budget-grid-category-header, .budget-grid-total-header {
+            padding-top: var(--space-small);
+        }
+
+        .budget-grid-total-footer, .budget-grid-entry-cell.end {
+            padding-top: var(--space-small);
+        }
+
+
+        .budget-grid-period-header, .budget-grid-category-header, .budget-grid-total-header, .budget-grid-total-footer {
+            font-weight: var(--fontweight-black);
+            color: var(--colour-grey);
+            text-transform: uppercase;
         }
 
         .budget-grid-label-cell,
         .budget-grid-group-cell,
         .budget-grid-label-header {
-            white-space: nowrap;
-            background-color: transparent;
-            text-align: right;
-            line-height: 1.1rem;
             align-self: center;
-            width: 8rem;
-            position: sticky;
-            left: 0;
-            z-index: 2;
-            background: var(--bs-body-bg);
         }
 
         .budget-grid-group-cell {
-            margin-top: 5px;
-            margin-bottom: -5px;
-            line-height: 1.4rem;
-
-            span {
-                font-weight: 600;
-                font-size: 0.75rem;
-                padding: 2px 8px;
-                border-radius: var(--bs-border-radius);
-            }
+            background-color: var(--colour-offwhite);
+            text-transform: uppercase;
         }
+
+            .budget-grid-group-cell span {
+                color: var(--colour-grey);
+                font-weight: var(--fontweight-black);
+            }
     }
 }

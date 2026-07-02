@@ -15,11 +15,11 @@
     [Parameter] public EventCallback OnCancel { get; set; }
 }
 
-<HxModal @ref="_modal" Title="@(IsEditing ? "Edit Budget" : "Create Budget")">
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit budget" : "Create budget")">
     <BodyTemplate>
         <div class="d-flex flex-column gap-2">           
             <HxInputNumber Label="Year" @bind-Value="Year" Enabled="!IsEditing" />
-            <HxSelect Label="Budget Scope" @bind-Value="Scope" Data="AvailableScopes" TextSelector="s => s.ToString()" ValueSelector="s => s" />
+            <HxSelect Label="Budget scope" @bind-Value="Scope" Data="AvailableScopes" TextSelector="s => s.ToString()" ValueSelector="s => s" Nullable="false" />
         </div>
     </BodyTemplate>
     <FooterTemplate>

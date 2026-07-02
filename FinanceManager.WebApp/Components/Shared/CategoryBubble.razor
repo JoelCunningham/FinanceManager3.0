@@ -1,5 +1,6 @@
 ﻿@code {
     [Parameter] public CategorySummary? Category { get; set; }
+    [Parameter] public bool ShowIcon { get; set; } = true;
 }
 
 @if (Category is null)
@@ -11,7 +12,10 @@
 else
 {
     <a class="category-bubble" href="/Categories/@Category.GroupName" style="@CategoryUtilities.GetElementStyle(Category.Colour)">
-        <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(Category.GroupIcon)" />
+        @if (ShowIcon)
+        {
+            <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(Category.GroupIcon)" />
+        }
         <span>@Category.Name</span>
     </a>
 }

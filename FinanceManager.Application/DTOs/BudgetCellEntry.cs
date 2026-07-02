@@ -11,6 +11,7 @@ public sealed class BudgetCellEntry()
 
     public CategorySummary? Category { get; set; }
     public decimal Amount { get; set; }
+    public decimal RealAmount { get; set; }
     public string? Notes { get; set; }
 
     public int OverallScopePosition { get; set; }
@@ -20,7 +21,7 @@ public sealed class BudgetCellEntry()
 
     public bool IsFirst => XIndex == 0;
 
-    public static BudgetCellEntry FromBudgetEntry(BudgetEntry entry, int xIndex, int yIndex)
+    public static BudgetCellEntry FromBudgetEntry(BudgetEntry entry, int xIndex, int yIndex, decimal realAmount)
     {
         return new BudgetCellEntry
         {
@@ -29,6 +30,7 @@ public sealed class BudgetCellEntry()
             YIndex = yIndex,
             Category = CategorySummary.FromCategory(entry.Category),
             Amount = entry.Amount,
+            RealAmount = realAmount,
             Notes = entry.Notes,
             OverallScopePosition = entry.ScopePosition,
             OverallLength = entry.Length
@@ -51,5 +53,19 @@ public sealed class BudgetCellEntry()
             ScopePosition = OverallScopePosition,
             Length = OverallLength
         };
+    }
+
+    public bool IsOverBudget()
+    {
+        if (Category == null) throw new InvalidOperationException("Category must be provided.");
+
+        if (Category.IsIncome)
+        {
+            return RealAmount < Amount;
+        }
+        else
+        {
+            return -RealAmount > Amount;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿namespace FinanceManager.Application.DTOs;
 
 using FinanceManager.Domain.Enums;
+using FinanceManager.Domain.Utilities;
 
 public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
 {
@@ -8,6 +9,10 @@ public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
     public DateOnly StartDate { get; set; } = startDate;
     public BudgetScope? Scope { get; set; } = scope;
     public List<BudgetCellEntry> Entries { get; set; } = [];
+
+    public DateOnly EndDate => ScopeHelper.GetPeriodEnd(Scope ?? BudgetScope.Monthly, StartDate);
+
+    private DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
 
     public string Label => Scope switch
     {
@@ -24,4 +29,14 @@ public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
         BudgetScope.Weekly => $"{StartDate:dd/MM}",
         _ => null
     };
+
+    public bool IsCurrentPeriod()
+    {
+        return Today >= StartDate && Today <= EndDate;
+    }
+
+    public bool IsFuturePeriod()
+    {
+        return Today < StartDate;
+    }
 }
