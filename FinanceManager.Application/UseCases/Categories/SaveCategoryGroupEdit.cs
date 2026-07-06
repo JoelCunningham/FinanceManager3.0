@@ -4,10 +4,11 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
+using Microsoft.Extensions.Logging;
 
 public sealed record SaveCategoryGroupEditResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveCategoryGroupEdit(ICategoryGroupRepository categoryGroupRepository, ITransactionRepository transactionRepository, IDataStore dataStore)
+public sealed class SaveCategoryGroupEdit(ICategoryGroupRepository categoryGroupRepository, ITransactionRepository transactionRepository, IDataStore dataStore, ILogger<SaveCategoryGroupEdit> logger)
 {
     public async Task<SaveCategoryGroupEditResult> ExecuteAsync(CategoryGroupSummary group)
     {
@@ -66,7 +67,7 @@ public sealed class SaveCategoryGroupEdit(ICategoryGroupRepository categoryGroup
         }
         catch
         {
-            // TODO: Log exception
+            logger.LogError("An unexpected error occurred while saving category group with ID {GroupId}.", group.Id);
             return new SaveCategoryGroupEditResult([new UseCaseUnexpectedError()]);
         }
     }

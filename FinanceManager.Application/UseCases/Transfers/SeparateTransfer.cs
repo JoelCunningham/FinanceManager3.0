@@ -2,10 +2,11 @@ namespace FinanceManager.Application.UseCases.Transfers;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
+using Microsoft.Extensions.Logging;
 
 public sealed record SeparateTransferResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SeparateTransfer(ITransferRepository transferRepository, ITransactionRepository transactionRepository, IDataStore dataStore)
+public sealed class SeparateTransfer(ITransferRepository transferRepository, ITransactionRepository transactionRepository, IDataStore dataStore, ILogger<SeparateTransfer> logger)
 {
     public async Task<SeparateTransferResult> ExecuteAsync(Guid transferId)
     {
@@ -26,7 +27,7 @@ public sealed class SeparateTransfer(ITransferRepository transferRepository, ITr
         }
         catch
         {
-            //TODO Log exception
+            logger.LogError("An unexpected error occurred while separating transfer with ID {TransferId}.", transferId);
             return new SeparateTransferResult([new UseCaseUnexpectedError()]);
         }
     }

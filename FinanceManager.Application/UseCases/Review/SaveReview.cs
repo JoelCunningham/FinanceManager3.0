@@ -4,10 +4,11 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 public sealed record SaveReviewResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveReview(ITransactionRepository transactionRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore)
+public sealed class SaveReview(ITransactionRepository transactionRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore, ILogger<SaveReview> logger)
 {
     public async Task<SaveReviewResult> ExecuteAsync(ReviewGroup group)
     {
@@ -32,7 +33,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
         }
         catch
         {
-            // TODO: Log exception
+            logger.LogError("An unexpected error occurred while saving review for bank record with ID {BankRecordId}.", group.Record.BankRecordId);
             return new SaveReviewResult([new UseCaseUnexpectedError()]);
         }
         return new SaveReviewResult([]);
@@ -193,7 +194,7 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
         }
         catch
         {
-            // TODO: Log exception
+            logger.LogError("An unexpected error occurred while converting transactions to transfer.");
             throw;
         }
     }

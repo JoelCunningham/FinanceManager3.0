@@ -19,6 +19,9 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())

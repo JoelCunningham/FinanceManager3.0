@@ -2,10 +2,11 @@ namespace FinanceManager.Application.UseCases.Transactions;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 public sealed record SaveTransactionEditResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveTransactionEdit(ITransactionRepository transactionRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore)
+public sealed class SaveTransactionEdit(ITransactionRepository transactionRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore, ILogger<SaveTransactionEdit> logger)
 {
     public async Task<SaveTransactionEditResult> ExecuteAsync(TransactionSummary transaction)
     {
@@ -35,7 +36,7 @@ public sealed class SaveTransactionEdit(ITransactionRepository transactionReposi
         }
         catch
         {
-            // TODO: Log exception
+            logger.LogError("An unexpected error occurred while saving transaction with ID {TransactionId}.", transaction.EntityId);
             return new SaveTransactionEditResult([new UseCaseUnexpectedError()]);
         }
     }

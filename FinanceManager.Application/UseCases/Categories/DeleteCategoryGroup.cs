@@ -2,10 +2,11 @@ namespace FinanceManager.Application.UseCases.Categories;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
+using Microsoft.Extensions.Logging;
 
 public sealed record DeleteCategoryGroupResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class DeleteCategoryGroup(ICategoryGroupRepository categoryGroupRepository, ICategoryRepository categoryRepository, ITransactionRepository transactionRepository, IDataStore dataStore)
+public sealed class DeleteCategoryGroup(ICategoryGroupRepository categoryGroupRepository, ICategoryRepository categoryRepository, ITransactionRepository transactionRepository, IDataStore dataStore, ILogger<DeleteCategoryGroup> logger)
 {
     public async Task<DeleteCategoryGroupResult> ExecuteAsync(Guid groupId)
     {
@@ -30,7 +31,7 @@ public sealed class DeleteCategoryGroup(ICategoryGroupRepository categoryGroupRe
         }
         catch
         {
-            // TODO: Log exception
+            logger.LogError("An unexpected error occurred while deleting category group with ID {GroupId}.", groupId);
             return new DeleteCategoryGroupResult([new UseCaseUnexpectedError()]);
         }
     }
