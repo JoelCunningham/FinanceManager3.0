@@ -9,7 +9,7 @@
     [Parameter] public string MonthLabel { get; set; } = "Month";
     [Parameter] public string YearLabel { get; set; } = "Year";
 
-    private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, DateTime.Today.Year + 1)];
+    private IEnumerable<int> YearOptions = [.. Enumerable.Range(DateTime.Today.Year - 3, 5).ToList()];
     private IEnumerable<ScopedRange> MonthOptions = [];
 
     private int SelectedYear { get; set; }

@@ -68,6 +68,7 @@
 /* Main */
 main {
     background-color: var(--colour-background);
+    min-width: 0;
 
     &.p-4 {
         padding: var(--space-large) !important;
@@ -86,7 +87,7 @@ main {
         color: var(--colour-grey);
         margin-top: calc(var(--space-medium) * -1);
         margin-bottom: var(--space-medium);
-        height: 2rem;
+        min-height: 2rem;
 
         p {
             margin: 0;
@@ -480,6 +481,12 @@ input[inputmode=search] {
             .hx-icon {
                 color: var(--colour-secondary);
             }
+        }
+    }
+
+    &.table-hover tbody {
+        tr:hover td {
+            background-color: var(--colour-background);
         }
     }
 }
