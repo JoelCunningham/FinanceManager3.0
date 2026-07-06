@@ -6,9 +6,13 @@ public class CategoryPeriodDetails : CategorySummary
 {
     public decimal PeriodSpend { get; set; }
     public decimal PeriodBudget { get; set; }
-    public decimal SignedPeriodTotal => IsIncome ? PeriodSpend : -PeriodSpend;
 
-    public static CategoryPeriodDetails FromCategory(Category category, decimal spend, decimal budget)
+    public int TotalTransactions { get; set; }
+
+    public decimal SignedPeriodTotal => IsIncome ? PeriodSpend : -PeriodSpend;
+    public decimal? PeriodProportion => GetProportion(PeriodBudget, SignedPeriodTotal, IsIncome);
+
+    public static CategoryPeriodDetails FromCategory(Category category, decimal spend, decimal budget, int totalTransactions)
     {
         return new CategoryPeriodDetails
         {
@@ -21,6 +25,15 @@ public class CategoryPeriodDetails : CategorySummary
             IsIncome = category.Group.IsIncome,
             PeriodSpend = spend,
             PeriodBudget = budget,
+            TotalTransactions = totalTransactions,
         };
+    }
+
+    private static decimal? GetProportion(decimal budget, decimal actual, bool isIncome)
+    {
+        if (budget == 0 && actual == 0) return null;
+        if (budget == 0 && actual != 0) return decimal.MaxValue;
+
+        return actual / budget;
     }
 }

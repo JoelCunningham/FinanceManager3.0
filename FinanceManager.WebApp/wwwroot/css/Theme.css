@@ -1,4 +1,4 @@
-﻿:root {
+﻿*:root {
     --colour-primary: #13294b;
     --colour-secondary: #126b76;
     --colour-secondary-hover: #0c535c;
@@ -11,6 +11,7 @@
     /**/
     --colour-danger: #a81e2e;
     --colour-danger-light: #f8d7da;
+    --colour-danger-lightest: #fdeeef;
     --colour-danger-hover: #7a1621;
     --colour-warning: #8a5a06;
     --colour-warning-light: #fdf7ea;
@@ -28,9 +29,9 @@
     /**/
     --fontsize-heading: 2em;
     --fontsize-subheading: 1em;
-    --fontsize-tableheading: 0.75em;
     --fontsize-tablecontent: 0.85em;
     --fontsize-heading2: 1.75em;
+    --fontsize-heading3: 1.5em;
     --fontsize-accent: 1.25em;
     --fontsize-icon: 1.5em;
     /**/
@@ -60,6 +61,7 @@
     /**/
     /**/
     --duration-short: 0.1s;
+    --duration-medium: 0.15s;
 }
 
 
@@ -84,6 +86,7 @@ main {
         color: var(--colour-grey);
         margin-top: calc(var(--space-medium) * -1);
         margin-bottom: var(--space-medium);
+        height: 2rem;
 
         p {
             margin: 0;
@@ -126,7 +129,8 @@ main {
         }
     }
 
-    .hx-sidebar-footer {
+    .hx-sidebar-footer,
+    .hx-sidebar-footer > div {
         width: 100%;
     }
 
@@ -134,9 +138,11 @@ main {
         font-weight: var(--fontweight-semibold);
         color: var(--colour-lightgrey);
         border-radius: var(--radius-medium);
+        transition-duration: var(--duration-medium);
 
         .hx-sidebar-item-icon {
             color: var(--colour-lightgrey);
+            transition-duration: var(--duration-medium);
         }
 
         &.active {
@@ -338,6 +344,10 @@ button.btn {
             color: var(--colour-primary);
             opacity: 1;
         }
+
+        &:hover {
+            background-color: var(--colour-offwhite) !important;
+        }
     }
 }
 
@@ -419,6 +429,7 @@ input[inputmode=search] {
         border-bottom: none;
         font-weight: var(--fontweight-semibold);
         gap: var(--space-medium);
+        margin-top: -1rem;
 
         .nav-link {
             border: none;
@@ -442,8 +453,8 @@ input[inputmode=search] {
     }
 }
 
-main > .nav-tabs {
-    margin-top: -1.4rem;
+.modal .nav.nav-tabs {
+    margin-top: -0.4rem;
 }
 
 /*Table*/
@@ -462,7 +473,7 @@ main > .nav-tabs {
 
             .hx-grid-header-cell-template {
                 color: var(--colour-grey);
-                font-size: var(--fontsize-tableheading);
+                font-size: var(--fontsize-tablecontent);
                 text-transform: uppercase;
             }
 

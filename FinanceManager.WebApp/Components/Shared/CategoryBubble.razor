@@ -1,6 +1,8 @@
 ﻿@code {
     [Parameter] public CategorySummary? Category { get; set; }
+
     [Parameter] public bool ShowIcon { get; set; } = true;
+    [Parameter] public bool IsSplit { get; set; } = false;
 }
 
 @if (Category is null)
@@ -11,11 +13,19 @@
 }
 else
 {
-    <a class="category-bubble" href="/Categories/@Category.GroupName" style="@CategoryUtilities.GetElementStyle(Category.Colour)">
-        @if (ShowIcon)
-        {
-            <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(Category.GroupIcon)" />
-        }
-        <span>@Category.Name</span>
-    </a>
+    @if (!IsSplit)
+    {
+        <a class="category-bubble" href="/Categories/@Category.GroupName" style="@CategoryUtilities.GetElementStyle(Category.Colour)">
+            @if (ShowIcon)
+            {
+                <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(Category.GroupIcon)" />
+            }
+            <span>@Category.Name</span>
+        </a>
+    }
+    else
+    {
+        <ColourDot Colour="@Category.Colour" /> 
+        <span class="dot-name">@Category.Name</span>
+    }
 }

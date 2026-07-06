@@ -9,6 +9,8 @@ public class LanguageUtilities
     {
         if (count != 1 && !opposite || count == 1 && opposite) return plural;
 
+        if (plural == "them")  return count == 1 ? "it" : "them";
+
         string[] exceptions = ["ies", "oes", "ses", "shes", "ches"];
         var exception = exceptions.FirstOrDefault(e => plural.EndsWith(e, StringComparison.OrdinalIgnoreCase));
 

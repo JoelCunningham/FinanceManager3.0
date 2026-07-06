@@ -20,3 +20,8 @@
         padding: 0.4rem 0.6rem;
     }
 }
+
+.dot-name {
+    padding-left: 0.5rem;
+    margin-top: -2px;
+}

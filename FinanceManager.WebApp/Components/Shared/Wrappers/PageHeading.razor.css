@@ -1,5 +1,15 @@
 ﻿.page-subheading {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-small);
+
+    .actions {
+        display: flex;
+        gap: var(--space-small);
+        align-items: center;
+    }
+
+    .parts ::deep > *:not(:last-child)::after {
+        content: "·";
+        margin: 0 0.2rem 0 0.5rem;
+    }
 }

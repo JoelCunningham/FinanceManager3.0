@@ -14,7 +14,7 @@
     [Parameter] public EventCallback OnCancel { get; set; }
 }
 
-<HxModal @ref="_modal" Title="@(IsEditing ? "Edit Area" : "Create Area")">
+<HxModal @ref="_modal" Title="@(IsEditing ? "Edit category" : "Create category")">
     <BodyTemplate>
         <div class="d-flex flex-column gap-2">
             @if (Category is not null)

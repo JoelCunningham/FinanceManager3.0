@@ -50,12 +50,11 @@ else
                                    @bind-Value:set="v => OnCategoryChange.InvokeAsync((transaction, v))"
                                    Data="Categories"
                                    IsAutoCategorised="transaction.IsAutoCategorised"
-                                   HasError="ErrorCategoryIds.Contains(transaction.EntityId)"
-                                   Label="Uncategorised" />
+                                   HasError="ErrorCategoryIds.Contains(transaction.EntityId)" />
                 }
                 else
                 {
-                    <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" Label="Uncategorised" />
+                    <CategoryInput Value="transaction.Reimburses.Category" Enabled="false" Data="[transaction.Reimburses.Category]" />
                 }
 
                 <HxInputDate @bind-Value:get="transaction.Date"

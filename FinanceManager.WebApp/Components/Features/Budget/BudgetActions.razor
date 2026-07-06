@@ -15,25 +15,23 @@
     [Parameter] public EventCallback OnEditYear { get; set; }
 }
 
-<div class="graph-actions">
-    <HxCheckbox Text="Hide empty categories"
-                Value="HideEmptyCategories"
-                ValueChanged="HideEmptyCategoriesChanged"
-                ValueExpression="() => HideEmptyCategories"
-                Enabled="HasPopulatedCategories" />
+<HxCheckbox Text="Hide empty categories"
+            Value="HideEmptyCategories"
+            ValueChanged="HideEmptyCategoriesChanged"
+            ValueExpression="() => HideEmptyCategories"
+            Enabled="HasPopulatedCategories" />
 
-    <RangeNav OnPreviousRange="OnPrev" OnFixed="OnToday" OnNextRange="OnNext" FixedText="Today" />
+<RangeNav OnPreviousRange="OnPrev" OnFixed="OnToday" OnNextRange="OnNext" FixedText="Today" />
 
-    <HxSelect Value="EntryTypeFilter"
-              ValueChanged="EntryTypeFilterChanged"
-              ValueExpression="() => EntryTypeFilter"
-              Data="EntryTypeFilters"
-              TItem="BudgetGridMode"
-              TValue="BudgetGridMode"
-              Nullable="false"
-              AutoSort="false"
-              TextSelector="f => f.ToString()"
-              ValueSelector="f => f" />
+<HxSelect Value="EntryTypeFilter"
+          ValueChanged="EntryTypeFilterChanged"
+          ValueExpression="() => EntryTypeFilter"
+          Data="EntryTypeFilters"
+          TItem="BudgetGridMode"
+          TValue="BudgetGridMode"
+          Nullable="false"
+          AutoSort="false"
+          TextSelector="f => f.ToString()"
+          ValueSelector="f => f" />
 
-    <HxButton Color="ThemeColor.Primary" OnClick="OnEditYear">Edit budget</HxButton>
-</div>
+<HxButton Color="ThemeColor.Primary" OnClick="OnEditYear">Edit budget</HxButton>

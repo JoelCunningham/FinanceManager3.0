@@ -47,6 +47,17 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         return await query.ToListAsync();
     }
 
+    public async Task<IEnumerable<Transaction>> GetByCategoryIdAsync(Guid categoryId)
+    {
+        return await dbContext.Transactions
+            .Include(t => t.Record)
+            .ThenInclude(r => r.BankAccount)
+            .Include(t => t.Category)
+            .ThenInclude(c => c!.Group)
+            .Where(t => t.CategoryId == categoryId)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Transaction>> GetReimbursementsAsync(IEnumerable<Guid> reimbursedTransactionIds)
     {
         var ids = reimbursedTransactionIds.Distinct().ToList();
@@ -189,11 +200,6 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         return await dbContext.Transactions
             .Include(t => t.Category)
             .AnyAsync(t => t.Category != null && t.Category.GroupId == categoryGroupId);
-    }
-
-    public async Task<bool> HasTransactionsForCategoryAsync(Guid categoryId)
-    {
-        return await dbContext.Transactions.AnyAsync(t => t.CategoryId == categoryId);
     }
 
     private static async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query, IQueryable<Transaction> transactions)

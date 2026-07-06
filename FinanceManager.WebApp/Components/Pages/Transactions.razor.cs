@@ -27,8 +27,6 @@ public partial class Transactions : PageBase
     public EditTransactionModal EditModal { get; set; } = new();
     public TransferModal TransferModal { get; set; } = new();
 
-    public string Subheading => GetSubheading();
-
     public int UnreviewedCount = 0;
 
     protected override async Task OnInitializedAsync()
@@ -163,23 +161,6 @@ public partial class Transactions : PageBase
         {
             await SeparateTransfer(SelectedTransfer);
             await TransferModal.HideAsync();
-        }
-    }
-
-    private string GetSubheading()
-    {
-        if (TransactionData.Result is not null && TransferData.Result is not null)
-        {
-            var showingCount =
-                ActiveTabId == Tabs.Activities.ToString() ? TransactionData.Result.Items.Count :
-                ActiveTabId == Tabs.Transfers.ToString() ? TransferData.Result.Items.Count :
-                0;
-
-            return TransactionData.Result.TotalItems + " Activities · " + TransferData.Result.TotalItems + " Transfers · Showing " + showingCount;
-        }
-        else
-        {
-            return "No activities found.";
         }
     }
 }

@@ -1,15 +1,38 @@
-﻿.actions {
-    margin-top: 2rem;
-    margin-bottom: -2rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
+﻿.chart-wrapper {
+    border-radius: var(--radius-medium);
+    background-color: var(--colour-white);
+    margin-top: var(--space-medium);
+    border: 1px solid var(--colour-border);
 
-    .icon {
-        padding: 0.5rem 0;
+    .actions, .legend {
+        padding: var(--space-medium) var(--space-medium) 0 var(--space-medium);
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--space-small);
+
+        .icon {
+            padding: 0.3rem 0;
+        }
     }
 }
 
 .message {
-    margin-top: 5rem;
+    margin-top: var(--space-medium);
+}
+
+::deep .hx-form-group {
+    margin-right: auto;
+}
+
+::deep .legend-item .legend-line {
+    width: 1rem;
+    margin-right: 0.2rem;
+    border-bottom: 2px solid;
+}
+
+::deep .legend-item .inactive {
+    color: var(--colour-grey);
 }

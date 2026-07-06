@@ -15,25 +15,21 @@
     }
 }
 
-<div class="actions-container">
-    <div class="search-container">
-        <HxSearchBox TItem="string"
-                     TextQuery="@SearchQuery"
-                     TextQueryChanged="OnSearchChanged"
-                     MinimumLength="@int.MaxValue"
-                     Placeholder="Search areas" />
-    </div>
+<HxSearchBox TItem="string"
+             TextQuery="@SearchQuery"
+             TextQueryChanged="OnSearchChanged"
+             MinimumLength="@int.MaxValue"
+             Placeholder="Search areas" />
 
-    <HxSelect Value="GroupMode"
-              ValueChanged="GroupModeChanged"
-              ValueExpression="() => GroupMode"
-              Data="CategoryGroupModes"
-              TItem="CategoryGroupMode"
-              TValue="CategoryGroupMode"
-              Nullable="false"
-              AutoSort="false"
-              TextSelector="f => f.ToString()"
-              ValueSelector="f => f"/>
+<HxSelect Value="GroupMode"
+          ValueChanged="GroupModeChanged"
+          ValueExpression="() => GroupMode"
+          Data="CategoryGroupModes"
+          TItem="CategoryGroupMode"
+          TValue="CategoryGroupMode"
+          Nullable="false"
+          AutoSort="false"
+          TextSelector="f => f.ToString()"
+          ValueSelector="f => f" />
 
-    <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.PlusLg" IconPlacement="ButtonIconPlacement.End" Text="Add area" OnClick="OnCreate" />
-</div>
+<HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.PlusLg" IconPlacement="ButtonIconPlacement.End" Text="Add area" OnClick="OnCreate" />

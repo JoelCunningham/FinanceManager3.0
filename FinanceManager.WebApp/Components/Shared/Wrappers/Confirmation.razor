@@ -1,0 +1,27 @@
+﻿@inject IHxMessageBoxService MessageBox 
+
+@code {
+	public async Task<bool> Show(string message)
+	{
+		var selectedButton = await MessageBox.ShowAsync(new MessageBoxRequest()
+		{
+			Text = message,
+			Title = "Are you sure?",
+			Buttons = MessageBoxButtons.YesNo,
+			Settings = new MessageBoxSettings()
+			{
+				YesButtonText = "Confirm",
+				NoButtonText = "Cancel",
+				PrimaryButtonSettings = new ButtonSettings()
+				{
+					Color = ThemeColor.Primary,
+				},
+                SecondaryButtonSettings = new ButtonSettings()
+                {
+                    Color = ThemeColor.Secondary,
+                }
+			}
+		});
+        return selectedButton == MessageBoxButtons.Yes;
+	}
+}

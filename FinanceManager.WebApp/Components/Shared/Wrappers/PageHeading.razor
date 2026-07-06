@@ -3,7 +3,7 @@
     [Parameter] public string? Subheading { get; set; } = default!;
 
     [Parameter] public RenderFragment? Actions { get; set; }
-    [Parameter] public RenderFragment? ComplexSubheading { get; set; }
+    [Parameter] public RenderFragment? SubheadingParts { get; set; }
 }
 
 <h1 class="page-heading">@Heading</h1>
@@ -12,9 +12,12 @@
     {
         <p>@Subheading</p>
     }
-    @if (ComplexSubheading is not null)
+    @if (SubheadingParts is not null)
     {
-        <p>@ComplexSubheading</p>
+        <p class="parts">@SubheadingParts</p>
     }
-    @Actions
+    <div class="actions">
+        @Actions
+    </div>
 </div>
+

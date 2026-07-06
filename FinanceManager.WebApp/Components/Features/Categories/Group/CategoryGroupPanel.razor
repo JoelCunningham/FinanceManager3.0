@@ -1,18 +1,12 @@
 @code {
     [Parameter] public CategoryGroupDetails Group { get; set; } = default!;
 
-    [Parameter] public EventCallback OnEdit { get; set; }
-    [Parameter] public EventCallback OnClose { get; set; }
-
-    [Parameter] public EventCallback OnCategoryCreate { get; set; }
     [Parameter] public EventCallback<CategoryPeriodDetails> OnCategoryEdit { get; set; }
-
     [Parameter] public EventCallback<CategoryPeriodDetails> OnShowTransactions { get; set; }
 
     [Parameter] public EventCallback<int> AdjustOffset { get; set; }
 
     private HxGrid<CategoryPeriodDetails>? Grid;
-    private HashSet<CategoryPeriodDetails> SelectedCategories = [];
 
     private CategoryChart? Chart;
 
@@ -22,7 +16,6 @@
     protected override async Task OnParametersSetAsync()
     {
         if (Grid is not null) await Grid.RefreshDataAsync();
-        SelectedCategories = Group.Categories.ToHashSet();
     }
 
     private Task<GridDataProviderResult<CategoryPeriodDetails>> GetGridData(GridDataProviderRequest<CategoryPeriodDetails> request)
@@ -34,22 +27,14 @@
     {
         return new Dictionary<string, object>
         {
-            { "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => ToggleSelectedCategory(item)) },
+            { "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => OnShowTransactions.InvokeAsync(item)) },
             { "style", "cursor: pointer;" }
         };
     }
 
-    private void ToggleSelectedCategory(CategoryPeriodDetails category)
+    private string GetRowClass(CategoryPeriodDetails item)
     {
-        if (SelectedCategories.Contains(category)) SelectedCategories.Remove(category); else SelectedCategories.Add(category);
-    }
-
-    private string GetAmountColour(CategoryPeriodDetails category)
-    {
-        var amount = category.SignedPeriodTotal;
-        var budget = category.PeriodBudget;
-        if (budget == 0 && amount == 0) return "inherit";
-        return ColourUtilities.GetAmountColour(Group.IsIncome ? amount - budget : budget - amount);
+        return ColourUtilities.GetUsageStyle(item.PeriodProportion, true, Group.IsIncome);
     }
 
     private async Task OnPrevious()
@@ -72,31 +57,49 @@
 }
 
 <div class="category-group-panel">
-    <CategoryActions OnEdit="OnEdit" OnClose="OnClose" OnCategoryCreate="OnCategoryCreate" />
-
-    <CategoryHeader GroupName="@Group.Name" IsIncome="Group.IsIncome" Colour="@Group.Colour" Amount="@Group.Categories.Sum(c => c.SignedPeriodTotal)" Budget="Group.Categories.Sum(c => c.PeriodBudget)" PeriodText="@PeriodDescription" />
-
     <div class="header">
-        <h4>Categories</h4>
+        <CategoryHeader IsIncome="Group.IsIncome"
+                        Amount="@Group.Categories.Sum(c => c.SignedPeriodTotal)"
+                        Budget="Group.Categories.Sum(c => c.PeriodBudget)" />
+
         <RangeNav FixedText="@PeriodDescription" OnFixed="OnToday" OnNextRange="OnNext" OnPreviousRange="OnPrevious" />
     </div>
 
-    <HxGrid @ref="Grid" TItem="CategoryPeriodDetails" DataProvider="GetGridData" @bind-SelectedDataItems="SelectedCategories" MultiSelectionEnabled="true" SelectionEnabled="false" Responsive="false" Hover="true" PreserveSelection="true" PageSize="20" ItemRowAdditionalAttributesSelector="GetRowAttributes">
+    <HxGrid @ref="Grid"
+            TItem="CategoryPeriodDetails"
+            DataProvider="GetGridData"
+            SelectionEnabled="false"
+            Responsive="false"
+            Hover="true"
+            PageSize="20"
+            ItemRowAdditionalAttributesSelector="GetRowAttributes"
+            ItemRowCssClassSelector="GetRowClass">
         <Columns>
-            <HxGridColumn HeaderCssClass="category-col" ItemCssClass="category-col">
+            <HxGridColumn HeaderText="Name" SortString="Name" SortKeySelector="@(c => c.Name)">
                 <ItemTemplate Context="category">
-                    <span class="rounded-circle d-inline-block" style="background-color: @category.Colour" />
+                    <CategoryBubble Category="@category" IsSplit="true" />
                 </ItemTemplate>
             </HxGridColumn>
-            <HxGridColumn HeaderText="Name" SortString="Name" SortKeySelector="@(c => c.Name)" ItemTextSelector="@(c => c.Name)" />
+            <HxGridColumn HeaderText="Progress" SortString="PeriodProportion" SortKeySelector="@(c => c.PeriodProportion)" IsDefaultSortColumn="true" SortDirection="SortDirection.Descending">
+                <ItemTemplate Context="category">
+                    <ProgressBar Proportion="@category.PeriodProportion" IsIncome="@Group.IsIncome" />
+                </ItemTemplate>
+            </HxGridColumn>
             <HxGridColumn HeaderText="Budget" SortString="PeriodBudget" SortKeySelector="@(c => c.PeriodBudget)" HeaderCssClass="text-end" ItemCssClass="text-end">
                 <ItemTemplate Context="category">
-                    <span>@category.PeriodBudget.ToString("C")</span>
+                    @if (category.PeriodBudget != 0)
+                    {
+                        <b>@category.PeriodBudget.ToString("C")</b>
+                    }
+                    else
+                    {
+                        <span>@category.PeriodBudget.ToString("C")</span>
+                    }
                 </ItemTemplate>
             </HxGridColumn>
-            <HxGridColumn HeaderText="Actual" SortString="PeriodTotal" SortKeySelector="@(c => c.SignedPeriodTotal)" ItemCssClass="text-end" HeaderCssClass="text-end" IsDefaultSortColumn="true" SortDirection="SortDirection.Descending">
+            <HxGridColumn HeaderText="Actual" SortString="PeriodTotal" SortKeySelector="@(c => c.SignedPeriodTotal)" ItemCssClass="text-end" HeaderCssClass="text-end">
                 <ItemTemplate Context="category">
-                        <span style="@($"color: {GetAmountColour(category)};")">
+                    <span style="@($"color: {ColourUtilities.GetUsageColour(category.PeriodProportion, true, Group.IsIncome)};")">
                         @if (category.PeriodBudget != 0 || category.SignedPeriodTotal != 0)
                         {
                             <b>@category.SignedPeriodTotal.ToString("C")</b>
@@ -105,7 +108,7 @@
                         {
                             @category.SignedPeriodTotal.ToString("C")
                         }
-                        </span>
+                    </span>
                 </ItemTemplate>
             </HxGridColumn>
             <HxContextMenuGridColumn Context="category" ItemCssClass="category-action-col">
@@ -117,6 +120,5 @@
         </Columns>
     </HxGrid>
 
-    <h4 class="graph-title">Categories Graph</h4>
-    <CategoryChart @ref="Chart" Group="Group" Categories="SelectedCategories" Length="6" Scope="Group.PeriodScope ?? BudgetScope.Monthly" />
+    <CategoryChart @ref="Chart" Group="Group" Categories="Group.Categories" Length="6" Scope="Group.PeriodScope ?? BudgetScope.Monthly" />
 </div>

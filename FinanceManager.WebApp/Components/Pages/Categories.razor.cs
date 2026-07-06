@@ -6,8 +6,10 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Categories;
 using FinanceManager.WebApp.Components.Features.Categories.Group;
+using FinanceManager.WebApp.Components.Shared.Wrappers;
 using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Utilities;
 using Microsoft.AspNetCore.Components;
 
 public partial class Categories : PageBase
@@ -26,7 +28,7 @@ public partial class Categories : PageBase
     public CategoryPeriodDetails? EditCategory { get; set; } = null;
 
     public CategoryGroupDetails? CurrentGroup { get; set; } = null;
-    public CategorySummary? CurrentCategory { get; set; } = null;
+    public CategoryPeriodDetails? CurrentCategory { get; set; } = null;
 
     public CategoryModal CategoryModal { get; set; } = new();
     public CategoryGroupModal GroupModal { get; set; } = new();
@@ -34,6 +36,10 @@ public partial class Categories : PageBase
 
     public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(20);
     public int PeriodOffset { get; set; } = 0;
+
+    public Confirmation Confirmation { get; set; } = new();
+    public string ConfriamtionMessage { get; set; } = string.Empty;
+    public Action? ConfirmationAction { get; set; } = null;
 
     public IEnumerable<CategoryGroupSummary> FilteredGroups => CategoryGroups
         .Where(g => string.IsNullOrWhiteSpace(GroupSearch) || g.Name.Contains(GroupSearch, StringComparison.OrdinalIgnoreCase))
@@ -44,9 +50,7 @@ public partial class Categories : PageBase
     {
         Validation.Messenger = Messenger;
 
-        var allCategories = await UseCases.GetCategoriesAsync();
-        CategoryGroups = allCategories.Groups;
-        AllCategories = allCategories.Categories;
+        await ResfeshCategories();
 
         TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
     }
@@ -61,6 +65,17 @@ public partial class Categories : PageBase
             {
                 CurrentGroup = (await UseCases.GetCategoryGroupDetailsAsync(groupId.Value, PeriodOffset)).GroupDetails;
             }
+        }
+    }
+
+    private async Task ResfeshCategories()
+    {
+        var allCategories = await UseCases.GetCategoriesAsync();
+        CategoryGroups = allCategories.Groups;
+        AllCategories = allCategories.Categories;
+        if (CurrentGroup is not null)
+        {
+            CurrentGroup = (await UseCases.GetCategoryGroupDetailsAsync(CurrentGroup.Id, PeriodOffset)).GroupDetails;
         }
     }
 
@@ -86,7 +101,7 @@ public partial class Categories : PageBase
         }
         else
         {
-            AllCategories = (await UseCases.GetCategoriesAsync()).Categories;
+            await ResfeshCategories();
             await CloseCategoryModal();
             Validation.SetSuccess(IsEditing ? "Category updated successfully." : "Category created successfully.");
         }
@@ -97,17 +112,34 @@ public partial class Categories : PageBase
         Validation.Clear();
         if (EditCategory is null) return;
 
-        var result = await UseCases.DeleteCategoryAsync(EditCategory.Id);
-
-        if (!result.IsSuccess)
+        string? confrimationMessage;
+        if (EditCategory.TotalTransactions > 0)
         {
-            Validation.SetErrors(result.Errors);
+            confrimationMessage = $"This category has {EditCategory.TotalTransactions} {LanguageUtilities.Pluralise("transactions", EditCategory.TotalTransactions)} associated with it. Deleting this category will unassign {LanguageUtilities.Pluralise("them", EditCategory.TotalTransactions)} and delete any associated budgets. Are you sure you want to delete this category?";
         }
         else
         {
-            AllCategories = (await UseCases.GetCategoriesAsync()).Categories;
-            await CloseCategoryModal();
-            Validation.SetSuccess("Category deleted successfully.");
+            confrimationMessage = "This category has no associated transactions. Are you sure you want to delete this category?"; //TODO fix messages
+        }
+
+        if (await Confirmation.Show(confrimationMessage))
+        {
+            var result = await UseCases.DeleteCategoryAsync(EditCategory.Id);
+
+            if (!result.IsSuccess)
+            {
+                Validation.SetErrors(result.Errors);
+            }
+            else
+            {
+                await ResfeshCategories();
+                await CloseCategoryModal();
+                Validation.SetSuccess("Category deleted successfully.");
+            }
+        }
+        else
+        {
+            await CategoryModal.ShowAsync();
         }
     }
 
@@ -123,8 +155,7 @@ public partial class Categories : PageBase
         }
         else
         {
-            CategoryGroups = (await UseCases.GetCategoriesAsync()).Groups;
-            GroupName = EditGroup.Name;
+            await ResfeshCategories();
             await CloseGroupModal();
             Validation.SetSuccess(IsEditing ? "Area updated successfully." : "Area created successfully.");
         }
@@ -135,17 +166,37 @@ public partial class Categories : PageBase
         Validation.Clear();
         if (EditGroup is null) return;
 
-        var result = await UseCases.DeleteCategoryGroupAsync(EditGroup.Id);
-        if (!result.IsSuccess)
+        string? confrimationMessage;
+        if (EditGroup.CategoryCount > 0)
         {
-            Validation.SetErrors(result.Errors);
+            confrimationMessage = $"This area has {EditGroup.CategoryCount} {LanguageUtilities.Pluralise("categories", EditGroup.CategoryCount)} associated with it. Deleting this area will delete {LanguageUtilities.Pluralise("them", EditGroup.CategoryCount)}, and unassign any associated transactions. Are you sure you want to delete this area?";
         }
         else
         {
-            CategoryGroups = (await UseCases.GetCategoriesAsync()).Groups;
-            GroupName = null;
-            await CloseGroupModal();
-            Validation.SetSuccess("Area deleted successfully.");
+            confrimationMessage = "This area has no associated categories. Are you sure you want to delete this area?";
+        }
+
+        if (await Confirmation.Show(confrimationMessage))
+        {
+
+            var result = await UseCases.DeleteCategoryGroupAsync(EditGroup.Id);
+            if (!result.IsSuccess)
+            {
+                Validation.SetErrors(result.Errors);
+            }
+            else
+            {
+                CurrentGroup = null;
+                Navigation.NavigateTo($"{Pages.Categories}");
+
+                await ResfeshCategories();
+                await CloseGroupModal();
+                Validation.SetSuccess("Area deleted successfully.");
+            }
+        }
+        else
+        {
+            await GroupModal.ShowAsync();
         }
     }
 
@@ -160,6 +211,7 @@ public partial class Categories : PageBase
     {
         EditCategory = category;
         IsEditing = true;
+        await TransactionsModal.HideAsync();
         await CategoryModal.ShowAsync();
     }
 

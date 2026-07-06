@@ -5,4 +5,5 @@ public enum CategoryGraphMode
     Actual,
     Budget,
     ActualAndBudget,
+    Variance,
 }

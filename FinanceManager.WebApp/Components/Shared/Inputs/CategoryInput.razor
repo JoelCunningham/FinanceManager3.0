@@ -218,7 +218,10 @@
         {
             <HxIcon Icon="BootstrapIcon.Stars" />
         }
-        <label class="form-label">@Label</label>
+        @if (Label is not null)
+        {
+            <label class="form-label">@Label</label>
+        }
         <input class="form-control @(HasError ? "is-invalid" : "") @(IsAutoCategorised ? "auto-categorised" : "")"
                value="@searchText"
                @oninput="OnInput"

@@ -3,15 +3,11 @@
 
 <PageTitle>Budget</PageTitle>
 <PageHeading Heading="@("Budget " + CurrentYear)">
-    <ComplexSubheading>
-        <p>
-            <span>Net <span class="bold-primary">@TotalBudget.ToString("C")</span></span>
-            <span> · </span>
-            <span>Total in <span class="bold-success">@TotalIncome.ToString("C")</span></span>
-            <span> · </span>
-            <span>Total out <span class="bold-danger">@TotalExpense.ToString("C")</span></span>
-        </p>
-    </ComplexSubheading>
+    <SubheadingParts>
+        <span>Net <span class="bold-primary">@TotalBudget.ToString("C")</span></span>
+        <span>Total in <span class="bold-success">@TotalIncome.ToString("C")</span></span>
+        <span>Total out <span class="bold-danger">@TotalExpense.ToString("C")</span></span>
+    </SubheadingParts>
     <Actions>
         <BudgetActions EntryTypeFilter="EntryTypeFilter"
                        EntryTypeFilterChanged="OnEntryTypeFilterChanged"

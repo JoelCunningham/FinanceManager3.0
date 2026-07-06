@@ -6,7 +6,11 @@
 
 @if (CurrentGroup is null || !CategoryGroups.Any(g => g.Id == CurrentGroup.Id))
 {
-    <PageHeading Heading="Category areas" Subheading="@($"{CategoryGroups.Count()} areas · {CategoryGroups.Sum(g => g.CategoryCount)} categories")">
+    <PageHeading Heading="Category areas">
+        <SubheadingParts>
+            <span>@CategoryGroups.Count() areas</span>
+            <span>@CategoryGroups.Sum(g => g.CategoryCount) categories</span>
+        </SubheadingParts>
         <Actions>
             <CategoryGroupActions SearchQuery="@GroupSearch"
                                   GroupMode="@GroupMode"
@@ -20,10 +24,18 @@
 }
 else
 {
+    <PageHeading Heading="@CurrentGroup.Name">
+        <SubheadingParts>
+            <span>@(CurrentGroup.IsIncome ? "Income" : "Expense")</span>
+            <span>@CurrentGroup.Categories.Count() categories</span>
+            <span><ColourDot Colour="@CurrentGroup.Colour" /></span>
+        </SubheadingParts>
+        <Actions>
+            <CategoryActions OnEdit="OpenGroupEditModal" OnClose="CloseGroupPanel" OnCategoryCreate="OpenCategoryCreateModal" />
+        </Actions>
+    </PageHeading>
+
     <CategoryGroupPanel Group="CurrentGroup"
-                        OnEdit="OpenGroupEditModal"
-                        OnClose="CloseGroupPanel"
-                        OnCategoryCreate="OpenCategoryCreateModal"
                         OnCategoryEdit="OpenCategoryEditModal"
                         OnShowTransactions="OpenTransactionsModal"
                         AdjustOffset="AdjustOffset" />
@@ -49,4 +61,6 @@ else
                     OnCancel="CloseGroupModal"
                     OnDelete="OnGroupDelete" />
 
-<TransactionsModal @ref="TransactionsModal" TransactionData="TransactionData" />
+<TransactionsModal @ref="TransactionsModal" Category="CurrentCategory" TransactionData="TransactionData" OnCategoryEdit="OpenCategoryEditModal" />
+
+<Confirmation @ref="Confirmation" />

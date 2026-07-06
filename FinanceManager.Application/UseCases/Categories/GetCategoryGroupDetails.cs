@@ -71,8 +71,9 @@ public sealed class GetCategoryGroupDetails(ICategoryGroupRepository categoryGro
 
             var budgets = allBudgets.Where(b => b.CategoryId == category.Id);
             var transactions = (await transactionRepository.GetTransactionsAsync(filter)).Select(TransactionSummary.FromTransaction).ToList();
+            var totalTransactions = (await transactionRepository.GetByCategoryIdAsync(category.Id)).Count();
 
-            categoryDetails.Add(CategoryPeriodDetails.FromCategory(category, transactions.Sum(t => t.Amount), budgets.Sum(b => b.Amount)));
+            categoryDetails.Add(CategoryPeriodDetails.FromCategory(category, transactions.Sum(t => t.Amount), budgets.Sum(b => b.Amount), totalTransactions));
         }
 
         var groupDetails = CategoryGroupDetails.FromCategoryGroup(group, finalPeriod.Scope, periodName, categoryDetails);

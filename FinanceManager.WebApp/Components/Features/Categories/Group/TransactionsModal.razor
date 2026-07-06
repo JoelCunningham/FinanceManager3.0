@@ -1,10 +1,13 @@
 @inherits ModalBase
 
 @code {
+    [Parameter] public CategoryPeriodDetails Category { get; set; } = default!;
     [Parameter] public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new();
+
+    [Parameter] public EventCallback<CategoryPeriodDetails> OnCategoryEdit { get; set; }
 }
 
-<HxModal @ref="_modal" Title="View activities" Size="ModalSize.ExtraLarge">
+<HxModal @ref="_modal" Title="@("View activities for " + Category?.Name)" Size="ModalSize.ExtraLarge">
     <BodyTemplate>
         <ListLayout TItem="TransactionSummary" Data="TransactionData">
             <FilterTemplate Context="query">
@@ -30,4 +33,7 @@
             </DataTemplate>
         </ListLayout>
     </BodyTemplate>
+    <FooterTemplate>
+        <HxButton Color="ThemeColor.Primary" OnClick="() => OnCategoryEdit.InvokeAsync(Category)">Edit category</HxButton>
+    </FooterTemplate>
 </HxModal>

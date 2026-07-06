@@ -15,6 +15,15 @@ public sealed class CategoryRepository(FinanceManagerDbContext dbContext) : ICat
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Category>> GetByGroupIdAsync(Guid groupId)
+    {
+        return await dbContext.Categories
+            .Include(c => c.Group)
+            .Where(c => c.GroupId == groupId)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
     public async Task<Category?> GetOrDefaultAsync(Guid id)
     {
         var category = await dbContext.Categories

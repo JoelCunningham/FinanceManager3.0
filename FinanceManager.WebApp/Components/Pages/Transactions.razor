@@ -3,14 +3,40 @@
 @inherits PageBase
 
 <PageTitle>Activities</PageTitle>
-<PageHeading Heading="Activities" Subheading="@Subheading">
+<PageHeading Heading="Activities">
+    <SubheadingParts>
+        @if (TransactionData.Result is not null && TransferData.Result is not null)
+        {
+            var showingCount =
+                ActiveTabId == Tabs.ActivityList.ToString() ? TransactionData.Result.Items.Count :
+                ActiveTabId == Tabs.Transfers.ToString() ? TransferData.Result.Items.Count :
+                0;
+
+            <span>@TransactionData.Result.TotalItems Activities</span>
+            <span>@TransferData.Result.TotalItems Transfers</span>
+            <span>Showing @showingCount</span>
+        }
+        else
+        {
+            <span>No activities found</span>
+        }
+    </SubheadingParts>
     <Actions>
         <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" />
     </Actions>
 </PageHeading>
 
 <TabPanel @bind-ActiveTabId="ActiveTabId" Page="Pages.Activities">
-    <HxTab Title="Activities" Id="@Tabs.Activities.ToString()">
+    <HxTab Title="Activity list" Id="@Tabs.ActivityList.ToString()">
+        <Content>
+            @if (UnreviewedCount > 0)
+            {
+                <Alert Level="AlertLevel.Info" ActionText="Review activities" ActionUrl="/Review">You have @UnreviewedCount unreviewed activities.</Alert>
+            }
+            <TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
+        </Content>
+    </HxTab>
+    <HxTab Title="Activity summary" Id="@Tabs.ActivitySummary.ToString()">
         <Content>
             @if (UnreviewedCount > 0)
             {

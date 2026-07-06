@@ -11,9 +11,10 @@ public sealed class DeleteCategory(ICategoryRepository categoryRepository, ITran
     {
         try
         {
-            if (await transactionRepository.HasTransactionsForCategoryAsync(categoryId))
+            var transactions = await transactionRepository.GetByCategoryIdAsync(categoryId);
+            foreach (var transaction in transactions)
             {
-                return new DeleteCategoryResult([new UseCaseInvalidOperationError("This category cannot be deleted because it contains transactions.")]);
+                transaction.CategoryId = null;
             }
 
             await categoryRepository.DeleteAsync(categoryId);

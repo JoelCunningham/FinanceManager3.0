@@ -1,13 +1,5 @@
 .heading {
-    align-items: center;
-    gap: 0.5rem;
-
-    .across {
-        display: flex;
-        justify-content: space-between;
-
-        &.below {
-            margin: -1.5rem 0.25rem 0 0.25rem;
-        }
-    }
+    text-align: right;
+    font-size: var(--fontsize-heading3);
+    font-weight: var(--fontweight-semibold);
 }

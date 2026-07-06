@@ -1,0 +1,43 @@
+﻿.progress-wrapper {
+    display: grid;
+    grid-template-columns: auto 4rem;
+    align-items: center;
+    gap: var(--space-small);
+
+
+    .category-proportion {
+        font-weight: var(--fontweight-semibold);
+
+        &.success {
+            color: var(--colour-success) !important;
+        }
+
+        &.danger {
+            color: var(--colour-danger) !important;
+        }
+
+        &.normal {
+            color: var(--colour-secondary) !important;
+        }
+
+        &.none {
+            color: var(--colour-black) !important;
+        }
+    }
+}
+
+::deep .progress {
+    height: 0.75rem !important;
+}
+
+::deep .progress-bar.success {
+    background-color: var(--colour-success);
+}
+
+::deep .progress-bar.danger {
+    background-color: var(--colour-danger);
+}
+
+::deep .progress-bar.normal {
+    background-color: var(--colour-secondary);
+}

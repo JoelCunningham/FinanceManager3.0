@@ -10,9 +10,8 @@
     .budget-category-usage {
         display: grid;
         gap: var(--space-small);
-        grid-template-columns: 10rem auto 4rem;
+        grid-template-columns: 10rem auto;
         margin-bottom: var(--space-small);
-        align-items: center;
 
         span a {
             color: var(--colour-grey);
@@ -32,37 +31,5 @@
         p {
             text-align: center;
         }
-    }
-}
-
-::deep .progress {
-    height: 0.75rem !important;
-}
-
-::deep .progress-bar.success {
-    background-color: var(--colour-success);
-}
-
-::deep .progress-bar.danger {
-    background-color: var(--colour-danger);
-}
-
-::deep .progress-bar.normal {
-    background-color: var(--colour-secondary);
-}
-
-.category-proportion {
-    font-weight: var(--fontweight-semibold);
-
-    &.success {
-        color: var(--colour-success) !important;
-    }
-
-    &.danger {
-        color: var(--colour-danger) !important;
-    }
-
-    &.normal {
-        color: var(--colour-secondary) !important;
     }
 }

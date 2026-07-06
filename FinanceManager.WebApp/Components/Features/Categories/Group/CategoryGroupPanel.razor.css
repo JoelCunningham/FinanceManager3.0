@@ -1,16 +1,12 @@
 .category-group-panel {
-    h4 {
-        margin-top: 1.5rem;
-    }
-
-    .graph-title {
-        margin-bottom: -4rem;
-    }
-
     .header {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
+        align-items: end;
+        margin-bottom: var(--space-small);
+
+        .btn-group {
+            margin-left: auto;
+        }
     }
 }
 
@@ -26,6 +22,10 @@
 
 ::deep .text-center {
     width: 1%;
+}
+
+::deep .hx-grid-empty-data-row .text-center {
+    width: 100%;
 }
 
 ::deep .back-button {
@@ -49,4 +49,8 @@
     width: 20px;
     height: 20px;
     margin-bottom: -5px;
+}
+
+::deep tr.danger td {
+    background-color: var(--colour-danger-lightest);
 }

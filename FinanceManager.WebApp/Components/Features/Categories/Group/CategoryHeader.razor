@@ -1,34 +1,16 @@
 @code {
-    [Parameter] public string GroupName { get; set; } = default!;
     [Parameter] public bool IsIncome { get; set; }
-    [Parameter] public string Colour { get; set; } = default!;
-
     [Parameter] public decimal Amount { get; set; }
     [Parameter] public decimal Budget { get; set; }
-    [Parameter] public string PeriodText { get; set; } = default!;
 
     private string AmountColour => ColourUtilities.GetAmountColour(IsIncome ? Amount - Budget : Budget - Amount);
 }
 
 <div class="heading">
-    <div class="across">
-        <h1 class="page-heading">@GroupName</h1>
-        <div class="d-flex gap-2">
-            <h1 class="page-heading" style="@($"color: {AmountColour};")">@Amount.ToString("C")</h1>
-            @if (Budget != 0)
-            {
-                <h1 class="page-heading">of @Budget.ToString("C")</h1>
-            }
-        </div>
-    </div>
-    <div class="across below">
-        <p class="subheading">
-            Financial Area • @(IsIncome ? "Income" : "Expense") •
-            <span class="rounded-circle d-inline-block" style="width: 15px; height: 15px; margin-bottom: -2px; background-color: @Colour"></span>
-        </p>
-        @if (Budget != 0)
-        {
-            <p>Budgeted for @PeriodText</p>
-        }
-    </div>
+    <span style="@($"color: {AmountColour};")">@Amount.ToString("C")</span>
+    <span>@(IsIncome ? "earned" : "spent")</span>
+    @if (Budget != 0)
+    {
+        <span> of @Budget.ToString("C") budgeted</span>
+    }
 </div>
