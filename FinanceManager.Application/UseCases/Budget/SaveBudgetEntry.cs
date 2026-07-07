@@ -3,15 +3,15 @@ namespace FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
-// TODO use UseCaseResult and return errors instead of throwing exceptions
+public sealed record SaveBudgetEntryResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IBudgetYearRepository budgetYearRepository, IDataStore dataStore)
 {
-    public async Task ExecuteAsync(BudgetCellEntry model, int year, bool isExisting)
+    public async Task<SaveBudgetEntryResult> ExecuteAsync(BudgetCellEntry model, int year, bool isExisting)
     {
         var budgetYear = await budgetYearRepository.GetByYearAsync(year);
-        if (budgetYear == null) throw new InvalidOperationException($"Budget year {year} not found.");
+        if (budgetYear == null) return new SaveBudgetEntryResult([new UseCaseInvalidOperationError("Budget year not found.")]);
 
-        if (model.Category == null) throw new InvalidOperationException("Category must be provided.");
+        if (model.Category == null) return new SaveBudgetEntryResult([new UseCaseInvalidOperationError("Category must be provided.")]);
         var entry = model.ToBudgetEntry(budgetYear);
 
         if (isExisting)
@@ -24,5 +24,6 @@ public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository
         }
 
         await dataStore.SaveAsync();
+        return new SaveBudgetEntryResult([]);
     }
 }

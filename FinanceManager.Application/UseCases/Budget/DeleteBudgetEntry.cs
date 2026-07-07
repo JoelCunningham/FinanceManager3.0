@@ -1,13 +1,23 @@
 namespace FinanceManager.Application.UseCases.Budget;
 
 using FinanceManager.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
-// TODO use UseCaseResult and return errors instead of throwing exceptions
-public sealed class DeleteBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IDataStore dataStore)
+public sealed record DeleteBudgetEntryResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
+public sealed class DeleteBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IDataStore dataStore, ILogger<DeleteBudgetEntry> logger)
 {
-    public async Task ExecuteAsync(Guid id)
+    public async Task<DeleteBudgetEntryResult> ExecuteAsync(Guid id)
     {
-        await budgetEntryRepository.DeleteAsync(id);
-        await dataStore.SaveAsync();
+        try
+        {
+            await budgetEntryRepository.DeleteAsync(id);
+            await dataStore.SaveAsync();
+            return new DeleteBudgetEntryResult([]);
+        }
+        catch
+        {
+            logger.LogError("An unexpected error occurred while deleting budget entry with id {Id}", id);
+            return new DeleteBudgetEntryResult([new UseCaseUnexpectedError()]);
+        }
     }
 }

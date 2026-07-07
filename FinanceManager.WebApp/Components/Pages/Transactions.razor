@@ -22,7 +22,7 @@
         }
     </SubheadingParts>
     <Actions>
-        <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" />
+        <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" OnClick="() => { /* TODO */ }"/>
     </Actions>
 </PageHeading>
 
@@ -38,11 +38,7 @@
     </HxTab>
     <HxTab Title="Activity summary" Id="@Tabs.ActivitySummary.ToString()">
         <Content>
-            @if (UnreviewedCount > 0)
-            {
-                <Alert Level="AlertLevel.Info" ActionText="Review activities" ActionUrl="/Review">You have @UnreviewedCount unreviewed activities.</Alert>
-            }
-            <TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
+            <span>TODO</span>
         </Content>
     </HxTab>
     <HxTab Title="Transfers" Id="@Tabs.Transfers.ToString()">
