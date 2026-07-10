@@ -1,0 +1,10 @@
+﻿@inherits AuthPageBase
+
+<PageHeading Heading="Confirm email" Subheading=""/>
+
+<Alert Level="AlertLevel.Info">@Status</Alert>
+
+@if (Success)
+{
+    <button class="btn btn-primary" @onclick="GoToLogin">Go to Login</button>
+}

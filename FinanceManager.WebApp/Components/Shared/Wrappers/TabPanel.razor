@@ -1,7 +1,7 @@
 ﻿@inject NavigationManager NavigationManager
 
 @code {
-    [Parameter] public Pages Page { get; set; }
+    [Parameter] public required string Page { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     [Parameter] public string ActiveTabId { get; set; } = default!;

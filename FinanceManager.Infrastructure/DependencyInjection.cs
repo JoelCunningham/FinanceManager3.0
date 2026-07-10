@@ -2,8 +2,10 @@ namespace FinanceManager.Infrastructure;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Infrastructure.Data;
+using FinanceManager.Infrastructure.Identity;
 using FinanceManager.Infrastructure.Parsers;
 using FinanceManager.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +32,9 @@ public static class DependencyInjection
         // Parsers
         services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();
         services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
+
+        // Identity
+        services.AddScoped<IEmailSender, EmailService>();
 
         return services;
     }

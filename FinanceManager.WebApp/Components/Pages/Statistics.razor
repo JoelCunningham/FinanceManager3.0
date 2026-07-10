@@ -1,12 +1,10 @@
-﻿@page "/Statistics"
-@page "/Statistics/{ActiveTabId}"
-@inherits PageBase
+﻿@inherits PageBase
 
 <PageTitle>Statistics</PageTitle>
 
 <PageHeading Heading="Statistics" Subheading="Spend, budget, and trends across your categories" />
 
-<TabPanel @bind-ActiveTabId="ActiveTabId" Page="Pages.Statistics">
+<TabPanel @bind-ActiveTabId="ActiveTabId" Page="@Pages.Statistics">
     <HxTab Title="Spend by category" Id="@Tabs.Legacy1.ToString()">
         <Content>
             <Graph2Actions Chart="Chart2" @bind-Range="Chart2.Range" />

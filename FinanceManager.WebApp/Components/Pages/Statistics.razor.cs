@@ -5,11 +5,13 @@ using FinanceManager.Application.Enums;
 using FinanceManager.Domain.Constants;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
-using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
 
+[Route(Pages.Statistics)]
+[Route(Pages.Statistics + Tabs.ActiveTabId)]
 public partial class Statistics : PageBase
 {
     [Parameter][SupplyParameterFromQuery] public string? Name { get; set; }
@@ -45,7 +47,7 @@ public partial class Statistics : PageBase
 
     protected override void OnParametersSet()
     {
-        if (ActiveTabId == Tabs.Category.ToString() && Name is not null && Group is not null)
+        if (ActiveTabId == Tabs.Category && Name is not null && Group is not null)
         {
             SelectedCategory = AvailableCategories.FirstOrDefault(c =>
                 string.Equals(c.Name, Name, StringComparison.OrdinalIgnoreCase) &&

@@ -1,0 +1,32 @@
+﻿.card {
+    width: 100%;
+    color: var(--colour-white);
+    background-color: var(--colour-secondary);
+    display: flex;
+    flex-direction: row;
+    margin-top: var(--space-small);
+
+    span {
+        font-size: var(--fontsize-accent);
+        display: flex;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+::deep .d-inline-block {
+    display: flex !important;
+    margin-top: -1px !important;
+    margin-left: auto !important;
+}
+
+::deep button {
+    display: flex;
+    color: var(--colour-white);
+}
+
+    ::deep button:hover {
+        color: var(--colour-border);
+    }

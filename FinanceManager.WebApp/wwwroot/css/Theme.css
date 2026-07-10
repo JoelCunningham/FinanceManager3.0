@@ -115,18 +115,26 @@ main {
 .hx-sidebar.bg-body-secondary {
     background-color: var(--colour-primary) !important;
 
-    .hx-sidebar-brand {
+    .collapsed {
+    }
 
-        .hx-sidebar-brand-shortname {
-            font-size: var(--fontsize-accent);
-            font-weight: var(--fontweight-bold);
-            background-color: var(--colour-secondary);
-        }
+    .hx-sidebar-header {
+        flex-direction: column;
+        gap: var(--space-medium) !important;
 
-        .hx-sidebar-brand-name {
-            font-size: var(--fontsize-accent);
-            font-weight: var(--fontweight-bold);
-            color: var(--colour-white);
+        .hx-sidebar-brand {
+
+            .hx-sidebar-brand-shortname {
+                font-size: var(--fontsize-accent);
+                font-weight: var(--fontweight-bold);
+                background-color: var(--colour-secondary);
+            }
+
+            .hx-sidebar-brand-name {
+                font-size: var(--fontsize-accent);
+                font-weight: var(--fontweight-bold);
+                color: var(--colour-white);
+            }
         }
     }
 

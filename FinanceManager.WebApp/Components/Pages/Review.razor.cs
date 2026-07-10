@@ -2,12 +2,15 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
+using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Review;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Utilities;
-using FinanceManager.Domain.Enums;
+using Microsoft.AspNetCore.Components;
 
+[Route(Pages.Review)]
 public partial class Review : PageBase
 {
     public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new(20);

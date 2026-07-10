@@ -1,0 +1,38 @@
+﻿@using FinanceManager.Infrastructure.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+@code {
+    private string? Username;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        Username = user?.Name;
+    }
+}
+
+﻿<HxSidebar CssClass="sticky-top bg-body-secondary">
+    <HeaderTemplate>
+        <HxSidebarBrand BrandName="Finance Manager" BrandNameShort="FM" />
+        <AuthorizeView Context="auth">
+            <Authorized>
+                <UserCard UserName="@Username" />
+            </Authorized>
+        </AuthorizeView>
+    </HeaderTemplate>
+    <ItemsTemplate>
+        <HxSidebarItem Text="Dashboard" Href="@Pages.Dashboard" Icon="BootstrapIcon.Speedometer2" Match="NavLinkMatch.All" />
+        <HxSidebarItem Text="Statistics" Href="@Pages.Statistics" Icon="BootstrapIcon.GraphUp" />
+        <HxSidebarItem Text="Budget" Href="@Pages.Budget" Icon="BootstrapIcon.Calendar4Range" />
+        <HxSidebarItem Text="Activities" Href="@Pages.Activities" Icon="BootstrapIcon.ListUl" />
+        <HxSidebarItem Text="Review" Href="@Pages.Review" Icon="BootstrapIcon.ClipboardCheck" />
+        <HxSidebarItem Text="Categories" Href="@Pages.Categories" Icon="BootstrapIcon.Tags" />
+        <HxSidebarItem Text="Import" Href="@Pages.Import" Icon="BootstrapIcon.FileEarmarkArrowUp" />
+    </ItemsTemplate>
+    <FooterTemplate>
+        <HxSidebarFooter Text="Settings" Href="@Pages.Settings" Icon="BootstrapIcon.Gear" TextCssClass="@(context.SidebarCollapsed ? "d-md-none" : null)" />
+    </FooterTemplate>
+</HxSidebar>

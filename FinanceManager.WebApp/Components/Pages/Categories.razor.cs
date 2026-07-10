@@ -7,11 +7,13 @@ using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Categories;
 using FinanceManager.WebApp.Components.Features.Categories.Group;
 using FinanceManager.WebApp.Components.Shared.Wrappers;
-using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Utilities;
 using Microsoft.AspNetCore.Components;
 
+[Route(Pages.Categories)]
+[Route(Pages.Categories + Tabs.GroupName)]
 public partial class Categories : PageBase
 {
     [Parameter] public string? GroupName { get; set; }

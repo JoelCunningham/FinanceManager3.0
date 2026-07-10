@@ -1,0 +1,12 @@
+﻿@inject NavigationManager Navigation
+
+@code {
+    [Parameter] public string UserName { get; set; } = string.Empty;
+}
+
+<div class="card">
+    <span class="card-title">Welcome, @UserName</span>
+    <HxTooltip Text="Logout" Placement="TooltipPlacement.Top">
+        <HxButton Icon="BootstrapIcon.BoxArrowRight" OnClick="() => Navigation.NavigateTo(Pages.Logout, true)" />
+    </HxTooltip>
+</div>

@@ -7,9 +7,12 @@ using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Transactions;
 using FinanceManager.WebApp.Components.Features.Transfers;
-using FinanceManager.WebApp.Enums;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Navigation;
+using Microsoft.AspNetCore.Components;
 
+[Route(Pages.Activities)]
+[Route(Pages.Activities + Tabs.ActiveTabId)]
 public partial class Transactions : PageBase
 {
     public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(16);

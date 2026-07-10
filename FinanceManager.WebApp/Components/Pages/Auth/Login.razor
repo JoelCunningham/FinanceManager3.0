@@ -1,0 +1,39 @@
+﻿@inherits AuthPageBase
+
+<PageHeading Heading="Login" Subheading="Sign in to your account" />
+
+<EditForm FormName="LoginForm" Model="Model" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="Model.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label>Password</label>
+        <InputText type="password" class="form-control" @bind-Value="Model.Password" />
+    </div>
+
+    <div class="mb-3">
+        <InputCheckbox @bind-Value="Model.RememberMe" />
+        <label> Remember me</label>
+    </div>
+
+    <button class="btn btn-primary">Login</button>
+
+    <div>
+        <a href="@Pages.Register">Don't have an account? Register</a>
+    </div>
+
+    <div>
+        <a href="@Pages.ForgotPassword">Forgot your password? Reset it</a>
+    </div>
+
+</EditForm>
+
+@if (Message != null)
+{
+    <p class="mt-3">@Message</p>
+}

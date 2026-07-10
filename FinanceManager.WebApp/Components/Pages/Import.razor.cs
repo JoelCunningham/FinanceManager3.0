@@ -5,9 +5,12 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Import;
+using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Utilities;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
+[Route(Pages.Import)]
 public partial class Import : PageBase
 {
     public IReadOnlyList<BankParser> AvailableParsers { get; set; } = [];

@@ -1,5 +1,3 @@
-@page "/Activities"
-@page "/Activities/{ActiveTabId}"
 @inherits PageBase
 
 <PageTitle>Activities</PageTitle>
@@ -8,8 +6,8 @@
         @if (TransactionData.Result is not null && TransferData.Result is not null)
         {
             var showingCount =
-                ActiveTabId == Tabs.ActivityList.ToString() ? TransactionData.Result.Items.Count :
-                ActiveTabId == Tabs.Transfers.ToString() ? TransferData.Result.Items.Count :
+                ActiveTabId == Tabs.ActivityList ? TransactionData.Result.Items.Count :
+                ActiveTabId == Tabs.Transfers ? TransferData.Result.Items.Count :
                 0;
 
             <span>@TransactionData.Result.TotalItems Activities</span>
@@ -22,12 +20,12 @@
         }
     </SubheadingParts>
     <Actions>
-        <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" OnClick="() => { /* TODO */ }"/>
+        <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" OnClick="() => { /* TODO */ }" />
     </Actions>
 </PageHeading>
 
-<TabPanel @bind-ActiveTabId="ActiveTabId" Page="Pages.Activities">
-    <HxTab Title="Activity list" Id="@Tabs.ActivityList.ToString()">
+<TabPanel @bind-ActiveTabId="ActiveTabId" Page="@Pages.Activities">
+    <HxTab Title="Activity list" Id="@Tabs.ActivityList">
         <Content>
             @if (UnreviewedCount > 0)
             {
@@ -36,12 +34,12 @@
             <TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
         </Content>
     </HxTab>
-    <HxTab Title="Activity summary" Id="@Tabs.ActivitySummary.ToString()">
+    <HxTab Title="Activity summary" Id="@Tabs.ActivitySummary">
         <Content>
             <span>TODO</span>
         </Content>
     </HxTab>
-    <HxTab Title="Transfers" Id="@Tabs.Transfers.ToString()">
+    <HxTab Title="Transfers" Id="@Tabs.Transfers">
         <Content>
             <TransfersGrid @bind-Data="TransferData" Accounts="UniqueAccounts" RemoveTransfer="SeparateTransfer" OpenDetails="OpenTransferDetailsModal" />
         </Content>

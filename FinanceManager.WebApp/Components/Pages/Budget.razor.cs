@@ -6,7 +6,10 @@ using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Features.Budget;
+using FinanceManager.WebApp.Navigation;
+using Microsoft.AspNetCore.Components;
 
+[Route(Pages.Budget)]
 public partial class Budget : PageBase
 {
     public IReadOnlyList<BudgetCell> Cells { get; set; } = [];

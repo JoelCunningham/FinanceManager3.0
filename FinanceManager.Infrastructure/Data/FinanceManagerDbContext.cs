@@ -2,10 +2,13 @@ namespace FinanceManager.Infrastructure.Data;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
+using FinanceManager.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options) : DbContext(options), IDataStore
+public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options) : IdentityDbContext<ApplicationUser>(options), IDataStore
 {
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<BankRecord> BankRecords => Set<BankRecord>();
@@ -28,61 +31,71 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
         public ValueTask DisposeAsync() { return transaction.DisposeAsync(); }
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        modelBuilder.Entity<BankAccount>()
+        base.OnModelCreating(builder);
+
+        builder.Entity<ApplicationUser>().ToTable("Users");
+        builder.Entity<IdentityRole>().ToTable("Roles");
+        builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+        builder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims");
+        builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
+        builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
+        builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
+
+        builder.Entity<BankAccount>()
             .HasMany(a => a.BankRecords)
             .WithOne(r => r.BankAccount)
             .HasForeignKey(r => r.BankAccountId);
 
-        modelBuilder.Entity<BankRecord>()
+        builder.Entity<BankRecord>()
             .HasMany(r => r.Transactions)
             .WithOne(t => t.Record)
             .HasForeignKey(t => t.RecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Transaction>()
+        builder.Entity<Transaction>()
             .HasOne(t => t.Category)
             .WithMany()
             .HasForeignKey(t => t.CategoryId);
 
-        modelBuilder.Entity<Transaction>()
+        builder.Entity<Transaction>()
             .HasOne(t => t.Reimburses)
             .WithMany(t => t.Reimbursements)
             .HasForeignKey(t => t.ReimbursesId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<CategoryGroup>()
+        builder.Entity<CategoryGroup>()
             .HasMany(g => g.Categories)
             .WithOne(c => c.Group)
             .HasForeignKey(c => c.GroupId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<MachineLearning>()
+        builder.Entity<MachineLearning>()
             .HasOne(m => m.Category)
             .WithMany()
             .HasForeignKey(m => m.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Transfer>()
+        builder.Entity<Transfer>()
             .HasOne(t => t.FromRecord)
             .WithMany()
             .HasForeignKey(t => t.FromRecordId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Transfer>()
+        builder.Entity<Transfer>()
             .HasOne(t => t.ToRecord)
             .WithMany()
             .HasForeignKey(t => t.ToRecordId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<BudgetEntry>()
+        builder.Entity<BudgetEntry>()
             .HasOne(b => b.BudgetYear)
             .WithMany()
             .HasForeignKey(b => b.BudgetYearId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<BudgetEntry>()
+        builder.Entity<BudgetEntry>()
             .HasOne(b => b.Category)
             .WithMany()
             .HasForeignKey(b => b.CategoryId)
