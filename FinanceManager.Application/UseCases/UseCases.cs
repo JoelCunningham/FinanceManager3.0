@@ -2,19 +2,18 @@ namespace FinanceManager.Application.UseCases;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
+using FinanceManager.Application.UseCases.Statistics;
 using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.Domain.Enums;
-using FinanceManager.Application.UseCases.Statistics;
 
 public class UseCases(
-    AutoAssignCategories autoAssignCategories, 
-    BackdateTransaction backdateTransaction, 
+    AutoAssignCategories autoAssignCategories,
     DeleteBudgetEntry deleteBudgetEntry,
     DeleteCategory deleteCategory,
     DeleteCategoryGroup deleteCategoryGroup,
@@ -23,12 +22,12 @@ public class UseCases(
     GetCategoryGraph getCategoryGraph,
     GetCategoryGroupDetails getCategoryGroupDetails,
     GetCategoryGroups getCategoryGroups,
-    GetChart1Data getChart1Data, 
-    GetChart2Data getChart2Data, 
+    GetChart1Data getChart1Data,
+    GetChart2Data getChart2Data,
     GetDashboardData getDashboardData,
-    GetPagedBudget getBudgetPage, 
-    GetPagedReview getPagedReview, 
-    GetPagedTransactions getPagedTransactions, 
+    GetPagedBudget getBudgetPage,
+    GetPagedReview getPagedReview,
+    GetPagedTransactions getPagedTransactions,
     GetPagedTransfers getPagedTransfers,
     GetParsers getParsers,
     GetReimbursementCandidates getReimbursementCandidates,
@@ -45,21 +44,19 @@ public class UseCases(
     SaveReview saveReview,
     SaveTransactionEdit saveTransactionEdit,
     SeparateTransfer separateTransfer,
-    UpdateTransactionAmount updateTransactionAmount,
-    ValidateReviewGroup validateReviewGroup,
     ValidateTransactionEdit validateTransactionEdit
 )
 {
     public GetParsersResult GetParsers() => getParsers.Execute();
     public Task<AutoCategoriseResult> AutoCategoriseAsync(IEnumerable<ReviewGroup> groups, IEnumerable<CategorySummary> categories) => autoAssignCategories.ExecuteAsync(groups, categories);
-    public Task<BackdateTransactionResult> BackdateTransactionAsync(TransactionSummary transaction, DateTime date, DateTime initialDate) => backdateTransaction.ExecuteAsync(transaction, date, initialDate);
+    public static Task<BackdateTransactionResult> BackdateTransactionAsync(TransactionSummary transaction, DateTime date, DateTime initialDate) => BackdateTransaction.ExecuteAsync(transaction, date, initialDate);
     public Task<DeleteBudgetEntryResult> DeleteBudgetEntryAsync(Guid id) => deleteBudgetEntry.ExecuteAsync(id);
     public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
     public Task<DeleteCategoryResult> DeleteCategoryAsync(Guid id) => deleteCategory.ExecuteAsync(id);
     public Task<GetBudgetScopesResult> GetBudgetScopesAsync(ScopedRange range) => getBudgetScopes.ExecuteAsync(range);
     public Task<GetCategoriesResult> GetCategoriesAsync() => getCategories.ExecuteAsync();
     public Task<GetCategoryGraphResult> GetCategoryGraphAsync(IEnumerable<CategorySummary> categories, ScopedRange range) => getCategoryGraph.ExecuteAsync(categories, range);
-    public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(Guid groupId, int periodOffset) => getCategoryGroupDetails.ExecuteAsync(groupId, periodOffset);
+    public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(string groupName, int periodOffset) => getCategoryGroupDetails.ExecuteAsync(groupName, periodOffset);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroups.ExecuteAsync();
     public Task<GetChart1DataResult> GetChart1DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);
     public Task<GetChart2DataResult> GetChart2DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart2Data.ExecuteAsync(range, drilldownGroupId, mode);
@@ -82,7 +79,7 @@ public class UseCases(
     public Task<SaveReviewResult> SaveReviewAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
     public Task<SaveTransactionEditResult> SaveTransactionEditAsync(TransactionSummary transaction) => saveTransactionEdit.ExecuteAsync(transaction);
     public Task<SeparateTransferResult> SeparateTransferAsync(Guid transferId) => separateTransfer.ExecuteAsync(transferId);
-    public Task<UpdateTransactionAmountResult> UpdateTransactionAmountAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group) => updateTransactionAmount.ExecuteAsync(transaction, amount, group);
-    public Task<ValidateReviewGroupResult> ValidateReviewGroupAsync(ReviewGroup group) => validateReviewGroup.ExecuteAsync(group);
+    public static Task<UpdateTransactionAmountResult> UpdateTransactionAmountAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group) => UpdateTransactionAmount.ExecuteAsync(transaction, amount, group);
+    public static Task<ValidateReviewGroupResult> ValidateReviewGroupAsync(ReviewGroup group) => ValidateReviewGroup.ExecuteAsync(group);
     public Task<ValidateTransactionEditResult> ValidateTransactionEditAsync(TransactionSummary transaction) => validateTransactionEdit.ExecuteAsync(transaction);
 }

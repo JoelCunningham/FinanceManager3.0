@@ -45,11 +45,9 @@ public sealed class CategoryRepository(FinanceManagerDbContext dbContext) : ICat
 
     public async Task DeleteAsync(Guid id)
     {
-        var existing = await dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id);
-        if (existing == null)
-        {
-            throw new KeyNotFoundException($"Category with ID {id} not found.");
-        }
+        var existing = await dbContext.Categories.FirstOrDefaultAsync(c => c.Id == id)
+            ?? throw new KeyNotFoundException($"Category with ID {id} not found.");
+
         dbContext.Categories.Remove(existing);
     }
 

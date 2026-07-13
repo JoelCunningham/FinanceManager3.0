@@ -173,7 +173,7 @@ public sealed class GetDashboardData(
             currentYear--;
         }
 
-        periods = periods.OrderByDescending(period => period.StartDate).ThenByDescending(period => period.EndDate).ToList();
+        periods = [.. periods.OrderByDescending(period => period.StartDate).ThenByDescending(period => period.EndDate)];
 
         if (periods.Count > limit)
         {

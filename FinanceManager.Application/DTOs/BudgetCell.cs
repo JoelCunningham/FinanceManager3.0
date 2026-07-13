@@ -11,8 +11,7 @@ public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
     public List<BudgetCellEntry> Entries { get; set; } = [];
 
     public DateOnly EndDate => ScopeHelper.GetPeriodEnd(Scope ?? BudgetScope.Monthly, StartDate);
-
-    private DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
+    private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
 
     public string Label => Scope switch
     {

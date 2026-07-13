@@ -5,6 +5,7 @@ public interface ICategoryGroupRepository
 {
     Task<IEnumerable<CategoryGroup>> GetAllAsync();
     Task<CategoryGroup?> GetOrDefaultAsync(Guid id);
+    Task<CategoryGroup> GetByNameAsync(string name);
     Task CreateAsync(CategoryGroup categoryGroup);
     Task UpdateAsync(CategoryGroup categoryGroup);
     Task DeleteAsync(Guid id);

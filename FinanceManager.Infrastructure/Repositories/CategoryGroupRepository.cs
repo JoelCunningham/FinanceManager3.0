@@ -24,6 +24,15 @@ public sealed class CategoryGroupRepository(FinanceManagerDbContext dbContext) :
         return categoryGroup;
     }
 
+    public async Task<CategoryGroup> GetByNameAsync(string name)
+    {
+        var categoryGroup = await dbContext.CategoryGroups
+            .Include(g => g.Categories)
+            .FirstOrDefaultAsync(g => g.Name == name);
+
+        return categoryGroup ?? throw new KeyNotFoundException($"Category group with name '{name}' not found.");
+    }
+
     public async Task CreateAsync(CategoryGroup categoryGroup)
     {
         await dbContext.CategoryGroups.AddAsync(categoryGroup);
@@ -31,21 +40,17 @@ public sealed class CategoryGroupRepository(FinanceManagerDbContext dbContext) :
 
     public async Task UpdateAsync(CategoryGroup categoryGroup)
     {
-        var existing = await dbContext.CategoryGroups.FirstOrDefaultAsync(g => g.Id == categoryGroup.Id);
-        if (existing == null)
-        {
-            throw new KeyNotFoundException($"Category group with ID {categoryGroup.Id} not found.");
-        }
+        var existing = await dbContext.CategoryGroups.FirstOrDefaultAsync(g => g.Id == categoryGroup.Id)
+            ?? throw new KeyNotFoundException($"Category group with ID {categoryGroup.Id} not found.");
+
         dbContext.CategoryGroups.Update(categoryGroup);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var existing = await dbContext.CategoryGroups.FirstOrDefaultAsync(g => g.Id == id);
-        if (existing == null)
-        {
-            throw new KeyNotFoundException($"Category group with ID {id} not found.");
-        }
+        var existing = await dbContext.CategoryGroups.FirstOrDefaultAsync(g => g.Id == id)
+            ?? throw new KeyNotFoundException($"Category group with ID {id} not found.");
+
         dbContext.CategoryGroups.Remove(existing);
     }
 

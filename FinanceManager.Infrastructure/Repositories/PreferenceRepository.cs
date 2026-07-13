@@ -14,11 +14,7 @@ public class PreferenceRepository(FinanceManagerDbContext dbContext) : IPreferen
             .Select(p => p.Value)
             .FirstOrDefaultAsync();
 
-        if (preference == null)
-        {
-            throw new ArgumentNullException(name.ToString());
-        }
-        return preference;
+        return preference ?? throw new ArgumentNullException(name.ToString());
     }
 
     public async Task SetAsync(PreferenceNames name, string value)

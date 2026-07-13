@@ -4,7 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 
-public sealed record GetPagedTransfersResult(PagedResult<TransferDto> Page) : UseCaseResult;
+public sealed record GetPagedTransfersResult(PagedResult<TransferSummary> Page) : UseCaseResult;
 
 public sealed class GetPagedTransfers(ITransferRepository transferRepository)
 {
@@ -14,7 +14,7 @@ public sealed class GetPagedTransfers(ITransferRepository transferRepository)
 
         return new GetPagedTransfersResult
         (
-           new PagedResult<TransferDto>
+           new PagedResult<TransferSummary>
            {
                Items = [.. pagedTransfers.Items.Select(FromTransfer)],
                TotalItems = pagedTransfers.TotalItems,
@@ -24,9 +24,9 @@ public sealed class GetPagedTransfers(ITransferRepository transferRepository)
         );
     }
 
-    private static TransferDto FromTransfer(Transfer transfer)
+    private static TransferSummary FromTransfer(Transfer transfer)
     {
-        return new TransferDto(
+        return new TransferSummary(
             transfer.Id, transfer.Amount,
             new Transferable(transfer.FromRecord.BankAccount.Bank, transfer.FromRecord.BankAccount.AccountNumber),
             new Transferable(transfer.ToRecord.BankAccount.Bank, transfer.ToRecord.BankAccount.AccountNumber),
@@ -34,18 +34,3 @@ public sealed class GetPagedTransfers(ITransferRepository transferRepository)
         );
     }
 }
-
-public sealed record TransferDto(
-    Guid Id,
-    decimal Amount,
-    Transferable From,
-    Transferable To,
-    DateTime Date,
-    string Description,
-    bool IsUserCreated
-);
-
-public sealed record Transferable(
-    string Bank,
-    string? Account
-);

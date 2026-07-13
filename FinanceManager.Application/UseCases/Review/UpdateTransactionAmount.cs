@@ -7,7 +7,7 @@ public sealed record UpdateTransactionAmountResult(IEnumerable<UseCaseError> Err
 
 public sealed class UpdateTransactionAmount()
 {
-    public async Task<UpdateTransactionAmountResult> ExecuteAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group)
+    public static async Task<UpdateTransactionAmountResult> ExecuteAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group)
     {
         var originalAmount = group.Record.Amount;
 

@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Config/">
+    <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="dotnet-tools.json" />
   </Folder>

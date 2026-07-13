@@ -5,6 +5,14 @@
     [Parameter] public string? ActionText { get; set; }
     [Parameter] public string? ActionUrl { get; set; }
 
+    public enum AlertLevel
+    {
+        Success,
+        Info,
+        Warning,
+        Error,
+    }
+
     private ThemeColor GetThemeColor()
     {
         return Level switch

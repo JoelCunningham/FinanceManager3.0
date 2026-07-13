@@ -21,12 +21,7 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
             .Include(t => t.Reimburses)
             .FirstOrDefaultAsync(t => t.Id == id);
 
-        if (transaction is null)
-        {
-            throw new KeyNotFoundException($"Transaction with ID {id} not found.");
-        }
-
-        return transaction;
+        return transaction ?? throw new KeyNotFoundException($"Transaction with ID {id} not found.");
     }
 
     public async Task<IEnumerable<Transaction>> GetByRecordIdAsync(Guid recordId, Guid? excludeId = null)
@@ -126,16 +121,12 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
 
     public async Task CreateOrUpdateAsync(Transaction transaction)
     {
-        var existing = await dbContext.Transactions
-            .FirstOrDefaultAsync(t => t.Id == transaction.Id);
+        var existing = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == transaction.Id);
 
         if (existing is null)
         {
-            var record = await dbContext.BankRecords.FindAsync(transaction.RecordId);
-            if (record is null)
-            {
-                throw new KeyNotFoundException($"BankRecord with ID {transaction.RecordId} not found.");
-            }
+            var record = await dbContext.BankRecords.FindAsync(transaction.RecordId)
+                ?? throw new KeyNotFoundException($"BankRecord with ID {transaction.RecordId} not found.");
 
             Category? category = null;
             if (transaction.CategoryId is not null)
@@ -166,23 +157,16 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
 
     public async Task UpdateAsync(Transaction transaction)
     {
-        var existing = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == transaction.Id);
-        if (existing == null)
-        {
-            throw new KeyNotFoundException($"Transaction with ID {transaction.Id} not found.");
-        }
+        var existing = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == transaction.Id)
+            ?? throw new KeyNotFoundException($"Transaction with ID {transaction.Id} not found.");
 
         await ApplyUpdatesAsync(existing, transaction);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var transaction = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
-        if (transaction == null)
-        {
-            throw new KeyNotFoundException($"Transaction with ID {id} not found.");
-        }
-
+        var transaction = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id)
+            ?? throw new KeyNotFoundException($"Transaction with ID {id} not found.");
         dbContext.Transactions.Remove(transaction);
     }
 
@@ -224,13 +208,14 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
     {
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            var search = request.SearchTerm.Trim().ToLower();
+            var search = $"%{request.SearchTerm.Trim()}%";
             query = query.Where(t =>
-                t.Description.ToLower().Contains(search) ||
-                t.Record.BankAccount.Bank.ToLower().Contains(search) ||
-                t.Category != null && t.Category.Name.ToLower().Contains(search) ||
-                t.Category != null && t.Category.Group.Name.ToLower().Contains(search) ||
-                t.Record.BankAccount.AccountNumber != null && t.Record.BankAccount.AccountNumber.ToLower().Contains(search));
+                EF.Functions.Like(t.Description, search) ||
+                EF.Functions.Like(t.Record.BankAccount.Bank, search) ||
+                (t.Category != null && EF.Functions.Like(t.Category.Name, search)) ||
+                (t.Category != null && EF.Functions.Like(t.Category.Group.Name, search)) ||
+                (t.Record.BankAccount.AccountNumber != null && EF.Functions.Like(t.Record.BankAccount.AccountNumber, search))
+            );
         }
 
         if (request.FilterCategory != null)

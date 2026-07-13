@@ -1,0 +1,47 @@
+@inherits MainPageBase
+
+<PageTitle>Budget</PageTitle>
+<PageHeading Heading="@("Budget " + CurrentYear)">
+    <SubheadingParts>
+        <span>Net <span class="bold-primary">@TotalBudget.ToString("C")</span></span>
+        <span>Total in <span class="bold-success">@TotalIncome.ToString("C")</span></span>
+        <span>Total out <span class="bold-danger">@TotalExpense.ToString("C")</span></span>
+    </SubheadingParts>
+    <Actions>
+        <BudgetActions EntryTypeFilter="EntryTypeFilter"
+                       EntryTypeFilterChanged="OnEntryTypeFilterChanged"
+                       HasPopulatedCategories="HasPopulatedCategories"
+                       EntryTypeFilters="EntryTypeFilters"
+                       HideEmptyCategories="HideEmptyCategories"
+                       HideEmptyCategoriesChanged="OnHideEmptyCategoriesChanged"
+                       OnPrev="Prev"
+                       OnToday="Today"
+                       OnNext="Next"
+                       OnEditYear="EditYear" />
+    </Actions>
+</PageHeading>
+
+<BudgetGrid Scope="CurrentBudgetYear?.Scope"
+            Year="CurrentYear"
+            Cells="Cells"
+            Categories="Categories"
+            HideEmptyCategories="HideEmptyCategories"
+            OnCellClicked="args => CreateEntry(args.Item1, args.Item2)"
+            OnEntryClicked="EditEntry"
+            OnBudgetCreateClicked="CreateYear" />
+
+<BudgetEntryModal @ref="BudgetEntryModal"
+                  Entry="CurrentEntry"
+                  CurrentBudgetYear="CurrentBudgetYear"
+                  IsEditing="IsEditing"
+                  Categories="Categories"
+                  OnCancel="CloseEditModal"
+                  OnDelete="DeleteEntry"
+                  OnSave="SaveEntry" />
+
+<BudgetYearModal @ref="BudgetYearModal"
+                 Year="CurrentYear"
+                 AvailableScopes="BudgetScopes"
+                 IsEditing="IsEditing"
+                 OnSave="args => SaveBudget(args.Year, args.Scope)"
+                 OnCancel="CloseCreateModal" />

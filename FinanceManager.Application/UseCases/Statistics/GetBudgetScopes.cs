@@ -1,7 +1,8 @@
-namespace FinanceManager.Application.UseCases.Transactions;
+namespace FinanceManager.Application.UseCases.Statistics;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 
 public sealed record GetBudgetScopesResult(BudgetScope GreatestScopeInRange) : UseCaseResult;

@@ -1,5 +1,6 @@
 namespace FinanceManager.Application.UseCases.Import;
 
+using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
 public sealed record GetParsersResult(IReadOnlyList<BankParser> Parsers) : UseCaseResult;
@@ -21,4 +22,3 @@ public sealed class GetParsers(IEnumerable<ITransactionFileParser> parsers)
     }
 }
 
-public sealed record BankParser(string BankName, IReadOnlyList<string> SupportedExtensions);

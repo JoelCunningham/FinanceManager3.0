@@ -1,0 +1,29 @@
+﻿@inherits MainPageBase
+
+<PageTitle>Category areas</PageTitle>
+
+<PageHeading Heading="Category areas">
+    <SubheadingParts>
+        <span>@CategoryGroups.Count() areas</span>
+        <span>@CategoryGroups.Sum(g => g.CategoryCount) categories</span>
+    </SubheadingParts>
+    <Actions>
+        <CategoryGroupActions SearchQuery="@GroupSearch"
+                              GroupMode="@GroupMode"
+                              SearchQueryChanged="OnGroupSearchChanged"
+                              GroupModeChanged="OnGroupModeChanged"
+                              OnCreate="OpenGroupCreateModal" />
+    </Actions>
+</PageHeading>
+
+<CategoryCards Groups="FilteredGroups" OnGroupClicked="OpenGroupPanel" />
+
+<CategoryGroupModal @ref="GroupModal"
+                    IsEditing="false"
+                    Group="CreateGroup"
+                    HasIsIncomeError="@Validation.GetValidationItemIds(ValidationField.IsIncome).Contains(CreateGroup?.Id ?? Guid.Empty)"
+                    HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(CreateGroup?.Id ?? Guid.Empty)"
+                    HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(CreateGroup?.Id ?? Guid.Empty)"
+                    HasIconError="@Validation.GetValidationItemIds(ValidationField.Icon).Contains(CreateGroup?.Id ?? Guid.Empty)"
+                    OnSave="OnGroupCreate"
+                    OnCancel="CloseGroupCreateModal" />

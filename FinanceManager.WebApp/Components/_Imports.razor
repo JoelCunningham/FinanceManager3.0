@@ -1,70 +1,27 @@
-﻿@using System.ComponentModel.DataAnnotations
-@using System.Diagnostics
-@using System.Globalization
-@using System.Linq.Expressions
-@using System.Net.Http
-@using System.Net.Http.Json
-@using System.Reflection
-@using System.Text
-@using System.Threading.Tasks
+﻿@using System.Globalization
+@using System.Linq
 
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
-@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.JSInterop
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 
-@using Havit
 @using Havit.Blazor.Components.Web
 @using Havit.Blazor.Components.Web.Bootstrap
 @using Havit.Blazor.Components.Web.ECharts
 @using Havit.Collections
 
-@using FinanceManager.Domain.Constants
-@using FinanceManager.Domain.Entities
-@using FinanceManager.Domain.Enums
-@using FinanceManager.Domain.Utilities
-
-@using FinanceManager.Application.Common
-@using FinanceManager.Application.DTOs
-@using FinanceManager.Application.Enums
-@using FinanceManager.Application.UseCases
-@using FinanceManager.Application.UseCases.Budget
-@using FinanceManager.Application.UseCases.Categories
-@using FinanceManager.Application.UseCases.Dates
-@using FinanceManager.Application.UseCases.Import
-@using FinanceManager.Application.UseCases.Transactions
-@using FinanceManager.Application.UseCases.Transfers
-@using FinanceManager.Application.Utilities
-
-@using FinanceManager.WebApp
-@using FinanceManager.WebApp.Components
 @using FinanceManager.WebApp.Components.Base
-@using FinanceManager.WebApp.Components.Features
-@using FinanceManager.WebApp.Components.Features.Budget
-@using FinanceManager.WebApp.Components.Features.Categories
-@using FinanceManager.WebApp.Components.Features.Categories.Group
-@using FinanceManager.WebApp.Components.Features.Dashboard
-@using FinanceManager.WebApp.Components.Features.Import
-@using FinanceManager.WebApp.Components.Features.Review
-@using FinanceManager.WebApp.Components.Features.Statistics
-@using FinanceManager.WebApp.Components.Features.Transactions
-@using FinanceManager.WebApp.Components.Features.Transfers
-@using FinanceManager.WebApp.Components.Layout
-@using FinanceManager.WebApp.Components.Pages
-@using FinanceManager.WebApp.Components.Pages.Auth
-@using FinanceManager.WebApp.Components.Shared
 @using FinanceManager.WebApp.Components.Shared.Buttons
+@using FinanceManager.WebApp.Components.Shared.Elements
 @using FinanceManager.WebApp.Components.Shared.Inputs
+@using FinanceManager.WebApp.Components.Shared.Modals
 @using FinanceManager.WebApp.Components.Shared.Selects
+@using FinanceManager.WebApp.Components.Shared.Sidebars
 @using FinanceManager.WebApp.Components.Shared.Wrappers
-@using FinanceManager.WebApp.Enums
 @using FinanceManager.WebApp.Models
 @using FinanceManager.WebApp.Navigation
 @using FinanceManager.WebApp.Utilities

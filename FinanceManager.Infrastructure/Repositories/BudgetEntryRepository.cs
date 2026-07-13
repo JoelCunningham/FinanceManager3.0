@@ -52,11 +52,8 @@ public sealed class BudgetEntryRepository(FinanceManagerDbContext dbContext) : I
 
     public async Task UpdateAsync(BudgetEntry entry)
     {
-        var existing = await dbContext.BudgetEntries.FirstOrDefaultAsync(e => e.Id == entry.Id);
-        if (existing is null)
-        {
-            throw new KeyNotFoundException("Budget entry not found");
-        }
+        var existing = await dbContext.BudgetEntries.FirstOrDefaultAsync(e => e.Id == entry.Id)
+            ?? throw new KeyNotFoundException("Budget entry not found");
 
         existing.CategoryId = entry.CategoryId;
         existing.BudgetYearId = entry.BudgetYearId;
@@ -68,11 +65,8 @@ public sealed class BudgetEntryRepository(FinanceManagerDbContext dbContext) : I
 
     public async Task DeleteAsync(Guid id)
     {
-        var entry = await dbContext.BudgetEntries.FirstOrDefaultAsync(e => e.Id == id);
-        if (entry is null)
-        {
-            throw new KeyNotFoundException("Budget entry not found");
-        }
+        var entry = await dbContext.BudgetEntries.FirstOrDefaultAsync(e => e.Id == id)
+            ?? throw new KeyNotFoundException("Budget entry not found");
 
         dbContext.BudgetEntries.Remove(entry);
     }

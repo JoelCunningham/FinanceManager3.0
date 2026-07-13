@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 
 [AllowAnonymous]
 [Layout(typeof(AuthLayout))]
-public partial class AuthPageBase : PageBase
+public partial class AuthPageBase : MainPageBase
 {
     [Inject] protected UserManager<ApplicationUser> UserManager { get; set; } = default!;
     [Inject] protected SignInManager<ApplicationUser> SignInManager { get; set; } = default!;

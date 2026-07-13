@@ -7,7 +7,7 @@ public sealed record BackdateTransactionResult(IEnumerable<UseCaseError> Errors)
 
 public sealed class BackdateTransaction()
 {
-    public async Task<BackdateTransactionResult> ExecuteAsync(TransactionSummary transaction, DateTime date, DateTime initialDate)
+    public static async Task<BackdateTransactionResult> ExecuteAsync(TransactionSummary transaction, DateTime date, DateTime initialDate)
     {
         if (date > initialDate)
         {

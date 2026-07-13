@@ -5,7 +5,6 @@ using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
-using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.Utilities;
 
 public sealed record GetChart2DataResult(
@@ -30,7 +29,7 @@ public sealed class GetChart2Data(ChartHelper transactionHelper, GetBudgetScopes
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
 
         var relevantCategories = mode == TransactionsGraphMode.Income
-            ? categories.Where(c => c.IsIncome).ToList()
+            ? [.. categories.Where(c => c.IsIncome)]
             : categories.Where(c => !c.IsIncome).ToList();
 
         if (drilldownGroupId is Guid id)

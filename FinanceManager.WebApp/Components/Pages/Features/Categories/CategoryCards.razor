@@ -1,0 +1,21 @@
+@code {
+    [Parameter] public string Title { get; set; } = default!;
+    [Parameter] public IEnumerable<CategoryGroupSummary> Groups { get; set; } = default!;
+
+    [Parameter] public EventCallback<CategoryGroupSummary> OnGroupClicked { get; set; }
+}
+
+<h5 class="category-cards-title">@Title</h5>
+@if (!Groups.Any())
+{
+    <Alert Level="Alert.AlertLevel.Info">No category areas match your search.</Alert>
+}
+else
+{
+    <div class="category-cards-grid">
+        @foreach (var group in Groups)
+        {
+            <CategoryGroupCard Group="group" OnClicked="OnGroupClicked" />
+        }
+    </div>
+}

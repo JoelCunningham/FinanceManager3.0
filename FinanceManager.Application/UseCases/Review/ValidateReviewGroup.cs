@@ -7,7 +7,7 @@ public sealed record ValidateReviewGroupResult(IEnumerable<UseCaseError> Errors)
 
 public sealed class ValidateReviewGroup
 {
-    public Task<ValidateReviewGroupResult> ExecuteAsync(ReviewGroup group)
+    public static Task<ValidateReviewGroupResult> ExecuteAsync(ReviewGroup group)
     {
         var errors = new List<UseCaseValidationError>();
 

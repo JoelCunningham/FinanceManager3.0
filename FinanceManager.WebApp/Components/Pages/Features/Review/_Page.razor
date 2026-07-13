@@ -1,0 +1,34 @@
+﻿@inherits MainPageBase
+
+<PageTitle>Review Activities</PageTitle>
+<PageHeading Heading="Review activities" Subheading="Review and correct activities to help the automatic categorisation get smarter and more accurate." />
+
+<TransactionsReviewGrid Data="Data"
+                        Categories="Categories"
+                        Exclusions="CurrentlyTransferring"
+                        Validation="Validation"
+                        SetCategory="(args) => SetCategory(args.Item1, args.Item2)"
+                        SetDate="(args) => SetDate(args.Item1, args.Item2, args.Item3)"
+                        SetAmount="(args) => SetAmount(args.Item1, args.Item2, args.Item3)"
+                        SaveGroup="(g) => SaveGroup(g)"
+                        ResetGroup="(g) => ResetGroup(g)"
+                        OnFindTransfer="OnFindTransfer"
+                        OnFindReimbursement="(args) => OnFindReimbursement(args.Item1, args.Item2)"
+                        @bind-IsAutoAssignEnabled="IsAutoAssignEnabled"
+                        @bind-IsAutoAssignEnabled:after="OnIsAutoAssignEnabledChanged" />
+
+<FindTransferModal @ref="TransferModal" TransferData="TransferData" Categories="Categories" SetTransfer="SetTransfer" />
+
+<FindReimburseModal @ref="ReimburseModal" ReimburseData="ReimburseData" Categories="Categories" SetReimburse="SetReimburse" />
+
+@if (!Data.HasResults || Data.Result is null)
+{
+    if (Data.Query?.HasFilters == true)
+    {
+        <Alert Level="Alert.AlertLevel.Info">No activities found matching the current filters.</Alert>
+    }
+    else
+    {
+        <Alert Level="Alert.AlertLevel.Success" ActionText="Import more" ActionUrl="/Import">You're up to date! All activities have been reviewed.</Alert>
+    }
+}

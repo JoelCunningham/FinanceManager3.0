@@ -1,0 +1,4 @@
+[**/Migrations/*.cs]
+dotnet_diagnostic.IDE0079.severity = none
+dotnet_diagnostic.IDE0300.severity = none
+dotnet_diagnostic.CA1861.severity = none

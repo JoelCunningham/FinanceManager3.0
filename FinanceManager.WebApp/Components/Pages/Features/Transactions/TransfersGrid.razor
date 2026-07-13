@@ -1,0 +1,58 @@
+@code {
+    [Parameter] public DataGridModel<FilterQuery, TransferSummary> Data { get; set; } = new();
+
+    [Parameter] public EventCallback<DataGridModel<FilterQuery, TransferSummary>> DataChanged { get; set; }
+
+    [Parameter] public IReadOnlyList<string> Accounts { get; set; } = [];
+
+    [Parameter] public EventCallback<TransferSummary> OpenDetails { get; set; }
+
+    [Parameter] public EventCallback<TransferSummary> RemoveTransfer { get; set; }
+}
+
+<div class="transfers-grid">
+    <ListLayout TItem="TransferSummary" Data="Data">
+        <FilterTemplate Context="query">
+            <HxSelect Label="Account from" @bind-Value="query.FilterAccountFrom" Data="Accounts" Nullable="true" NullText="- Any -" />
+            <HxSelect Label="Account to" @bind-Value="query.FilterAccountTo" Data="Accounts" Nullable="true" NullText="- Any -" />
+            <HxInputDate Label="Date from" @bind-Value="query.FilterDateFrom" MaxDate="@((query.FilterDateTo < DateTime.Today) ? query.FilterDateTo.Value : DateTime.Today)" CalendarIcon="BootstrapIcon.Calendar" />
+            <HxInputDate Label="Date to" @bind-Value="query.FilterDateTo" MinDate="query.FilterDateFrom" MaxDate="DateTime.Today" CalendarIcon="BootstrapIcon.Calendar" />
+            <HxInputNumber Label="Min amount" @bind-Value="query.FilterAmountMin" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" max="@query.FilterAmountMax" />
+            <HxInputNumber Label="Max amount" @bind-Value="query.FilterAmountMax" Type="InputType.Number" Decimals="2" InputGroupStartText="$" step="0.01" min="@query.FilterAmountMin" />
+            <HxSelect Label="Source" @bind-Value="query.FilterSource" Data="Enum.GetValues<TransferSource>()" Nullable="false" TextSelector="@(t => t.ToString())" />
+        </FilterTemplate>
+
+        <DataTemplate>
+            <HxGrid @ref="Data.Grid" DataProvider="Data.GetGridData" PageSize="Data.Query.PageSize" PreserveSelection="false" SelectionEnabled="false" Responsive="false" Hover="true">
+                <Columns>
+                    <HxGridColumn HeaderText="Type" ItemCssClass="text-center" HeaderCssClass="text-center">
+                        <ItemTemplate Context="transfer">
+                            @if (transfer.IsUserCreated)
+                            {
+                                <HxTooltip Text="User created transfer"><HxIcon Icon="BootstrapIcon.HandIndex" /></HxTooltip>
+                            }
+                            else
+                            {
+
+                                <HxTooltip Text="Automatically created transfer"><HxIcon Icon="BootstrapIcon.Gear" /></HxTooltip>
+                            }
+                        </ItemTemplate>
+                    </HxGridColumn>
+                    <HxGridColumn HeaderText="From" SortString="FromAccount" SortKeySelector="@(t => t.From.Account)"><ItemTemplate Context="transfer"><div class="d-flex align-items-center gap-2"><div class="bank-logo-container"><BankLogo BankName="@transfer.From.Bank" /></div><span>@transfer.From.Account</span></div></ItemTemplate></HxGridColumn>
+                    <HxGridColumn><ItemTemplate><HxIcon Icon="BootstrapIcon.ArrowRight" /></ItemTemplate></HxGridColumn>
+                    <HxGridColumn HeaderText="To" SortString="ToAccount" SortKeySelector="@(t => t.To.Account)"><ItemTemplate Context="transfer"><div class="d-flex align-items-center gap-2"><div class="bank-logo-container"><BankLogo BankName="@transfer.To.Bank" /></div><span>@transfer.To.Account</span></div></ItemTemplate></HxGridColumn>
+                    <HxGridColumn HeaderText="Date" SortString="Date" SortKeySelector="@(t => t.Date)" ItemTextSelector="@(t => t.Date.ToShortDateString())" />
+                    <HxGridColumn HeaderText="Description" ItemCssClass="text-truncate fluid-truncate-col"><ItemTemplate Context="transfer"><span title="@transfer.Description">@transfer.Description</span></ItemTemplate></HxGridColumn>
+                    <HxGridColumn HeaderText="Amount" SortString="Amount" SortKeySelector="@(t => t.Amount)" ItemTextSelector="@(t => t.Amount.ToString("C"))" HeaderCssClass="text-end" ItemCssClass="text-end" />
+
+                    <HxContextMenuGridColumn Context="transfer">
+                        <HxContextMenu>
+                            <HxContextMenuItem Text="Details" OnClick="() => OpenDetails.InvokeAsync(transfer)" Icon="BootstrapIcon.InfoCircle" />
+                            <HxContextMenuItem Text="Separate" OnClick="() => RemoveTransfer.InvokeAsync(transfer)" Icon="BootstrapIcon.BoxArrowUpRight" />
+                        </HxContextMenu>
+                    </HxContextMenuGridColumn>
+                </Columns>
+            </HxGrid>
+        </DataTemplate>
+    </ListLayout>
+</div>

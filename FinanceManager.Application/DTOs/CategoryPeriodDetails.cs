@@ -10,7 +10,7 @@ public class CategoryPeriodDetails : CategorySummary
     public int TotalTransactions { get; set; }
 
     public decimal SignedPeriodTotal => IsIncome ? PeriodSpend : -PeriodSpend;
-    public decimal? PeriodProportion => GetProportion(PeriodBudget, SignedPeriodTotal, IsIncome);
+    public decimal? PeriodProportion => GetProportion(PeriodBudget, SignedPeriodTotal);
 
     public static CategoryPeriodDetails FromCategory(Category category, decimal spend, decimal budget, int totalTransactions)
     {
@@ -29,7 +29,7 @@ public class CategoryPeriodDetails : CategorySummary
         };
     }
 
-    private static decimal? GetProportion(decimal budget, decimal actual, bool isIncome)
+    private static decimal? GetProportion(decimal budget, decimal actual)
     {
         if (budget == 0 && actual == 0) return null;
         if (budget == 0 && actual != 0) return decimal.MaxValue;

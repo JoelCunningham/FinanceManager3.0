@@ -2,7 +2,7 @@
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="@typeof(Layout.MainLayout)">
             <NotAuthorized>
-                <Redirect Destination="@FinanceManager.WebApp.Navigation.Pages.Login" />
+                <FinanceManager.WebApp.Components.Pages.Auth.Redirect Destination="@FinanceManager.WebApp.Navigation.Pages.Login" />
             </NotAuthorized>
         </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />

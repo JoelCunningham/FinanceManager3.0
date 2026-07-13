@@ -12,9 +12,9 @@ public sealed record GetCategoryGroupDetailsResult(
 
 public sealed class GetCategoryGroupDetails(ICategoryGroupRepository categoryGroupRepository, IBudgetYearRepository budgetYearRepository, ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
 {
-    public async Task<GetCategoryGroupDetailsResult> ExecuteAsync(Guid groupId, int periodOffset)
+    public async Task<GetCategoryGroupDetailsResult> ExecuteAsync(string groupName, int periodOffset)
     {
-        var group = await categoryGroupRepository.GetOrDefaultAsync(groupId) ?? throw new InvalidOperationException("Category group not found");
+        var group = await categoryGroupRepository.GetByNameAsync(groupName);
 
         var categoryDetails = new List<CategoryPeriodDetails>();
         var categories = group.Categories is null ? [] : group.Categories.ToList();
