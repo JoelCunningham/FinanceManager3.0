@@ -25,7 +25,8 @@ public partial class _Page : MainPageBase
 
     protected override async Task OnInitializedAsync()
     {
-        Validation.Messenger = Messenger;
+        await base.OnInitializedAsync();
+
         AvailableParsers = UseCases.GetParsers().Parsers;
         SelectedParser = AvailableParsers.Count > 0 ? AvailableParsers[0] : null;
     }

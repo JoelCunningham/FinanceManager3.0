@@ -13,7 +13,7 @@
         display: grid;
         width: max-content;
         min-width: 100%;
-        font-size: var(--fontsize-tablecontent);
+        font-size: var(--fontsize-label);
 
         .budget-grid-cell {
             overflow: hidden;

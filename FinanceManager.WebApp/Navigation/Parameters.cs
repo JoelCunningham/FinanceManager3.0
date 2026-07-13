@@ -11,4 +11,6 @@ public static class Parameters
 
     public const string Name = "Name";
     public const string Group = "Group";
+
+    public const string Success = "Success";
 }

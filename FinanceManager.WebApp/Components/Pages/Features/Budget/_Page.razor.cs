@@ -41,7 +41,8 @@ public partial class _Page : MainPageBase
 
     protected override async Task OnInitializedAsync()
     {
-        Validation.Messenger = Messenger;
+        await base.OnInitializedAsync();
+
         await ReloadAsync(DateTime.Now.Year);
         HideEmptyCategories = HasPopulatedCategories && await Preferences.HideEmptyBudgetCategories;
     }

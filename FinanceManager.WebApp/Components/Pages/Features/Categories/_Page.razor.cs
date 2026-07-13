@@ -27,7 +27,8 @@ public partial class _Page : MainPageBase
 
     protected override async Task OnInitializedAsync()
     {
-        Validation.Messenger = Messenger;
+        await base.OnInitializedAsync();
+
         await RefreshCategories();
     }
 

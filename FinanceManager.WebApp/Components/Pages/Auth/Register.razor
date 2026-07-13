@@ -1,38 +1,44 @@
-﻿<PageHeading Heading="Register" Subheading="Create a new account" />
-
-<EditForm FormName="RegisterForm" Model="Model" OnValidSubmit="HandleRegister">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label>Name</label>
-        <InputText class="form-control" @bind-Value="Model.Name" />
-    </div>
-
-    <div class="mb-3">
-        <label>Email</label>
-        <InputText class="form-control" @bind-Value="Model.Email" />
-    </div>
-
-    <div class="mb-3">
-        <label>Password</label>
-        <InputText type="password" class="form-control" @bind-Value="Model.Password" />
-    </div>
-
-    <div class="mb-3">
-        <label>Confirm Password</label>
-        <InputText type="password" class="form-control" @bind-Value="Model.ConfirmPassword" />
-    </div>
-
-    <button class="btn btn-primary">Register</button>
-</EditForm>
-
-@if (Errors.Any())
+﻿@if (Success)
 {
-    <ul class="text-danger mt-2">
-        @foreach (var error in Errors)
-        {
-            <li>@error</li>
-        }
-    </ul>
+    <PageHeading Heading="Check your email" Centred="true" />
+
+    <div class="textblock">
+        <p class="text-center">We've sent a confirmation link to</p>
+        <p class="text-center mb-3"><b>@Model.Email</b>.</p>
+
+        <p class="text-center">Click the link in the email to verify your account and get started.</p>
+    </div>
+
+    <HxButton Color="ThemeColor.Primary" OnClick="() => Navigation.NavigateTo(Pages.Login)">Go to sign in</HxButton>
+
+    <span class="auth-link">Wrong email address? <a href="@Pages.Register" @onclick="() => Success = false">Go back and change it</a></span>
+}
+else
+{
+    <PageHeading Heading="Create your account" Subheading="Sign up today and take control of your finances." />
+
+    @if (Message is not null)
+    {
+        <Alert Level="Alert.AlertLevel.Error">@Message</Alert>
+    }
+
+    <EditForm FormName="RegisterForm" Model="Model" OnValidSubmit="HandleRegister">
+        <HxInputText @bind-Value="Model.Name" Label="Name" />
+
+        <HxInputText @bind-Value="Model.Email" Label="Email address" />
+
+        <HxInputText @bind-Value="Model.Password" Type="InputType.Password" Label="Password" />
+
+        <HxInputText @bind-Value="Model.ConfirmPassword" Type="InputType.Password" Label="Confirm password" />
+
+        <HxCheckbox @bind-Value="Model.AcceptTerms">
+            <TextTemplate>
+                I agree to the <a href="@Pages.TermsOfService" target="_blank">Terms of Service</a> and <a href="@Pages.PrivacyPolicy" target="_blank">Privacy Policy</a>.
+            </TextTemplate>
+        </HxCheckbox>
+
+        <HxSubmit Color="ThemeColor.Primary">Create account</HxSubmit>
+    </EditForm>
+
+    <span class="auth-link">Already have an account? <a href="@Pages.Login">Sign in</a></span>
 }

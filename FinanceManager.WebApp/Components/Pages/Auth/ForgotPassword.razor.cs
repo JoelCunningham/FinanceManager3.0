@@ -2,6 +2,7 @@ namespace FinanceManager.WebApp.Components.Pages.Auth;
 
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
+using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.ComponentModel.DataAnnotations;
@@ -10,23 +11,48 @@ using System.ComponentModel.DataAnnotations;
 public partial class ForgotPassword(IEmailSender emailSender) : AuthPageBase
 {
     private ForgotPasswordModel Model { get; set; } = new();
-    private string Message { get; set; } = "";
+    private string? Message { get; set; }
+
+    private bool Success { get; set; }
 
     private sealed class ForgotPasswordModel
     {
         [Required][EmailAddress] public string Email { get; set; } = "";
     }
 
-    private async Task HandleForgotPassword()
+    protected override void OnInitialized()
     {
-        await AttemptForgotPassword();
-        Message = "If an account exists, a reset link has been sent.";
+        SetSidebar();
     }
 
-    private async Task AttemptForgotPassword()
+    private void SetSidebar()
+    {
+        Layout?.UpdateSidebar(
+            "Locked out?",
+            "No problem.",
+            "Enter the email on your account and we'll send you a link to get back in.",
+            BootstrapIcon.Lock);
+    }
+
+    private async Task HandleForgotPassword()
+    {
+        Message = await ValidateModel() ?? await AttemptForgotPassword();  
+        Success = Message is null;
+    }
+
+    private async Task<string?> ValidateModel()
+    {
+        if (string.IsNullOrWhiteSpace(Model.Email))
+        {
+            return "Please enter your email address.";
+        }
+        return null;
+    }
+
+    private async Task<string?> AttemptForgotPassword()
     {
         var user = await UserManager.FindByEmailAsync(Model.Email);
-        if (user == null || user.Email == null) return;
+        if (user == null || user.Email == null) return null;
 
         var token = await UserManager.GeneratePasswordResetTokenAsync(user);
 
@@ -38,5 +64,6 @@ public partial class ForgotPassword(IEmailSender emailSender) : AuthPageBase
         var resetLink = Navigator.CreateUrl(Pages.ResetPassword, parameters);
 
         await emailSender.SendEmailAsync(user.Email, "Reset your password", $"Reset your password here: {resetLink}");
+        return null;
     }
 }

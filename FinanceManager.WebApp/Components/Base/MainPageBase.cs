@@ -14,10 +14,16 @@ public partial class MainPageBase : ComponentBase
 {
     [Inject] public UseCases UseCases { get; set; } = default!;
     [Inject] public Preferences Preferences { get; set; } = default!;
-    [Inject] public IHxMessengerService Messenger { get; set; } = default!;
     [Inject] public NavigationManager Navigation { get; set; } = default!;
+
+    [Inject] private IHxMessengerService Messenger { get; set; } = default!;
 
     [Parameter] public string? ActiveTabId { get; set; }
 
     public ValidationModel Validation { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Validation.Messenger = Messenger;
+    }
 }

@@ -32,7 +32,7 @@ public partial class _Page : MainPageBase
 
     protected override async Task OnInitializedAsync()
     {
-        Validation.Messenger = Messenger;
+        await base.OnInitializedAsync();
 
         UniqueAccounts = (await UseCases.GetUniqueAccountsAsync()).Accounts;
         Categories = (await UseCases.GetCategoriesAsync()).Categories;

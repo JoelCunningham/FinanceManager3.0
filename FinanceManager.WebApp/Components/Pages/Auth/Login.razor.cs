@@ -2,6 +2,7 @@ namespace FinanceManager.WebApp.Components.Pages.Auth;
 
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
+using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 public partial class Login : AuthPageBase
 {
     private LoginModel Model { get; set; } = new();
-    private string Message { get; set; } = "";
+    private string? Message { get; set; }
 
     private string? ReturnPath { get; set; }
 
@@ -22,16 +23,39 @@ public partial class Login : AuthPageBase
 
     protected override void OnInitialized()
     {
+        SetSidebar();
+
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
         ReturnPath = query[Parameters.ReturnPath];
     }
 
+    private void SetSidebar()
+    {
+        Layout?.UpdateSidebar(
+            "Your finances,",
+            "clearly in view.",
+            "Track spending, set budgets, and understand where your money goes — all in one place.", 
+            BootstrapIcon.Stars);
+    }
+
     private async Task HandleLogin()
     {
-        var result = await AttemptLogin();
-        Message = result ?? "";
+        Message = await ValidateModel() ?? await AttemptLogin();
+    }
+
+    private async Task<string?> ValidateModel()
+    {
+        if (string.IsNullOrWhiteSpace(Model.Email))
+        {
+            return "Please enter your email address.";
+        }
+        if (string.IsNullOrWhiteSpace(Model.Password))
+        {
+            return "Please enter your password.";
+        }
+        return null;
     }
 
     private async Task<string?> AttemptLogin()

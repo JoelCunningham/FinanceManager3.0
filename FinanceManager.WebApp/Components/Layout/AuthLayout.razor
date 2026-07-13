@@ -1,10 +1,30 @@
 ﻿@inherits LayoutComponentBase
 
-<HxMessenger Position="ToastContainerPosition.TopCenter" />
-<HxMessageBoxHost />
+@code {
+    public string Title1 { get; set; } = "Default Title1";
+    public string Title2 { get; set; } = "Default Title2";
+    public string Subtitle { get; set; } = "Default Subtitle";
+    public BootstrapIcon Icon { get; set; } = BootstrapIcon.InfoCircle;
 
-<div class="d-md-flex min-vh-100">
-    <main class="main p-4 flex-grow-1">
-        @Body
-    </main>
-</div>
+    public void UpdateSidebar(string title1, string title2, string subtitle, BootstrapIcon icon)
+    {
+        Title1 = title1;
+        Title2 = title2;
+        Subtitle = subtitle;
+        Icon = icon;
+        StateHasChanged();
+    }
+}
+
+<HxMessenger Position="ToastContainerPosition.TopCenter" />
+
+<CascadingValue Value="this">
+    <div class="d-md-flex min-vh-100">
+        <AuthSidebar Title1="@Title1" Title2="@Title2" Subtitle="@Subtitle" Icon="Icon" />
+        <main class="main main-auth">
+            <div class="auth-card">
+                @Body
+            </div>
+        </main>
+    </div>
+</CascadingValue>

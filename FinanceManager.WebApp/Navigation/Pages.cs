@@ -23,6 +23,9 @@ public static class Pages
     public const string ResetPassword = "/ResetPassword";
     public const string ConfirmEmail = "/ConfirmEmail";
 
+    public const string PrivacyPolicy = "/PrivacyPolicy";
+    public const string TermsOfService = "/TermsOfService";
+
     public const string AuthLogin = "/Auth/Login";
     public const string AuthLogout = "/Auth/Logout";
 

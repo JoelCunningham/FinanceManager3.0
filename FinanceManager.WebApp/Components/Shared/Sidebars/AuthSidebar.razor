@@ -1,0 +1,19 @@
+﻿@code {
+    [Parameter] public string Title1 { get; set; } = default!;
+    [Parameter] public string Title2 { get; set; } = default!;
+    [Parameter] public string Subtitle { get; set; } = default!;
+    [Parameter] public BootstrapIcon Icon { get; set; } = default!;
+}
+
+﻿<HxSidebar CssClass="auth-sidebar" Collapsed="false">
+    <HeaderTemplate>
+        <SidebarBrand />
+        <h2>@Title1</h2>
+        <h2>@Title2</h2>
+        <p>@Subtitle</p>
+    </HeaderTemplate>
+    <FooterTemplate>
+        <HxIcon Icon="Icon" />
+    </FooterTemplate>
+    <TogglerTemplate />
+</HxSidebar>

@@ -34,7 +34,8 @@ public partial class _Page : MainPageBase
 
     protected override async Task OnInitializedAsync()
     {
-        Validation.Messenger = Messenger;
+        await base.OnInitializedAsync();
+
         TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
     }
 

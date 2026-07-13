@@ -8,8 +8,16 @@
         align-items: center;
     }
 
-    .parts ::deep > *:not(:last-child)::after {
+    .parts.dot ::deep > *:not(:last-child)::after {
         content: "·";
         margin: 0 0.2rem 0 0.5rem;
     }
+
+    .parts.linebreak ::deep > * {
+        display: block;
+    }
+
+        .parts.linebreak ::deep > *:not(:first-child) {
+            margin-top: var(--space-small);
+        }
 }

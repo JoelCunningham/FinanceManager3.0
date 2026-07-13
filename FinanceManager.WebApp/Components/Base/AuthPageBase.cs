@@ -14,4 +14,6 @@ public partial class AuthPageBase : MainPageBase
     [Inject] protected UserManager<ApplicationUser> UserManager { get; set; } = default!;
     [Inject] protected SignInManager<ApplicationUser> SignInManager { get; set; } = default!;
     [Inject] protected AuthenticationService Authentication { get; set; } = default!;
+
+    [CascadingParameter] public AuthLayout? Layout { get; set; }
 }
