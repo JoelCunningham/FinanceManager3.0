@@ -17,10 +17,10 @@
     {
         if (!OnItemClick.HasDelegate || Options is null) return;
 
-        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/EChartsExtentions.js");
+        _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
         _dotNetRef ??= DotNetObjectReference.Create(this);
 
-        await _module.InvokeVoidAsync("attachClickHandler", _wrapper, _dotNetRef);
+        await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
     }
 
     public async ValueTask DisposeAsync()

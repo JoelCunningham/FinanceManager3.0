@@ -96,6 +96,7 @@ main {
             button {
                 width: 100%;
                 padding: var(--space-small);
+                margin-bottom: var(--space-medium);
             }
 
             .auth-link {
@@ -108,6 +109,10 @@ main {
             .textblock {
                 width: 300px;
                 margin: -2rem auto var(--space-large) auto;
+
+                &.wide {
+                    width: 420px;
+                }
 
                 p {
                     margin: 0;
