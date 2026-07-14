@@ -2,7 +2,7 @@
 
 public static class Pages
 {
-    public const string Default = "/";
+    public const string Root = "/";
 
     public const string Activities = "/Activities";
     public const string Budget = "/Budget";

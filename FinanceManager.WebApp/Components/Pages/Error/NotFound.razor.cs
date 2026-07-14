@@ -9,4 +9,21 @@ using Microsoft.AspNetCore.Components;
 public partial class NotFound : ErrorPageBase
 {
     [Parameter] public string? Path { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Path is null || Path == Pages.Root)
+        {
+            var user = (await AuthStateProvider.GetAuthenticationStateAsync()).User;
+
+            if (user.Identity?.IsAuthenticated is true)
+            {
+                Navigation.NavigateTo(Pages.Dashboard);
+            }
+            else
+            {
+                Navigation.NavigateTo(Pages.Login);
+            }
+        }
+    }
 }

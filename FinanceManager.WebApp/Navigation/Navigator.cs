@@ -8,14 +8,14 @@ public class Navigator
     {
         StringBuilder urlBuilder = new();
 
-        urlBuilder.Append(page ?? Pages.Default);
+        urlBuilder.Append(page ?? Pages.Root);
 
         if (parameters != null)
         {
             urlBuilder.Append(BeginParameters);
             foreach (var (name, value) in parameters)
             {
-                if (string.IsNullOrWhiteSpace(value) || value == Pages.Default) continue;
+                if (string.IsNullOrWhiteSpace(value) || value == Pages.Root) continue;
                 urlBuilder.Append($"{name}{AssignParameter}{Uri.EscapeDataString(value)}");
                 urlBuilder.Append(JoinParameters);
             }
