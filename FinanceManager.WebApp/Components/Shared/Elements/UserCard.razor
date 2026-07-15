@@ -4,7 +4,7 @@
     [Parameter] public string UserName { get; set; } = string.Empty;
 }
 
-<div class="card">
+<div class="card user-card">
     <span class="card-title">Welcome, @UserName</span>
     <HxTooltip Text="Logout" Placement="TooltipPlacement.Top">
         <HxButton Icon="BootstrapIcon.BoxArrowRight" OnClick="() => Navigation.NavigateTo(Pages.Logout, true)" />

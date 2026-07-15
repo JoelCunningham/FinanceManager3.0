@@ -46,7 +46,7 @@ public class ImportService(ParserService parserService) { }
 ### Use required properties
 
 ```csharp
-public sealed class Transaction : IEntity
+public sealed class Transaction : UserOwnedEntity
 {
     public required string Description { get; set; }
     public required BankRecord Record { get; set; }

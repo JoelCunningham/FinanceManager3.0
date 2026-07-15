@@ -25,6 +25,8 @@ public partial class _Page : MainPageBase
     private List<CategoryGroupSummary> CategoryGroups { get; set; } = [];
     public List<CategorySummary> AvailableCategories { get; set; } = [];
 
+    private UserStatus UserStatus { get; set; }
+
     private const string UncategorisedLabel = "Uncategorised";
 
     private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
@@ -32,6 +34,9 @@ public partial class _Page : MainPageBase
 
     protected override async Task OnInitializedAsync()
     {
+        UserStatus = (await UseCases.GetUserStatusAsync()).Status;
+        if (UserStatus == UserStatus.New) return;
+
         var initialRange = new ScopedRange(BudgetScope.Monthly, YearStart, DateConstants.MONTHS_IN_YEAR);
         var currentScope = (await UseCases.GetBudgetScopesAsync(initialRange)).GreatestScopeInRange;
 

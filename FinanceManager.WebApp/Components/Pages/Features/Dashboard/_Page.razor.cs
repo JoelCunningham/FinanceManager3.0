@@ -1,6 +1,7 @@
 namespace FinanceManager.WebApp.Components.Pages.Features.Dashboard;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Components;
 public partial class _Page : MainPageBase
 {
     public GetDashboardDataResult? DashboardData { get; set; }
+    private UserStatus UserStatus { get; set; }
+
     public IReadOnlyList<BudgetCategoryUsage> BudgetCategoryUsages => DashboardData?.BudgetCategoryUsages ?? [];
 
     private ScopedPeriod CurrentPeriod { get; set; } = new ScopedPeriod();
@@ -17,6 +20,8 @@ public partial class _Page : MainPageBase
     protected override async Task OnInitializedAsync()
     {
         DashboardData = await UseCases.GetDashboardDataAsync();
+        UserStatus = (await UseCases.GetUserStatusAsync()).Status;
+
         CurrentPeriod = CurrentPeriod = DashboardData?.AvailablePeriods.Count > 0
             ? DashboardData.AvailablePeriods[0]
             : new ScopedPeriod();

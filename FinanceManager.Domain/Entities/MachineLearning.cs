@@ -2,10 +2,8 @@
 
 using FinanceManager.Domain.Entities.Base;
 
-public sealed class MachineLearning : IEntity
+public sealed class MachineLearning : UserOwnedEntity
 {
-    public Guid Id { get; set; }
-
     public Guid CategoryId { get; set; }
     public required Category Category { get; set; }
 

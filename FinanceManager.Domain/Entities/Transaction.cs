@@ -2,10 +2,8 @@
 
 using FinanceManager.Domain.Entities.Base;
 
-public sealed class Transaction : IEntity
+public sealed class Transaction : UserOwnedEntity
 {
-    public Guid Id { get; set; }
-
     public Guid RecordId { get; set; }
     public required BankRecord Record { get; set; }
 

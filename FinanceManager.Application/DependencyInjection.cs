@@ -50,6 +50,7 @@ public static class DependencyInjection
 
         // Dashboard use cases
         services.AddScoped<GetDashboardData>();
+        services.AddScoped<GetUserStatus>();
 
         // Review use cases
         services.AddScoped<AutoAssignCategories>();

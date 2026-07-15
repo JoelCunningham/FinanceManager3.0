@@ -2,13 +2,16 @@ namespace FinanceManager.Infrastructure.Data;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
+using FinanceManager.Domain.Entities.Base;
 using FinanceManager.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Reflection;
 
-public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options) : IdentityDbContext<ApplicationUser>(options), IDataStore
+public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options, ICurrentUserService currentUserService)
+    : IdentityDbContext<ApplicationUser>(options), IDataStore
 {
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<BankRecord> BankRecords => Set<BankRecord>();
@@ -21,6 +24,8 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
     public DbSet<BudgetEntry> BudgetEntries => Set<BudgetEntry>();
     public DbSet<Preference> Preferences => Set<Preference>();
 
+    public Guid? CurrentUserId => currentUserService.IsAuthenticated ? currentUserService.UserId : null;
+
     public Task SaveAsync() { return SaveChangesAsync(); }
     public ITransactionScope BeginTransaction() { return new TransactionScope(Database.BeginTransaction()); }
 
@@ -31,10 +36,36 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
         public ValueTask DisposeAsync() { return transaction.DisposeAsync(); }
     }
 
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var currentUserId = currentUserService.UserId;
+
+        if (currentUserId.HasValue)
+        {
+            foreach (var entry in ChangeTracker.Entries<UserOwnedEntity>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.UserId = currentUserId.Value;
+                }
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
+        ConfigureIdentityTables(builder);
+        ConfigureRelationships(builder);
+        ConfigureIdentityIndexes(builder);
+        ConfigureIdentityFilters(builder);
+    }
+
+    private static void ConfigureIdentityTables(ModelBuilder builder)
+    {
         builder.Entity<ApplicationUser>().ToTable("Users");
         builder.Entity<IdentityRole>().ToTable("Roles");
         builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
@@ -42,7 +73,10 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
         builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins");
         builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims");
         builder.Entity<IdentityUserToken<string>>().ToTable("UserTokens");
+    }
 
+    private static void ConfigureRelationships(ModelBuilder builder)
+    {
         builder.Entity<BankAccount>()
             .HasMany(a => a.BankRecords)
             .WithOne(r => r.BankAccount)
@@ -100,5 +134,37 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
             .WithMany()
             .HasForeignKey(b => b.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);
+    }
+
+
+    private static void ConfigureIdentityIndexes(ModelBuilder builder)
+    {
+        foreach (var type in GetIdentityEntityTypes(builder))
+        {
+            builder.Entity(type).HasIndex(nameof(UserOwnedEntity.UserId));
+        }
+    }
+
+    private void ConfigureIdentityFilters(ModelBuilder builder)
+    {
+        var configureMethod = typeof(FinanceManagerDbContext).GetMethod(nameof(ConfigureIdentityFilter), BindingFlags.NonPublic | BindingFlags.Instance);
+
+        foreach (var type in GetIdentityEntityTypes(builder))
+        {
+            var genericMethod = configureMethod?.MakeGenericMethod(type);
+            genericMethod?.Invoke(this, [builder]);
+        }
+    }
+
+    private static IEnumerable<Type> GetIdentityEntityTypes(ModelBuilder builder)
+    {
+        return builder.Model.GetEntityTypes()
+            .Select(e => e.ClrType)
+            .Where(t => typeof(UserOwnedEntity).IsAssignableFrom(t) && t != typeof(UserOwnedEntity));
+    }
+
+    private void ConfigureIdentityFilter<TEntity>(ModelBuilder builder) where TEntity : UserOwnedEntity
+    {
+        builder.Entity<TEntity>().HasQueryFilter(t => CurrentUserId != null && t.UserId == CurrentUserId);
     }
 }

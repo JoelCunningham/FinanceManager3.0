@@ -1,14 +1,14 @@
 namespace FinanceManager.WebApp.Components.Pages.Auth;
 
+using FinanceManager.Application.Interfaces;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using System.ComponentModel.DataAnnotations;
 
 [Route(Pages.ForgotPassword)]
-public partial class ForgotPassword(IEmailSender emailSender) : AuthPageBase
+public partial class ForgotPassword(IUserEmailService emailSender) : AuthPageBase
 {
     private ForgotPasswordModel Model { get; set; } = new();
     private string? Message { get; set; }

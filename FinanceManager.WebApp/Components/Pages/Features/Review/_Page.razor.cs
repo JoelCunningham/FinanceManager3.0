@@ -27,11 +27,15 @@ public partial class _Page : MainPageBase
     public bool IsFirstAutoAssign { get; set; } = true;
     public bool IsAutoAssignEnabled { get; set; } = true;
 
+    public UserStatus UserStatus { get; set; }
+
     public IEnumerable<TransactionSummary> CurrentlyTransferring { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+
+        UserStatus = (await UseCases.GetUserStatusAsync()).Status;
 
         Data.GetDataFunc = GetData;
         Data.UpdateViewState = StateHasChanged;

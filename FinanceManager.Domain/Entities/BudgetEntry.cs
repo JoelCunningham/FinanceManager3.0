@@ -3,10 +3,8 @@
 using FinanceManager.Domain.Entities.Base;
 using FinanceManager.Domain.Utilities;
 
-public class BudgetEntry : IEntity
+public class BudgetEntry : UserOwnedEntity
 {
-    public Guid Id { get; set; }
-
     public Guid BudgetYearId { get; set; }
     public required BudgetYear BudgetYear { get; set; }
 

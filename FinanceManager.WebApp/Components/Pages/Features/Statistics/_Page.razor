@@ -4,18 +4,27 @@
 
 <PageHeading Heading="Statistics" Subheading="Spend, budget, and trends across your categories" />
 
-<TabPanel @bind-ActiveTabId="ActiveTabId" Page="@Pages.Statistics">
-    <HxTab Title="Spend by category" Id="@Tabs.Legacy1.ToString()">
-        <Content>
-            <Graph2Actions Chart="Chart2" @bind-Range="Chart2.Range" />
-            <Chart Options="Chart2.Options" Range="Chart2.Range" Title="@Chart2.Title" OnItemClick="Chart2.OnDrilldownClickAsync" />
-        </Content>
-    </HxTab>
+@if (UserStatus == UserStatus.New)
+{
+    <NotificationScreen Text="To start getting your statistics, you first need to import your transactions.">
+        <HxButton Color="ThemeColor.Primary" @onclick="() => Navigation.NavigateTo(Pages.Import)">Import now</HxButton>
+    </NotificationScreen>
+}
+else
+{
+    <TabPanel @bind-ActiveTabId="ActiveTabId" Page="@Pages.Statistics">
+        <HxTab Title="Spend by category" Id="@Tabs.Legacy1.ToString()">
+            <Content>
+                <Graph2Actions Chart="Chart2" @bind-Range="Chart2.Range" />
+                <Chart Options="Chart2.Options" Range="Chart2.Range" Title="@Chart2.Title" OnItemClick="Chart2.OnDrilldownClickAsync" />
+            </Content>
+        </HxTab>
 
-    <HxTab Title="Spend over time" Id="@Tabs.Legacy2.ToString()">
-        <Content>
-            <Graph1Actions Chart="Chart1" @bind-Range="Chart1.Range" />
-            <Chart Options="Chart1.Options" Range="Chart1.Range" Title="@Chart1.Title" OnItemClick="Chart1.OnDrilldownClickAsync" />
-        </Content>
-    </HxTab>
-</TabPanel>
+        <HxTab Title="Spend over time" Id="@Tabs.Legacy2.ToString()">
+            <Content>
+                <Graph1Actions Chart="Chart1" @bind-Range="Chart1.Range" />
+                <Chart Options="Chart1.Options" Range="Chart1.Range" Title="@Chart1.Title" OnItemClick="Chart1.OnDrilldownClickAsync" />
+            </Content>
+        </HxTab>
+    </TabPanel>
+}

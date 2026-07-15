@@ -2,9 +2,8 @@
 
 using FinanceManager.Domain.Entities.Base;
 
-public class BankRecord : IEntity
+public class BankRecord : UserOwnedEntity
 {
-    public Guid Id { get; set; }
     public Guid ImportId { get; set; }
 
     public Guid BankAccountId { get; set; }

@@ -2,10 +2,8 @@
 
 using FinanceManager.Domain.Entities.Base;
 
-public sealed class Category : IEntity
+public sealed class Category : UserOwnedEntity
 {
-    public Guid Id { get; set; }
-
     public Guid GroupId { get; set; }
     public required CategoryGroup Group { get; set; }
 

@@ -16,7 +16,25 @@
     </Actions>
 </PageHeading>
 
-<CategoryCards Groups="FilteredGroups" OnGroupClicked="OpenGroupPanel" />
+@if (FilteredGroups.Any())
+{
+
+    <CategoryCards Groups="FilteredGroups" OnGroupClicked="OpenGroupPanel" />
+}
+else
+{
+    if (!string.IsNullOrWhiteSpace(GroupSearch))
+    {
+        <Alert Level="Alert.AlertLevel.Info">No category areas match your search.</Alert>
+    }
+    else
+    {
+        <NotificationScreen Text="You have no category areas yet. Create an area to get started categorising your transactions.">
+            <HxButton Color="ThemeColor.Primary" @onclick="OpenGroupCreateModal">Create now</HxButton>
+        </NotificationScreen>
+    }
+}
+
 
 <CategoryGroupModal @ref="GroupModal"
                     IsEditing="false"

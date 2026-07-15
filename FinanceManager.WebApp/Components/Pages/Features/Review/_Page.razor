@@ -21,7 +21,13 @@
 
 <FindReimburseModal @ref="ReimburseModal" ReimburseData="ReimburseData" Categories="Categories" SetReimburse="SetReimburse" />
 
-@if (!Data.HasResults || Data.Result is null)
+@if (UserStatus == UserStatus.New)
+{
+    <NotificationScreen Text="To start reviewing your activities, you first need to import your transactions.">
+        <HxButton Color="ThemeColor.Primary" @onclick="() => Navigation.NavigateTo(Pages.Import)">Import now</HxButton>
+    </NotificationScreen>
+}
+else if (!Data.HasResults || Data.Result is null)
 {
     if (Data.Query?.HasFilters == true)
     {

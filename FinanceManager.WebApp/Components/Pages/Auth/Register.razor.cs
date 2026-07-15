@@ -1,16 +1,16 @@
 namespace FinanceManager.WebApp.Components.Pages.Auth;
 
+using FinanceManager.Application.Interfaces;
 using FinanceManager.Infrastructure.Identity;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Validation;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using System.ComponentModel.DataAnnotations;
 
 [Route(Pages.Register)]
-public partial class Register(IEmailSender emailSender) : AuthPageBase
+public partial class Register(IUserEmailService emailSender) : AuthPageBase
 {
     private RegisterModel Model { get; set; } = new();
     private string? Message { get; set; }

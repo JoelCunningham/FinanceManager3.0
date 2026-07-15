@@ -31,6 +31,12 @@
             {
                 <Alert Level="Alert.AlertLevel.Info" ActionText="Review activities" ActionUrl="/Review">You have @UnreviewedCount unreviewed activities.</Alert>
             }
+            @if (TransactionData.Result is null && !TransactionData.Query.HasFilters)
+            {
+                <NotificationScreen Text="It looks like you haven't imported any activities yet - let's get started!">
+                    <HxButton Color="ThemeColor.Primary" @onclick="() => Navigation.NavigateTo(Pages.Import)">Import now</HxButton>
+                </NotificationScreen>
+            }
             <TransactionsGrid @bind-Data="TransactionData" Accounts="UniqueAccounts" Categories="Categories" OpenDetails="OpenTransactionDetailsModal" OpenEdit="OpenEditModal" />
         </Content>
     </HxTab>

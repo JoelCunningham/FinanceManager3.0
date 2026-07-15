@@ -5,7 +5,6 @@ using FinanceManager.Infrastructure.Data;
 using FinanceManager.Infrastructure.Identity;
 using FinanceManager.Infrastructure.Parsers;
 using FinanceManager.Infrastructure.Repositories;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,7 +33,9 @@ public static class DependencyInjection
         services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
 
         // Identity
-        services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<IUserEmailService, UserEmailService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddHttpContextAccessor();
 
         return services;
     }

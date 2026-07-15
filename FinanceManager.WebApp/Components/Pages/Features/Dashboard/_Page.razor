@@ -14,7 +14,13 @@
     </Actions>
 </PageHeading>
 
-@if (DashboardData is not null)
+@if (UserStatus == UserStatus.New)
+{
+    <NotificationScreen Text="Once you add your first transaction, your dashboard will be populated with useful insights.">
+        <HxButton Color="ThemeColor.Primary" @onclick="() => Navigation.NavigateTo(Pages.Import)">Import now</HxButton>
+    </NotificationScreen>
+}
+else if (DashboardData is not null)
 {
     @if (DashboardData.TopOverBudgetCategory is not null)
     {

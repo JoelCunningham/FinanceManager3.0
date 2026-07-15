@@ -35,6 +35,7 @@ public class UseCases(
     GetTransactionDetails getTransactionDetails,
     GetTransferCandidates getTransferCandidates,
     GetUniqueAccounts getUniqueAccounts,
+    GetUserStatus getUserStatus,
     ParseFile parseFile,
     SaveBudget saveBudget,
     SaveBudgetEntry saveBudgetEntry,
@@ -70,6 +71,7 @@ public class UseCases(
     public Task<GetTransactionDetailsResult> GetTransactionDetailsAsync(Guid transactionId) => getTransactionDetails.ExecuteAsync(transactionId);
     public Task<GetTransferCandidatesResult> GetTransferCandidatesAsync(FilterQuery query, decimal amount) => getTransferCandidates.ExecuteAsync(query, amount);
     public Task<GetUniqueAccountsResult> GetUniqueAccountsAsync() => getUniqueAccounts.ExecuteAsync();
+    public Task<GetUserStatusResult> GetUserStatusAsync(DateOnly? staleCutoff = null) => getUserStatus.ExecuteAsync(staleCutoff);
     public Task<ImportSaveResult> SaveImportAsync(IEnumerable<ParsedTransaction> parsedTransactions) => saveImport.ExecuteAsync(parsedTransactions);
     public Task<ParseFileResult> ParseFileAsync(Stream file, string bank, string extension) => parseFile.ExecuteAsync(file, bank, extension);
     public Task<SaveBudgetEntryResult> SaveBudgetEntryAsync(BudgetCellEntry entry, int year, bool isEditing) => saveBudgetEntry.ExecuteAsync(entry, year, isEditing);

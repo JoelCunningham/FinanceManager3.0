@@ -5,6 +5,7 @@ using FinanceManager.Domain.Enums;
 
 public interface IBudgetEntryRepository
 {
+    Task<IEnumerable<BudgetEntry>> GetAllAsync();
     Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Guid> categoryIds);
     Task<IEnumerable<BudgetEntry>> GetByBudgetYearAsync(Guid budgetYearId);
     Task<BudgetEntry?> GetByIdAsync(Guid id);

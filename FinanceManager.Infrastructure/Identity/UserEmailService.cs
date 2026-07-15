@@ -1,8 +1,8 @@
 ﻿namespace FinanceManager.Infrastructure.Identity;
 
-using Microsoft.AspNetCore.Identity.UI.Services;
+using FinanceManager.Application.Interfaces;
 
-public class EmailService : IEmailSender
+public class UserEmailService : IUserEmailService
 {
     public Task SendEmailAsync(string email, string subject, string htmlMessage)
     {

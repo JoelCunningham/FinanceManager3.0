@@ -3,10 +3,8 @@
 using FinanceManager.Domain.Entities.Base;
 using FinanceManager.Domain.Enums;
 
-public class BudgetYear : IEntity
+public class BudgetYear : UserOwnedEntity
 {
-    public Guid Id { get; set; }
-
     public int Year { get; set; }
     public BudgetScope Scope { get; set; }
 

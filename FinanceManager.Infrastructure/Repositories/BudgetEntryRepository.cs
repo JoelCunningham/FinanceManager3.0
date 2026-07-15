@@ -9,6 +9,13 @@ using Microsoft.EntityFrameworkCore;
 
 public sealed class BudgetEntryRepository(FinanceManagerDbContext dbContext) : IBudgetEntryRepository
 {
+    public async Task<IEnumerable<BudgetEntry>> GetAllAsync()
+    {
+        return await dbContext.BudgetEntries
+            .Include(b => b.BudgetYear)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<BudgetEntry>> GetByRangeAsync(DateOnly startDate, DateOnly endDate, IEnumerable<Guid> categoryIds)
     {
         var entries = await dbContext.BudgetEntries
