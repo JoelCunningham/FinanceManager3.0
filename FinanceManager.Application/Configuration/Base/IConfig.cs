@@ -1,4 +1,4 @@
-﻿namespace FinanceManager.WebApp.Configuration.Base;
+﻿namespace FinanceManager.Application.Configuration.Base;
 
 public interface IConfig
 {

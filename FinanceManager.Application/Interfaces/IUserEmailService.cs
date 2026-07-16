@@ -2,5 +2,6 @@
 
 public interface IUserEmailService
 {
-    Task SendEmailAsync(string email, string subject, string htmlMessage);
+    Task SendEmailConfirmationAsync(string name, string address, string confirmationLink);
+    Task SendPasswordResetAsync(string name, string address, string resetLink);
 }

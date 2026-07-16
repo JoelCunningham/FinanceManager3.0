@@ -5,7 +5,9 @@ using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Validation;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 [Route(Pages.ResetPassword)]
 public partial class ResetPassword : AuthPageBase
@@ -17,6 +19,7 @@ public partial class ResetPassword : AuthPageBase
     private string? Token { get; set; }
 
     private bool Success { get; set; } = false;
+    private bool RequestValid {  get; set; } = true;
 
     private sealed class ResetPasswordModel
     {
@@ -24,21 +27,26 @@ public partial class ResetPassword : AuthPageBase
         [Required][Compare(nameof(Password))] public string ConfirmPassword { get; set; } = "";
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         SetSidebar();
 
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
-
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
-        Email = query[Parameters.Email];
-        Token = query[Parameters.Token];
+        var email = query[Parameters.Email];
+        var token = query[Parameters.Token];
 
-        if (!string.IsNullOrWhiteSpace(Token))
+        if (!string.IsNullOrWhiteSpace(token))
         {
-            Token = Uri.UnescapeDataString(Token);
+            Token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Token!));
         }
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            Email = Uri.UnescapeDataString(email);
+        }
+
+        RequestValid = await ValidateRequest();
     }
 
     private void SetSidebar()
@@ -48,6 +56,28 @@ public partial class ResetPassword : AuthPageBase
             "new password.",
             "Make it something you'll remember — and that others can't guess.",
             BootstrapIcon.ShieldCheck);
+    }
+
+    private async Task<bool> ValidateRequest()
+    {
+        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Token))
+        {
+            return false;
+        }
+
+        var user = await UserManager.FindByEmailAsync(Email);
+        if (user == null)
+        {
+            return false;
+        }
+
+        var isTokenValid = await UserManager.VerifyUserTokenAsync(user, UserManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", Token);
+        if (!isTokenValid)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private async Task HandleResetPassword()
@@ -74,19 +104,9 @@ public partial class ResetPassword : AuthPageBase
 
     private async Task<string?> AttemptResetPassword()
     {
-        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Token))
-        {
-            return "Invalid reset link.";
-        }
+        var user = await UserManager.FindByEmailAsync(Email!);
 
-        var user = await UserManager.FindByEmailAsync(Uri.UnescapeDataString(Email));
-
-        if (user == null)
-        {
-            return "Invalid reset request.";
-        }
-
-        var result = await UserManager.ResetPasswordAsync(user, Token, Model.Password);
+        var result = await UserManager.ResetPasswordAsync(user!, Token!, Model.Password);
 
         if (result.Succeeded)
         {

@@ -95,14 +95,20 @@ Built with **Blazor Interactive Server Components** for a responsive, interactiv
    dotnet restore
    ```
 
-3. **Run the application**
+3. **Setup secrets**
+	```bash
+   dotnet user-secrets init --project FinanceManager.WebApp
+   dotnet user-secrets set "Email:Smpt:Password" "your_password"
+   ```
+
+4. **Run the application**
 
    ```bash
    cd FinanceManager.WebApp
    dotnet run
    ```
 
-4. **Open in browser** 🌐
+5. **Open in browser** 🌐
 
    Navigate to `https://localhost:7292` (or the URL shown in the console)
 

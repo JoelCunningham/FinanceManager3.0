@@ -7,10 +7,12 @@ using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Validation;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 [Route(Pages.Register)]
-public partial class Register(IUserEmailService emailSender) : AuthPageBase
+public partial class Register : AuthPageBase
 {
     private RegisterModel Model { get; set; } = new();
     private string? Message { get; set; }
@@ -79,14 +81,16 @@ public partial class Register(IUserEmailService emailSender) : AuthPageBase
         if (result.Succeeded)
         {
             var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-            var parameters = new Dictionary<string, string?>
-            {
-                [Parameters.Email] = Uri.EscapeDataString(user.Email!),
-                [Parameters.Token] = Uri.EscapeDataString(token)
-            };
-            var confirmationLink = Navigator.CreateUrl(Pages.ConfirmEmail, parameters);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-            await emailSender.SendEmailAsync(user.Email!, "Confirm your email", $"Click here to confirm your account: {confirmationLink}");
+            var confirmationLink = Navigation.ToAbsoluteUri(Pages.ConfirmEmail).ToString();
+            confirmationLink = QueryHelpers.AddQueryString(confirmationLink, new Dictionary<string, string?>
+            {
+                [Parameters.Email] = user.Email!,
+                [Parameters.Token] = encodedToken
+            });
+
+            await EmailService.SendEmailConfirmationAsync(user.Name, user.Email!, confirmationLink);
             return null;
         }
         else

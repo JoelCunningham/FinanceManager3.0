@@ -1,6 +1,6 @@
-﻿namespace FinanceManager.WebApp.Configuration;
+﻿namespace FinanceManager.Application.Configuration;
 
-using FinanceManager.WebApp.Configuration.Base;
+using FinanceManager.Application.Configuration.Base;
 
 public class IdentityConfig : IConfig
 {

@@ -1,13 +1,14 @@
 using FinanceManager.Application;
+using FinanceManager.Application.Configuration;
 using FinanceManager.Infrastructure;
 using FinanceManager.Infrastructure.Data;
 using FinanceManager.Infrastructure.Identity;
 using FinanceManager.WebApp.Authentication;
 using FinanceManager.WebApp.Components;
-using FinanceManager.WebApp.Configuration;
 using FinanceManager.WebApp.Navigation;
 using Havit.Blazor.Components.Web;
 using Havit.Blazor.Components.Web.Bootstrap;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,9 +16,15 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Config
+builder.Services.AddOptions<EmailConfig>().Bind(builder.Configuration.GetSection(EmailConfig.SectionName));
 builder.Services.AddOptions<TokenConfig>().Bind(builder.Configuration.GetSection(TokenConfig.SectionName));
 builder.Services.AddOptions<CookieConfig>().Bind(builder.Configuration.GetSection(CookieConfig.SectionName));
 builder.Services.AddOptions<IdentityConfig>().Bind(builder.Configuration.GetSection(IdentityConfig.SectionName));
+
+// Data protection
+var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "DataProtectionKeys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+builder.Services.AddDataProtection().SetApplicationName("FinanceManager.WebApp").PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
 
 // Blazor
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
@@ -30,7 +37,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("Missing connection string. Set ConnectionStrings__Default.");
 }
 
-// Services
+// Dependency injection
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();
 builder.Services.AddAuth();

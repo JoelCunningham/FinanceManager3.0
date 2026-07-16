@@ -1,14 +1,15 @@
 namespace FinanceManager.WebApp.Components.Pages.Auth;
 
-using FinanceManager.Application.Interfaces;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 [Route(Pages.ForgotPassword)]
-public partial class ForgotPassword(IUserEmailService emailSender) : AuthPageBase
+public partial class ForgotPassword : AuthPageBase
 {
     private ForgotPasswordModel Model { get; set; } = new();
     private string? Message { get; set; }
@@ -55,15 +56,16 @@ public partial class ForgotPassword(IUserEmailService emailSender) : AuthPageBas
         if (user == null || user.Email == null) return null;
 
         var token = await UserManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var parameters = new Dictionary<string, string?>
+        var resetLink = Navigation.ToAbsoluteUri(Pages.ResetPassword).ToString();
+        resetLink = QueryHelpers.AddQueryString(resetLink, new Dictionary<string, string?>
         {
-            [Parameters.Email] = Uri.EscapeDataString(user.Email),
-            [Parameters.Token] = Uri.EscapeDataString(token)
-        };
-        var resetLink = Navigator.CreateUrl(Pages.ResetPassword, parameters);
+            [Parameters.Email] = user.Email,
+            [Parameters.Token] = encodedToken
+        });
 
-        await emailSender.SendEmailAsync(user.Email, "Reset your password", $"Reset your password here: {resetLink}");
+        await EmailService.SendPasswordResetAsync(user.Name, user.Email, resetLink);
         return null;
     }
 }

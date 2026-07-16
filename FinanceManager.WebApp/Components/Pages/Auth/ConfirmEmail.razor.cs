@@ -3,6 +3,8 @@ namespace FinanceManager.WebApp.Components.Pages.Auth;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 [Route(Pages.ConfirmEmail)]
 public partial class ConfirmEmail : AuthPageBase
@@ -36,7 +38,7 @@ public partial class ConfirmEmail : AuthPageBase
             return GenericError;
         }
 
-        var decodedToken = Uri.UnescapeDataString(token);
+        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
 
         var result = await UserManager.ConfirmEmailAsync(user, decodedToken);
         if (!result.Succeeded)
@@ -45,10 +47,5 @@ public partial class ConfirmEmail : AuthPageBase
         }
 
         return null;
-    }
-
-    private void GoToLogin()
-    {
-        Navigation.NavigateTo(Pages.Login);
     }
 }

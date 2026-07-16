@@ -3,6 +3,7 @@ namespace FinanceManager.WebApp.Components.Pages.Auth;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.WebUtilities;
 
 [Route(Pages.Redirect)]
 public partial class Redirect : AuthPageBase
@@ -11,13 +12,7 @@ public partial class Redirect : AuthPageBase
 
     protected override void OnInitialized()
     {
-        var parameters = new Dictionary<string, string?>
-        {
-            [Parameters.ReturnPath] = Navigation.ToBaseRelativePath(Navigation.Uri)
-        };
-
-        var url = Navigator.CreateUrl(Destination, parameters);
-
-        Navigation.NavigateTo(url);
+        var redirectLink = QueryHelpers.AddQueryString(Destination, Parameters.ReturnPath, Navigation.ToBaseRelativePath(Navigation.Uri));
+        Navigation.NavigateTo(redirectLink);
     }
 }

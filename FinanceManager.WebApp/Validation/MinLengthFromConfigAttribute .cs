@@ -1,6 +1,6 @@
 ﻿namespace FinanceManager.WebApp.Validation;
 
-using FinanceManager.WebApp.Configuration;
+using FinanceManager.Application.Configuration;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 

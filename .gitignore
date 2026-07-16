@@ -264,3 +264,6 @@ __pycache__/
 *.db
 *.db-shm
 *.db-wal
+
+# Data protection keys
+**/DataProtectionKeys/ 

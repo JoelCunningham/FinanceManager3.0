@@ -26,4 +26,11 @@
     <Watch Include="..\FinanceManager.Infrastructure\**\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="DataProtectionKeys\**" />
+    <Content Remove="DataProtectionKeys\**" />
+    <EmbeddedResource Remove="DataProtectionKeys\**" />
+    <None Remove="DataProtectionKeys\**" />
+  </ItemGroup>
+
 </Project>
