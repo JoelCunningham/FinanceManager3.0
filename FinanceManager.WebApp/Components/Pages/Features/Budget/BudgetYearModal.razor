@@ -3,27 +3,27 @@
 @code {
     [Parameter] public bool IsEditing { get; set; }
 
-    [Parameter] public int Year { get; set; }
-    [Parameter] public EventCallback<int> YearChanged { get; set; }
-
-    [Parameter] public BudgetScope Scope { get; set; }
-    [Parameter] public EventCallback<BudgetScope> ScopeChanged { get; set; }
+    [Parameter] public BudgetYearSummary? BudgetYear { get; set; }
+    [Parameter] public EventCallback<BudgetYearSummary> BudgetYearChanged { get; set; }
 
     [Parameter] public IEnumerable<BudgetScope> AvailableScopes { get; set; } = [];
 
-    [Parameter] public EventCallback<(int Year, BudgetScope Scope)> OnSave { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public EventCallback OnDelete { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 }
 
 <HxModal @ref="_modal" Title="@(IsEditing ? "Edit budget" : "Create budget")">
     <BodyTemplate>
-        <div class="d-flex flex-column gap-2">           
-            <HxInputNumber Label="Year" @bind-Value="Year" Enabled="!IsEditing" />
-            <HxSelect Label="Budget scope" @bind-Value="Scope" Data="AvailableScopes" TextSelector="s => s.ToString()" ValueSelector="s => s" Nullable="false" />
+        <div class="d-flex flex-column gap-2">
+            @if (BudgetYear is not null)
+            {
+                <HxInputNumber Label="Year" @bind-Value="BudgetYear.Year" Enabled="!IsEditing" />
+                <HxSelect Label="Budget scope" @bind-Value="BudgetYear.Scope" Data="AvailableScopes" TextSelector="s => s.ToString()" ValueSelector="s => s" Nullable="false" />
+            }
         </div>
     </BodyTemplate>
     <FooterTemplate>
-        <HxButton Color="ThemeColor.Secondary" OnClick="OnCancel">Cancel</HxButton>
-        <HxButton Color="ThemeColor.Primary" OnClick="() => OnSave.InvokeAsync((Year, Scope))">@(IsEditing ? "Save" : "Create")</HxButton>
+        <ModalActions IsCreating="!IsEditing" OnCancel="OnCancel" OnSave="OnSave" OnDelete="OnDelete" />
     </FooterTemplate>
 </HxModal>

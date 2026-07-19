@@ -8,13 +8,13 @@ using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 
 public sealed record GetPagedBudgetResult(
-    BudgetYear? BudgetYear,
+    BudgetYearSummary? BudgetYear,
     IReadOnlyList<BudgetCell> Cells,
     IReadOnlyList<CategorySummary> Categories,
     decimal TotalBudget,
     decimal TotalIncome,
     decimal TotalExpense
-);
+) : UseCaseResult;
 
 public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository, ICategoryRepository categoryRepository, IBudgetYearRepository budgetYearRepository, ITransactionRepository transactionRepository)
 {
@@ -44,7 +44,9 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
 
             var poplulatedCells = await PopulateCells(cells, entries);
 
-            return new GetPagedBudgetResult(budgetYear, poplulatedCells, categorySummaries, totals.Income - totals.Expense, totals.Income, totals.Expense);
+            var summary = BudgetYearSummary.FromBudgetYear(budgetYear);
+
+            return new GetPagedBudgetResult(summary, poplulatedCells, categorySummaries, totals.Income - totals.Expense, totals.Income, totals.Expense);
         }
     }
 

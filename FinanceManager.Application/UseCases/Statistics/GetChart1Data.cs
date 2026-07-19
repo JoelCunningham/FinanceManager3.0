@@ -6,24 +6,25 @@ using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.Utilities;
+using System.Linq;
 
 public sealed record GetChart1DataResult(
     List<TransactionSummary> Transactions,
     List<CategorySummary> IncomeCategories,
     List<CategorySummary> ExpenseCategories,
-    decimal[]? BudgetSeries,
-    decimal[]? IncomeBudgetSeries,
-    decimal[]? ExpenseBudgetSeries
+    IEnumerable<decimal> BudgetSeries,
+    IEnumerable<decimal> IncomeBudgetSeries,
+    IEnumerable<decimal> ExpenseBudgetSeries
 ) : UseCaseResult;
 
 public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCategoryList, ITransactionRepository transactionRepository)
 {
-    public async Task<GetChart1DataResult> ExecuteAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode)
+    public async Task<GetChart1DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionsGraphMode mode)
     {
         var query = new FilterQuery
         {
-            FilterDateFrom = range.StartDate.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = range.EndDate.ToDateTime(TimeOnly.MaxValue),
+            FilterDateFrom = range.First().StartDate.ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = range.Last().EndDate.ToDateTime(TimeOnly.MaxValue),
             FilterStatus = ReviewStatus.Reviewed
         };
 
@@ -39,25 +40,34 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
             expenseCategories = [.. expenseCategories.Where(c => c.GroupId == id)];
         }
 
-        decimal[]? budgetSeriesData = null;
-        decimal[]? budgetIncomeSeriesData = null;
-        decimal[]? budgetExpenseSeriesData = null;
+        IEnumerable<decimal> budgetSeriesData = [];
+        IEnumerable<decimal> budgetIncomeSeriesData = [];
+        IEnumerable<decimal> budgetExpenseSeriesData = [];
 
         if (mode == TransactionsGraphMode.Net)
         {
             if (drilldownGroupId is null || incomeCategories.Count != 0)
             {
-                budgetIncomeSeriesData = await chartHelper.GetBudgetPerMonthForCategories(range, incomeCategories, false);
+                foreach (var category in incomeCategories)
+                {
+                    budgetIncomeSeriesData = budgetIncomeSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, false));
+                }
             }
             if (drilldownGroupId is null || expenseCategories.Count != 0)
             {
-                budgetExpenseSeriesData = await chartHelper.GetBudgetPerMonthForCategories(range, expenseCategories, true);
+                foreach (var category in expenseCategories)
+                {
+                    budgetExpenseSeriesData = budgetExpenseSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, true));
+                }
             }
         }
         else
         {
             var relevantCategories = mode == TransactionsGraphMode.Income ? incomeCategories : expenseCategories;
-            budgetSeriesData = await chartHelper.GetBudgetPerMonthForCategories(range, relevantCategories, false);
+            foreach (var category in relevantCategories)
+            {
+                budgetSeriesData = budgetSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, mode == TransactionsGraphMode.Expense));
+            }
         }
 
         return new GetChart1DataResult(transactions, incomeCategories, expenseCategories, budgetSeriesData, budgetIncomeSeriesData, budgetExpenseSeriesData);

@@ -186,6 +186,23 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
             .AnyAsync(t => t.Category != null && t.Category.GroupId == categoryGroupId);
     }
 
+    public async Task<(DateOnly Min, DateOnly Max)> GetRangeAsync(Guid? categoryGroupId = null)
+    {
+        var query = dbContext.Transactions.AsQueryable();
+
+        if (categoryGroupId.HasValue)
+        {
+            query = query
+                .Include(t => t.Category)
+                .Where(t => t.Category != null && t.Category.GroupId == categoryGroupId.Value);
+        }
+
+        var minDate = await query.MinAsync(t => t.Date);
+        var maxDate = await query.MaxAsync(t => t.Date);
+
+        return (DateOnly.FromDateTime(minDate), DateOnly.FromDateTime(maxDate));
+    }
+
     private static async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query, IQueryable<Transaction> transactions)
     {
         transactions = ApplyFilters(transactions, query);

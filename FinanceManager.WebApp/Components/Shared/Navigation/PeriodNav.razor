@@ -1,0 +1,29 @@
+﻿@code {
+    [Parameter] public int CurrentPeriod { get; set; } = default!;
+    [Parameter] public EventCallback<int> CurrentPeriodChanged { get; set; }
+
+    [Parameter] public IEnumerable<(int Index, string Name)> Periods { get; set; } = [];
+
+    private int CurrentPeriodIndex => Periods.ToList().FindIndex(r => r.Index == CurrentPeriod);
+    private int NextPeriodIndex => Periods.ToList().FindIndex(r => r.Index == CurrentPeriod) - 1;
+    private int PreviousPeriodIndex => Periods.ToList().FindIndex(r => r.Index == CurrentPeriod) + 1;
+
+    private bool HasNextPeriod => NextPeriodIndex >= 0;
+    private bool HasPreviousPeriod => PreviousPeriodIndex < Periods.Count();
+
+    private void OnNextPeriod()
+    {
+        if (HasNextPeriod) CurrentPeriodChanged.InvokeAsync(NextPeriodIndex);
+    }
+
+    private void OnPreviousPeriod()
+    {
+        if (HasPreviousPeriod) CurrentPeriodChanged.InvokeAsync(PreviousPeriodIndex);
+    }
+}
+
+<HxButtonGroup CssClass="end">
+    <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowLeft" OnClick="OnPreviousPeriod" Enabled="HasPreviousPeriod" />
+    <PeriodSelect CurrentPeriod="CurrentPeriod" CurrentPeriodChanged="CurrentPeriodChanged" Periods="Periods" />
+    <HxButton Color="ThemeColor.Light" Icon="BootstrapIcon.ArrowRight" OnClick="OnNextPeriod" Enabled="HasNextPeriod" />
+</HxButtonGroup>

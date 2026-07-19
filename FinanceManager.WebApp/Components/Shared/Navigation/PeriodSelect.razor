@@ -1,0 +1,23 @@
+﻿@code {
+    [Parameter] public int CurrentPeriod { get; set; } = default!;
+    [Parameter] public EventCallback<int> CurrentPeriodChanged { get; set; }
+
+    [Parameter] public IEnumerable<(int Index, string Name)> Periods { get; set; } = [];
+
+    private void OnSelectedPeriod(int selectedIndex)
+    {
+        CurrentPeriodChanged.InvokeAsync(selectedIndex);
+    }
+}
+
+<HxSelect Value="CurrentPeriod"
+          ValueChanged="OnSelectedPeriod"
+          ValueExpression="() => CurrentPeriod"
+          Data="Periods"
+          TItem="(int Index, string Name)"
+          TValue="int"
+          Nullable="false"
+          AutoSort="false"
+          TextSelector="f => f.Name"
+          ValueSelector="f => f.Index"
+          InputCssClass="text-center" />

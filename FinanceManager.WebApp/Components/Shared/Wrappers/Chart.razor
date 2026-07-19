@@ -3,7 +3,6 @@
 
 @code {
     [Parameter] public object? Options { get; set; }
-    [Parameter] public ScopedRange Range { get; set; } = default!;
     [Parameter] public string? Title { get; set; }
 
     [Parameter] public EventCallback<string?> OnItemClick { get; set; }
@@ -34,7 +33,7 @@
 <div class="chart-wrapper">
     @if (Options is null)
     {
-        <Alert Level="Alert.AlertLevel.Info">There are no transactions or budgets in the selected @Range.ScopeDescription.</Alert>
+        <Alert Level="Alert.AlertLevel.Info">There are no transactions or budgets in the selected range.</Alert>
     }
     else
     {

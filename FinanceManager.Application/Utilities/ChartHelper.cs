@@ -1,15 +1,23 @@
 ﻿namespace FinanceManager.Application.Utilities;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Utilities;
 
 public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
 {
-    public async Task<List<decimal>> GetTransactionsPerPeriod(FilterQuery query, ScopedRange range) {
-        var transactions = await transactionRepository.GetTransactionsAsync(query);
+    public async Task<List<decimal>> GetTransactionsPerPeriod(CategorySummary category, IEnumerable<ScopedPeriod> periods)
+    {
+        var query = new FilterQuery
+        {
+            FilterDateFrom = periods.Min(p => p.StartDate).ToDateTime(TimeOnly.MinValue),
+            FilterDateTo = periods.Max(p => p.EndDate).ToDateTime(TimeOnly.MaxValue),
+            FilterStatus = ReviewStatus.Reviewed,
+            FilterCategory = category
+        };
 
-        var periods = range.Periods.ToList();
+        var transactions = await transactionRepository.GetTransactionsAsync(query);
 
         var transactionsPerPeriod = periods.Select(p => transactions
             .Where(t => DateOnly.FromDateTime(t.Date) >= p.StartDate && DateOnly.FromDateTime(t.Date) <= p.EndDate)
@@ -18,12 +26,19 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
 
         return [.. transactionsPerPeriod];
     }
-    public async Task<decimal[]> GetBudgetPerMonthForCategories(ScopedRange range, List<CategorySummary> categories, bool asExpense)
-    {
-        if (categories.Count == 0) return [];
 
-        var budgetsPerMonth = await GetBudgetPerMonth(range.StartDate, range.EndDate, categories);
-        return [.. budgetsPerMonth.Select(b => !asExpense ? b.Value : -b.Value)];
+    public async Task<List<decimal>> GetBudgetsPerPeriod(CategorySummary category, IEnumerable<ScopedPeriod> periods, bool isExpense = false)
+    {
+        var bugets = await budgetEntryRepository.GetByRangeAsync(periods.Min(p => p.StartDate), periods.Max(p => p.EndDate), new HashSet<Guid> { category.Id });
+
+        var budgetsPerPeriod = periods.ToDictionary(
+            p => p,
+            p => bugets
+                .SelectMany(b => BudgetYearHelper.GetOverlappingDays(b, p.StartDate, p.EndDate))
+                .Sum(d => isExpense ? -d.DailyAmount : d.DailyAmount)
+        );
+
+        return [.. budgetsPerPeriod.Values];
     }
 
     public async Task<Dictionary<string, decimal>> GetBudgetPerLabel(DateOnly start, DateOnly end, List<CategorySummary> categories, bool isCategoryDrilldown)
@@ -49,43 +64,6 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
         }
 
         return totals;
-    }
-
-    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerMonth(DateOnly startDate, DateOnly endDate, IEnumerable<CategorySummary> categories)
-    {
-        var budgetsPerDay = await GetBudgetPerDay(startDate, endDate, categories);
-        var budgetsPerMonth = budgetsPerDay
-            .GroupBy(d => new { d.Key.Year, d.Key.Month })
-            .ToDictionary(
-                g => new DateOnly(g.Key.Year, g.Key.Month, 1),
-                g => g.Sum(x => x.Value)
-            );
-
-        return budgetsPerMonth;
-    }
-
-    private async Task<IDictionary<DateOnly, decimal>> GetBudgetPerDay(DateOnly startDate, DateOnly endDate, IEnumerable<CategorySummary> categories)
-    {
-        var budgetsInRange = await budgetEntryRepository.GetByRangeAsync(startDate, endDate, categories.Select(c => c.Id).ToHashSet());
-
-        var amountPerDay = new Dictionary<DateOnly, decimal>();
-
-        var currentDate = startDate;
-        while (currentDate <= endDate)
-        {
-            amountPerDay[currentDate] = 0m;
-            currentDate = currentDate.AddDays(1);
-        }
-
-        foreach (var budget in budgetsInRange)
-        {
-            foreach (var day in BudgetYearHelper.GetOverlappingDays(budget, startDate, endDate))
-            {
-                amountPerDay[day.Date] += day.DailyAmount;
-            }
-        }
-
-        return amountPerDay;
     }
 
 }

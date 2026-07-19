@@ -1,14 +1,16 @@
 ﻿@code
 {
-    private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
-    private static readonly DateOnly YearStart = new(Today.Year, 1, 1);
-
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public ScopedRange Range { get; set; } = default!;
-    [Parameter] public EventCallback<ScopedRange> RangeChanged { get; set; }
+    [Parameter] public IEnumerable<ScopedPeriod> Range { get; set; } = default!;
+    [Parameter] public EventCallback<IEnumerable<ScopedPeriod>> RangeChanged { get; set; }
 
-    private bool IsYtd { get; set; } = false;
+    [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
+
+    private int CurrentPeriod => Periods.ToList().IndexOf(Range.First());
+
+    private int StartPeriod => Periods.ToList().IndexOf(Range.First());
+    private int EndPeriod => Periods.ToList().IndexOf(Range.Last());
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -17,46 +19,27 @@
         TransactionsGraphMode.Net
     ];
 
-    private async Task OnRangeChangedAsync(ScopedRange from)
+    private async Task OnPeriodChangedAsync(int startIndex, int endIndex)
     {
-        Chart.Range = from;
-        await RangeChanged.InvokeAsync(from);
+        Chart.SetRange(ChartModel.GetPeriodsInRange(Periods, Periods.ElementAt(startIndex), Periods.ElementAt(endIndex)));
+        await RangeChanged.InvokeAsync(Chart.Range);
         await Chart.RefreshAsync();
-    }
-
-    private async Task OnPreviousAsync()
-    {
-        var previousStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, -Chart.Range.Length);
-        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, previousStart, Chart.Range.Length));
-    }
-
-    private async Task OnTodayAsync()
-    {
-        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, YearStart, IsYtd ? Today.Month : DateConstants.MONTHS_IN_YEAR));
-    }
-
-    private async Task OnNextAsync()
-    {
-        var nextStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, Chart.Range.Length);
-        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, nextStart, Chart.Range.Length));
     }
 
     private async Task OnResetAsync()
     {
-        await OnRangeChangedAsync(Chart.InitialRange);
-    }
-
-    private async Task OnYtdChangedAsync(bool isYtd)
-    {
-        IsYtd = isYtd;
-        await OnRangeChangedAsync(new ScopedRange(BudgetScope.Monthly, YearStart, IsYtd ? Today.Month : DateConstants.MONTHS_IN_YEAR));
+        Chart.ResetRange();
+        await RangeChanged.InvokeAsync(Chart.Range);
+        await Chart.RefreshAsync();
     }
 }
 
-<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync" OnReset="OnResetAsync">
-    <Dropdowns>
-        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="From" YearLabel=" " ChangeLength />
-        <MonthSelect Value="Range" ValueChanged="OnRangeChangedAsync" MonthLabel="To" YearLabel=" " ChangeEndDate ChangeLength />
-        <HxCheckbox Text="YTD" Reverse="true" @bind-Value="IsYtd" @bind-Value:after="() => OnYtdChangedAsync(IsYtd)" CssClass="me-auto"/>
-    </Dropdowns>
+<GraphActions Modes="SupportedModes" Chart="Chart" OnReset="OnResetAsync">
+    <MainSelect>
+        <RangeSelect StartPeriod="StartPeriod"
+                     StartPeriodChanged="p => OnPeriodChangedAsync(p, EndPeriod)"
+                     EndPeriod="EndPeriod"
+                     EndPeriodChanged="p => OnPeriodChangedAsync(StartPeriod, p)"
+                     Periods="Periods" />
+    </MainSelect>
 </GraphActions>

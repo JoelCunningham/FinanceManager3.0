@@ -8,11 +8,14 @@
 
     [Parameter] public IReadOnlyList<BudgetGridMode> EntryTypeFilters { get; set; } = [];
 
-    [Parameter] public EventCallback OnPrev { get; set; }
-    [Parameter] public EventCallback OnToday { get; set; }
-    [Parameter] public EventCallback OnNext { get; set; }
+    [Parameter] public int CurrentRange { get; set; }
+    [Parameter] public EventCallback<int> OnRangeSelected { get; set; }
+
+    [Parameter] public IEnumerable<(int Index, string Name)> Ranges { get; set; } = [];
 
     [Parameter] public EventCallback OnEditYear { get; set; }
+    [Parameter] public EventCallback OnCreateYear { get; set; }
+
 }
 
 <HxCheckbox Text="Hide empty categories"
@@ -21,7 +24,7 @@
             ValueExpression="() => HideEmptyCategories"
             Enabled="HasPopulatedCategories" />
 
-<RangeNav OnPreviousRange="OnPrev" OnFixed="OnToday" OnNextRange="OnNext" FixedText="Today" />
+<PeriodNav CurrentPeriod="CurrentRange" CurrentPeriodChanged="OnRangeSelected" Periods="Ranges" />
 
 <HxSelect Value="EntryTypeFilter"
           ValueChanged="EntryTypeFilterChanged"
@@ -34,4 +37,5 @@
           TextSelector="f => f.ToString()"
           ValueSelector="f => f" />
 
-<HxButton Color="ThemeColor.Primary" OnClick="OnEditYear">Edit budget</HxButton>
+<HxButton Color="ThemeColor.Secondary" OnClick="OnEditYear">Edit budget</HxButton>
+<HxButton Color="ThemeColor.Primary" OnClick="OnCreateYear">Create budget</HxButton>

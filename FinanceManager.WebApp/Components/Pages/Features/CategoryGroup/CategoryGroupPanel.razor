@@ -1,9 +1,10 @@
 @code {
     [Parameter] public CategoryGroupDetails Group { get; set; } = default!;
+    [Parameter] public BudgetScope TodayScope { get; set; }
 
-    [Parameter] public EventCallback OnToday { get; set; }
-    [Parameter] public EventCallback OnNext { get; set; }
-    [Parameter] public EventCallback OnPrevious { get; set; }
+    [Parameter] public int CurrentRange { get; set; }
+    [Parameter] public EventCallback<int> OnRangeSelected { get; set; }
+    [Parameter] public IEnumerable<(int Index, string Name)> Ranges { get; set; } = [];
 
     [Parameter] public EventCallback<CategoryPeriodDetails> OnCategoryClicked { get; set; }
     [Parameter] public EventCallback<CategoryPeriodDetails> OnCategoryEdit { get; set; }
@@ -14,7 +15,6 @@
     protected override async Task OnParametersSetAsync()
     {
         if (Grid is not null) await Grid.RefreshDataAsync();
-        if (Chart is not null) await Chart.SetScope(Group.PeriodScope ?? BudgetScope.Monthly);
     }
 
     private Task<GridDataProviderResult<CategoryPeriodDetails>> GetGridData(GridDataProviderRequest<CategoryPeriodDetails> request)
@@ -43,7 +43,7 @@
                         Amount="@Group.Categories.Sum(c => c.SignedPeriodTotal)"
                         Budget="Group.Categories.Sum(c => c.PeriodBudget)" />
 
-        <RangeNav FixedText="@Group.PeriodName" OnFixed="OnToday" OnNextRange="OnNext" OnPreviousRange="OnPrevious" />
+        <PeriodNav CurrentPeriod="CurrentRange" CurrentPeriodChanged="OnRangeSelected" Periods="Ranges" />
     </div>
 
     <HxGrid @ref="Grid"
@@ -101,5 +101,5 @@
         </Columns>
     </HxGrid>
 
-    <CategoryChart @ref="Chart" Group="Group" Categories="Group.Categories" Length="6" Scope="Group.PeriodScope ?? BudgetScope.Monthly" />
+    <CategoryChart @ref="Chart" Group="Group" Categories="Group.Categories" Length="12" Scope="TodayScope" />
 </div>

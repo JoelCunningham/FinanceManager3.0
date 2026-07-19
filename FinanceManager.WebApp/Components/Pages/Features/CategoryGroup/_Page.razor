@@ -12,9 +12,10 @@
 </PageHeading>
 
 <CategoryGroupPanel Group="Group"
-                    OnToday="OnToday"
-                    OnNext="OnNext"
-                    OnPrevious="OnPrevious"
+                    TodayScope="TodayScope"
+                    Ranges="AvailablePeriods.Select((p, i) => (i, p.PeriodDescription))"
+                    CurrentRange="CurrentPeriodIndex"
+                    OnRangeSelected="SetCurrentPeriod"
                     OnCategoryClicked="OpenTransactionsModal"
                     OnCategoryEdit="OpenCategoryEditModal" />
 

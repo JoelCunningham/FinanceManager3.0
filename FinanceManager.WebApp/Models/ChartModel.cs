@@ -2,13 +2,12 @@
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Domain.Enums;
 
-public sealed class ChartModel(BudgetScope scope, DateOnly containingDate, Func<Task> refreshAsync, int length = 1)
+public sealed class ChartModel(IEnumerable<ScopedPeriod> range, Func<Task> refreshAsync)
 {
     public object? Options { get; set; }
-    public ScopedRange Range { get; set; } = new(scope, containingDate, length);
-    public ScopedRange InitialRange { get; set; } = new(scope, containingDate, length);
+    public IEnumerable<ScopedPeriod> Range { get; set; } = range;
+    public IEnumerable<ScopedPeriod> InitialRange { get; set; } = range;
     public string? Title { get; set; }
 
     public TransactionsGraphMode Mode { get; set; } = TransactionsGraphMode.Expense;
@@ -37,5 +36,20 @@ public sealed class ChartModel(BudgetScope scope, DateOnly containingDate, Func<
             SelectedGroupId = null;
             await RefreshAsync();
         }
+    }
+
+    public void SetRange(IEnumerable<ScopedPeriod> range)
+    {
+        Range = range;
+    }
+
+    public void ResetRange()
+    {
+        Range = InitialRange;
+    }
+
+    public static IEnumerable<ScopedPeriod> GetPeriodsInRange(IEnumerable<ScopedPeriod> periods, ScopedPeriod start, ScopedPeriod end)
+    {
+        return periods.Where(p => p.StartDate >= start.StartDate && p.EndDate <= end.EndDate).OrderBy(p => p.StartDate);
     }
 }

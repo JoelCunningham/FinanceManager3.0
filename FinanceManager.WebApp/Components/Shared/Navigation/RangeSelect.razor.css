@@ -1,0 +1,8 @@
+﻿.range {
+    display: flex;
+    gap: var(--space-small);
+
+    .icon {
+        padding: 0.3rem 0;
+    }
+}

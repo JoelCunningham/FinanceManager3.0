@@ -15,15 +15,15 @@ else
     <TabPanel @bind-ActiveTabId="ActiveTabId" Page="@Pages.Statistics">
         <HxTab Title="Spend by category" Id="@Tabs.Legacy1.ToString()">
             <Content>
-                <Graph2Actions Chart="Chart2" @bind-Range="Chart2.Range" />
-                <Chart Options="Chart2.Options" Range="Chart2.Range" Title="@Chart2.Title" OnItemClick="Chart2.OnDrilldownClickAsync" />
+                <Graph2Actions Chart="Chart2" @bind-Range="Chart2.Range" Periods="AvailablePeriods.OrderByDescending(p => p.StartDate)" />
+                <Chart Options="Chart2.Options" Title="@Chart2.Title" OnItemClick="Chart2.OnDrilldownClickAsync" />
             </Content>
         </HxTab>
 
         <HxTab Title="Spend over time" Id="@Tabs.Legacy2.ToString()">
             <Content>
-                <Graph1Actions Chart="Chart1" @bind-Range="Chart1.Range" />
-                <Chart Options="Chart1.Options" Range="Chart1.Range" Title="@Chart1.Title" OnItemClick="Chart1.OnDrilldownClickAsync" />
+                <Graph1Actions Chart="Chart1" @bind-Range="Chart1.Range" Periods="AvailablePeriods.OrderByDescending(p => p.StartDate)" />
+                <Chart Options="Chart1.Options" Title="@Chart1.Title" OnItemClick="Chart1.OnDrilldownClickAsync" />
             </Content>
         </HxTab>
     </TabPanel>

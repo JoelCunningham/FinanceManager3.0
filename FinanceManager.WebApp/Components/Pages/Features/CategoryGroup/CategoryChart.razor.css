@@ -12,10 +12,6 @@
         display: flex;
         justify-content: flex-end;
         gap: var(--space-small);
-
-        .icon {
-            padding: 0.3rem 0;
-        }
     }
 
     .legend {
@@ -25,10 +21,6 @@
 
 .message {
     margin-top: var(--space-medium);
-}
-
-::deep .hx-form-group {
-    margin-right: auto;
 }
 
 ::deep .legend-item .legend-line {

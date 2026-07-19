@@ -14,10 +14,12 @@ using FinanceManager.Domain.Enums;
 
 public class UseCases(
     AutoAssignCategories autoAssignCategories,
+    DeleteBudget deleteBudget,
     DeleteBudgetEntry deleteBudgetEntry,
     DeleteCategory deleteCategory,
     DeleteCategoryGroup deleteCategoryGroup,
-    GetBudgetScopes getBudgetScopes,
+    GetAvailablePeriods getAvailablePeriods,
+    GetBudgetYears getBudgetYears,
     GetCategories getCategories,
     GetCategoryGraph getCategoryGraph,
     GetCategoryGroupDetails getCategoryGroupDetails,
@@ -51,16 +53,18 @@ public class UseCases(
     public GetParsersResult GetParsers() => getParsers.Execute();
     public Task<AutoCategoriseResult> AutoCategoriseAsync(IEnumerable<ReviewGroup> groups, IEnumerable<CategorySummary> categories) => autoAssignCategories.ExecuteAsync(groups, categories);
     public static Task<BackdateTransactionResult> BackdateTransactionAsync(TransactionSummary transaction, DateTime date, DateTime initialDate) => BackdateTransaction.ExecuteAsync(transaction, date, initialDate);
+    public Task<DeleteBudgetResult> DeleteBudgetAsync(Guid id) => deleteBudget.ExecuteAsync(id);
     public Task<DeleteBudgetEntryResult> DeleteBudgetEntryAsync(Guid id) => deleteBudgetEntry.ExecuteAsync(id);
     public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
     public Task<DeleteCategoryResult> DeleteCategoryAsync(Guid id) => deleteCategory.ExecuteAsync(id);
-    public Task<GetBudgetScopesResult> GetBudgetScopesAsync(ScopedRange range) => getBudgetScopes.ExecuteAsync(range);
+    public Task<GetAvailablePeriodsResult> GetAvailablePeriodsAsync(Guid? categoryGroupId = null, bool allowFuture = false) => getAvailablePeriods.ExecuteAsync(categoryGroupId, allowFuture);
+    public Task<GetBudgetYearsResult> GetBudgetYearsAsync() => getBudgetYears.ExecuteAsync();
     public Task<GetCategoriesResult> GetCategoriesAsync() => getCategories.ExecuteAsync();
-    public Task<GetCategoryGraphResult> GetCategoryGraphAsync(IEnumerable<CategorySummary> categories, ScopedRange range) => getCategoryGraph.ExecuteAsync(categories, range);
-    public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(string groupName, int periodOffset) => getCategoryGroupDetails.ExecuteAsync(groupName, periodOffset);
+    public Task<GetCategoryGraphResult> GetCategoryGraphAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods) => getCategoryGraph.ExecuteAsync(categories, periods);
+    public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(string groupName, ScopedPeriod period) => getCategoryGroupDetails.ExecuteAsync(groupName, period);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroups.ExecuteAsync();
-    public Task<GetChart1DataResult> GetChart1DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);
-    public Task<GetChart2DataResult> GetChart2DataAsync(ScopedRange range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart2Data.ExecuteAsync(range, drilldownGroupId, mode);
+    public Task<GetChart1DataResult> GetChart1DataAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);
+    public Task<GetChart2DataResult> GetChart2DataAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionsGraphMode mode) => getChart2Data.ExecuteAsync(range, drilldownGroupId, mode);
     public Task<GetDashboardDataResult> GetDashboardDataAsync(ScopedPeriod? period = null) => getDashboardData.ExecuteAsync(period);
     public Task<GetPagedBudgetResult> GetPagedBudgetAsync(int year, BudgetGridMode mode = BudgetGridMode.Net) => getBudgetPage.ExecuteAsync(year, mode);
     public Task<GetPagedReviewResult> GetPagedReviewAsync(FilterQuery query) => getPagedReview.ExecuteAsync(query);

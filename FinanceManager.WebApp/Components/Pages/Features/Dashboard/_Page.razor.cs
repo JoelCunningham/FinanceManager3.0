@@ -27,9 +27,13 @@ public partial class _Page : MainPageBase
             : new ScopedPeriod();
     }
 
-    public async Task OnPeriodChange()
+    public async Task OnPeriodChange(int periodIndex)
     {
-        DashboardData = await UseCases.GetDashboardDataAsync(CurrentPeriod);
+        if (DashboardData?.AvailablePeriods != null && periodIndex >= 0 && periodIndex < DashboardData.AvailablePeriods.Count)
+        {
+            CurrentPeriod = DashboardData.AvailablePeriods[periodIndex];
+            DashboardData = await UseCases.GetDashboardDataAsync(CurrentPeriod);
+        }
     }
 
     public string GetWarningText()

@@ -9,9 +9,9 @@ public sealed record GetBudgetScopesResult(BudgetScope GreatestScopeInRange) : U
 
 public sealed class GetBudgetScopes(IBudgetYearRepository budgetYearRepository)
 {
-    public async Task<GetBudgetScopesResult> ExecuteAsync(ScopedRange range)
+    public async Task<GetBudgetScopesResult> ExecuteAsync(IEnumerable<ScopedPeriod> range)
     {
-        var budgetYears = await budgetYearRepository.GetByRangeAsync(range.StartDate, range.EndDate);
-        return new GetBudgetScopesResult(budgetYears.MaxBy(b => b.Scope)?.Scope ?? range.Scope);
+        var budgetYears = await budgetYearRepository.GetByRangeAsync(range.First().StartDate, range.Last().EndDate);
+        return new GetBudgetScopesResult(budgetYears.MaxBy(b => b.Scope)?.Scope ?? range.First().Scope);
     }
 }

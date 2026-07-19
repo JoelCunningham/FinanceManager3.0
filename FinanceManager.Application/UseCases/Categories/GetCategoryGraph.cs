@@ -1,7 +1,6 @@
 namespace FinanceManager.Application.UseCases.Categories;
 
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 
@@ -12,22 +11,15 @@ public sealed record GetCategoryGraphResult(
 
 public sealed class GetCategoryGraph(ChartHelper chartHelper)
 {
-    public async Task<GetCategoryGraphResult> ExecuteAsync(IEnumerable<CategorySummary> categories, ScopedRange range)
+    public async Task<GetCategoryGraphResult> ExecuteAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods)
     {
         var transactions = new Dictionary<CategorySummary, IReadOnlyList<decimal>>();
         var budgetSeries = new Dictionary<CategorySummary, IReadOnlyList<decimal>>();
 
         foreach (var category in categories)
         {
-            var query = new FilterQuery
-            {
-                FilterDateFrom = range.StartDate.ToDateTime(TimeOnly.MinValue),
-                FilterDateTo = range.EndDate.ToDateTime(TimeOnly.MaxValue),
-                FilterStatus = ReviewStatus.Reviewed,
-                FilterCategory = category
-            };
-            transactions.Add(category, await chartHelper.GetTransactionsPerPeriod(query, range));
-            budgetSeries.Add(category, await chartHelper.GetBudgetPerMonthForCategories(range, [category], false));
+            transactions.Add(category, await chartHelper.GetTransactionsPerPeriod(category, periods));
+            budgetSeries.Add(category, await chartHelper.GetBudgetsPerPeriod(category, periods));
         }
 
         return new GetCategoryGraphResult(transactions, budgetSeries);

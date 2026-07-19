@@ -1,0 +1,17 @@
+﻿@code {
+    [Parameter] public int StartPeriod { get; set; } = default!;
+    [Parameter] public EventCallback<int> StartPeriodChanged { get; set; }
+
+    [Parameter] public int EndPeriod { get; set; } = default!;
+    [Parameter] public EventCallback<int> EndPeriodChanged { get; set; }
+
+    [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
+}
+
+<div class="range">
+    <PeriodSelect CurrentPeriod="StartPeriod" CurrentPeriodChanged="StartPeriodChanged" Periods="Periods.Select((p, i) => (i, p.PeriodDescription))" />
+
+    <HxIcon Icon="BootstrapIcon.ArrowRight" CssClass="icon" />
+
+    <PeriodSelect CurrentPeriod="EndPeriod" CurrentPeriodChanged="EndPeriodChanged" Periods="Periods.Select((p, i) => (i, p.PeriodDescription))" />
+</div>

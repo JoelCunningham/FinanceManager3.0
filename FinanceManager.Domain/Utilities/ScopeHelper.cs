@@ -89,10 +89,16 @@ public static class ScopeHelper
 
     public static string GetPeriodName(DateOnly date, BudgetScope scope)
     {
+        var year = date.Year;
+        if (DateHelper.GetIsoWeek1(date.Year) > date)
+        {
+            year = date.Year - 1;
+        }
+
         return scope switch
         {
-            BudgetScope.Weekly => $"W{DateHelper.GetWeekIndex(date):00} {date.Year}",
-            BudgetScope.Fortnightly => $"F{DateHelper.GetFortnightIndex(date):00} {date.Year}",
+            BudgetScope.Weekly => $"W{DateHelper.GetWeekIndex(date):00} {year}",
+            BudgetScope.Fortnightly => $"F{DateHelper.GetFortnightIndex(date):00} {year}",
             BudgetScope.Monthly => date.ToString("MMMM yyyy"),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };

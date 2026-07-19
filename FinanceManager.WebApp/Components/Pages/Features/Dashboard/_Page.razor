@@ -3,14 +3,9 @@
 <PageTitle>Dashboard</PageTitle>
 <PageHeading Heading="Dashboard" Subheading="@DateTime.Today.ToString("dddd, dd MMMM yyyy", CultureInfo.CurrentCulture)">
     <Actions>
-        <HxSelect TItem="ScopedPeriod"
-                  TValue="ScopedPeriod"
-                  @bind-Value="CurrentPeriod"
-                  @bind-Value:after="OnPeriodChange"
-                  Data="DashboardData?.AvailablePeriods ?? [CurrentPeriod]"
-                  TextSelector="@(period => ScopeHelper.GetPeriodName(period.StartDate, period.Scope))"
-                  AutoSort="false"
-                  Nullable="false" />
+        <PeriodNav Periods="DashboardData?.AvailablePeriods.Select((p, i) => (i, p.PeriodDescription)) ?? []"
+                   CurrentPeriod="DashboardData?.AvailablePeriods.ToList().IndexOf(CurrentPeriod) ?? 0"
+                   CurrentPeriodChanged="OnPeriodChange" />
     </Actions>
 </PageHeading>
 

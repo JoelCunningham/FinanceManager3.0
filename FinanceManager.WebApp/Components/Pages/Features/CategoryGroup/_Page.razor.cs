@@ -30,12 +30,15 @@ public partial class _Page : MainPageBase
     private CategoryPeriodDetails EditCategory { get; set; } = default!;
     private CategoryPeriodDetails CurrentCategory { get; set; } = default!;
 
-    private int PeriodOffset { get; set; } = 0;
+    private IEnumerable<ScopedPeriod> AvailablePeriods { get; set; } = [];
+    private int CurrentPeriodIndex { get; set; } = 0;
+    private BudgetScope TodayScope => AvailablePeriods.FirstOrDefault(p => p.Includes(DateOnly.FromDateTime(DateTime.Today)))?.Scope ?? BudgetScope.Monthly;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
+        AvailablePeriods = (await UseCases.GetAvailablePeriodsAsync()).Periods;
         TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
     }
 
@@ -48,7 +51,8 @@ public partial class _Page : MainPageBase
     {
         try
         {
-            Group = (await UseCases.GetCategoryGroupDetailsAsync(GroupName, PeriodOffset)).GroupDetails;
+            var currentPeriod = AvailablePeriods.ElementAtOrDefault(CurrentPeriodIndex) ?? new ScopedPeriod(BudgetScope.Monthly, DateOnly.FromDateTime(DateTime.Today), 0);
+            Group = (await UseCases.GetCategoryGroupDetailsAsync(GroupName, currentPeriod)).GroupDetails;
         }
         catch
         {
@@ -203,24 +207,9 @@ public partial class _Page : MainPageBase
         }
     }
 
-    private async Task OnPrevious()
+    private async Task SetCurrentPeriod(int index)
     {
-        await AdjustOffset(-1);
-    }
-
-    private async Task OnNext()
-    {
-        await AdjustOffset(1);
-    }
-
-    private async Task OnToday()
-    {
-        await AdjustOffset(0);
-    }
-
-    private async Task AdjustOffset(int offset)
-    {
-        PeriodOffset = offset == 0 ? 0 : PeriodOffset + offset;
+        CurrentPeriodIndex = index;
 
         if (Group is not null)
         {

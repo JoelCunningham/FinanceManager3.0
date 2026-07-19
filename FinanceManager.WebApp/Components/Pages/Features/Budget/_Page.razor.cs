@@ -2,7 +2,6 @@ namespace FinanceManager.WebApp.Components.Pages.Features.Budget;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Navigation;
@@ -11,26 +10,29 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Budget)]
 public partial class _Page : MainPageBase
 {
-    public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
-    public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
-    public bool HideEmptyCategories { get; set; }
+    private IReadOnlyList<BudgetCell> Cells { get; set; } = [];
+    private IReadOnlyList<CategorySummary> Categories { get; set; } = [];
+    private bool HideEmptyCategories { get; set; }
 
-    public BudgetYear? CurrentBudgetYear { get; set; } = null;
-    public int CurrentYear { get; set; } = DateTime.Now.Year;
-    public decimal TotalBudget { get; set; }
-    public decimal TotalIncome { get; set; }
-    public decimal TotalExpense { get; set; }
+    private BudgetYearSummary? ActiveBudgetYear { get; set; } 
+    private IEnumerable<int> AvailableYears { get; set; } = [];
 
-    public BudgetCellEntry? CurrentEntry { get; set; }
-    public bool IsEditing { get; set; }
+    private decimal TotalBudget { get; set; }
+    private decimal TotalIncome { get; set; }
+    private decimal TotalExpense { get; set; }
 
-    public BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
-    public IReadOnlyList<BudgetScope> BudgetScopes = [BudgetScope.Monthly, BudgetScope.Fortnightly, BudgetScope.Weekly];
+    private bool IsEditing { get; set; }
+    private BudgetCellEntry? CurrentEntry { get; set; }
+    private BudgetYearSummary? CurrentYear { get; set; }
 
-    private BudgetYearModal BudgetYearModal = new();
-    private BudgetEntryModal BudgetEntryModal = new();
+    private BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
 
-    public bool HasPopulatedCategories => Cells.Any(c => c.Entries.Count != 0);
+    private BudgetYearModal BudgetYearModal { get; set; } = new();
+    private BudgetEntryModal BudgetEntryModal { get; set; } = new();
+
+    private bool HasPopulatedCategories => Cells.Any(c => c.Entries.Count != 0);
+
+    private readonly IReadOnlyList<BudgetScope> BudgetScopes = [BudgetScope.Monthly, BudgetScope.Fortnightly, BudgetScope.Weekly];
 
     private static readonly BudgetGridMode[] EntryTypeFilters =
     [
@@ -47,73 +49,72 @@ public partial class _Page : MainPageBase
         HideEmptyCategories = HasPopulatedCategories && await Preferences.HideEmptyBudgetCategories;
     }
 
-    public async Task Prev() => await ReloadAsync(CurrentYear - 1);
-    public async Task Next() => await ReloadAsync(CurrentYear + 1);
-    public async Task Today() => await ReloadAsync(DateTime.Now.Year);
-
-    public async Task OnEntryTypeFilterChanged(BudgetGridMode mode)
+    private async Task OnRangeSelected(int index)
     {
-        EntryTypeFilter = mode;
-        await ReloadAsync(CurrentYear);
+        await ReloadAsync(AvailableYears.ElementAtOrDefault(index));
     }
 
-    public async Task OnHideEmptyCategoriesChanged(bool value)
+    private async Task OnEntryTypeFilterChanged(BudgetGridMode mode)
+    {
+        EntryTypeFilter = mode;
+        await ReloadAsync(DateTime.Now.Year);
+    }
+
+    private async Task OnHideEmptyCategoriesChanged(bool value)
     {
         HideEmptyCategories = value;
         await Preferences.Set(PreferenceNames.HideEmptyBudgetCategories, value);
     }
 
-    public async Task OpenEditModal() => await BudgetEntryModal.ShowAsync();
-    public async Task CloseEditModal() => await BudgetEntryModal.HideAsync();
-    public async Task OpenCreateModal() => await BudgetYearModal.ShowAsync();
-    public async Task CloseCreateModal() => await BudgetYearModal.HideAsync();
-
     private async Task ReloadAsync(int year)
     {
+        AvailableYears = (await UseCases.GetBudgetYearsAsync()).AvailableYears.OrderByDescending(y => y);
+
         var page = await UseCases.GetPagedBudgetAsync(year, EntryTypeFilter);
 
         Cells = page.Cells;
         Categories = page.Categories;
-        CurrentBudgetYear = page.BudgetYear;
+        ActiveBudgetYear = page.BudgetYear;
         TotalBudget = page.TotalBudget;
         TotalIncome = page.TotalIncome;
         TotalExpense = page.TotalExpense;
-        CurrentYear = year;
     }
 
-    public async Task CreateEntry(BudgetCell cell, CategorySummary category)
+    private async Task CreateEntry(BudgetCell cell, CategorySummary category)
     {
         Validation.Clear();
-        CurrentEntry = new BudgetCellEntry { OverallScopePosition = cell.Index, OverallLength = 1, Category = category };
+        CurrentEntry = new() { OverallScopePosition = cell.Index, OverallLength = 1, Category = category };
         IsEditing = false;
-        await OpenEditModal();
+        await BudgetEntryModal.ShowAsync();
     }
 
-    public async Task EditEntry(BudgetCellEntry entry)
+    private async Task EditEntry(BudgetCellEntry entry)
     {
         Validation.Clear();
         CurrentEntry = entry;
         IsEditing = true;
-        await OpenEditModal();
+        await BudgetEntryModal.ShowAsync();
     }
 
-    public async Task CreateYear()
+    private async Task CreateYear()
     {
         Validation.Clear();
+        CurrentYear = new() { Year = AvailableYears.Any() ? AvailableYears.Max() + 1 : DateTime.Now.Year, Scope = BudgetScope.Monthly };
         IsEditing = false;
-        await OpenCreateModal();
+        await BudgetYearModal.ShowAsync();
     }
 
-    public async Task EditYear()
+    private async Task EditYear()
     {
         Validation.Clear();
+        CurrentYear = ActiveBudgetYear;
         IsEditing = true;
-        await OpenCreateModal();
+        await BudgetYearModal.ShowAsync();
     }
 
-    public async Task SaveEntry()
+    private async Task SaveEntry()
     {
-        if (CurrentEntry is null || CurrentBudgetYear is null) return;
+        if (CurrentEntry is null || ActiveBudgetYear is null) return;
 
         Validation.Clear();
 
@@ -131,7 +132,7 @@ public partial class _Page : MainPageBase
 
         try
         {
-            await UseCases.SaveBudgetEntryAsync(CurrentEntry, CurrentBudgetYear.Year, IsEditing);
+            await UseCases.SaveBudgetEntryAsync(CurrentEntry, ActiveBudgetYear.Year, IsEditing);
             if (IsEditing)
             {
                 Validation.SetSuccess("Budget entry updated");
@@ -141,8 +142,8 @@ public partial class _Page : MainPageBase
                 Validation.SetSuccess("Budget entry created");
             }
 
-            await CloseEditModal();
-            await ReloadAsync(CurrentBudgetYear.Year);
+            await BudgetEntryModal.HideAsync();
+            await ReloadAsync(ActiveBudgetYear.Year);
         }
         catch (Exception ex)
         {
@@ -150,7 +151,7 @@ public partial class _Page : MainPageBase
         }
     }
 
-    public async Task DeleteEntry()
+    private async Task DeleteEntry()
     {
         if (CurrentEntry is null || CurrentEntry.EntityId is null) return;
 
@@ -158,8 +159,8 @@ public partial class _Page : MainPageBase
         {
             await UseCases.DeleteBudgetEntryAsync(CurrentEntry.EntityId.Value);
             Validation.SetSuccess("Budget entry deleted");
-            await CloseEditModal();
-            await ReloadAsync(CurrentYear);
+            await BudgetEntryModal.HideAsync();
+            await ReloadAsync(DateTime.Now.Year);
         }
         catch (Exception ex)
         {
@@ -167,25 +168,53 @@ public partial class _Page : MainPageBase
         }
     }
 
-    public async Task SaveBudget(int year, BudgetScope scope)
+    private async Task CancelEntry()
     {
+        await BudgetEntryModal.HideAsync();
+    }
+
+    private async Task SaveBudget()
+    {
+        if (CurrentYear is null) return;
+
         Validation.Clear();
 
         try
         {
-            var saveResult = await UseCases.SaveBudgetAsync(year, scope, IsEditing);
+            var saveResult = await UseCases.SaveBudgetAsync(CurrentYear.Year, CurrentYear.Scope, IsEditing);
             if (saveResult.Errors.Any())
             {
                 Validation.SetErrors(saveResult.Errors);
                 return;
             }
             Validation.SetSuccess($"Budget {(IsEditing ? "updated" : "created")} successfully");
-            await CloseCreateModal();
-            await ReloadAsync(year);
+            await BudgetYearModal.HideAsync();
+            await ReloadAsync(CurrentYear.Year);
         }
         catch (Exception ex)
         {
             Validation.SetError(ex.Message);
         }
+    }
+
+    private async Task DeleteBudget()
+    {
+        if (CurrentYear is null) return;
+        try
+        {
+            await UseCases.DeleteBudgetAsync(CurrentYear.EntityId);
+            Validation.SetSuccess("Budget deleted successfully");
+            await BudgetYearModal.HideAsync();
+            await ReloadAsync(DateTime.Now.Year);
+        }
+        catch (Exception ex)
+        {
+            Validation.SetError(ex.Message);
+        }
+    }
+
+    private async Task CancelBudget()
+    {
+        await BudgetYearModal.HideAsync();
     }
 }

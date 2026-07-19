@@ -4,8 +4,12 @@
 
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
-    [Parameter] public ScopedRange Range { get; set; } = default!;
-    [Parameter] public EventCallback<ScopedRange> RangeChanged { get; set; }
+    [Parameter] public IEnumerable<ScopedPeriod> Range { get; set; } = default!;
+    [Parameter] public EventCallback<IEnumerable<ScopedPeriod>> RangeChanged { get; set; }
+
+    [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
+
+    private int CurrentPeriod => Periods.ToList().IndexOf(Range.FirstOrDefault()!);
 
     private static readonly TransactionsGraphMode[] SupportedModes =
     [
@@ -13,49 +17,27 @@
         TransactionsGraphMode.Income
     ];
 
-    private async Task OnRangeChangedAsync(ScopedRange range)
+    private async Task OnPeriodChangedAsync(int index)
     {
-        Chart.Range = range;
-        await RangeChanged.InvokeAsync(range);
+        var period = Periods.ElementAt(index);
+        Chart.SetRange(ChartModel.GetPeriodsInRange(Periods, period, period));
+        await RangeChanged.InvokeAsync(Chart.Range);
         await Chart.RefreshAsync();
-    }
-
-    private async Task OnPreviousAsync()
-    {
-        var previousStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, -Chart.Range.Length);
-        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, previousStart, Chart.Range.Length));
-    }
-
-    private async Task OnTodayAsync()
-    {
-        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, Today, Chart.Range.Length));
-    }
-
-    private async Task OnNextAsync()
-    {
-        var nextStart = ScopeHelper.GetPeriodStart(Chart.Range.Scope, Chart.Range.StartDate, Chart.Range.Length);
-        await OnRangeChangedAsync(new ScopedRange(Chart.Range.Scope, nextStart, Chart.Range.Length));
     }
 
     private async Task OnResetAsync()
     {
-        await OnRangeChangedAsync(Chart.InitialRange);
+        Chart.ResetRange();
+        await RangeChanged.InvokeAsync(Chart.Range);
+        await Chart.RefreshAsync();
     }
 }
 
-<GraphActions Modes="SupportedModes" Chart="Chart" OnPreviousRange="OnPreviousAsync" OnToday="OnTodayAsync" OnNextRange="OnNextAsync" OnReset="OnResetAsync">
-    <Dropdowns>
-        @if (Chart.Range.Scope == BudgetScope.Monthly)
-        {
-            <MonthSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" />
-        }
-        else if (Chart.Range.Scope == BudgetScope.Weekly)
-        {
-            <WeekSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" />
-        }
-        else if (Chart.Range.Scope == BudgetScope.Fortnightly)
-        {
-            <FortnightSelect Value="Chart.Range" ValueChanged="OnRangeChangedAsync" />
-        }
-    </Dropdowns>
+
+<GraphActions Modes="SupportedModes" Chart="Chart" OnReset="OnResetAsync">
+    <MainSelect>
+        <PeriodNav Periods="Periods.Select((p, i) => (i, p.PeriodDescription))"
+                   CurrentPeriod="CurrentPeriod"
+                   CurrentPeriodChanged="OnPeriodChangedAsync" />
+    </MainSelect>
 </GraphActions>

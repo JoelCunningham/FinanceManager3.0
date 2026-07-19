@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<SeparateTransfer>();
 
         // Transaction use cases
+        services.AddScoped<GetAvailablePeriods>();
         services.AddScoped<GetPagedTransactions>();
         services.AddScoped<GetTransactionDetails>();
         services.AddScoped<SaveTransactionEdit>();
@@ -64,8 +65,10 @@ public static class DependencyInjection
         services.AddScoped<ValidateReviewGroup>();
 
         // Budget use cases
+        services.AddScoped<DeleteBudget>();
         services.AddScoped<DeleteBudgetEntry>();
         services.AddScoped<GetPagedBudget>();
+        services.AddScoped<GetBudgetYears>();
         services.AddScoped<SaveBudget>();
         services.AddScoped<SaveBudgetEntry>();
 

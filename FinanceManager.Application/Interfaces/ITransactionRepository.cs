@@ -17,5 +17,6 @@ namespace FinanceManager.Application.Interfaces
         Task DeleteAsync(Guid id);
         Task DeleteOrSkipAsync(Guid id);
         Task<bool> HasTransactionsForCategoryGroupAsync(Guid categoryGroupId);
+        Task<(DateOnly Min, DateOnly Max)> GetRangeAsync(Guid? categoryGroupId = null);
     }
 }

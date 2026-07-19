@@ -5,7 +5,7 @@
 
     [Parameter] public BudgetCellEntry? Entry { get; set; }
     [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
-    [Parameter] public BudgetYear? CurrentBudgetYear { get; set; }
+    [Parameter] public BudgetYearSummary? CurrentBudgetYear { get; set; }
 
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
