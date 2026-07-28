@@ -4,17 +4,18 @@ using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Models;
 using FinanceManager.Application.UseCases;
+using FinanceManager.Domain.Enums;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 public sealed record RegisterUserResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class RegisterUser(IIndentityService identityService, IUserEmailService emailService)
+public sealed class RegisterUser(IIndentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
 {
     public async Task<RegisterUserResult> ExecuteAsync(RegisterUserModel model)
     {
-        var (success, errors) = await identityService.CreateUserAsync(model.Name, model.Email, model.Password);
+        var (userId, errors) = await identityService.CreateUserAsync(model.Name, model.Email, model.Password);
 
-        if (!success)
+        if (!userId.HasValue)
         {
             var error = errors.FirstOrDefault();
 
@@ -41,6 +42,9 @@ public sealed class RegisterUser(IIndentityService identityService, IUserEmailSe
         });
 
         await emailService.SendEmailConfirmationAsync(model.Name, model.Email, confirmationLink);
+
+        await auditLog.LogAsync(userId.Value, AuditedEvent.AccountCreated, $"New account created for {model.Name}", DateTime.Now);
+        await dataStore.SaveAsync();
 
         return new RegisterUserResult([]);
     }

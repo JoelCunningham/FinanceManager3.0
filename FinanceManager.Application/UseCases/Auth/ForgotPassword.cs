@@ -4,11 +4,12 @@ using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Models;
 using FinanceManager.Application.UseCases;
+using FinanceManager.Domain.Enums;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 public sealed record ForgotPasswordResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ForgotPassword(IIndentityService identityService, IUserEmailService emailService)
+public sealed class ForgotPassword(IIndentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
 {
     public async Task<ForgotPasswordResult> ExecuteAsync(ForgotPasswordModel model)
     {
@@ -17,9 +18,9 @@ public sealed class ForgotPassword(IIndentityService identityService, IUserEmail
             return new ForgotPasswordResult([new UseCaseInvalidOperationError("Email is required.")]);
         }
 
-        var exists = await identityService.FindByEmailAsync(model.Email);
+        var userId = await identityService.FindByEmailAsync(model.Email);
 
-        if (!exists)
+        if (!userId.HasValue)
         {
             return new ForgotPasswordResult([new UseCaseInvalidOperationError("User not found.")]);
         }
@@ -34,6 +35,9 @@ public sealed class ForgotPassword(IIndentityService identityService, IUserEmail
         });
 
         await emailService.SendPasswordResetAsync(model.Email, model.Email, resetLink);
+
+        await auditLog.LogAsync(userId.Value, AuditedEvent.PasswordResetRequested, "Password reset requested.", DateTime.Now);
+        await dataStore.SaveAsync();
 
         return new ForgotPasswordResult([]);
     }

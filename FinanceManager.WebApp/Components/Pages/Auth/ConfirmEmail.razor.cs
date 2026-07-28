@@ -3,6 +3,7 @@ namespace FinanceManager.WebApp.Components.Pages.Auth;
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.Models;
 using FinanceManager.WebApp.Components.Base;
+using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
@@ -19,6 +20,8 @@ public partial class ConfirmEmail : AuthPageBase
 
     protected override async Task OnInitializedAsync()
     {
+        SetSidebar();
+
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
@@ -42,5 +45,14 @@ public partial class ConfirmEmail : AuthPageBase
         }
 
         Success = Message is null;
+    }
+
+    private void SetSidebar()
+    {
+        Layout?.UpdateSidebar(
+            "Congratulations,",
+            "you're in!",
+            "Log into your new account to get started.",
+            BootstrapIcon.PlayCircle);
     }
 }

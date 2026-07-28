@@ -3,9 +3,11 @@ namespace FinanceManager.Application.UseCases.Auth;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Models;
 using FinanceManager.Application.UseCases;
+using FinanceManager.Domain.Entities;
+using FinanceManager.Domain.Enums;
 
 public sealed record ResetPasswordResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ResetPassword(IIndentityService identityService)
+public sealed class ResetPassword(IIndentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
 {
     public async Task<ResetPasswordResult> ExecuteAsync(ResetPasswordModel model)
     {
@@ -19,9 +21,9 @@ public sealed class ResetPassword(IIndentityService identityService)
             return new ResetPasswordResult([new UseCaseInvalidOperationError("Email and token are required.")]);
         }
 
-        var (success, errors) = await identityService.ResetPasswordAsync(model.Email, model.Token, model.Password);
+        var (userId, errors) = await identityService.ResetPasswordAsync(model.Email, model.Token, model.Password);
 
-        if (!success)
+        if (!userId.HasValue)
         {
             var error = errors.FirstOrDefault();
 
@@ -34,6 +36,9 @@ public sealed class ResetPassword(IIndentityService identityService)
                 return new ResetPasswordResult([new UseCaseInvalidOperationError(error)]);
             }
         }
+
+        await auditLog.LogAsync(userId.Value, AuditedEvent.PasswordResetCompleted, "Password reset completed.", DateTime.Now);
+        await dataStore.SaveAsync();
 
         return new ResetPasswordResult([]);
     }

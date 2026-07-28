@@ -13,6 +13,7 @@ using System.Reflection;
 public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options, ICurrentUserService currentUserService)
     : IdentityDbContext<ApplicationUser>(options), IDataStore
 {
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
     public DbSet<BankRecord> BankRecords => Set<BankRecord>();
     public DbSet<Transaction> Transactions => Set<Transaction>();

@@ -11,7 +11,7 @@ public sealed class LoginUser(IIndentityService identityService, ILoginTicketSto
 {
     public async Task<LoginUserResult> ExecuteAsync(LoginModel model)
     {
-        if (!await identityService.FindByEmailAsync(model.Email))
+        if ((await identityService.FindByEmailAsync(model.Email)) is null)
         {
             return new LoginUserResult(null, [new UseCaseInvalidOperationError("Your email or password is incorrect.")]);
         }

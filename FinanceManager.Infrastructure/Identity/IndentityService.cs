@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Identity;
 
 public class IndentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoginTicketStore ticketStore, AuthenticationStateProvider authStateProvider) : IIndentityService
 {
-    public async Task<(bool Success, IEnumerable<string> Errors)> CreateUserAsync(string name, string email, string password)
+    public async Task<(Guid? UserId, IEnumerable<string> Errors)> CreateUserAsync(string name, string email, string password)
     {
-        var result = await userManager.CreateAsync(new ApplicationUser(name, email), password);
-        return (result.Succeeded, [.. result.Errors.Select(e => e.Description)]);
+        var user = new ApplicationUser(name, email);
+        var result = await userManager.CreateAsync(user, password);
+        return (result.Succeeded ? Guid.Parse(user.Id) : null, [.. result.Errors.Select(e => e.Description)]);
     }
 
     public async Task<string> GenerateEmailConfirmationTokenAsync(string email)
@@ -20,10 +21,10 @@ public class IndentityService(UserManager<ApplicationUser> userManager, SignInMa
         return await userManager.GenerateEmailConfirmationTokenAsync(user);
     }
 
-    public async Task<bool> FindByEmailAsync(string email)
+    public async Task<Guid?> FindByEmailAsync(string email)
     {
         var user = await userManager.FindByEmailAsync(email);
-        return user is not null;
+        return user?.Id is not null ? Guid.Parse(user.Id) : null;
     }
 
     public async Task<bool> CanSignInAsync(string email)
@@ -87,19 +88,19 @@ public class IndentityService(UserManager<ApplicationUser> userManager, SignInMa
         return await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", token);
     }
 
-    public async Task<(bool Success, IEnumerable<string> Errors)> ResetPasswordAsync(string email, string token, string password)
+    public async Task<(Guid? UserId, IEnumerable<string> Errors)> ResetPasswordAsync(string email, string token, string password)
     {
         var user = await userManager.FindByEmailAsync(email);
-        if (user is null) return (false, new[] { "User not found" });
+        if (user is null) return (null, new[] { "User not found" });
         var result = await userManager.ResetPasswordAsync(user, token, password);
-        return (result.Succeeded, [.. result.Errors.Select(e => e.Description)]);
+        return (result.Succeeded ? Guid.Parse(user.Id) : null, [.. result.Errors.Select(e => e.Description)]);
     }
 
-    public async Task<bool> ConfirmEmailAsync(string email, string token)
+    public async Task<Guid?> ConfirmEmailAsync(string email, string token)
     {
         var user = await userManager.FindByEmailAsync(email);
-        if (user is null) return false;
+        if (user is null) return null;
         var result = await userManager.ConfirmEmailAsync(user, token);
-        return result.Succeeded;
+        return result.Succeeded ? Guid.Parse(user.Id) : null;
     }
 }
