@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Havit.Blazor.Components.Web.Bootstrap" Version="4.25.0" />
     <PackageReference Include="Havit.Blazor.Components.Web.ECharts" Version="4.25.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.10" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 namespace FinanceManager.WebApp.Components.Pages.Auth;
 
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.WebApp.Components.Base;
-using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 

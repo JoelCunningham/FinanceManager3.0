@@ -1,17 +1,18 @@
 namespace FinanceManager.Application;
 
 using FinanceManager.Application.Common;
-using FinanceManager.Application.UseCases.Dashboard;
+using FinanceManager.Application.UseCases.Auth;
 using FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.UseCases.Dates;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
+using FinanceManager.Application.UseCases.Statistics;
 using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.Application.Utilities;
 using Microsoft.Extensions.DependencyInjection;
-using FinanceManager.Application.UseCases.Statistics;
 
 public static class DependencyInjection
 {
@@ -76,7 +77,16 @@ public static class DependencyInjection
         services.AddScoped<GetFortnightRanges>();
         services.AddScoped<GetMonthRanges>();
         services.AddScoped<GetWeekRanges>();
-        
+
+        // Auth use cases
+        services.AddScoped<RegisterUser>();
+        services.AddScoped<LoginUser>();
+        services.AddScoped<LogoutUser>();
+        services.AddScoped<ForgotPassword>();
+        services.AddScoped<ResetPassword>();
+        services.AddScoped<ValidateResetToken>();
+        services.AddScoped<ConfirmEmail>();
+
         services.AddScoped<Preferences>();
 
         services.AddScoped<ChartHelper>();

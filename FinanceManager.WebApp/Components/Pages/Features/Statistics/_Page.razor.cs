@@ -1,10 +1,10 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages.Features.Statistics;
 
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Models;
-using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Utilities;
 using Microsoft.AspNetCore.Components;
 

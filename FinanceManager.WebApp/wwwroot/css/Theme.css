@@ -93,7 +93,7 @@ main {
                 border: 1.5px solid var(--colour-border);
             }
 
-            button {
+            button:not(.btn-close) {
                 width: 100%;
                 padding: var(--space-small);
                 margin-bottom: var(--space-medium);
@@ -479,6 +479,10 @@ select.form-select {
         box-shadow: var(--shadow-focus) !important;
     }
 
+.form-check-label {
+    color: var(--colour-grey) !important;
+}
+
 input[inputmode=search] {
     padding: 0.25rem 0.75rem;
 }
@@ -659,7 +663,7 @@ input[inputmode=search] {
 
 /*Form*/
 form {
-    gap: var(--space-medium) !important;
+    gap: var(--space-large) !important;
 
     .invalid-feedback {
         color: var(--colour-danger) !important;

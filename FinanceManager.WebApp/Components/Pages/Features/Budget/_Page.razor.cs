@@ -1,10 +1,10 @@
 namespace FinanceManager.WebApp.Components.Pages.Features.Budget;
 
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
-using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
 
 [Route(Pages.Budget)]

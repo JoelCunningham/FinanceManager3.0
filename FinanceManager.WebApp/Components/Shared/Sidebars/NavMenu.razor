@@ -1,15 +1,12 @@
-﻿@using FinanceManager.Infrastructure.Identity
-@inject UserManager<ApplicationUser> UserManager
-@inject AuthenticationStateProvider AuthStateProvider
+﻿@using FinanceManager.Application.Interfaces
+@inject IIndentityService IndentityService
 
 @code {
     private string? Username;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
+        var user = await IndentityService.GetCurrentUserAsync();
         Username = user?.Name;
     }
 }

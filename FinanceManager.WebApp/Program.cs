@@ -1,11 +1,11 @@
 using FinanceManager.Application;
 using FinanceManager.Application.Configuration;
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Infrastructure;
 using FinanceManager.Infrastructure.Data;
 using FinanceManager.Infrastructure.Identity;
-using FinanceManager.WebApp.Authentication;
 using FinanceManager.WebApp.Components;
-using FinanceManager.WebApp.Navigation;
+using FinanceManager.WebApp.Components.Pages.Auth;
 using Havit.Blazor.Components.Web;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.DataProtection;
@@ -40,7 +40,6 @@ if (string.IsNullOrWhiteSpace(connectionString))
 // Dependency injection
 builder.Services.AddInfrastructure(connectionString);
 builder.Services.AddApplication();
-builder.Services.AddAuth();
 
 // Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<FinanceManagerDbContext>().AddDefaultTokenProviders();

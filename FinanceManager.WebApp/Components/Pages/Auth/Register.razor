@@ -22,7 +22,9 @@ else
         <Alert Level="Alert.AlertLevel.Error">@Message</Alert>
     }
 
-    <EditForm FormName="RegisterForm" Model="Model" OnValidSubmit="HandleRegister">
+    <EditForm FormName="RegisterForm" Model="Model">
+        <DataAnnotationsValidator />
+
         <HxInputText @bind-Value="Model.Name" Label="Name" />
 
         <HxInputText @bind-Value="Model.Email" Label="Email address" />
@@ -37,7 +39,7 @@ else
             </TextTemplate>
         </HxCheckbox>
 
-        <HxSubmit Color="ThemeColor.Primary">Create account</HxSubmit>
+        <HxSubmit Color="ThemeColor.Primary" OnValidClick="HandleRegister">Create account</HxSubmit>
     </EditForm>
 
     <span class="auth-link">Already have an account? <a href="@Pages.Login">Sign in</a></span>

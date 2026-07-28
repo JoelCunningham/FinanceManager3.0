@@ -1,12 +1,12 @@
 namespace FinanceManager.WebApp.Components.Pages.Features.Transactions;
 
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Models;
-using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
 
 [Route(Pages.Activities)]

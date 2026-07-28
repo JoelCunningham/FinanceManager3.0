@@ -1,11 +1,11 @@
 namespace FinanceManager.WebApp.Components.Pages.Features.Categories;
 
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Shared.Modals;
-using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
 
 [Route(Pages.Categories)]

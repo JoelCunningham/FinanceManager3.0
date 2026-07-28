@@ -15,5 +15,4 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
         var userIdClaim = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
         return userIdClaim is not null ? Guid.Parse(userIdClaim.Value) : null;
     }
-
 }

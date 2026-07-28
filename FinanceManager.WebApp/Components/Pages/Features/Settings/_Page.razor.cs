@@ -1,7 +1,7 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages.Features.Settings;
 
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.WebApp.Components.Base;
-using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
 
 [Route(Pages.Settings)]

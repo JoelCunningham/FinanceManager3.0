@@ -5,7 +5,9 @@
     <Alert Level="Alert.AlertLevel.Error">@Message</Alert>
 }
 
-<EditForm FormName="LoginForm" Model="Model" OnValidSubmit="HandleLogin">
+<EditForm FormName="LoginForm" Model="Model">
+    <DataAnnotationsValidator />
+
     <HxInputText @bind-Value="Model.Email" Label="Email address" />
 
     <HxInputText @bind-Value="Model.Password" Type="InputType.Password" LabelCssClass="d-flex justify-content-between">
@@ -17,8 +19,7 @@
 
     <HxCheckbox @bind-Value="Model.RememberMe" Text="Remember me" />
 
-    <HxSubmit Color="ThemeColor.Primary">Sign in</HxSubmit>
-
+    <HxSubmit Color="ThemeColor.Primary" OnValidClick="HandleLogin">Sign in</HxSubmit>
 </EditForm>
 
 <span class="auth-link">Don't have an account? <a href="@Pages.Register">Create one</a></span>

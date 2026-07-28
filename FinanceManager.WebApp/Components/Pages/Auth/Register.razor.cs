@@ -1,32 +1,18 @@
 namespace FinanceManager.WebApp.Components.Pages.Auth;
 
-using FinanceManager.Application.Interfaces;
-using FinanceManager.Infrastructure.Identity;
+using FinanceManager.Application.Constants.Navigation;
+using FinanceManager.Application.Models;
 using FinanceManager.WebApp.Components.Base;
-using FinanceManager.WebApp.Navigation;
-using FinanceManager.WebApp.Validation;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.WebUtilities;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 [Route(Pages.Register)]
 public partial class Register : AuthPageBase
 {
-    private RegisterModel Model { get; set; } = new();
+    private RegisterUserModel Model { get; set; } = new();
+    
     private string? Message { get; set; }
-
     private bool Success { get; set; }
-
-    private class RegisterModel
-    {
-        [Required] public string Name { get; set; } = "";
-        [Required, EmailAddress] public string Email { get; set; } = "";
-        [Required, MinPasswordLength] public string Password { get; set; } = "";
-        [Compare(nameof(Password))] public string ConfirmPassword { get; set; } = "";
-        [Required] public bool AcceptTerms { get; set; }
-    }
 
     protected override void OnInitialized()
     {
@@ -44,68 +30,10 @@ public partial class Register : AuthPageBase
 
     private async Task HandleRegister()
     {
-        Message = await ValidateModel() ?? await AttemptRegister();
-        Success = Message is null;
-    }
+        Model.Origin = Navigation.BaseUri.TrimEnd('/');
+        var result = await UseCases.RegisterUserAsync(Model);
 
-    private async Task<string?> ValidateModel()
-    {
-        if (string.IsNullOrWhiteSpace(Model.Name))
-        {
-            return "Please enter your name.";
-        }
-        if (string.IsNullOrWhiteSpace(Model.Email))
-        {
-            return "Please enter your email address.";
-        }
-        if (string.IsNullOrWhiteSpace(Model.Password))
-        {
-            return "Please enter a password.";
-        }
-        if (Model.Password != Model.ConfirmPassword)
-        {
-            return "Passwords do not match.";
-        }
-        if (!Model.AcceptTerms)
-        {
-            return "You must accept the terms and conditions.";
-        }
-        return null;
-    }
-
-    private async Task<string?> AttemptRegister()
-    {
-        var user = new ApplicationUser(Model.Name, Model.Email);
-        var result = await UserManager.CreateAsync(user, Model.Password);
-
-        if (result.Succeeded)
-        {
-            var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-            var confirmationLink = Navigation.ToAbsoluteUri(Pages.ConfirmEmail).ToString();
-            confirmationLink = QueryHelpers.AddQueryString(confirmationLink, new Dictionary<string, string?>
-            {
-                [Parameters.Email] = user.Email!,
-                [Parameters.Token] = encodedToken
-            });
-
-            await EmailService.SendEmailConfirmationAsync(user.Name, user.Email!, confirmationLink);
-            return null;
-        }
-        else
-        {
-            var firstError = result.Errors.FirstOrDefault()?.Description;
-            
-            if (firstError is null)
-            {
-                return "An unexpected error occurred. Please try again.";
-            }
-            if (firstError.Contains("Username") && firstError.Contains("already taken"))
-            {
-                return firstError.Replace("Username", "Email").Replace("already taken", "already registered");
-            }
-            return firstError;
-        }
+        Success = result.IsSuccess;
+        Message = result.Errors.FirstOrDefault()?.Message;
     }
 }

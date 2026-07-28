@@ -1,5 +1,6 @@
 namespace FinanceManager.WebApp.Components.Pages.Features.CategoryGroup;
 
+using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
@@ -7,7 +8,6 @@ using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Shared.Modals;
 using FinanceManager.WebApp.Components.Shared.Wrappers;
 using FinanceManager.WebApp.Models;
-using FinanceManager.WebApp.Navigation;
 using FinanceManager.WebApp.Utilities;
 using Microsoft.AspNetCore.Components;
 

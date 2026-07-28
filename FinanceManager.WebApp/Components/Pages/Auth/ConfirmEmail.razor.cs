@@ -1,7 +1,8 @@
 namespace FinanceManager.WebApp.Components.Pages.Auth;
 
+using FinanceManager.Application.Constants.Navigation;
+using FinanceManager.Application.Models;
 using FinanceManager.WebApp.Components.Base;
-using FinanceManager.WebApp.Navigation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
@@ -9,6 +10,8 @@ using System.Text;
 [Route(Pages.ConfirmEmail)]
 public partial class ConfirmEmail : AuthPageBase
 {
+    private ConfirmEmailModel Model { get; set; } = new();
+
     private string? Message { get; set; }
     private bool Success { get; set; }
 
@@ -16,36 +19,28 @@ public partial class ConfirmEmail : AuthPageBase
 
     protected override async Task OnInitializedAsync()
     {
-        Message = await AttemptConfirmEmail();
-        Success = Message is null;
-    }
-
-    private async Task<string?> AttemptConfirmEmail()
-    {
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
         var email = query[Parameters.Email];
         var token = query[Parameters.Token];
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+
+        if (!string.IsNullOrWhiteSpace(token))
         {
-            return GenericError;
+            Model.Token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+        }
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            Model.Email = Uri.UnescapeDataString(email);
         }
 
-        var user = await UserManager.FindByEmailAsync(Uri.UnescapeDataString(email));
-        if (user == null)
+        var result = await UseCases.ConfirmEmailAsync(Model);
+
+        if (!result.IsSuccess)
         {
-            return GenericError;
+            Message = GenericError;
         }
 
-        var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
-
-        var result = await UserManager.ConfirmEmailAsync(user, decodedToken);
-        if (!result.Succeeded)
-        {
-            return GenericError;
-        }
-
-        return null;
+        Success = Message is null;
     }
 }
