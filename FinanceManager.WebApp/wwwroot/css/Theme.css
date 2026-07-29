@@ -457,6 +457,17 @@ button.btn {
             background-color: var(--colour-offwhite) !important;
         }
     }
+
+    &.btn-link {
+        color: var(--colour-secondary);
+        text-decoration: none;
+        padding: 0;
+        display: contents !important;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 }
 
 select.form-select {
@@ -565,8 +576,6 @@ input[inputmode=search] {
             color: var(--colour-primary);
         }
     }
-
-
 }
 
 .modal .nav.nav-tabs {
@@ -670,11 +679,16 @@ form {
     }
 
     .form-control.is-invalid {
+        border-color: var(--colour-danger);
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23a81e2e'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23a81e2e' stroke='none'/%3e%3c/svg%3e");
 
         &:focus {
             border-color: var(--colour-border);
         }
+    }
+
+    .alert {
+        margin-bottom: calc(var(--space-medium) * -1);
     }
 
     > .hx-button {

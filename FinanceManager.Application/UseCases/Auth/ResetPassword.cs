@@ -3,11 +3,10 @@ namespace FinanceManager.Application.UseCases.Auth;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Models;
 using FinanceManager.Application.UseCases;
-using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 
 public sealed record ResetPasswordResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ResetPassword(IIndentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class ResetPassword(IIdentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
 {
     public async Task<ResetPasswordResult> ExecuteAsync(ResetPasswordModel model)
     {

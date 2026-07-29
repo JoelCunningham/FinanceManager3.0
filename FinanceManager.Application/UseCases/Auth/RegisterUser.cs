@@ -1,6 +1,7 @@
 namespace FinanceManager.Application.UseCases.Auth;
 
 using FinanceManager.Application.Constants.Navigation;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Models;
 using FinanceManager.Application.UseCases;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 public sealed record RegisterUserResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class RegisterUser(IIndentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class RegisterUser(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
 {
     public async Task<RegisterUserResult> ExecuteAsync(RegisterUserModel model)
     {
@@ -37,11 +38,12 @@ public sealed class RegisterUser(IIndentityService identityService, IUserEmailSe
 
         var confirmationLink = QueryHelpers.AddQueryString($"{model.Origin}{Pages.ConfirmEmail}", new Dictionary<string, string?>
         {
+            [Parameters.Token] = encodedToken,
             [Parameters.Email] = model.Email,
-            [Parameters.Token] = encodedToken
+            [Parameters.Reason] = ConfirmEmailReason.Registration.ToString()
         });
 
-        await emailService.SendEmailConfirmationAsync(model.Name, model.Email, confirmationLink);
+        await emailService.SendRegistrationConfirmationAsync(model.Name, model.Email, confirmationLink);
 
         await auditLog.LogAsync(userId.Value, AuditedEvent.AccountCreated, $"New account created for {model.Name}", DateTime.Now);
         await dataStore.SaveAsync();

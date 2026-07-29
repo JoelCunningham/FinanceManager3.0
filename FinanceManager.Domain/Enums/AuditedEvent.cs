@@ -6,7 +6,8 @@ public enum AuditedEvent
     EmailConfirmed,
     PasswordResetRequested,
     PasswordResetCompleted,
+    NameChanged,
+    EmailChangeRequested,
     PasswordChanged,
-    EmailChanged,
     AccountDeleted,
 }

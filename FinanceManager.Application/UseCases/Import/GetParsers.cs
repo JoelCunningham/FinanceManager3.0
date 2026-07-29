@@ -4,10 +4,9 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 
 public sealed record GetParsersResult(IReadOnlyList<BankParser> Parsers) : UseCaseResult;
-
 public sealed class GetParsers(IEnumerable<ITransactionFileParser> parsers)
 {
-    public GetParsersResult Execute()
+    public async Task<GetParsersResult> ExecuteAsync()
     {
         var bankParsers = parsers
             .GroupBy(parser => parser.GetBankName(), StringComparer.OrdinalIgnoreCase)

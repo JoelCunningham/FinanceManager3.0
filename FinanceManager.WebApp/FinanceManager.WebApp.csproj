@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Havit.Blazor.Components.Web.Bootstrap" Version="4.25.0" />
-    <PackageReference Include="Havit.Blazor.Components.Web.ECharts" Version="4.25.0" />
+    <PackageReference Include="Havit.Blazor.Components.Web.Bootstrap" Version="4.25.1" />
+    <PackageReference Include="Havit.Blazor.Components.Web.ECharts" Version="4.25.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.10" />
   </ItemGroup>
 

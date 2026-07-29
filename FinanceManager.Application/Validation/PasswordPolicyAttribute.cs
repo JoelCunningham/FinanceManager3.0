@@ -41,9 +41,29 @@ public class PasswordPolicyAttribute : ValidationAttribute
 
         if (errors.Count > 0)
         {
-            var message = "Password must " + (errors.Count > 1
-                ? string.Join(", ", errors.Take(errors.Count - 1)) + ", and " + errors.Last()
-                : errors.Single()) + ".";
+            var requirements = new List<string>();
+
+            if (config.RequireDigit) requirements.Add("digit");
+            if (config.RequireUppercase) requirements.Add("uppercase letter");
+            if (config.RequireLowercase) requirements.Add("lowercase letter");
+            if (config.RequireNonAlphanumeric) requirements.Add("non-alphanumeric character");
+
+            var requiresContains = requirements.Count > 0;
+
+            string requirementText = "";
+            if (requirements.Count == 1) requirementText = requirements[0];
+            
+            if (requirements.Count > 1)
+            {
+                requirementText = string.Join(", ", requirements.Take(requirements.Count - 1)) + " and " + requirements.Last();
+            }
+
+            var message = $"Password must be at least {config.RequiredLength} characters long";
+
+            if (requiresContains)
+            {
+                message += $" and contain at least one {requirementText}";
+            }
 
             return new ValidationResult(message, [context.MemberName!]);
         }

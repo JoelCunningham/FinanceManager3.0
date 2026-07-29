@@ -5,7 +5,7 @@ using FinanceManager.Application.Models;
 using FinanceManager.Application.UseCases;
 
 public sealed record ValidateResetTokenResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ValidateResetToken(IIndentityService identityService)
+public sealed class ValidateResetToken(IIdentityService identityService)
 {
     public async Task<ValidateResetTokenResult> ExecuteAsync(ResetPasswordModel model)
     {

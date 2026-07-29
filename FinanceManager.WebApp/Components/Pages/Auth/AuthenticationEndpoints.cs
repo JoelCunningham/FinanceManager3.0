@@ -17,12 +17,12 @@ public static class AuthenticationEndpoints
     private static async Task<IResult> SignInAsync(
         [FromQuery(Name = Parameters.Key)] Guid? key,
         [FromQuery(Name = Parameters.ReturnPath)] string? returnPath,
-        [FromServices] IIndentityService identityService)
+        [FromServices] IIdentityService identityService)
     {
         return Results.Redirect(await identityService.SignInAsync(key, returnPath));
     }
 
-    private static async Task<IResult> SignOutAsync([FromServices] IIndentityService identityService)
+    private static async Task<IResult> SignOutAsync([FromServices] IIdentityService identityService)
     {
         return Results.Redirect(await identityService.SignOutAsync());
     }

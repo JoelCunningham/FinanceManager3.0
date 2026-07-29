@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 public sealed record ForgotPasswordResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ForgotPassword(IIndentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class ForgotPassword(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
 {
     public async Task<ForgotPasswordResult> ExecuteAsync(ForgotPasswordModel model)
     {

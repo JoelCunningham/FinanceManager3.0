@@ -34,7 +34,7 @@ public static class DependencyInjection
         services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
 
         // Identity
-        services.AddScoped<IIndentityService, IndentityService>();
+        services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserEmailService, UserEmailService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddSingleton<ILoginTicketStore, LoginTicketStore>();

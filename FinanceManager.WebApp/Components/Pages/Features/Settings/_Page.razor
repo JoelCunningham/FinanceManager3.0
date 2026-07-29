@@ -1,21 +1,51 @@
 ﻿@inherits MainPageBase
-@*
-@if (HasAuthenicated)
-{
-    <PageHeading Heading="Settings" Subheading="Manage your settings and preferences" />
 
-    <EditForm FormName="Settings" Model="Model" OnValidSubmit="HandleChangePassword">
-        <HxInputText @bind-Value="Model.Name" Label="Name" />
-        <HxInputText @bind-Value="Model.Email" Label="Email" />
+<PageHeading Heading="Settings" Subheading="Manage your account details and preferences" />
 
-        <HxSubmit Color="ThemeColor.Primary">Change password</HxSubmit>
+<SettingsPanel Title="Profile">
+    <EditForm FormName="Settings.Profile" Model="ProfileModel">
+        <DataAnnotationsValidator />
+
+        @if (HasChangedEmail)
+        {
+            <Alert Level="Alert.AlertLevel.Warning">
+                You have requested to change your email address. Please check your inbox for a confirmation link. Once you confirm your new email, it will be updated here and you will be able to use it to sign in.
+            </Alert>
+        }
+        <HxInputText @bind-Value="ProfileModel.NewName" Label="Name" />
+        <HxInputText @bind-Value="ProfileModel.NewEmail" Label="Email address" />
+
+        <div class="settings-footer">
+            <p>Changing your email will send a confirmation link to the new address.</p>
+            <HxSubmit Color="ThemeColor.Primary" OnValidClick="HandleProfileUpdate">Save changes</HxSubmit>
+        </div>
     </EditForm>
-}
-else
-{
-    <PageHeading Heading="Confirm identity" Subheading="For your security, please complete two-factor authentication" />
+</SettingsPanel>
 
-    <HxButton Color="ThemeColor.Primary" OnClick="() => Open2FAModal()">Confirm</HxButton>
-}
+<SettingsPanel Title="Security">
+    <EditForm FormName="Settings.Security" Model="PasswordModel">
+        <DataAnnotationsValidator />
 
- *@
+        <HxInputText @bind-Value="PasswordModel.CurrentPassword" Label="Current password" Type="InputType.Password" />
+        <HxInputText @bind-Value="PasswordModel.NewPassword" Label="New password" Type="InputType.Password" />
+        <HxInputText @bind-Value="PasswordModel.ConfirmPassword" Label="Confirm password" Type="InputType.Password" />
+
+        <div class="settings-footer">
+            <p>Remember to choose a strong password you haven't used before.</p>
+            <HxSubmit Color="ThemeColor.Primary" OnValidClick="HandlePasswordUpdate">Update password</HxSubmit>
+        </div>
+    </EditForm>
+</SettingsPanel>
+
+<SettingsPanel Title="Delete account">
+    <EditForm FormName="Settings.DeleteAccount" Model="DeleteModel">
+        <div class="settings-footer">
+            <p>Deleting your account is permanent and cannot be undone.</p>
+            <HxSubmit Color="ThemeColor.Primary" OnValidClick="HandleUserDelete">Delete account</HxSubmit>
+        </div>
+    </EditForm>
+</SettingsPanel>
+
+<MfaModal @ref="MfaModal" EmailAddress="@ProfileModel.CurrentEmail" HasError="MfaCodeError" OnConfirmIdentity="HandleMfaSubmit" OnRequestNewCode="GenerateNewMfaCode" />
+
+<Confirmation @ref="Confirmation" />

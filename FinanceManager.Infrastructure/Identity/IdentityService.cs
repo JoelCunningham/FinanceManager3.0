@@ -6,7 +6,7 @@ using FinanceManager.Application.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 
-public class IndentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoginTicketStore ticketStore, AuthenticationStateProvider authStateProvider) : IIndentityService
+public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoginTicketStore ticketStore, AuthenticationStateProvider authStateProvider) : IIdentityService
 {
     public async Task<(Guid? UserId, IEnumerable<string> Errors)> CreateUserAsync(string name, string email, string password)
     {
@@ -102,5 +102,51 @@ public class IndentityService(UserManager<ApplicationUser> userManager, SignInMa
         if (user is null) return null;
         var result = await userManager.ConfirmEmailAsync(user, token);
         return result.Succeeded ? Guid.Parse(user.Id) : null;
+    }
+
+    public async Task<string> GenerateTwoFactorTokenAsync(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email) ?? throw new Exception("User not found");
+        return await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+    }
+
+    public async Task<string> GenerateChangeEmailTokenAsync(string email, string newEmail)
+    {
+        var user = await userManager.FindByEmailAsync(email) ?? throw new Exception("User not found");
+        return await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+    }
+
+    public async Task<Guid?> ChangeEmailAsync(string email, string newEmail, string token)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null) return null;
+        var result = await userManager.ChangeEmailAsync(user, newEmail, token);
+        result = result.Succeeded ? await userManager.SetUserNameAsync(user, newEmail) : result;
+        return result.Succeeded ? Guid.Parse(user.Id) : null;
+    }
+
+    public async Task<bool> ChangeNameAsync(string email, string newName)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null) return false;
+        user.Name = newName;
+        var result = await userManager.UpdateAsync(user);
+        return result.Succeeded;
+    }
+
+    public async Task<bool> ChangePasswordAsync(string email, string currentPassword, string newPassword)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null) return false;
+        var result = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        return result.Succeeded;
+    }
+
+    public async Task<bool> DeleteUser(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null) return false;
+        var result = await userManager.DeleteAsync(user);
+        return result.Succeeded;
     }
 }

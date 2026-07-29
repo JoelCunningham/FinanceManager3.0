@@ -1,0 +1,31 @@
+﻿.settings-section {
+    border-radius: var(--radius-medium);
+    background-color: var(--colour-white);
+    padding: var(--space-medium);
+    margin-bottom: var(--space-medium);
+
+    h2 {
+        font-size: var(--fontsize-heading3);
+        color: var(--colour-primary);
+    }
+}
+
+::deep .settings-footer {
+    display: flex;
+    margin: calc(var(--space-medium) * -1);
+    padding: var(--space-medium);
+    margin-top: var(--space-small);
+    background-color: var(--colour-border);
+    border-radius: 0 0 var(--radius-medium) var(--radius-medium);
+    box-shadow: var(--shadow-medium);
+}
+
+    ::deep .settings-footer p {
+        margin: 0;
+        align-content: center;
+    }
+
+        ::deep button {
+            width: fit-content;
+            margin-left: auto;
+        }

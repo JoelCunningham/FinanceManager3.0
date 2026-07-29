@@ -1,6 +1,7 @@
 namespace FinanceManager.WebApp.Components.Pages.Auth;
 
 using FinanceManager.Application.Constants.Navigation;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Models;
 using FinanceManager.WebApp.Components.Base;
 using Havit.Blazor.Components.Web.Bootstrap;
@@ -25,8 +26,10 @@ public partial class ConfirmEmail : AuthPageBase
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
 
-        var email = query[Parameters.Email];
         var token = query[Parameters.Token];
+        var email = query[Parameters.Email];
+        var oldEmail = query[Parameters.OldEmail];
+        var reason = query[Parameters.Reason];
 
         if (!string.IsNullOrWhiteSpace(token))
         {
@@ -35,6 +38,14 @@ public partial class ConfirmEmail : AuthPageBase
         if (!string.IsNullOrWhiteSpace(email))
         {
             Model.Email = Uri.UnescapeDataString(email);
+        }
+        if (!string.IsNullOrWhiteSpace(oldEmail))
+        {
+            Model.OldEmail = Uri.UnescapeDataString(oldEmail);
+        }
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            Model.Reason = Enum.Parse<ConfirmEmailReason>(reason);
         }
 
         var result = await UseCases.ConfirmEmailAsync(Model);

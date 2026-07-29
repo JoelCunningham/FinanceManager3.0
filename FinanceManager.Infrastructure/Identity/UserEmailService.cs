@@ -10,7 +10,7 @@ public class UserEmailService(IOptions<EmailConfig> options) : IUserEmailService
 {
     private readonly EmailConfig Config = options.Value;
 
-    public async Task SendEmailConfirmationAsync(string name, string address, string confirmationLink)
+    public async Task SendRegistrationConfirmationAsync(string name, string address, string confirmationLink)
     {
         var subject = "Confirm your email";
         var htmlMessage = $"" +
@@ -28,6 +28,28 @@ public class UserEmailService(IOptions<EmailConfig> options) : IUserEmailService
             $"<p>We received a request to reset your password. You can reset your password by clicking the link below:</p>" +
             $"<p><a href='{resetLink}'>Reset Password</a></p>" +
             $"<p>If you did not request this, please ignore this email.</p>";
+        await SendEmailAsync(name, address, subject, htmlMessage);
+    }
+
+    public async Task SendMfaCodeAsync(string name, string address, string mfaCode)
+    {
+        var subject = "Your MFA Code";
+        var htmlMessage = $"" +
+            $"<p>Hi {name},</p>" +
+            $"<p>Your Multi-Factor Authentication (MFA) code is:</p>" +
+            $"<h2>{mfaCode}</h2>" +
+            $"<p>If you did not request this, please contact support immediately.</p>";
+        await SendEmailAsync(name, address, subject, htmlMessage);
+    }
+
+    public async Task SendEmailUpdateConfirmationAsync(string name, string address, string confirmationLink)
+    {
+        var subject = "Confirm your new email address";
+        var htmlMessage = $"" +
+            $"<p>Hi {name},</p>" +
+            $"<p>Please confirm your new email address by clicking the link below:</p>" +
+            $"<p><a href='{confirmationLink}'>Confirm New Email</a></p>" +
+            $"<p>If you did not request this change, please contact support immediately.</p>";
         await SendEmailAsync(name, address, subject, htmlMessage);
     }
 

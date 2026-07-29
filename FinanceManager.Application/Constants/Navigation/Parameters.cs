@@ -8,6 +8,8 @@ public static class Parameters
 
     public const string Email = "Email";
     public const string Token = "Token";
+    public const string Reason = "Reason";
+    public const string OldEmail = "OldEmail";
 
     public const string Name = "Name";
     public const string Group = "Group";

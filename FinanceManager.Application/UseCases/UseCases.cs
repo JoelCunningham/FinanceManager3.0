@@ -9,6 +9,7 @@ using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
+using FinanceManager.Application.UseCases.Settings;
 using FinanceManager.Application.UseCases.Statistics;
 using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
@@ -21,6 +22,7 @@ public class UseCases(
     DeleteBudgetEntry deleteBudgetEntry,
     DeleteCategory deleteCategory,
     DeleteCategoryGroup deleteCategoryGroup,
+    DeleteUser deleteUser,
     ForgotPassword forgotPassword,
     GetAvailablePeriods getAvailablePeriods,
     GetBudgetYears getBudgetYears,
@@ -36,6 +38,7 @@ public class UseCases(
     GetPagedTransactions getPagedTransactions,
     GetPagedTransfers getPagedTransfers,
     GetParsers getParsers,
+    GetProfile getProfile,
     GetReimbursementCandidates getReimbursementCandidates,
     GetReviewGroup getReviewGroup,
     GetTransactionDetails getTransactionDetails,
@@ -53,19 +56,23 @@ public class UseCases(
     SaveImport saveImport,
     SaveReview saveReview,
     SaveTransactionEdit saveTransactionEdit,
+    SendMfaCode sendMfaCode,
     SeparateTransfer separateTransfer,
+    UpdateUserEmail updateUserEmail,
+    UpdateUserName updateUserName,
+    UpdateUserPassword updateUserPassword,
     ValidateResetToken validateResetToken,
     ValidateTransactionEdit validateTransactionEdit
 )
 {
-    public GetParsersResult GetParsers() => getParsers.Execute();
     public Task<AutoCategoriseResult> AutoCategoriseAsync(IEnumerable<ReviewGroup> groups, IEnumerable<CategorySummary> categories) => autoAssignCategories.ExecuteAsync(groups, categories);
     public Task<ConfirmEmailResult> ConfirmEmailAsync(ConfirmEmailModel model) => confirmEmail.ExecuteAsync(model);
     public static Task<BackdateTransactionResult> BackdateTransactionAsync(TransactionSummary transaction, DateTime date, DateTime initialDate) => BackdateTransaction.ExecuteAsync(transaction, date, initialDate);
     public Task<DeleteBudgetResult> DeleteBudgetAsync(Guid id) => deleteBudget.ExecuteAsync(id);
     public Task<DeleteBudgetEntryResult> DeleteBudgetEntryAsync(Guid id) => deleteBudgetEntry.ExecuteAsync(id);
-    public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
     public Task<DeleteCategoryResult> DeleteCategoryAsync(Guid id) => deleteCategory.ExecuteAsync(id);
+    public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
+    public Task<DeleteUserResult> DeleteUserAsync(DeleteModel model) => deleteUser.ExecuteAsync(model);
     public Task<ForgotPasswordResult> ForgotPasswordAsync(ForgotPasswordModel model) => forgotPassword.ExecuteAsync(model);
     public Task<GetAvailablePeriodsResult> GetAvailablePeriodsAsync(Guid? categoryGroupId = null, bool allowFuture = false) => getAvailablePeriods.ExecuteAsync(categoryGroupId, allowFuture);
     public Task<GetBudgetYearsResult> GetBudgetYearsAsync() => getBudgetYears.ExecuteAsync();
@@ -86,6 +93,8 @@ public class UseCases(
     public Task<GetTransferCandidatesResult> GetTransferCandidatesAsync(FilterQuery query, decimal amount) => getTransferCandidates.ExecuteAsync(query, amount);
     public Task<GetUniqueAccountsResult> GetUniqueAccountsAsync() => getUniqueAccounts.ExecuteAsync();
     public Task<GetUserStatusResult> GetUserStatusAsync(DateOnly? staleCutoff = null) => getUserStatus.ExecuteAsync(staleCutoff);
+    public Task<GetParsersResult> GetParsersAsync() => getParsers.ExecuteAsync();
+    public Task<GetProfileResult> GetProfileAsync() => getProfile.ExecuteAsync();
     public Task<LoginUserResult> LoginUserAsync(LoginModel model) => loginUser.ExecuteAsync(model);
     public static Task<LogoutUserResult> LogoutUserAsync() => LogoutUser.ExecuteAsync();
     public Task<ParseFileResult> ParseFileAsync(Stream file, string bank, string extension) => parseFile.ExecuteAsync(file, bank, extension);
@@ -99,7 +108,11 @@ public class UseCases(
     public Task<SaveReviewResult> SaveReviewAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
     public Task<SaveTransactionEditResult> SaveTransactionEditAsync(TransactionSummary transaction) => saveTransactionEdit.ExecuteAsync(transaction);
     public Task<SeparateTransferResult> SeparateTransferAsync(Guid transferId) => separateTransfer.ExecuteAsync(transferId);
+    public Task<SendMfaCodeResult> SendMfaCodeAsync(string name, string address) => sendMfaCode.ExecuteAsync(name, address);
     public static Task<UpdateTransactionAmountResult> UpdateTransactionAmountAsync(ReviewTransaction transaction, decimal amount, ReviewGroup group) => UpdateTransactionAmount.ExecuteAsync(transaction, amount, group);
+    public Task<UpdateUserEmailResult> UpdateUserEmailAsync(ProfileModel model) => updateUserEmail.ExecuteAsync(model);
+    public Task<UpdateUserNameResult> UpdateUserNameAsync(ProfileModel model) => updateUserName.ExecuteAsync(model);
+    public Task<UpdateUserPasswordResult> UpdateUserPasswordAsync(PasswordModel model) => updateUserPassword.ExecuteAsync(model);
     public static Task<ValidateReviewGroupResult> ValidateReviewGroupAsync(ReviewGroup group) => ValidateReviewGroup.ExecuteAsync(group);
     public Task<ValidateResetTokenResult> ValidateResetTokenAsync(ResetPasswordModel model) => validateResetToken.ExecuteAsync(model);
     public Task<ValidateTransactionEditResult> ValidateTransactionEditAsync(TransactionSummary transaction) => validateTransactionEdit.ExecuteAsync(transaction);

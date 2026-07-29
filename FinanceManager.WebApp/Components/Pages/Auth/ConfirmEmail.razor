@@ -3,7 +3,14 @@
     <PageHeading Heading="Your email has been confirmed" Centred="true" />
 
     <div class="textblock">
-        <p class="text-center">You can now start using your account</p>
+        @if (Model.Reason == ConfirmEmailReason.UpdateEmail)
+        {
+            <p class="text-center">You can now use your new email address to sign in</p>
+        }
+        else
+        {
+            <p class="text-center">You can now start using your account</p>
+        }
     </div>
 }
 else

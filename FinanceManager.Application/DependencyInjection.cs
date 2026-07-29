@@ -5,9 +5,9 @@ using FinanceManager.Application.UseCases.Auth;
 using FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.UseCases.Dashboard;
-using FinanceManager.Application.UseCases.Dates;
 using FinanceManager.Application.UseCases.Import;
 using FinanceManager.Application.UseCases.Review;
+using FinanceManager.Application.UseCases.Settings;
 using FinanceManager.Application.UseCases.Statistics;
 using FinanceManager.Application.UseCases.Transactions;
 using FinanceManager.Application.UseCases.Transfers;
@@ -73,11 +73,6 @@ public static class DependencyInjection
         services.AddScoped<SaveBudget>();
         services.AddScoped<SaveBudgetEntry>();
 
-        // Date use cases
-        services.AddScoped<GetFortnightRanges>();
-        services.AddScoped<GetMonthRanges>();
-        services.AddScoped<GetWeekRanges>();
-
         // Auth use cases
         services.AddScoped<RegisterUser>();
         services.AddScoped<LoginUser>();
@@ -87,6 +82,16 @@ public static class DependencyInjection
         services.AddScoped<ValidateResetToken>();
         services.AddScoped<ConfirmEmail>();
 
+        // Settings use cases
+        services.AddScoped<GetProfile>();
+        services.AddScoped<SendMfaCode>();
+        services.AddScoped<UpdateUserEmail>();
+        services.AddScoped<UpdateUserName>();
+        services.AddScoped<UpdateUserPassword>();
+        services.AddScoped<DeleteUser>();
+
+        // Common
+        services.AddScoped<UserState>();
         services.AddScoped<Preferences>();
 
         services.AddScoped<ChartHelper>();

@@ -1,0 +1,9 @@
+﻿@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
+
+<div class="settings-section">
+    <h2 class="settings-subheading">@Title</h2>
+    @ChildContent
+</div>

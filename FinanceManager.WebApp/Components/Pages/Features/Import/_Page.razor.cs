@@ -27,7 +27,7 @@ public partial class _Page : MainPageBase
     {
         await base.OnInitializedAsync();
 
-        AvailableParsers = UseCases.GetParsers().Parsers;
+        AvailableParsers = (await UseCases.GetParsersAsync()).Parsers;
         SelectedParser = AvailableParsers.Count > 0 ? AvailableParsers[0] : null;
     }
 

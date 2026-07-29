@@ -1,0 +1,33 @@
+@inherits ModalBase
+
+@code {
+    [Parameter] public bool HasError { get; set; }
+    [Parameter] public string EmailAddress { get; set; } = default!;
+
+    [Parameter] public EventCallback<string> OnConfirmIdentity { get; set; }
+    [Parameter] public EventCallback OnRequestNewCode { get; set; }
+
+    private MfaModel Model { get; set; } = new();
+
+    private async Task HandleConfirmIdentity()
+    {
+        await OnConfirmIdentity.InvokeAsync(Model.Code);
+    }
+}
+
+<HxModal @ref="_modal" Title="Verify your identity" Size="ModalSize.Regular">
+    <BodyTemplate>
+        <p>For your security, we need to verify your identity. Please enter verification code sent to <b>@EmailAddress</b>.</p>
+        @if (HasError)
+        {
+            <Alert Level="Alert.AlertLevel.Error">The verification code is invalid. Please try again.</Alert>
+        }
+        <EditForm Model="Model" FormName="ConfirmIdentity">
+            <DataAnnotationsValidator />
+
+            <HxInputText @bind-Value="Model.Code" Label="Verification code" />
+            <HxSubmit Color="ThemeColor.Primary" OnValidClick="HandleConfirmIdentity">Confirm</HxSubmit>
+            <p>Didn't receive the code? <HxButton Color="ThemeColor.Link" OnClick="OnRequestNewCode">Request a new one</HxButton></p>
+        </EditForm>
+    </BodyTemplate>
+</HxModal>

@@ -1,13 +1,14 @@
-﻿@using FinanceManager.Application.Interfaces
-@inject IIndentityService IndentityService
+﻿@using FinanceManager.Application.Common
+@using FinanceManager.Application.Interfaces
+@inject UserState UserState
+@inject IIdentityService IndentityService
 
 @code {
-    private string? Username;
-
     protected override async Task OnInitializedAsync()
     {
         var user = await IndentityService.GetCurrentUserAsync();
-        Username = user?.Name;
+        UserState.UpdateUserName(user?.Name);
+        UserState.OnChange += StateHasChanged;
     }
 }
 
@@ -16,7 +17,7 @@
         <SidebarBrand />
         <AuthorizeView Context="auth">
             <Authorized>
-                <UserCard UserName="@Username" />
+                <UserCard UserName="@UserState.Name" />
             </Authorized>
         </AuthorizeView>
     </HeaderTemplate>
