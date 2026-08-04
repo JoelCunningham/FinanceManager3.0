@@ -1,6 +1,5 @@
 namespace FinanceManager.Infrastructure.Repositories;
 
-using EFCore.BulkExtensions;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
@@ -46,7 +45,7 @@ public sealed class BankAccountRepository(FinanceManagerDbContext dbContext) : I
             newAccounts.Add(newAccount);
         }
 
-        if (newAccounts.Count > 0) await dbContext.BulkInsertAsync(newAccounts);
+        if (newAccounts.Count > 0) await dbContext.BulkInsertOwnedAsync(newAccounts);
         return allAccounts;
     }
 }

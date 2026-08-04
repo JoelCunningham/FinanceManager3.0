@@ -1,6 +1,5 @@
 namespace FinanceManager.Infrastructure.Repositories;
 
-using EFCore.BulkExtensions;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
@@ -65,8 +64,7 @@ public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IB
 
     public Task CreateAsync(IEnumerable<BankRecord> bankRecords)
     {
-        dbContext.BulkInsertAsync(bankRecords);
-        return Task.CompletedTask;
+        return dbContext.BulkInsertOwnedAsync(bankRecords);
     }
 
     private readonly record struct BankRecordKey(decimal Amount, DateTime Date, string Bank, string? AccountNumber, string Description, string? Type, string? Reference);
