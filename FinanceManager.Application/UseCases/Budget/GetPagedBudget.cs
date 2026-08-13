@@ -6,10 +6,11 @@ using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
+using System.Data.Common;
 
 public sealed record GetPagedBudgetResult(
     BudgetYearSummary? BudgetYear,
-    IReadOnlyList<BudgetCell> Cells,
+    IReadOnlyList<BudgetColumn> Columns,
     IReadOnlyList<CategorySummary> Categories,
     decimal TotalBudget,
     decimal TotalIncome,
@@ -31,7 +32,7 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
         }
         else
         {
-            var cells = BuildCells(budgetYear);
+            var columns = await BuildColumns(budgetYear, categorySummaries);
             var entries = (await budgetEntryRepository.GetByBudgetYearAsync(budgetYear.Id)).ToList();
             var totals = entries.Aggregate(new BudgetTotals(), (current, entry) => current.Add(entry));
 
@@ -42,11 +43,10 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
                 _ => entries
             };
 
-            var poplulatedCells = await PopulateCells(cells, entries);
-
+            var populatedColumns = PopulateColumns(columns, entries);
             var summary = BudgetYearSummary.FromBudgetYear(budgetYear);
 
-            return new GetPagedBudgetResult(summary, poplulatedCells, categorySummaries, totals.Income - totals.Expense, totals.Income, totals.Expense);
+            return new GetPagedBudgetResult(summary, populatedColumns, categorySummaries, totals.Income - totals.Expense, totals.Income, totals.Expense);
         }
     }
 
@@ -59,45 +59,56 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
         }
     }
 
-    private static List<BudgetCell> BuildCells(BudgetYear budgetYear)
+    private async Task<List<BudgetColumn>> BuildColumns(BudgetYear budgetYear, IEnumerable<CategorySummary> categories)
     {
-        var cells = new List<BudgetCell>();
+        var columns = new List<BudgetColumn>();
 
         var scopeStart = ScopeHelper.GetIsoYearStart(budgetYear.Scope, budgetYear.Year);
         var periodsCount = ScopeHelper.GetPeriodCount(budgetYear.Scope, budgetYear.Year);
 
         for (var i = 0; i < periodsCount; i++)
         {
-            var cellStart = ScopeHelper.GetPeriodStart(budgetYear.Scope, scopeStart, i);
-            cells.Add(new BudgetCell(i, cellStart, budgetYear.Scope));
+            var cells = new List<BudgetCell>();
+
+            var columnStart = ScopeHelper.GetPeriodStart(budgetYear.Scope, scopeStart, i);
+
+            foreach (var category in categories)
+            {
+                var query = new FilterQuery
+                {
+                    FilterDateFrom = columnStart.ToDateTime(TimeOnly.MinValue),
+                    FilterDateTo = ScopeHelper.GetPeriodEnd(budgetYear.Scope, columnStart).ToDateTime(TimeOnly.MaxValue),
+                    FilterCategory = category
+                };
+                var realAmount = (await transactionRepository.GetTransactionsAsync(query)).Sum(t => t.Amount);
+
+                cells.Add(new BudgetCell(budgetYear.Scope, i, category, columnStart, realAmount));
+            }
+
+            columns.Add(new BudgetColumn(i, columnStart, budgetYear.Scope, cells));
         }
 
-        return cells;
+        return columns;
     }
 
-    private async Task<List<BudgetCell>> PopulateCells(List<BudgetCell> cells, List<BudgetEntry> entries)
+    private static List<BudgetColumn> PopulateColumns(List<BudgetColumn> columns, List<BudgetEntry> entries)
     {
         entries = [.. entries.OrderByDescending(e => e.Category.Group.IsIncome).ThenBy(e => e.Category.Group.Name).ThenBy(e => e.Category.Name)];
 
-        for (var i = 0; i < entries.Count; i++)
+        foreach (var entry in entries)
         {
-            for (var j = 0; j < entries[i].Length; j++)
+            for (var i = 0; i < entry.Length; i++)
             {
-                var cell = cells[j + entries[i].ScopePosition];
+                var currentPosition = entry.ScopePosition + i;
 
-                var query = new FilterQuery
-                {
-                    FilterDateFrom = cell.StartDate.ToDateTime(TimeOnly.MinValue),
-                    FilterDateTo = ScopeHelper.GetPeriodEnd(cell.Scope ?? BudgetScope.Monthly, cell.StartDate).ToDateTime(TimeOnly.MaxValue),
-                    FilterCategory = CategorySummary.FromCategory(entries[i].Category)
-                };
+                var column = columns[currentPosition];
+                var cell = column.Cells.FirstOrDefault(c => c.Category.Id == entry.Category.Id);
 
-                var realAmount = (await transactionRepository.GetTransactionsAsync(query)).Sum(t => t.Amount);
-
-                cell.Entries.Add(BudgetCellEntry.FromBudgetEntry(entries[i], j, i, realAmount));
+                if (cell is null) continue;
+                cell.Entries = cell.Entries.Append(BudgetCellEntry.FromBudgetEntry(entry));
             }
         }
 
-        return cells;
+        return columns;
     }
 }

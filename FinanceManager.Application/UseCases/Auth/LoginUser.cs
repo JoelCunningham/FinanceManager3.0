@@ -1,6 +1,5 @@
 namespace FinanceManager.Application.UseCases.Auth;
 
-using FinanceManager.Application.Common;
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Models;
@@ -8,7 +7,7 @@ using FinanceManager.Application.UseCases;
 using Microsoft.AspNetCore.WebUtilities;
 
 public sealed record LoginUserResult(string? LoginLink, IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class LoginUser(IIdentityService identityService, ILoginTicketStore ticketStore, UserState userState)
+public sealed class LoginUser(IIdentityService identityService, ILoginTicketStore ticketStore)
 {
     public async Task<LoginUserResult> ExecuteAsync(LoginModel model)
     {

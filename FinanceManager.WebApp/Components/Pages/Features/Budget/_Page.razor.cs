@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Budget)]
 public partial class _Page : MainPageBase
 {
-    private IReadOnlyList<BudgetCell> Cells { get; set; } = [];
+    private IReadOnlyList<BudgetColumn> Columns { get; set; } = [];
     private IReadOnlyList<CategorySummary> Categories { get; set; } = [];
     private bool HideEmptyCategories { get; set; }
 
@@ -22,15 +22,17 @@ public partial class _Page : MainPageBase
     private decimal TotalExpense { get; set; }
 
     private bool IsEditing { get; set; }
+    private BudgetCell? CurrentCell { get; set; }
     private BudgetCellEntry? CurrentEntry { get; set; }
     private BudgetYearSummary? CurrentYear { get; set; }
 
     private BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
 
+    private BudgetCellModal BudgetCellModal { get; set; } = new();
     private BudgetYearModal BudgetYearModal { get; set; } = new();
     private BudgetEntryModal BudgetEntryModal { get; set; } = new();
 
-    private bool HasPopulatedCategories => Cells.Any(c => c.Entries.Count != 0);
+    private bool HasPopulatedCategories => Columns.Any(c => c.Cells.Count != 0);
 
     private readonly IReadOnlyList<BudgetScope> BudgetScopes = [BudgetScope.Monthly, BudgetScope.Fortnightly, BudgetScope.Weekly];
 
@@ -72,18 +74,29 @@ public partial class _Page : MainPageBase
 
         var page = await UseCases.GetPagedBudgetAsync(year, EntryTypeFilter);
 
-        Cells = page.Cells;
+        Columns = page.Columns;
         Categories = page.Categories;
         ActiveBudgetYear = page.BudgetYear;
         TotalBudget = page.TotalBudget;
         TotalIncome = page.TotalIncome;
         TotalExpense = page.TotalExpense;
     }
+    
+    private async Task OpenCellModal(BudgetCell cell)
+    {
+        CurrentCell = cell;
+        await BudgetCellModal.ShowAsync();
+    }
 
-    private async Task CreateEntry(BudgetCell cell, CategorySummary category)
+    private async Task CloseCellModal()
+    {
+        await BudgetCellModal.HideAsync();
+    }
+
+    private async Task CreateEntry(BudgetCell cell)
     {
         Validation.Clear();
-        CurrentEntry = new() { OverallScopePosition = cell.Index, OverallLength = 1, Category = category };
+        CurrentEntry = new() { ScopePosition = cell.Position, Length = 1, Category = cell.Category };
         IsEditing = false;
         await BudgetEntryModal.ShowAsync();
     }
@@ -118,12 +131,16 @@ public partial class _Page : MainPageBase
 
         Validation.Clear();
 
+        if (string.IsNullOrEmpty(CurrentEntry.Name))
+        {
+            Validation.SetError("Name is required");
+            return;
+        }
         if (CurrentEntry.Category is null)
         {
             Validation.SetError("Category is required");
             return;
         }
-
         if (CurrentEntry.Amount <= 0)
         {
             Validation.SetError("Amount is required");
@@ -144,6 +161,7 @@ public partial class _Page : MainPageBase
 
             await BudgetEntryModal.HideAsync();
             await ReloadAsync(ActiveBudgetYear.Year);
+            await BudgetCellModal.ShowAsync();
         }
         catch (Exception ex)
         {
@@ -158,9 +176,11 @@ public partial class _Page : MainPageBase
         try
         {
             await UseCases.DeleteBudgetEntryAsync(CurrentEntry.EntityId.Value);
+            CurrentCell?.Entries = CurrentCell.Entries.Where(e => e.EntityId != CurrentEntry.EntityId);
             Validation.SetSuccess("Budget entry deleted");
             await BudgetEntryModal.HideAsync();
             await ReloadAsync(DateTime.Now.Year);
+            await BudgetCellModal.ShowAsync();
         }
         catch (Exception ex)
         {
@@ -171,6 +191,7 @@ public partial class _Page : MainPageBase
     private async Task CancelEntry()
     {
         await BudgetEntryModal.HideAsync();
+        await BudgetCellModal.ShowAsync();
     }
 
     private async Task SaveBudget()

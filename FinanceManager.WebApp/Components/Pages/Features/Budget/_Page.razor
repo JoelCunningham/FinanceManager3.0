@@ -24,11 +24,10 @@
 
 <BudgetGrid Scope="ActiveBudgetYear?.Scope"
             Year="ActiveBudgetYear?.Year ?? DateTime.Now.Year"
-            Cells="Cells"
+            Columns="Columns"
             Categories="Categories"
             HideEmptyCategories="HideEmptyCategories"
-            OnCellClicked="args => CreateEntry(args.Item1, args.Item2)"
-            OnEntryClicked="EditEntry"
+            OnCellClicked="OpenCellModal"
             OnBudgetCreateClicked="CreateYear" />
 
 <BudgetEntryModal @ref="BudgetEntryModal"
@@ -47,3 +46,9 @@
                  OnSave="SaveBudget"
                  OnDelete="DeleteBudget"
                  OnCancel="CancelBudget" />
+
+<BudgetCellModal @ref="BudgetCellModal" 
+    Cell="CurrentCell" 
+    OnEntryEdit="EditEntry"
+    OnEntryCreate="CreateEntry"
+    OnClose="CloseCellModal"/>

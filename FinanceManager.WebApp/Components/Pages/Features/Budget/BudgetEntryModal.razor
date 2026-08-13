@@ -30,7 +30,7 @@
     {
         if (Entry is not null)
         {
-            SetRange(Entry.OverallScopePosition, Entry.OverallScopePosition + Entry.OverallLength - 1);
+            SetRange(Entry.ScopePosition, Entry.ScopePosition + Entry.Length - 1);
         }
     }
 
@@ -43,8 +43,8 @@
         _startScopePosition = Math.Clamp(Math.Min(startScopePosition, endScopePosition), 0, maxScopePosition);
         _endScopePosition = Math.Clamp(Math.Max(startScopePosition, endScopePosition), _startScopePosition, maxScopePosition);
 
-        Entry.OverallScopePosition = _startScopePosition;
-        Entry.OverallLength = _endScopePosition - _startScopePosition + 1;
+        Entry.ScopePosition = _startScopePosition;
+        Entry.Length = _endScopePosition - _startScopePosition + 1;
     }
 
     private IEnumerable<KeyValuePair<string, int>> GetScopePositionOptions()
@@ -83,7 +83,10 @@
         <div class="d-flex flex-column gap-2">
             @if (Entry is not null && CurrentBudgetYear is not null)
             {
-                <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" Enabled="false" />
+                <HxInputText @bind-Value="Entry.Name" Label="Name" />
+
+                <CategoryInput @bind-Value="Entry.Category" Data="Categories" Label="Category" />
+
                 <HxInputNumber @bind-Value="Entry.Amount" Label="Amount" />
 
                 <div class="d-flex gap-3">
@@ -107,7 +110,6 @@
                                   ValueSelector="option => option.Value" />
                 </div>
 
-                <HxInputTextArea @bind-Value="Entry.Notes" Label="Notes" />
             }
         </div>
     </BodyTemplate>

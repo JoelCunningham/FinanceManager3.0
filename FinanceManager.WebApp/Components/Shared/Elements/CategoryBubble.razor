@@ -3,6 +3,7 @@
 
     [Parameter] public bool ShowIcon { get; set; } = true;
     [Parameter] public bool IsSplit { get; set; } = false;
+    [Parameter] public bool ShowGroup { get; set; } = false;
 }
 
 @if (Category is null)
@@ -20,7 +21,7 @@ else
             {
                 <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(Category.GroupIcon)" />
             }
-            <span>@Category.Name</span>
+            <span>@(ShowGroup ? $"{Category.GroupName} - " : "")@Category.Name</span>
         </a>
     }
     else

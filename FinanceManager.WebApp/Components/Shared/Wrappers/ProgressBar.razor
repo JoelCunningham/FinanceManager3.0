@@ -3,7 +3,7 @@
     [Parameter] public bool IsIncome { get; set; }
 
     private decimal ProportionValue => Proportion.HasValue ? Proportion.Value : 0;
-    private string ProportionString => ProportionValue == decimal.MaxValue ? "∞%" : ProportionValue.ToString("P0", CultureInfo.InvariantCulture);
+    private string ProportionString => ProportionValue == decimal.MaxValue ? "∞ %" : ProportionValue.ToString("P0", CultureInfo.InvariantCulture);
 
     private float Percentage => (float)ProportionValue * 100;
 

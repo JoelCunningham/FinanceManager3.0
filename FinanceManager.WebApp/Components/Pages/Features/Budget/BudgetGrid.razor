@@ -1,49 +1,31 @@
 @code {
     [Parameter] public BudgetScope? Scope { get; set; }
     [Parameter] public int Year { get; set; }
-    [Parameter] public IReadOnlyList<BudgetCell> Cells { get; set; } = [];
-    [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
     [Parameter] public bool HideEmptyCategories { get; set; }
 
-    [Parameter] public EventCallback<(BudgetCell, CategorySummary)> OnCellClicked { get; set; }
-    [Parameter] public EventCallback<BudgetCellEntry> OnEntryClicked { get; set; }
-    [Parameter] public EventCallback OnBudgetCreateClicked { get; set; }
+    [Parameter] public IReadOnlyList<BudgetColumn> Columns { get; set; } = [];
+    [Parameter] public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
 
-    private Guid? HoveredEntryId { get; set; }
+    [Parameter] public EventCallback<BudgetCell> OnCellClicked { get; set; }
+    [Parameter] public EventCallback OnBudgetCreateClicked { get; set; }
 
     private IReadOnlyList<CategoryGroupRow> GroupRows => GetGroupRows();
 
-    private string GridCssClass => Scope switch
+    private decimal GetColumnTotal(BudgetColumn column)
     {
-        BudgetScope.Monthly => "budget-grid budget-grid-month",
-        BudgetScope.Fortnightly => "budget-grid budget-grid-fortnight",
-        BudgetScope.Weekly => "budget-grid budget-grid-week",
-        _ => "budget-grid"
-    };
-
-    private Task HandleEntryHoverChanged(Guid? entryId)
-    {
-        HoveredEntryId = entryId;
-        return Task.CompletedTask;
-    }
-
-    private decimal GetColumnTotal(BudgetCell cell)
-    {
-        return cell.Entries
+        return column.Cells
+            .SelectMany(cell => cell.Entries)
             .Where(entry => entry.EntityId.HasValue)
-            .GroupBy(entry => entry.EntityId!.Value)
-            .Select(group => group.First())
             .Sum(entry => entry.Category?.IsIncome == true ? entry.Amount : -entry.Amount);
     }
 
     private decimal GetRowTotal(CategorySummary category)
     {
-        return Cells
+        return Columns
+            .SelectMany(column => column.Cells)
             .SelectMany(cell => cell.Entries)
             .Where(entry => entry.Category?.Id == category.Id && entry.EntityId.HasValue)
-            .GroupBy(entry => entry.EntityId!.Value)
-            .Select(group => group.First())
-            .Sum(entry => (entry.Category?.IsIncome == true ? entry.Amount : -entry.Amount) * entry.OverallLength);
+            .Sum(entry => entry.Category?.IsIncome == true ? entry.Amount : -entry.Amount);
     }
 
     private decimal GetGroupTotal(CategoryGroupRow group)
@@ -53,9 +35,8 @@
 
     private decimal GetGrandTotal()
     {
-        return Cells.Sum(GetColumnTotal);
+        return Columns.Sum(GetColumnTotal);
     }
-
 
     private IReadOnlyList<CategoryGroupRow> GetGroupRows()
     {
@@ -76,12 +57,10 @@
 
         if (!HideEmptyCategories) return rows;
 
-        var populatedCategoryIds = Cells
+        var populatedCategoryIds = Columns
+            .SelectMany(column => column.Cells)
             .SelectMany(cell => cell.Entries)
-            .Where(entry => entry.IsFirst)
-            .Select(entry => entry.Category?.Id)
-            .Where(id => id.HasValue)
-            .Select(id => id!.Value)
+            .Select(entry => entry.Category.Id)
             .ToHashSet();
 
         if (populatedCategoryIds.Count == 0) return rows;
@@ -97,12 +76,10 @@
             .ToList();
     }
 
-    private string? GetEntryCssClass(BudgetCellEntry entry)
+    private string? GetEntryCssClass(BudgetCell entry)
     {
-        if (entry.OverallLength == 1) return null;
-
-        if (entry.ScopePosition == entry.OverallScopePosition) return "start";
-        if (entry.ScopePosition == entry.OverallScopePosition + entry.OverallLength - 1) return "end";
+        if (entry.Position == 0) return "start";
+        if (entry.Position == Columns.Count - 1) return "end";
         return "middle";
     }
 
@@ -112,17 +89,17 @@
 @if (Scope is not null)
 {
     <div class="budget-grid-wrapper">
-        <div class="budget-grid" style="grid-template-columns: auto repeat(@Cells.Count, 1fr) auto;">
+        <div class="budget-grid" style="grid-template-columns: auto repeat(@Columns.Count, 1fr) auto;">
             <div class="budget-grid-cell budget-grid-category-header">
                 <p>Category</p>
             </div>
-            @foreach (var cell in Cells)
+            @foreach (var column in Columns)
             {
-                <div class="@("budget-grid-cell budget-grid-period-header " + (cell.IsCurrentPeriod() ? "current" : ""))">
-                    <p>@cell.Label</p>
-                    @if (cell.SubLabel is not null)
+                <div class="@("budget-grid-cell budget-grid-period-header " + (column.IsCurrentPeriod() ? "current" : ""))">
+                    <p>@column.Label</p>
+                    @if (column.SubLabel is not null)
                     {
-                        <p>@cell.SubLabel</p>
+                        <p>@column.SubLabel</p>
                     }
                 </div>
             }
@@ -138,9 +115,9 @@
                         @group.Name
                     </span>
                 </div>
-                foreach (var cell in Cells)
+                foreach (var column in Columns)
                 {
-                    <div class="@("budget-grid-cell group " + (cell.IsCurrentPeriod() ? "current" : ""))" />
+                    <div class="@("budget-grid-cell group " + (column.IsCurrentPeriod() ? "current" : ""))" />
                 }
                 <div class="@("budget-grid-cell group total " + (GetGroupTotal(group) > 0 ? "positive" : "negative"))">
                     @GetGroupTotal(group).ToString("C")
@@ -152,63 +129,36 @@
                         <CategoryBubble Category="@category" ShowIcon="false" />
                     </div>
 
-                    @for (var periodIndex = 0; periodIndex < Cells.Count; periodIndex++)
+                    @for (var periodIndex = 0; periodIndex < Columns.Count; periodIndex++)
                     {
-                        var cell = Cells[periodIndex];
-                        var entry = cell.Entries.FirstOrDefault(e => e.Category?.Id == category.Id && e.ScopePosition == cell.Index);
+                        var column = Columns[periodIndex];
+                        var cell = column.Cells.FirstOrDefault(c => c.Category.Id == category.Id);
 
-                        if (entry is null)
-                        {
-                            <div class="@("budget-grid-cell budget-grid-entry-cell budget-grid-entry-empty " + (cell.IsCurrentPeriod() ? "current" : ""))" @onclick="() => OnCellClicked.InvokeAsync((cell, category))">
-                                <span />
-                            </div>
-                        }
-                        else if (entry.OverallLength == 1)
-                        {
-                            <div class="@("budget-grid-cell budget-grid-entry-cell budget-grid-entry-filled " + (cell.IsFuturePeriod() ? "future" : entry.IsOverBudget() ? "negative" : "positive") + " " + (cell.IsCurrentPeriod() ? "current" : ""))"
-                                 @onclick="() => OnEntryClicked.InvokeAsync(entry)">
-                                <span class="budget-grid-entry-amount">
-                                    <HxTooltip Text="@("Actual: " + Math.Abs(entry.RealAmount).ToString("C"))">
-                                        @entry.Amount.ToString("C")
-                                    </HxTooltip>
-                                </span>
-                            </div>
-                        }
-                        else if (entry.OverallLength > 1)
-                        {
-                            @for (var i = periodIndex; i <= periodIndex + entry.OverallLength - 1; i++)
-                            {
-                                cell = Cells[i];
-                                entry = cell.Entries.FirstOrDefault(e => e.Category?.Id == category.Id && e.ScopePosition == i)!;
+                        if (cell is null) continue;
 
-                                <div class="@("budget-grid-cell budget-grid-entry-cell budget-grid-entry-filled grouped " + (cell.IsFuturePeriod() ? "future" : entry.IsOverBudget() ? "negative" : "positive") + " " + (cell.IsCurrentPeriod() ? "current" : ""))"
-                                     @onclick="() => OnEntryClicked.InvokeAsync(entry)">
-                                    <span class="@("budget-grid-entry-amount " + GetEntryCssClass(entry))">
-                                        <HxTooltip Text="@("Actual: " + Math.Abs(entry.RealAmount).ToString("C"))">
-                                            @entry.Amount.ToString("C")
-                                        </HxTooltip>
-                                    </span>
+                        <div class="@("budget-grid-cell budget-grid-entry-cell budget-grid-entry-filled grouped " + (column.IsFuturePeriod() ? "future" : cell.IsOverBudget() ? "negative" : "positive") + " " + (column.IsCurrentPeriod() ? "current" : ""))"
+                             @onclick="() => OnCellClicked.InvokeAsync(cell)">
+                            <span class="@("budget-grid-entry-amount " + GetEntryCssClass(cell))">
+                                <HxTooltip Text="@("Actual: " + Math.Abs(cell.RealAmount).ToString("C"))">
+                                    @cell.BudgetAmount.ToString("C")
+                                </HxTooltip>
+                            </span>
 
-                                </div>
-                            }
-                            periodIndex += entry.OverallLength - 1;
-                        }
+                        </div>
                     }
-
                     <div class="@("budget-grid-cell budget-grid-entry-cell total " + (GetRowTotal(category) > 0 ? "positive" : "negative"))">
                         @GetRowTotal(category).ToString("C")
                     </div>
                 }
-
             }
 
             <div class="budget-grid-cell budget-grid-total-footer">
                 Total
             </div>
-            @for (int i = 0; i < Cells.Count; i++)
+            @for (int i = 0; i < Columns.Count; i++)
             {
-                <div class="@("budget-grid-cell budget-grid-entry-cell end " + (GetColumnTotal(Cells[i]) > 0 ? "positive" : "negative") + " " + (Cells[i].IsCurrentPeriod() ? "current" : ""))">
-                    @GetColumnTotal(Cells[i]).ToString("C")
+                <div class="@("budget-grid-cell budget-grid-entry-cell end " + (GetColumnTotal(Columns[i]) > 0 ? "positive" : "negative") + " " + (Columns[i].IsCurrentPeriod() ? "current" : ""))">
+                    @GetColumnTotal(Columns[i]).ToString("C")
                 </div>
             }
 

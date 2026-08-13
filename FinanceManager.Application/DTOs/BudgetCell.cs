@@ -1,41 +1,31 @@
-﻿namespace FinanceManager.Application.DTOs;
-
-using FinanceManager.Domain.Enums;
+﻿using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 
-public sealed class BudgetCell(int index, DateOnly startDate, BudgetScope scope)
+namespace FinanceManager.Application.DTOs;
+
+public sealed class BudgetCell(BudgetScope scope, int position, CategorySummary category, DateOnly startDate, decimal realAmount)
 {
-    public int Index { get; set; } = index;
+    public BudgetScope Scope { get; set; } = scope;
+    public int Position { get; set; } = position;
+    public CategorySummary Category { get; set; } = category;
     public DateOnly StartDate { get; set; } = startDate;
-    public BudgetScope? Scope { get; set; } = scope;
-    public List<BudgetCellEntry> Entries { get; set; } = [];
 
-    public DateOnly EndDate => ScopeHelper.GetPeriodEnd(Scope ?? BudgetScope.Monthly, StartDate);
-    private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
+    public decimal RealAmount { get; set; } = realAmount;
+    public IEnumerable<BudgetCellEntry> Entries { get; set; } = [];
 
-    public string Label => Scope switch
+    public decimal BudgetAmount => Entries.Sum(e => e.Amount);
+
+    public string Label => ScopeHelper.GetScopePositionName(Scope, Position, StartDate);
+
+    public bool IsOverBudget()
     {
-        BudgetScope.Monthly => StartDate.ToString("MMM"),
-        BudgetScope.Fortnightly => $"F{Index + 1:00}",
-        BudgetScope.Weekly => $"W{Index + 1:00}",
-        _ => StartDate.ToString("dd/MM/yyyy")
-    };
-
-    public string? SubLabel => Scope switch
-    {
-        BudgetScope.Monthly => null,
-        BudgetScope.Fortnightly => $"{StartDate:dd/MM}",
-        BudgetScope.Weekly => $"{StartDate:dd/MM}",
-        _ => null
-    };
-
-    public bool IsCurrentPeriod()
-    {
-        return Today >= StartDate && Today <= EndDate;
-    }
-
-    public bool IsFuturePeriod()
-    {
-        return Today < StartDate;
+        if (Category.IsIncome)
+        {
+            return RealAmount < BudgetAmount;
+        }
+        else
+        {
+            return -RealAmount > BudgetAmount;
+        }
     }
 }
