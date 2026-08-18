@@ -26,8 +26,9 @@
             Year="ActiveBudgetYear?.Year ?? DateTime.Now.Year"
             Columns="Columns"
             Categories="Categories"
+            GridMode="EntryTypeFilter"
             HideEmptyCategories="HideEmptyCategories"
-            OnCellClicked="OpenCellModal"
+            OnCellClicked="args => OpenCellModal(args.Item1, args.Item2)"
             OnBudgetCreateClicked="CreateYear" />
 
 <BudgetEntryModal @ref="BudgetEntryModal"
@@ -49,6 +50,7 @@
 
 <BudgetCellModal @ref="BudgetCellModal" 
     Cell="CurrentCell" 
-    OnEntryEdit="EditEntry"
-    OnEntryCreate="CreateEntry"
+    Column="CurrentColumn"
+    OnBudgetEdit="EditEntry"
+    OnEntryCreate="args => CreateEntry(args.Item1, args.Item2)"
     OnClose="CloseCellModal"/>

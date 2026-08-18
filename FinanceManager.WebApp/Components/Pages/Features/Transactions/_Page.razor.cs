@@ -4,8 +4,9 @@ using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
-using FinanceManager.Application.UseCases.Transfers;
+using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
+using FinanceManager.WebApp.Components.Shared.Budget;
 using FinanceManager.WebApp.Models;
 using Microsoft.AspNetCore.Components;
 
@@ -18,6 +19,7 @@ public partial class _Page : MainPageBase
 
     public IReadOnlyList<string> UniqueAccounts { get; set; } = [];
     public IReadOnlyList<CategorySummary> Categories { get; set; } = [];
+    private IReadOnlyList<BudgetColumn> SummaryColumns { get; set; } = [];
 
     public TransactionDetails SelectedDetails { get; set; } = default!;
     public TransactionSummary EditTransaction { get; set; } = default!;
@@ -27,8 +29,26 @@ public partial class _Page : MainPageBase
     public TransactionDetailsModal DetailsModal { get; set; } = new();
     public EditTransactionModal EditModal { get; set; } = new();
     public TransferModal TransferModal { get; set; } = new();
+    public BudgetCellModal BudgetCellModal { get; set; } = new();
 
-    public int UnreviewedCount = 0;
+    private bool HideEmptyCategories { get; set; }
+    private BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
+
+    private BudgetYearSummary? ActiveBudgetYear { get; set; }
+    private IEnumerable<int> AvailableYears { get; set; } = [];
+
+    private BudgetCell CurrentCell { get; set; } = default!;
+    private BudgetColumn CurrentColumn { get; set; } = default!;
+
+    private int UnreviewedCount { get; set; } = 0;
+    private bool HasPopulatedCategories => SummaryColumns.Any(c => c.Cells.Count != 0);
+
+    private static readonly BudgetGridMode[] EntryTypeFilters =
+    [
+        BudgetGridMode.Net,
+        BudgetGridMode.Income,
+        BudgetGridMode.Expense
+    ];
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,6 +56,9 @@ public partial class _Page : MainPageBase
 
         UniqueAccounts = (await UseCases.GetUniqueAccountsAsync()).Accounts;
         Categories = (await UseCases.GetCategoriesAsync()).Categories;
+
+        AvailableYears = (await UseCases.GetBudgetYearsAsync()).AvailableYears.OrderByDescending(y => y);
+        await ReloadSummary(DateTime.Now.Year);
 
         TransactionData.Query.FilterStatus = ReviewStatus.Reviewed;
 
@@ -46,6 +69,7 @@ public partial class _Page : MainPageBase
         TransferData.UpdateViewState = StateHasChanged;
 
         UnreviewedCount = (await UseCases.GetPagedReviewAsync(new FilterQuery { FilterStatus = ReviewStatus.Unreviewed })).Page.TotalItems;
+        HideEmptyCategories = HasPopulatedCategories && await Preferences.HideEmptyActivityCategories;
     }
 
     public async Task OpenTransactionDetailsModal(TransactionSummary transaction)
@@ -163,5 +187,41 @@ public partial class _Page : MainPageBase
             await SeparateTransfer(SelectedTransfer);
             await TransferModal.HideAsync();
         }
+    }
+
+    private async Task OnHideEmptyCategoriesChanged(bool value)
+    {
+        HideEmptyCategories = value;
+        await Preferences.Set(PreferenceNames.HideEmptyActivityCategories, value);
+    }
+
+    private async Task OnEntryTypeFilterChanged(BudgetGridMode mode)
+    {
+        EntryTypeFilter = mode;
+        await ReloadSummary(DateTime.Now.Year);
+    }
+
+    private async Task OnRangeSelected(int index)
+    {
+        await ReloadSummary(AvailableYears.ElementAtOrDefault(index));
+    }
+
+    private async Task ReloadSummary(int year)
+    {
+        var pagedBudget = await UseCases.GetPagedBudgetAsync(year, EntryTypeFilter);
+        SummaryColumns = pagedBudget.Columns;
+        ActiveBudgetYear = pagedBudget.BudgetYear;
+    }
+
+    private async Task OpenCellModal(BudgetCell cell, BudgetColumn column)
+    {
+        CurrentColumn = column;
+        CurrentCell = cell;
+        await BudgetCellModal.ShowAsync();
+    }
+
+    private async Task CloseCellModal()
+    {
+        await BudgetCellModal.HideAsync();
     }
 }

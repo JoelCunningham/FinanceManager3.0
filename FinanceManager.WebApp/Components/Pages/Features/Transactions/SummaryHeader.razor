@@ -1,0 +1,40 @@
+@using FinanceManager.WebApp.Components.Pages.Features.Budget
+@code {
+    [Parameter] public int Year { get; set; }
+
+    [Parameter] public BudgetGridMode EntryTypeFilter { get; set; }
+    [Parameter] public EventCallback<BudgetGridMode> EntryTypeFilterChanged { get; set; }
+
+    [Parameter] public bool HasPopulatedCategories { get; set; }
+    [Parameter] public bool HideEmptyCategories { get; set; }
+    [Parameter] public EventCallback<bool> HideEmptyCategoriesChanged { get; set; }
+
+    [Parameter] public IReadOnlyList<BudgetGridMode> EntryTypeFilters { get; set; } = [];
+
+    [Parameter] public int CurrentRange { get; set; }
+    [Parameter] public EventCallback<int> OnRangeSelected { get; set; }
+
+    [Parameter] public IEnumerable<(int Index, string Name)> Ranges { get; set; } = [];
+
+    [Parameter] public EventCallback OnEditYear { get; set; }
+    [Parameter] public EventCallback OnCreateYear { get; set; }
+
+}
+
+<div class="summary-header">
+    <h4>Summary @Year</h4>
+
+    <div class="actions">
+        <BudgetActions EntryTypeFilter="EntryTypeFilter"
+                       EntryTypeFilterChanged="EntryTypeFilterChanged"
+                       HasPopulatedCategories="HasPopulatedCategories"
+                       EntryTypeFilters="EntryTypeFilters"
+                       HideEmptyCategories="HideEmptyCategories"
+                       HideEmptyCategoriesChanged="HideEmptyCategoriesChanged"
+                       CurrentRange="CurrentRange"
+                       Ranges="Ranges"
+                       OnRangeSelected="OnRangeSelected"
+                       OnEditYear="OnEditYear"
+                       OnCreateYear="OnCreateYear" />
+    </div>
+</div>

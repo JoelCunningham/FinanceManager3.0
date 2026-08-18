@@ -8,6 +8,7 @@ public class Preferences(IPreferenceRepository preferenceRepository, IDataStore 
 {
     public Task<bool> AutoAssignCategories => GetPreferenceValue(PreferenceNames.AutoAssignCategories, true);
     public Task<bool> HideEmptyBudgetCategories => GetPreferenceValue(PreferenceNames.HideEmptyBudgetCategories, false);
+    public Task<bool> HideEmptyActivityCategories => GetPreferenceValue(PreferenceNames.HideEmptyActivityCategories, false);
 
     public async Task Set<T>(PreferenceNames name, T value)
     {

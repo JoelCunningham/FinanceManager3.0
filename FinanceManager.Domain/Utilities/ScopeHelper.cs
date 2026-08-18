@@ -87,26 +87,14 @@ public static class ScopeHelper
         };
     }
 
-    public static string GetPeriodName(DateOnly date, BudgetScope scope)
+    public static string GetPeriodName(DateOnly date, BudgetScope scope, bool includeYear = true)
     {
         var year = GetIsoYear(date);
         return scope switch
         {
-            BudgetScope.Weekly => $"W{DateHelper.GetWeekIndex(date):00} {year}",
-            BudgetScope.Fortnightly => $"F{DateHelper.GetFortnightIndex(date):00} {year}",
-            BudgetScope.Monthly => date.ToString("MMMM yyyy"),
-            _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
-        };
-    }
-
-    public static string GetScopePositionName(BudgetScope scope, int position, DateOnly date)
-    {
-        var year = GetIsoYear(date);
-        return scope switch
-        {
-            BudgetScope.Weekly => $"W{position + 1:00} {year}",
-            BudgetScope.Fortnightly => $"F{position + 1:00} {year}",
-            BudgetScope.Monthly => new DateOnly(year, position + 1, 1).ToString("MMMM yyyy"),
+            BudgetScope.Weekly => $"W{DateHelper.GetWeekIndex(date):00} { (includeYear ? year.ToString() : string.Empty) }",
+            BudgetScope.Fortnightly => $"F{DateHelper.GetFortnightIndex(date):00} { (includeYear ? year.ToString() : string.Empty) }",
+            BudgetScope.Monthly => includeYear ? date.ToString("MMMM yyyy") : date.ToString("MMMM"),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid budget scope.")
         };
     }
@@ -117,6 +105,10 @@ public static class ScopeHelper
         if (DateHelper.GetIsoWeek1(date.Year) > date)
         {
             year = date.Year - 1;
+        }
+        else if (DateHelper.GetIsoWeek1(date.Year + 1) <= date)
+        {
+            year = date.Year + 1;
         }
         return year;
     }

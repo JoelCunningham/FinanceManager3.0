@@ -37,5 +37,8 @@
           TextSelector="f => f.ToString()"
           ValueSelector="f => f" />
 
-<HxButton Color="ThemeColor.Secondary" OnClick="OnEditYear">Edit budget</HxButton>
-<HxButton Color="ThemeColor.Primary" OnClick="OnCreateYear">Create budget</HxButton>
+@if (OnEditYear.HasDelegate && OnCreateYear.HasDelegate)
+{
+    <HxButton Color="ThemeColor.Secondary" OnClick="OnEditYear">Edit budget</HxButton>
+    <HxButton Color="ThemeColor.Primary" OnClick="OnCreateYear">Create budget</HxButton>
+}

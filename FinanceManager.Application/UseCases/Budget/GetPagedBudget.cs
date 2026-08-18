@@ -4,9 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
-using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
-using System.Data.Common;
 
 public sealed record GetPagedBudgetResult(
     BudgetYearSummary? BudgetYear,
@@ -32,21 +30,15 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
         }
         else
         {
-            var columns = await BuildColumns(budgetYear, categorySummaries);
-            var entries = (await budgetEntryRepository.GetByBudgetYearAsync(budgetYear.Id)).ToList();
-            var totals = entries.Aggregate(new BudgetTotals(), (current, entry) => current.Add(entry));
+            var columns = await BuildColumns(budgetYear, categorySummaries, mode);
+            var budgets = (await budgetEntryRepository.GetByBudgetYearAsync(budgetYear.Id)).ToList();
+            var actuals = (await transactionRepository.GetTransactionsAsync(new FilterQuery { FilterDateFrom = new DateTime(year, 1, 1), FilterDateTo = new DateTime(year, 12, 31) })).ToList();
 
-            entries = mode switch
-            {
-                BudgetGridMode.Income => [.. entries.Where(entry => entry.Category.Group.IsIncome)],
-                BudgetGridMode.Expense => [.. entries.Where(entry => !entry.Category.Group.IsIncome)],
-                _ => entries
-            };
-
-            var populatedColumns = PopulateColumns(columns, entries);
+            var budgetTotals = budgets.Aggregate(new BudgetTotals(), (current, entry) => current.Add(entry));
+            var populatedColumns = PopulateColumns(columns, budgets, actuals);
             var summary = BudgetYearSummary.FromBudgetYear(budgetYear);
 
-            return new GetPagedBudgetResult(summary, populatedColumns, categorySummaries, totals.Income - totals.Expense, totals.Income, totals.Expense);
+            return new GetPagedBudgetResult(summary, populatedColumns, categorySummaries, budgetTotals.Income - budgetTotals.Expense, budgetTotals.Income, budgetTotals.Expense);
         }
     }
 
@@ -59,7 +51,7 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
         }
     }
 
-    private async Task<List<BudgetColumn>> BuildColumns(BudgetYear budgetYear, IEnumerable<CategorySummary> categories)
+    private static async Task<List<BudgetColumn>> BuildColumns(BudgetYear budgetYear, IEnumerable<CategorySummary> categories, BudgetGridMode mode)
     {
         var columns = new List<BudgetColumn>();
 
@@ -74,38 +66,31 @@ public sealed class GetPagedBudget(IBudgetEntryRepository budgetEntryRepository,
 
             foreach (var category in categories)
             {
-                var query = new FilterQuery
-                {
-                    FilterDateFrom = columnStart.ToDateTime(TimeOnly.MinValue),
-                    FilterDateTo = ScopeHelper.GetPeriodEnd(budgetYear.Scope, columnStart).ToDateTime(TimeOnly.MaxValue),
-                    FilterCategory = category
-                };
-                var realAmount = (await transactionRepository.GetTransactionsAsync(query)).Sum(t => t.Amount);
+                if (mode == BudgetGridMode.Income && !category.IsIncome) continue;
+                if (mode == BudgetGridMode.Expense && category.IsIncome) continue;
 
-                cells.Add(new BudgetCell(budgetYear.Scope, i, category, columnStart, realAmount));
+                cells.Add(new BudgetCell(budgetYear.Scope, category, columnStart));
             }
 
-            columns.Add(new BudgetColumn(i, columnStart, budgetYear.Scope, cells));
+            columns.Add(new BudgetColumn(columnStart, budgetYear.Scope, cells));
         }
 
         return columns;
     }
 
-    private static List<BudgetColumn> PopulateColumns(List<BudgetColumn> columns, List<BudgetEntry> entries)
+    private static List<BudgetColumn> PopulateColumns(List<BudgetColumn> columns, List<BudgetEntry> budgets, List<Transaction> actuals)
     {
-        entries = [.. entries.OrderByDescending(e => e.Category.Group.IsIncome).ThenBy(e => e.Category.Group.Name).ThenBy(e => e.Category.Name)];
-
-        foreach (var entry in entries)
+        foreach (var column in columns)
         {
-            for (var i = 0; i < entry.Length; i++)
+            foreach (var cell in column.Cells)
             {
-                var currentPosition = entry.ScopePosition + i;
+                cell.BudgetEntries = [.. budgets
+                    .Where(e => e.Category.Id == cell.Category.Id && e.StartDate <= column.StartDate && e.EndDate >= column.StartDate)
+                    .Select(BudgetCellEntry.FromBudgetEntry)];
 
-                var column = columns[currentPosition];
-                var cell = column.Cells.FirstOrDefault(c => c.Category.Id == entry.Category.Id);
-
-                if (cell is null) continue;
-                cell.Entries = cell.Entries.Append(BudgetCellEntry.FromBudgetEntry(entry));
+                cell.Transactions = [.. actuals
+                    .Where(t => t.CategoryId == cell.Category.Id && t.Date >= column.StartDate.ToDateTime(TimeOnly.MinValue) && t.Date <= column.EndDate.ToDateTime(TimeOnly.MaxValue))
+                    .Select(TransactionSummary.FromTransaction)];
             }
         }
 

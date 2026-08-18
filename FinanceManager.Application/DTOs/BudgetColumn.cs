@@ -3,17 +3,16 @@
 using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 
-public sealed class BudgetColumn(int position, DateOnly startDate, BudgetScope scope, List<BudgetCell> cells)
+public sealed class BudgetColumn(DateOnly startDate, BudgetScope scope, List<BudgetCell> cells)
 {
     public BudgetScope? Scope { get; set; } = scope;
-    public int Position { get; set; } = position;
     public DateOnly StartDate { get; set; } = startDate;
 
     public List<BudgetCell> Cells { get; set; } = cells;
 
     public DateOnly EndDate => ScopeHelper.GetPeriodEnd(Scope ?? BudgetScope.Monthly, StartDate);
 
-    public string Label => ScopeHelper.GetScopePositionName(Scope ?? BudgetScope.Monthly, Position, StartDate);
+    public string Label => ScopeHelper.GetPeriodName(StartDate, Scope ?? BudgetScope.Monthly, false);
     public string? SubLabel => Scope switch
     {
         BudgetScope.Monthly => null,
@@ -21,12 +20,6 @@ public sealed class BudgetColumn(int position, DateOnly startDate, BudgetScope s
         BudgetScope.Weekly => $"{StartDate:dd/MM}",
         _ => null
     };
-
-    public bool IsCurrentPeriod()
-    {
-        var today = DateOnly.FromDateTime(DateTime.Today);
-        return today >= StartDate && today <= EndDate;
-    }
 
     public bool IsFuturePeriod()
     {

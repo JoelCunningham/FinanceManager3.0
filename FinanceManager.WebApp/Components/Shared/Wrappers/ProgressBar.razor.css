@@ -4,7 +4,6 @@
     align-items: center;
     gap: var(--space-small);
 
-
     .category-proportion {
         font-weight: var(--fontweight-semibold);
 
@@ -23,6 +22,10 @@
         &.none {
             color: var(--colour-black) !important;
         }
+    }
+
+    &.no-label {
+        grid-template-columns: auto;
     }
 }
 

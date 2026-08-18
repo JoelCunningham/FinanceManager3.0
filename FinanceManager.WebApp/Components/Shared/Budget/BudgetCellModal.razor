@@ -1,0 +1,125 @@
+@inherits ModalBase
+
+@code {
+    [Parameter] public BudgetCell Cell { get; set; } = default!;
+    [Parameter] public BudgetColumn Column { get; set; } = default!;
+
+    [Parameter] public EventCallback<(BudgetCell?, BudgetColumn)> OnEntryCreate { get; set; }
+
+    [Parameter] public EventCallback<BudgetCellEntry> OnBudgetEdit { get; set; }
+    [Parameter] public EventCallback<TransactionSummary> OnActivityEdit { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private IEnumerable<BudgetCellEntry> SortedBudgets => Cell?.BudgetEntries.OrderByDescending(e => e.Amount) ?? Enumerable.Empty<BudgetCellEntry>();
+    private IEnumerable<TransactionSummary> SortedActivities => Cell?.Transactions.OrderByDescending(e => e.Amount) ?? Enumerable.Empty<TransactionSummary>();
+
+    private bool IsIncome => Cell?.Category.IsIncome ?? false;
+    private decimal BudgetAmount => Cell?.BudgetAmount ?? 0;
+    private decimal RealAmount => IsIncome ? Cell?.RealAmount ?? 0 : -(Cell?.RealAmount ?? 0);
+    private decimal NetAmount => IsIncome ? RealAmount - BudgetAmount : BudgetAmount - RealAmount;
+
+    private decimal? Proportion => CurrencyUtilities.GetProportion(BudgetAmount, RealAmount);
+    private string ProportionString => CurrencyUtilities.GetProportionString(Proportion);
+    private string ProportionDescription => CurrencyUtilities.GetProportionDescription(Proportion, IsIncome);
+}
+
+<HxModal @ref="_modal" Title="Budget period details" Size="ModalSize.Large">
+    <BodyTemplate>
+        <div class="header">
+            <p class="field">
+                <CategoryBubble Category="@Cell?.Category" ShowGroup="true" ShowIcon="true" />
+                <span>for</span>
+                <span class="field-value">@Cell?.Label</span>
+            </p>
+        </div>
+
+        <div class="description">
+            <span class="cell">
+                <span class="field-name">Total budget</span>
+                <span class="bold-primary">@BudgetAmount.ToString("C")</span>
+            </span>
+            <span class="cell">
+                <span class="field-name">@(IsIncome ? "Actual earned" : "Actual spent")</span>
+                <span class="bold-primary">@RealAmount.ToString("C")</span>
+            </span>
+            <span class="cell">
+                <span class="field-name">Net</span>
+                <span class="@(NetAmount >= 0 ? "bold-success" : "bold-danger")">@(NetAmount.ToString("C"))</span>
+            </span>
+        </div>
+
+        <ProgressBar Proportion="@Proportion" IsIncome="IsIncome" ShowLabel="false" />
+        <p class="progress-text">
+            <span>@ProportionDescription</span>
+            <span class="text-end">@ProportionString</span>
+        </p>
+
+        <HxTabPanel>
+            <HxTab Title="Budget entries">
+                <Content>
+                    @if (SortedBudgets.Any())
+                    {
+                        @foreach (var entry in SortedBudgets)
+                        {
+                            <div class="@("entry " + (OnBudgetEdit.HasDelegate ? "editable" : ""))" @onclick="() => OnBudgetEdit.InvokeAsync(entry)">
+                                <p>
+                                    <span class="name">@entry.Name</span>
+                                    <span class="text-end bold-primary">@entry.Amount.ToString("C", CultureInfo.CurrentCulture)</span>
+                                </p>
+                                <p>
+                                    <span class="subtext">@(entry.Length > 1 ? "Recurring" : "One-time")</span>
+                                </p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        @if (OnEntryCreate.HasDelegate)
+                        {
+                            <Alert Level="Alert.AlertLevel.Info">Click "Add entry" to create a budget entry.</Alert>
+                        }
+                        else
+                        {
+                            <Alert Level="Alert.AlertLevel.Info" ActionText="Budget page" ActionUrl="@Pages.Budget">
+                                Visit the Budget page to create budget entries.
+                            </Alert>
+                        }
+                    }
+                </Content>
+            </HxTab>
+            <HxTab Title="Activities">
+                <Content>
+                    @if (SortedActivities.Any())
+                    {
+                        @foreach (var activity in SortedActivities)
+                        {
+                            <div class="@("entry " + (OnActivityEdit.HasDelegate ? "editable" : ""))" @onclick="() => OnActivityEdit.InvokeAsync(activity)">
+                                <p>
+                                    <span class="name">@activity.Date.ToString("dd MMM yyyy")</span>
+                                    <span class="@("text-end " + (activity.Amount >= 0 ? "bold-success" : "bold-danger"))">
+                                        @CurrencyUtilities.FormatCurrency(activity.Amount)
+                                    </span>
+                                </p>
+                                <p>
+                                    <span class="subtext">@activity.Description</span>
+                                </p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <Alert Level="Alert.AlertLevel.Info">Import and review transactions to see activity for this budget category.</Alert>
+                    }
+                </Content>
+            </HxTab>
+        </HxTabPanel>
+    </BodyTemplate>
+    <FooterTemplate>
+        <HxButton Color="ThemeColor.Secondary" OnClick="@(() => OnClose.InvokeAsync())">Close</HxButton>
+        @if (OnEntryCreate.HasDelegate)
+        {
+            <HxButton Color="ThemeColor.Primary" OnClick="@(() => OnEntryCreate.InvokeAsync((Cell, Column)))">Add budget</HxButton>
+        }
+    </FooterTemplate>
+</HxModal>

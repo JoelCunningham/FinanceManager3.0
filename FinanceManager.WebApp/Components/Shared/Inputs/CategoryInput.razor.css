@@ -56,8 +56,7 @@
         .clear-btn {
             position: absolute;
             right: 2px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 40%;
             border: none;
             background-color: transparent;
             font-size: 1.5rem;

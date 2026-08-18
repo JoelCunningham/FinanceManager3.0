@@ -19,7 +19,7 @@ else if (DashboardData is not null)
 {
     @if (DashboardData.TopOverBudgetCategory is not null)
     {
-        <Alert Level="Alert.AlertLevel.Warning" ActionText="Review budget" ActionUrl="/Budget">@GetWarningText()</Alert>
+        <Alert Level="Alert.AlertLevel.Warning" ActionText="Review budget" ActionUrl="@Pages.Budget">@GetWarningText()</Alert>
     }
 
     <DashboardCards Count="4">

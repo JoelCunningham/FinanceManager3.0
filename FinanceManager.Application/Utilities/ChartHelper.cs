@@ -5,6 +5,7 @@ using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Utilities;
 
+//Deprecated 
 public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
 {
     public async Task<List<decimal>> GetTransactionsPerPeriod(CategorySummary category, IEnumerable<ScopedPeriod> periods)

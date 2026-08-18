@@ -1,0 +1,17 @@
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-small);
+    margin-bottom: var(--space-medium);
+
+    h4 {
+        margin: 0;
+    }
+
+    .actions {
+        display: flex;
+        gap: var(--space-small);
+        align-items: center;
+    }
+}

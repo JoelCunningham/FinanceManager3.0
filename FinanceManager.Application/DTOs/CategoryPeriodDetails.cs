@@ -1,5 +1,6 @@
 namespace FinanceManager.Application.DTOs;
 
+using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Entities;
 
 public class CategoryPeriodDetails : CategorySummary
@@ -10,7 +11,7 @@ public class CategoryPeriodDetails : CategorySummary
     public int TotalTransactions { get; set; }
 
     public decimal SignedPeriodTotal => IsIncome ? PeriodSpend : -PeriodSpend;
-    public decimal? PeriodProportion => GetProportion(PeriodBudget, SignedPeriodTotal);
+    public decimal? PeriodProportion => CurrencyUtilities.GetProportion(PeriodBudget, SignedPeriodTotal);
 
     public static CategoryPeriodDetails FromCategory(Category category, decimal spend, decimal budget, int totalTransactions)
     {
@@ -27,13 +28,5 @@ public class CategoryPeriodDetails : CategorySummary
             PeriodBudget = budget,
             TotalTransactions = totalTransactions,
         };
-    }
-
-    private static decimal? GetProportion(decimal budget, decimal actual)
-    {
-        if (budget == 0 && actual == 0) return null;
-        if (budget == 0 && actual != 0) return decimal.MaxValue;
-
-        return actual / budget;
     }
 }

@@ -1,20 +1,23 @@
 ﻿@code {
     [Parameter] public decimal? Proportion { get; set; }
     [Parameter] public bool IsIncome { get; set; }
+    [Parameter] public bool ShowLabel { get; set; } = true;
 
-    private decimal ProportionValue => Proportion.HasValue ? Proportion.Value : 0;
-    private string ProportionString => ProportionValue == decimal.MaxValue ? "∞ %" : ProportionValue.ToString("P0", CultureInfo.InvariantCulture);
+    private string ProportionString => CurrencyUtilities.GetProportionString(Proportion);
 
-    private float Percentage => (float)ProportionValue * 100;
+    private float Percentage => (float)(Proportion ?? 0) * 100;
 
     private string UsageStyle => ColourUtilities.GetUsageStyle(Proportion, true, IsIncome);
 }
 
-<div class="progress-wrapper">
+<div class="@("progress-wrapper " + (ShowLabel ? "" : "no-label"))">
     <HxProgress>
         <HxProgressBar Value="Percentage" CssClass="@UsageStyle" />
     </HxProgress>
-    <span class="@("category-proportion " + UsageStyle)">
-        @ProportionString
-    </span>
+    @if (ShowLabel)
+    {
+        <span class="@("category-proportion " + UsageStyle)">
+            @ProportionString
+        </span>
+    }
 </div>

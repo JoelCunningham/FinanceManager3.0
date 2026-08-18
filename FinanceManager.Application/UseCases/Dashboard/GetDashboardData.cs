@@ -4,6 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 
@@ -77,7 +78,7 @@ public sealed class GetDashboardData(
                     Summary = category,
                     BudgetedAmount = budgetedAmount,
                     Amount = spentAmount,
-                    Proportion = budgetedAmount <= 0m ? (spentAmount > 0m ? 1m : 0m) : spentAmount / budgetedAmount,
+                    Proportion = CurrencyUtilities.GetProportion(budgetedAmount, spentAmount) ?? 0m,
                 };
             })
             .Where(usage => usage.Amount > 0m || usage.Proportion > 0m)

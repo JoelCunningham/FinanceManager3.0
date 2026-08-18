@@ -5,6 +5,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
+using FinanceManager.WebApp.Components.Shared.Budget;
 using Microsoft.AspNetCore.Components;
 
 [Route(Pages.Budget)]
@@ -23,6 +24,7 @@ public partial class _Page : MainPageBase
 
     private bool IsEditing { get; set; }
     private BudgetCell? CurrentCell { get; set; }
+    private BudgetColumn? CurrentColumn { get; set; } 
     private BudgetCellEntry? CurrentEntry { get; set; }
     private BudgetYearSummary? CurrentYear { get; set; }
 
@@ -82,9 +84,10 @@ public partial class _Page : MainPageBase
         TotalExpense = page.TotalExpense;
     }
     
-    private async Task OpenCellModal(BudgetCell cell)
+    private async Task OpenCellModal(BudgetCell cell, BudgetColumn column)
     {
         CurrentCell = cell;
+        CurrentColumn = column;
         await BudgetCellModal.ShowAsync();
     }
 
@@ -93,10 +96,10 @@ public partial class _Page : MainPageBase
         await BudgetCellModal.HideAsync();
     }
 
-    private async Task CreateEntry(BudgetCell cell)
+    private async Task CreateEntry(BudgetCell cell, BudgetColumn column)
     {
         Validation.Clear();
-        CurrentEntry = new() { ScopePosition = cell.Position, Length = 1, Category = cell.Category };
+        CurrentEntry = new() { ScopePosition = Columns.ToList().IndexOf(column), Length = 1, Category = cell.Category };
         IsEditing = false;
         await BudgetEntryModal.ShowAsync();
     }
@@ -176,7 +179,7 @@ public partial class _Page : MainPageBase
         try
         {
             await UseCases.DeleteBudgetEntryAsync(CurrentEntry.EntityId.Value);
-            CurrentCell?.Entries = CurrentCell.Entries.Where(e => e.EntityId != CurrentEntry.EntityId);
+            CurrentCell?.BudgetEntries = CurrentCell.BudgetEntries.Where(e => e.EntityId != CurrentEntry.EntityId);
             Validation.SetSuccess("Budget entry deleted");
             await BudgetEntryModal.HideAsync();
             await ReloadAsync(DateTime.Now.Year);

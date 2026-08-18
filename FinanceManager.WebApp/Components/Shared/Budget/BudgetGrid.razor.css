@@ -8,7 +8,6 @@
     border-radius: var(--radius-medium);
     box-shadow: var(--shadow-medium);
 
-
     .budget-grid {
         display: grid;
         width: max-content;
@@ -140,6 +139,12 @@
                 &.total.negative {
                     font-weight: var(--fontweight-semiblack);
                     color: var(--colour-danger);
+                }
+
+                &.end.future,
+                &.total.future {
+                    font-weight: var(--fontweight-semiblack);
+                    color: var(--colour-secondary);
                 }
 
                 &.end.total {

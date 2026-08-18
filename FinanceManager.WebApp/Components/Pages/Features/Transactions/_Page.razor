@@ -29,7 +29,7 @@
         <Content>
             @if (UnreviewedCount > 0)
             {
-                <Alert Level="Alert.AlertLevel.Info" ActionText="Review activities" ActionUrl="/Review">You have @UnreviewedCount unreviewed activities.</Alert>
+                <Alert Level="Alert.AlertLevel.Info" ActionText="Review activities" ActionUrl="@Pages.Review">You have @UnreviewedCount unreviewed activities.</Alert>
             }
             @if (TransactionData.Result is null && !TransactionData.Query.HasFilters)
             {
@@ -42,7 +42,25 @@
     </HxTab>
     <HxTab Title="Activity summary" Id="@Tabs.ActivitySummary">
         <Content>
-            <span>TODO</span>
+            <SummaryHeader Year="ActiveBudgetYear?.Year ?? DateTime.Now.Year"
+                           EntryTypeFilter="EntryTypeFilter"
+                           EntryTypeFilterChanged="OnEntryTypeFilterChanged"
+                           HasPopulatedCategories="HasPopulatedCategories"
+                           EntryTypeFilters="EntryTypeFilters"
+                           HideEmptyCategories="HideEmptyCategories"
+                           HideEmptyCategoriesChanged="OnHideEmptyCategoriesChanged"
+                           CurrentRange="AvailableYears.ToList().IndexOf(ActiveBudgetYear?.Year ?? DateTime.Now.Year)"
+                           Ranges="AvailableYears.Select((y, i) => (i, y.ToString()))"
+                           OnRangeSelected="OnRangeSelected" />
+
+            <BudgetGrid Scope="BudgetScope.Monthly"
+                        Year="ActiveBudgetYear?.Year ?? DateTime.Now.Year"
+                        GridMode="EntryTypeFilter"
+                        BudgetMode="false"
+                        Columns="SummaryColumns"
+                        Categories="Categories"
+                        HideEmptyCategories="HideEmptyCategories"
+                        OnCellClicked="args => OpenCellModal(args.Item1, args.Item2)" />
         </Content>
     </HxTab>
     <HxTab Title="Transfers" Id="@Tabs.Transfers">
@@ -67,3 +85,9 @@
                       SaveGroup="SaveGroupEdit" />
 
 <TransferModal @ref="TransferModal" Transfer="SelectedTransfer" SeparateFromDetails="SeparateFromDetails" />
+
+<BudgetCellModal @ref="BudgetCellModal"
+                 Cell="CurrentCell"
+                 Column="CurrentColumn"
+                 OnActivityEdit="OpenEditModal"
+                 OnClose="CloseCellModal" />
