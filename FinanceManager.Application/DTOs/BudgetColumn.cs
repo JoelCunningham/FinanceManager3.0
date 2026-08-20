@@ -26,3 +26,5 @@ public sealed class BudgetColumn(DateOnly startDate, BudgetScope scope, List<Bud
         return DateOnly.FromDateTime(DateTime.Today) < StartDate;
     }
 }
+
+public sealed record CategoryGroupRow(string Name, string Colour, string Icon, IReadOnlyList<CategorySummary> Categories);

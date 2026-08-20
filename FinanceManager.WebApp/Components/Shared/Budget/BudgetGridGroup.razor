@@ -1,0 +1,32 @@
+@code {
+    [Parameter] public IReadOnlyList<BudgetColumn> Columns { get; set; } = [];
+    [Parameter] public CategoryGroupRow Group { get; set; } = default!;
+
+    [Parameter] public int Year { get; set; }
+    [Parameter] public bool BudgetMode { get; set; }
+
+    [Parameter] public required Func<IEnumerable<BudgetCell>, bool, decimal> GetTotal { get; set; }
+
+    private decimal GetGroupTotal(CategoryGroupRow group, bool budget) => GetTotal(GetCells(group), budget);
+
+    private IEnumerable<BudgetCell> GetCells(CategoryGroupRow group)
+    {
+        return Columns.SelectMany(column => column.Cells).Where(cell => group.Categories.Any(category => category.Id == cell.Category?.Id));
+    }
+}
+
+<div class="budget-grid-group" style="display: contents">
+    <BudgetGridCell>
+            <HxIcon Icon="CategoryUtilities.GetCategroyGroupIcon(Group.Icon)" />
+            @Group.Name
+    </BudgetGridCell>
+    @foreach (var column in Columns)
+    {
+        <BudgetGridCell />
+    }
+    <BudgetGridAmountCell BudgetAmount="@GetGroupTotal(Group, true)"
+                          RealAmount="@GetGroupTotal(Group, false)"
+                          BudgetMode="@BudgetMode"
+                          IsIncome="true"
+                          IsFuturePeriod="@(DateTime.Now.Year <= Year)" />
+</div>

@@ -1,0 +1,28 @@
+@code {
+    [Parameter] public IReadOnlyList<BudgetColumn> Columns { get; set; } = [];
+
+    [Parameter] public int Year { get; set; }
+    [Parameter] public bool BudgetMode { get; set; }
+
+    [Parameter] public required Func<IEnumerable<BudgetCell>, bool, decimal> GetTotal { get; set; }
+
+    private decimal GetColumnTotal(BudgetColumn column, bool budget) => GetTotal(column.Cells, budget);
+    private decimal GetGrandTotal(bool budget) => GetTotal(Columns.SelectMany(column => column.Cells), budget);
+}
+
+<div class="budget-grid-footer" style="display: contents">
+    <BudgetGridCell Value="Total" />
+    @foreach (var column in Columns)
+    {
+        <BudgetGridAmountCell BudgetAmount="@GetColumnTotal(column, true)"
+                              RealAmount="@GetColumnTotal(column, false)"
+                              BudgetMode="@BudgetMode"
+                              IsIncome="true"
+                              IsFuturePeriod="@column.IsFuturePeriod()" />
+    }
+    <BudgetGridAmountCell BudgetAmount="@GetGrandTotal(true)"
+                          RealAmount="@GetGrandTotal(false)"
+                          BudgetMode="@BudgetMode"
+                          IsIncome="true"
+                          IsFuturePeriod="@(DateTime.Now.Year <= Year)" />
+</div>

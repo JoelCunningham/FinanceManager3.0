@@ -1,0 +1,40 @@
+@code {
+    [Parameter] public IReadOnlyList<BudgetColumn> Columns { get; set; } = [];
+    [Parameter] public CategorySummary Category { get; set; } = default!;
+
+    [Parameter] public int Year { get; set; }
+    [Parameter] public bool BudgetMode { get; set; }
+
+    [Parameter] public required Func<IEnumerable<BudgetCell>, bool, decimal> GetTotal { get; set; }
+
+    [Parameter] public EventCallback<(BudgetCell, BudgetColumn)> OnCellClicked { get; set; }
+
+    private decimal GetCellAmount(BudgetCell cell, bool budget) => budget ? cell.BudgetAmount : cell.RealAmount;
+    private decimal GetRowTotal(CategorySummary category, bool budget) => GetTotal(GetCells(category), budget);
+
+    private IEnumerable<BudgetCell> GetCells(CategorySummary category)
+    {
+        return Columns.SelectMany(column => column.Cells).Where(cell => cell.Category?.Id == category.Id);
+    }
+}
+
+<div class="budget-grid-category" style="display: contents">
+    <BudgetGridCell>
+        <CategoryBubble Category="@Category" ShowIcon="false" />
+    </BudgetGridCell>
+    @foreach (var column in Columns)
+    {
+        var cell = column.Cells.FirstOrDefault(c => c.Category.Id == Category.Id)!;
+        <BudgetGridAmountCell BudgetAmount="@GetCellAmount(cell, true)"
+                              RealAmount="@GetCellAmount(cell, false)"
+                              BudgetMode="@BudgetMode"
+                              IsIncome="@Category.IsIncome"
+                              IsFuturePeriod="@column.IsFuturePeriod()"
+                              OnClick="() => OnCellClicked.InvokeAsync((cell, column))" />
+    }
+    <BudgetGridAmountCell BudgetAmount="@GetRowTotal(Category, true)"
+                          RealAmount="@GetRowTotal(Category, false)"
+                          BudgetMode="@BudgetMode"
+                          IsIncome="true"
+                          IsFuturePeriod="@(DateTime.Now.Year <= Year)" />
+</div>

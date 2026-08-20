@@ -1,0 +1,131 @@
+.budget-grid-cell {
+    text-align: center;
+    border: 1px solid var(--colour-offwhite);
+    padding: 0.25rem 0.5rem;
+
+    p {
+        margin: 0;
+    }
+
+    &.positive {
+        color: var(--colour-success);
+    }
+
+    &.negative {
+        color: var(--colour-danger);
+    }
+
+    &.future {
+        color: var(--colour-secondary);
+    }
+}
+
+.budget-grid-header .budget-grid-cell {
+    font-weight: var(--fontweight-black);
+    color: var(--colour-grey);
+    text-transform: uppercase;
+
+    &:first-child {
+        text-align: left;
+    }
+
+    &:last-child {
+        text-align: right;
+    }
+}
+
+    .budget-grid-header .budget-grid-cell ::deep p {
+        font-weight: var(--fontweight-semibold);
+    }
+
+.budget-grid-footer .budget-grid-cell {
+    background-color: var(--colour-offwhite);
+    font-weight: var(--fontweight-semibold);
+
+    &:first-child {
+        text-align: left;
+        font-weight: var(--fontweight-black);
+        color: var(--colour-grey);
+        text-transform: uppercase;
+    }
+
+    &:last-child {
+        text-align: right;
+    }
+}
+
+.budget-grid-group .budget-grid-cell {
+    background-color: var(--colour-offwhite);
+    font-weight: var(--fontweight-black);
+    text-align: left;
+    color: var(--colour-grey);
+    text-transform: uppercase;
+
+    &:last-child {
+        text-align: right;
+    }
+}
+
+.budget-grid-category .budget-grid-cell {
+
+    &:not(:first-child, :last-child) {
+        border-left: none !important;
+        border-right: none !important;
+        padding: 0.25rem 0 !important;
+        cursor: pointer;
+    }
+
+    &:nth-child(2) {
+        padding-left: 0.5rem !important;
+    }
+
+    &:nth-last-child(2) {
+        padding-right: 0.5rem !important;
+    }
+
+    &:last-child {
+        text-align: right;
+    }
+}
+
+    .budget-grid-category .budget-grid-cell ::deep span {
+        width: 100%;
+        display: inline-block;
+        font-weight: var(--fontweight-semibold);
+    }
+
+    .budget-grid-category .budget-grid-cell:nth-child(2) ::deep span {
+        border-radius: var(--radius-small) 0 0 var(--radius-small);
+    }
+
+    .budget-grid-category .budget-grid-cell:nth-last-child(2) ::deep span {
+        border-radius: 0 var(--radius-small) var(--radius-small) 0;
+    }
+
+    .budget-grid-category .budget-grid-cell:not(:first-child, :last-child) ::deep span:hover {
+        color: var(--colour-white);
+    }
+
+    .budget-grid-category .budget-grid-cell.positive:not(:last-child) ::deep span {
+        background-color: var(--colour-success-light);
+
+        &:hover {
+            background-color: var(--colour-success);
+        }
+    }
+
+    .budget-grid-category .budget-grid-cell.negative:not(:last-child) ::deep span {
+        background-color: var(--colour-danger-light);
+
+        &:hover {
+            background-color: var(--colour-danger);
+        }
+    }
+
+    .budget-grid-category .budget-grid-cell.future:not(:last-child) ::deep span {
+        background-color: var(--colour-highlight);
+
+        &:hover {
+            background-color: var(--colour-secondary);
+        }
+    }

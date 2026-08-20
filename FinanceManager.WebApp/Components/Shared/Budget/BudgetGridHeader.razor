@@ -1,0 +1,15 @@
+@code {
+    [Parameter] public IReadOnlyList<BudgetColumn> Columns { get; set; } = [];
+}
+
+<div class="budget-grid-header" style="display: contents">
+    <BudgetGridCell Value="Category" />
+    @foreach (var column in Columns)
+    {
+        <BudgetGridCell>
+            @column.Label
+            @(column.SubLabel is not null ? @<p>@column.SubLabel</p> : null)
+        </BudgetGridCell>
+    }
+    <BudgetGridCell Value="Total" />
+</div>

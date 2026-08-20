@@ -1,0 +1,20 @@
+@code {
+    [Parameter] public decimal BudgetAmount { get; set; }
+    [Parameter] public decimal RealAmount { get; set; }
+    [Parameter] public bool BudgetMode { get; set; }
+    [Parameter] public bool IsIncome { get; set; }
+    [Parameter] public bool IsFuturePeriod { get; set; }
+
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private decimal Amount => BudgetMode ? BudgetAmount : RealAmount;
+
+    private string Tooltip => $"{(BudgetMode ? "Actual" : "Budget")}: {(BudgetMode ? RealAmount : BudgetAmount):C}";
+
+    private string StatusClass =>
+        IsFuturePeriod ? "future" : IsIncome ?
+        RealAmount < BudgetAmount ? "negative" : "positive" :
+        -RealAmount > BudgetAmount ? "negative" : "positive";
+}
+
+<BudgetGridCell Value="@Amount.ToString("C")" TooltipText="@Tooltip" CssClass="@StatusClass" OnClick="OnClick" />

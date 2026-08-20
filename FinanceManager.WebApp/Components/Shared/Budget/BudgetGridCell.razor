@@ -1,0 +1,22 @@
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public string? TooltipText { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; } = default!;
+
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private RenderFragment? Content => Value is not null ? @<p>@Value</p> : ChildContent;
+}
+
+<div class="@("budget-grid-cell " + CssClass)" @onclick="OnClick">
+    @if (string.IsNullOrWhiteSpace(TooltipText))
+    {
+        @Content
+    }
+    else
+    {
+        <HxTooltip Text="@TooltipText">@Content</HxTooltip>
+    }
+</div>
