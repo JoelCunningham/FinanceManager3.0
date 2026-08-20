@@ -1,6 +1,6 @@
-using FinanceManager.Domain.Enums;
-
 namespace FinanceManager.Application.Interfaces;
+
+using FinanceManager.Domain.Enums;
 
 public interface IAuditLogRepository
 {

@@ -9,6 +9,17 @@ using Microsoft.EntityFrameworkCore;
 
 public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : ITransactionRepository
 {
+    public async Task<IEnumerable<Transaction>> GetAllAsync()
+    {
+        return await dbContext.Transactions
+            .Include(t => t.Record)
+            .ThenInclude(r => r.BankAccount)
+            .Include(t => t.Category)
+            .ThenInclude(c => c!.Group)
+            .Include(t => t.Reimbursements)
+            .Include(t => t.Reimburses)
+            .ToListAsync();
+    }
     public async Task<Transaction> GetByIdAsync(Guid id)
     {
         var transaction = await dbContext.Transactions

@@ -9,6 +9,15 @@ using Microsoft.EntityFrameworkCore;
 
 public sealed class TransferRepository(FinanceManagerDbContext dbContext) : ITransferRepository
 {
+    public async Task<IEnumerable<Transfer>> GetAllAsync()
+    {
+        return await dbContext.Transfers
+            .Include(t => t.FromRecord)
+            .ThenInclude(r => r.BankAccount)
+            .Include(t => t.ToRecord)
+            .ThenInclude(r => r.BankAccount)
+            .ToListAsync();
+    }
     public async Task<Transfer> GetByIdAsync(Guid id)
     {
         var transfer = await dbContext.Transfers

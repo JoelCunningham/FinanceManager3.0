@@ -6,4 +6,5 @@ public static class JsCommands
     public const string HistoryBack = "history.back";
     public const string LocationReload = "location.reload";
     public const string AttachClickHandler = "attachClickHandler";
+    public const string DownloadFile = "downloadFile";
 }

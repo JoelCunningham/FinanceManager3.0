@@ -5,7 +5,7 @@ using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 
-public sealed record ImportSaveResult(
+public sealed record SaveImportResult(
     Guid ImportId,
     int RecordsSaved,
     int TransactionsSaved,
@@ -15,7 +15,7 @@ public sealed record ImportSaveResult(
 
 public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IDataStore dataStore)
 {
-    public async Task<ImportSaveResult> ExecuteAsync(IEnumerable<ParsedTransaction> parsedTransactions)
+    public async Task<SaveImportResult> ExecuteAsync(IEnumerable<ParsedTransaction> parsedTransactions)
     {
         var importId = Guid.NewGuid();
         await using var dsTransaction = dataStore.BeginTransaction();
@@ -36,13 +36,13 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBank
             await dataStore.SaveAsync();
             await dsTransaction.CommitAsync();
         
-            return new ImportSaveResult(importId, transactions.Count, transfers.Count, records.Count, []);
+            return new SaveImportResult(importId, transactions.Count, transfers.Count, records.Count, []);
         }
         catch
         {
             await dsTransaction.RollbackAsync();
             
-            return new ImportSaveResult(Guid.Empty, 0, 0, 0, [new UseCaseUnexpectedError()]);
+            return new SaveImportResult(Guid.Empty, 0, 0, 0, [new UseCaseUnexpectedError()]);
         }
     }
 }

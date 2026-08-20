@@ -4,6 +4,10 @@
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public EventCallback OnDelete { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
+
+    [Parameter] public string? CustomActionName { get; set; }
+
+    private string PrimaryActionName => CustomActionName ?? (IsCreating ? "Create" : "Save");
 }
 
 <HxButtonGroup CssClass="end">
@@ -17,6 +21,6 @@
     }
     @if (OnSave.HasDelegate) 
     {
-        <HxButton Color="ThemeColor.Primary" Text="@(IsCreating ? "Create" : "Save")" OnClick="OnSave" />
+        <HxButton Color="ThemeColor.Primary" Text="@PrimaryActionName" OnClick="OnSave" />
     }
 </HxButtonGroup>

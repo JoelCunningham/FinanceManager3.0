@@ -2,6 +2,7 @@ namespace FinanceManager.Infrastructure;
 
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Infrastructure.Data;
+using FinanceManager.Infrastructure.Exporters;
 using FinanceManager.Infrastructure.Identity;
 using FinanceManager.Infrastructure.Parsers;
 using FinanceManager.Infrastructure.Repositories;
@@ -32,6 +33,9 @@ public static class DependencyInjection
         // Parsers
         services.AddSingleton<ITransactionFileParser, WestpacTransactionFileParser>();
         services.AddSingleton<ITransactionFileParser, VanguardTransactionFileParser>();
+
+        // Exporters
+        services.AddSingleton<ITransactionFileExporter, TransactionFileExporter>();
 
         // Identity
         services.AddScoped<IIdentityService, IdentityService>();

@@ -20,7 +20,7 @@
         }
     </SubheadingParts>
     <Actions>
-        <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" OnClick="() => { /* TODO */ }" />
+        <HxButton Color="ThemeColor.Primary" Icon="BootstrapIcon.ArrowUpRightCircle" IconPlacement="ButtonIconPlacement.End" Text="Export" OnClick="() => OpenExportModal()" />
     </Actions>
 </PageHeading>
 
@@ -86,8 +86,6 @@
 
 <TransferModal @ref="TransferModal" Transfer="SelectedTransfer" SeparateFromDetails="SeparateFromDetails" />
 
-<BudgetCellModal @ref="BudgetCellModal"
-                 Cell="CurrentCell"
-                 Column="CurrentColumn"
-                 OnActivityEdit="OpenEditModal"
-                 OnClose="CloseCellModal" />
+<BudgetCellModal @ref="BudgetCellModal" Cell="CurrentCell" Column="CurrentColumn" OnActivityEdit="OpenEditModal" OnClose="CloseCellModal" />
+
+<ExportModal @ref="ExportModal" @bind-ExportType="CurrentExportType" OnExport="ExportTransactions" />

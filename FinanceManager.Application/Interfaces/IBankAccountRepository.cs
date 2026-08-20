@@ -1,6 +1,6 @@
-using FinanceManager.Domain.Entities;
-
 namespace FinanceManager.Application.Interfaces;
+
+using FinanceManager.Domain.Entities;
 
 public interface IBankAccountRepository
 {

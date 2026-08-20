@@ -1,0 +1,63 @@
+@inherits ModalBase
+
+@code {
+    [Parameter] public ExportType ExportType { get; set; }
+    [Parameter] public EventCallback<ExportType> ExportTypeChanged { get; set; }
+
+    [Parameter] public EventCallback OnExport { get; set; }
+
+    private IEnumerable<ExportType> ExportTypes => [
+        ExportType.BankRecords,
+        ExportType.Transactions,
+        ExportType.Transfers
+    ];
+
+    private string GetExportTypeName(ExportType exportType) => exportType switch
+    {
+        ExportType.BankRecords => "Bank records",
+        ExportType.Transactions => "Activities",
+        ExportType.Transfers => "Transfers",
+        _ => ""
+    };
+}
+
+<div class="transfer-modal">
+    <HxModal @ref="_modal" Title="Export data" Size="ModalSize.Large">
+        <BodyTemplate>
+            <div class="export-form">
+                <HxRadioButtonList Label="Data to export"
+                                   TItem="ExportType"
+                                   TValue="ExportType"
+                                   Data="ExportTypes"
+                                   ItemTextSelector="GetExportTypeName"
+                                   Value="ExportType"
+                                   ValueChanged="ExportTypeChanged"
+                                   ValueExpression="() => ExportType"
+                                   AutoSort="false"
+                                   Inline="true" />
+            </div>
+
+            @if (ExportType == ExportType.BankRecords)
+            {
+                <Alert Level="Alert.AlertLevel.Info">
+                    This will export all bank records as you uploaded them, without any additional information.
+                </Alert>
+            }
+            else if (ExportType == ExportType.Transactions)
+            {
+                <Alert Level="Alert.AlertLevel.Info">
+                    This will export all activities in a CSV format, including reimbursements and categories.
+                </Alert>
+            }
+            else if (ExportType == ExportType.Transfers)
+            {
+                <Alert Level="Alert.AlertLevel.Info">
+                    This will export all transfers in a CSV format.
+                </Alert>
+            }
+        </BodyTemplate>
+        <FooterTemplate>
+            <ModalActions OnCancel="() => _modal.HideAsync()" OnSave="() => OnExport.InvokeAsync()" CustomActionName="Export" />
+        </FooterTemplate>
+    </HxModal>
+</div>

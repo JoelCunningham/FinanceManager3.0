@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<GetTransactionDetails>();
         services.AddScoped<SaveTransactionEdit>();
         services.AddScoped<ValidateTransactionEdit>();
+        services.AddScoped<ExportTransactions>();
 
         // Statistics use cases
         services.AddScoped<GetBudgetScopes>();

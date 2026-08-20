@@ -23,6 +23,7 @@ public class UseCases(
     DeleteCategory deleteCategory,
     DeleteCategoryGroup deleteCategoryGroup,
     DeleteUser deleteUser,
+    ExportTransactions exportTransactions,
     ForgotPassword forgotPassword,
     GetAvailablePeriods getAvailablePeriods,
     GetBudgetYears getBudgetYears,
@@ -73,6 +74,7 @@ public class UseCases(
     public Task<DeleteCategoryResult> DeleteCategoryAsync(Guid id) => deleteCategory.ExecuteAsync(id);
     public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
     public Task<DeleteUserResult> DeleteUserAsync(DeleteModel model) => deleteUser.ExecuteAsync(model);
+    public Task<ExportTransactionsResult> ExportTransactionsAsync(ExportType exportType) => exportTransactions.ExecuteAsync(exportType);
     public Task<ForgotPasswordResult> ForgotPasswordAsync(ForgotPasswordModel model) => forgotPassword.ExecuteAsync(model);
     public Task<GetAvailablePeriodsResult> GetAvailablePeriodsAsync(Guid? categoryGroupId = null, bool allowFuture = false) => getAvailablePeriods.ExecuteAsync(categoryGroupId, allowFuture);
     public Task<GetBudgetYearsResult> GetBudgetYearsAsync() => getBudgetYears.ExecuteAsync();
@@ -104,7 +106,7 @@ public class UseCases(
     public Task<SaveBudgetResult> SaveBudgetAsync(int year, BudgetScope scope, bool isEditing) => saveBudget.ExecuteAsync(year, scope, isEditing);
     public Task<SaveCategoryEditResult> SaveCategoryEditAsync(CategorySummary category) => saveCategoryEdit.ExecuteAsync(category);
     public Task<SaveCategoryGroupEditResult> SaveCategoryGroupEditAsync(CategoryGroupSummary group) => saveCategoryGroupEdit.ExecuteAsync(group);
-    public Task<ImportSaveResult> SaveImportAsync(IEnumerable<ParsedTransaction> parsedTransactions) => saveImport.ExecuteAsync(parsedTransactions);
+    public Task<SaveImportResult> SaveImportAsync(IEnumerable<ParsedTransaction> parsedTransactions) => saveImport.ExecuteAsync(parsedTransactions);
     public Task<SaveReviewResult> SaveReviewAsync(ReviewGroup group) => saveReview.ExecuteAsync(group);
     public Task<SaveTransactionEditResult> SaveTransactionEditAsync(TransactionSummary transaction) => saveTransactionEdit.ExecuteAsync(transaction);
     public Task<SeparateTransferResult> SeparateTransferAsync(Guid transferId) => separateTransfer.ExecuteAsync(transferId);

@@ -7,6 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IBankRecordRepository
 {
+    public async Task<IEnumerable<BankRecord>> GetAllAsync()
+    {
+        return await dbContext.BankRecords
+            .Include(br => br.BankAccount)
+            .ToListAsync();
+    }
+
     public async Task<BankRecord> GetByIdAsync(Guid id)
     {
         var bankRecord = await dbContext.BankRecords

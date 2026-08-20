@@ -1,13 +1,13 @@
-﻿using FinanceManager.Domain.Entities;
+﻿namespace FinanceManager.Application.Interfaces;
 
-namespace FinanceManager.Application.Interfaces
+using FinanceManager.Domain.Entities;
+
+public interface IBankRecordRepository
 {
-    public interface IBankRecordRepository
-    {
-        Task<BankRecord> GetByIdAsync(Guid id);
-        Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> importId);
-        Task<IEnumerable<BankRecord>> FilterDuplicatesAsync(IEnumerable<BankRecord> bankRecords);
-        Task<DateTime?> GetLatestDateAsync();
-        Task CreateAsync(IEnumerable<BankRecord> bankRecords);
-    }
+    Task<IEnumerable<BankRecord>> GetAllAsync();
+    Task<BankRecord> GetByIdAsync(Guid id);
+    Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> importId);
+    Task<IEnumerable<BankRecord>> FilterDuplicatesAsync(IEnumerable<BankRecord> bankRecords);
+    Task<DateTime?> GetLatestDateAsync();
+    Task CreateAsync(IEnumerable<BankRecord> bankRecords);
 }

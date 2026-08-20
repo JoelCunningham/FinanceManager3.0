@@ -8,7 +8,9 @@ using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Shared.Budget;
 using FinanceManager.WebApp.Models;
+using FinanceManager.WebApp.Utilities;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 [Route(Pages.Activities)]
 [Route(Pages.Activities + Tabs.ActiveTabId)]
@@ -30,6 +32,7 @@ public partial class _Page : MainPageBase
     public EditTransactionModal EditModal { get; set; } = new();
     public TransferModal TransferModal { get; set; } = new();
     public BudgetCellModal BudgetCellModal { get; set; } = new();
+    public ExportModal ExportModal { get; set; } = new();
 
     private bool HideEmptyCategories { get; set; }
     private BudgetGridMode EntryTypeFilter { get; set; } = BudgetGridMode.Net;
@@ -39,6 +42,7 @@ public partial class _Page : MainPageBase
 
     private BudgetCell CurrentCell { get; set; } = default!;
     private BudgetColumn CurrentColumn { get; set; } = default!;
+    private ExportType CurrentExportType { get; set; } = ExportType.BankRecords;
 
     private int UnreviewedCount { get; set; } = 0;
     private bool HasPopulatedCategories => SummaryColumns.Any(c => c.Cells.Count != 0);
@@ -223,5 +227,27 @@ public partial class _Page : MainPageBase
     private async Task CloseCellModal()
     {
         await BudgetCellModal.HideAsync();
+    }
+
+    private async Task OpenExportModal()
+    {
+        await ExportModal.ShowAsync();
+    }
+
+    private async Task ExportTransactions()
+    {
+        var result = await UseCases.ExportTransactionsAsync(CurrentExportType);
+
+        if (!result.IsSuccess)
+        {
+            Validation.SetError("Could not export transactions. Please try again.");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync(JsCommands.DownloadFile, result.FileName, result.ContentType, result.Content);
+
+            await ExportModal.HideAsync();
+            Validation.SetSuccess("Exported started successfully.");
+        }
     }
 }

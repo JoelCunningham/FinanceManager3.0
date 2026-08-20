@@ -8,6 +8,7 @@ using Havit.Blazor.Components.Web;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 [Authorize]
 [Layout(typeof(MainLayout))]
@@ -19,6 +20,8 @@ public partial class MainPageBase : ComponentBase
 
     [Inject] public IHxMessengerService Messenger { get; set; } = default!;
     [Inject] public IHxMessageBoxService MessageBox { get; set; } = default!;
+
+    [Inject] protected IJSRuntime JS { get; set; } = default!;
 
     [Parameter] public string? ActiveTabId { get; set; }
 
