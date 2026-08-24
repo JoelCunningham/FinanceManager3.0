@@ -20,9 +20,9 @@ public sealed class ResetPassword(IIdentityService identityService, IAuditLogRep
             return new ResetPasswordResult([new UseCaseInvalidOperationError("Email and token are required.")]);
         }
 
-        var (userId, errors) = await identityService.ResetPasswordAsync(model.Email, model.Token, model.Password);
+        var (user, errors) = await identityService.ResetPasswordAsync(model.Email, model.Token, model.Password);
 
-        if (!userId.HasValue)
+        if (user is null)
         {
             var error = errors.FirstOrDefault();
 
@@ -36,7 +36,7 @@ public sealed class ResetPassword(IIdentityService identityService, IAuditLogRep
             }
         }
 
-        await auditLog.LogAsync(userId.Value, AuditedEvent.PasswordResetCompleted, "Password reset completed.", DateTime.Now);
+        await auditLog.LogAsync(user.Id, AuditedEvent.PasswordResetCompleted, "Password reset completed.", DateTime.Now);
         await dataStore.SaveAsync();
 
         return new ResetPasswordResult([]);

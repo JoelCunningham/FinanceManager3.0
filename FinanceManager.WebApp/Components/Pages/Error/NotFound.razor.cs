@@ -14,9 +14,9 @@ public partial class NotFound : ErrorPageBase
     {
         if (Path is null || Path == Pages.Root)
         {
-            var user = (await AuthStateProvider.GetAuthenticationStateAsync()).User;
+            var user = await IdentityService.GetCurrentUserSummaryAsync();
 
-            if (user.Identity?.IsAuthenticated is true)
+            if (user is not null)
             {
                 Navigation.NavigateTo(Pages.Dashboard);
             }

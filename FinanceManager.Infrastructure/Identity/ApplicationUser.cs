@@ -1,5 +1,6 @@
 ﻿namespace FinanceManager.Infrastructure.Identity;
 
+using FinanceManager.Application.DTOs;
 using Microsoft.AspNetCore.Identity;
 
 public class ApplicationUser : IdentityUser
@@ -9,5 +10,10 @@ public class ApplicationUser : IdentityUser
     {
         Name = name;
         Email = email;
+    }
+
+    public UserSummary ToUserSummary()
+    {
+        return new UserSummary(Guid.Parse(Id), Email!, Name);
     }
 }

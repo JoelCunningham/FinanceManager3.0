@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Identity;
 
 public class IdentityService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ILoginTicketStore ticketStore, AuthenticationStateProvider authStateProvider) : IIdentityService
 {
-    public async Task<(Guid? UserId, IEnumerable<string> Errors)> CreateUserAsync(string name, string email, string password)
+    public async Task<(UserSummary? User, IEnumerable<string> Errors)> CreateUserAsync(string name, string email, string password)
     {
         var user = new ApplicationUser(name, email);
         var result = await userManager.CreateAsync(user, password);
-        return (result.Succeeded ? Guid.Parse(user.Id) : null, [.. result.Errors.Select(e => e.Description)]);
+        return (IdentityUserResult(result, user), IdentityUserErrors(result));
     }
 
     public async Task<string> GenerateEmailConfirmationTokenAsync(string email)
@@ -21,10 +21,10 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
         return await userManager.GenerateEmailConfirmationTokenAsync(user);
     }
 
-    public async Task<Guid?> FindByEmailAsync(string email)
+    public async Task<UserSummary?> FindByEmailAsync(string email)
     {
         var user = await userManager.FindByEmailAsync(email);
-        return user?.Id is not null ? Guid.Parse(user.Id) : null;
+        return user?.ToUserSummary();
     }
 
     public async Task<bool> CanSignInAsync(string email)
@@ -61,18 +61,9 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
         return Pages.Login;
     }
 
-    public async Task<UserSummary?> GetCurrentUserAsync()
+    public async Task<UserSummary?> GetCurrentUserSummaryAsync()
     {
-        var authState = await authStateProvider.GetAuthenticationStateAsync();
-        var principal = authState.User;
-
-        if (principal?.Identity?.IsAuthenticated != true) return null;
-
-        var user = await userManager.GetUserAsync(principal);
-
-        if (user is null) return null;
-
-        return new UserSummary(user.Email!, user.Name);
+        return (await GetCurrentUserAsync())?.ToUserSummary();
     }
 
     public async Task<string> GeneratePasswordResetTokenAsync(string email)
@@ -88,20 +79,20 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
         return await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", token);
     }
 
-    public async Task<(Guid? UserId, IEnumerable<string> Errors)> ResetPasswordAsync(string email, string token, string password)
+    public async Task<(UserSummary? User, IEnumerable<string> Errors)> ResetPasswordAsync(string email, string token, string password)
     {
         var user = await userManager.FindByEmailAsync(email);
         if (user is null) return (null, new[] { "User not found" });
         var result = await userManager.ResetPasswordAsync(user, token, password);
-        return (result.Succeeded ? Guid.Parse(user.Id) : null, [.. result.Errors.Select(e => e.Description)]);
+        return (IdentityUserResult(result, user), IdentityUserErrors(result));
     }
 
-    public async Task<Guid?> ConfirmEmailAsync(string email, string token)
+    public async Task<UserSummary?> ConfirmEmailAsync(string email, string token)
     {
         var user = await userManager.FindByEmailAsync(email);
         if (user is null) return null;
         var result = await userManager.ConfirmEmailAsync(user, token);
-        return result.Succeeded ? Guid.Parse(user.Id) : null;
+        return IdentityUserResult(result, user);
     }
 
     public async Task<string> GenerateTwoFactorTokenAsync(string email)
@@ -116,37 +107,53 @@ public class IdentityService(UserManager<ApplicationUser> userManager, SignInMan
         return await userManager.GenerateChangeEmailTokenAsync(user, newEmail);
     }
 
-    public async Task<Guid?> ChangeEmailAsync(string email, string newEmail, string token)
+    public async Task<UserSummary?> ChangeEmailAsync(string newEmail, string token)
     {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user is null) return null;
+        var user = await GetCurrentUserAsync() ?? throw new Exception("Current user not found");
         var result = await userManager.ChangeEmailAsync(user, newEmail, token);
         result = result.Succeeded ? await userManager.SetUserNameAsync(user, newEmail) : result;
-        return result.Succeeded ? Guid.Parse(user.Id) : null;
+        return IdentityUserResult(result, user);
     }
 
-    public async Task<bool> ChangeNameAsync(string email, string newName)
+    public async Task<UserSummary?> ChangeNameAsync(string newName)
     {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user is null) return false;
+        var user = await GetCurrentUserAsync() ?? throw new Exception("Current user not found");
         user.Name = newName;
         var result = await userManager.UpdateAsync(user);
-        return result.Succeeded;
+        return IdentityUserResult(result, user);
     }
 
-    public async Task<bool> ChangePasswordAsync(string email, string currentPassword, string newPassword)
+    public async Task<UserSummary?> ChangePasswordAsync(string currentPassword, string newPassword)
     {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user is null) return false;
+        var user = await GetCurrentUserAsync() ?? throw new Exception("Current user not found");
         var result = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-        return result.Succeeded;
+        return IdentityUserResult(result, user);
     }
 
-    public async Task<bool> DeleteUser(string email)
+    public async Task<UserSummary?> DeleteUser()
     {
-        var user = await userManager.FindByEmailAsync(email);
-        if (user is null) return false;
+        var user = await GetCurrentUserAsync() ?? throw new Exception("Current user not found");
         var result = await userManager.DeleteAsync(user);
-        return result.Succeeded;
+        return IdentityUserResult(result, user);
+    }
+
+    private async Task<ApplicationUser?> GetCurrentUserAsync()
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var principal = authState.User;
+
+        if (principal?.Identity?.IsAuthenticated != true) return null;
+
+        return await userManager.GetUserAsync(principal);
+    }
+
+    private static UserSummary? IdentityUserResult(IdentityResult result, ApplicationUser user)
+    {
+        return result.Succeeded ? user.ToUserSummary() : null;
+    }
+
+    private static IEnumerable<string> IdentityUserErrors(IdentityResult result)
+    {
+        return [.. result.Errors.Select(e => e.Description)];
     }
 }

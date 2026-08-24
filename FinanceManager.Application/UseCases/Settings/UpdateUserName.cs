@@ -12,15 +12,13 @@ public sealed class UpdateUserName(IIdentityService identityService, IAuditLogRe
     {
         if (model.CurrentName == model.NewName) return new UpdateUserNameResult([]);
 
-        var currentUser = await identityService.FindByEmailAsync(model.CurrentEmail) ?? throw new InvalidOperationException("Current user not found.");
-
-        var success = await identityService.ChangeNameAsync(model.CurrentEmail, model.NewName);
-        if (!success)
+        var user = await identityService.ChangeNameAsync(model.NewName);
+        if (user is null)
         {
             return new UpdateUserNameResult([new UseCaseInvalidOperationError("Failed to update user name.")]);
         }
 
-        await auditLog.LogAsync(currentUser, AuditedEvent.NameChanged, $"Name has been changed from {model.CurrentName} to {model.NewName}.", DateTime.Now);
+        await auditLog.LogAsync(user.Id, AuditedEvent.NameChanged, $"Name has been changed from {model.CurrentName} to {model.NewName}.", DateTime.Now);
         await dataStore.SaveAsync();
 
         return new UpdateUserNameResult([]);

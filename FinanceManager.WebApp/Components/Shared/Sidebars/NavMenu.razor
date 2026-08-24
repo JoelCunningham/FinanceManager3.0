@@ -6,7 +6,7 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        var user = await IndentityService.GetCurrentUserAsync();
+        var user = await IndentityService.GetCurrentUserSummaryAsync();
         UserState.UpdateUserName(user?.Name);
         UserState.OnChange += StateHasChanged;
     }

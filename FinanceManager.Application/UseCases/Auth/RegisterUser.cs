@@ -14,9 +14,9 @@ public sealed class RegisterUser(IIdentityService identityService, IUserEmailSer
 {
     public async Task<RegisterUserResult> ExecuteAsync(RegisterUserModel model)
     {
-        var (userId, errors) = await identityService.CreateUserAsync(model.Name, model.Email, model.Password);
+        var (user, errors) = await identityService.CreateUserAsync(model.Name, model.Email, model.Password);
 
-        if (!userId.HasValue)
+        if (user is null)
         {
             var error = errors.FirstOrDefault();
 
@@ -45,7 +45,7 @@ public sealed class RegisterUser(IIdentityService identityService, IUserEmailSer
 
         await emailService.SendRegistrationConfirmationAsync(model.Name, model.Email, confirmationLink);
 
-        await auditLog.LogAsync(userId.Value, AuditedEvent.AccountCreated, $"New account created for {model.Name}", DateTime.Now);
+        await auditLog.LogAsync(user.Id, AuditedEvent.AccountCreated, $"New account created for {model.Name}", DateTime.Now);
         await dataStore.SaveAsync();
 
         return new RegisterUserResult([]);

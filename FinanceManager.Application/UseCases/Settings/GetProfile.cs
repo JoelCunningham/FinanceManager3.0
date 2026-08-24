@@ -9,7 +9,7 @@ public sealed class GetProfile(IIdentityService identityService)
 {
     public async Task<GetProfileResult> ExecuteAsync()
     {
-        var user = await identityService.GetCurrentUserAsync() ?? throw new InvalidOperationException("User not found.");
+        var user = await identityService.GetCurrentUserSummaryAsync() ?? throw new InvalidOperationException("User not found.");
 
         var profile = new ProfileModel(user.Name, user.Email);
         return new GetProfileResult(profile, []);

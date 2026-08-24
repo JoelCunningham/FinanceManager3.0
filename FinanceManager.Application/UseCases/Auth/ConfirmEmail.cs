@@ -1,5 +1,6 @@
 namespace FinanceManager.Application.UseCases.Auth;
 
+using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.Models;
@@ -11,7 +12,7 @@ public sealed class ConfirmEmail(IIdentityService identityService, IAuditLogRepo
 {
     public async Task<ConfirmEmailResult> ExecuteAsync(ConfirmEmailModel model)
     {
-        Guid? userId;
+        UserSummary? user;
 
         if (model.Reason == ConfirmEmailReason.Registration)
         {
@@ -19,7 +20,7 @@ public sealed class ConfirmEmail(IIdentityService identityService, IAuditLogRepo
             {
                 return new ConfirmEmailResult([new UseCaseInvalidOperationError("Email and token are required.")]);
             }
-            userId = await identityService.ConfirmEmailAsync(model.Email, model.Token);
+            user = await identityService.ConfirmEmailAsync(model.Email, model.Token);
         }
         else
         {
@@ -31,15 +32,15 @@ public sealed class ConfirmEmail(IIdentityService identityService, IAuditLogRepo
             {
                 return new ConfirmEmailResult([]);
             }
-            userId = await identityService.ChangeEmailAsync(model.OldEmail, model.Email, model.Token);
+            user = await identityService.ChangeEmailAsync(model.Email, model.Token);
         }
 
-        if (!userId.HasValue)
+        if (user is null)
         {
             return new ConfirmEmailResult([new UseCaseInvalidOperationError("Email confirmation failed. Invalid token or email.")]);
         }
 
-        await auditLog.LogAsync(userId.Value, AuditedEvent.EmailConfirmed, $"Email {model.Email} has been confirmed.", DateTime.Now);
+        await auditLog.LogAsync(user.Id, AuditedEvent.EmailConfirmed, $"Email {model.Email} has been confirmed.", DateTime.Now);
         await dataStore.SaveAsync();
 
         return new ConfirmEmailResult([]);

@@ -30,11 +30,4 @@ public class PasswordModel
     [Required(ErrorMessage = "Please confirm your password")]
     [Compare(nameof(NewPassword), ErrorMessage = "Your passwords do not match")]
     public string ConfirmPassword { get; set; } = "";
-
-    public string CurrentEmail { get; set; } = "";
-}
-
-public class DeleteModel
-{
-    public string CurrentEmail { get; set; } = "";
 }

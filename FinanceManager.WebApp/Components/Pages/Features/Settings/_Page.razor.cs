@@ -15,7 +15,6 @@ public partial class _Page : MainPageBase
 
     private ProfileModel ProfileModel { get; set; } = new();
     private PasswordModel PasswordModel { get; set; } = new();
-    private DeleteModel DeleteModel { get; set; } = new();
 
     private MfaModal MfaModal { get; set; } = new();
     private Confirmation Confirmation { get; set; } = new();
@@ -129,7 +128,6 @@ public partial class _Page : MainPageBase
 
     private async Task UpdatePasswordAsync()
     {
-        PasswordModel.CurrentEmail = ProfileModel.CurrentEmail;
         var result = await UseCases.UpdateUserPasswordAsync(PasswordModel);
 
         PasswordModel.CurrentPassword = string.Empty;
@@ -154,8 +152,7 @@ public partial class _Page : MainPageBase
 
         if (confirmed)
         {
-            DeleteModel.CurrentEmail = ProfileModel.CurrentEmail;
-            var result = await UseCases.DeleteUserAsync(DeleteModel);
+            var result = await UseCases.DeleteUserAsync();
 
             if (!result.IsSuccess)
             {

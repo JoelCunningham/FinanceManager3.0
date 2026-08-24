@@ -73,7 +73,7 @@ public class UseCases(
     public Task<DeleteBudgetEntryResult> DeleteBudgetEntryAsync(Guid id) => deleteBudgetEntry.ExecuteAsync(id);
     public Task<DeleteCategoryResult> DeleteCategoryAsync(Guid id) => deleteCategory.ExecuteAsync(id);
     public Task<DeleteCategoryGroupResult> DeleteCategoryGroupAsync(Guid id) => deleteCategoryGroup.ExecuteAsync(id);
-    public Task<DeleteUserResult> DeleteUserAsync(DeleteModel model) => deleteUser.ExecuteAsync(model);
+    public Task<DeleteUserResult> DeleteUserAsync() => deleteUser.ExecuteAsync();
     public Task<ExportTransactionsResult> ExportTransactionsAsync(ExportType exportType) => exportTransactions.ExecuteAsync(exportType);
     public Task<ForgotPasswordResult> ForgotPasswordAsync(ForgotPasswordModel model) => forgotPassword.ExecuteAsync(model);
     public Task<GetAvailablePeriodsResult> GetAvailablePeriodsAsync(Guid? categoryGroupId = null, bool allowFuture = false) => getAvailablePeriods.ExecuteAsync(categoryGroupId, allowFuture);

@@ -10,15 +10,13 @@ public sealed class UpdateUserPassword(IIdentityService identityService, IAuditL
 {
     public async Task<UpdateUserPasswordResult> ExecuteAsync(PasswordModel model)
     {
-        var currentUser = await identityService.FindByEmailAsync(model.CurrentEmail) ?? throw new InvalidOperationException("Current user not found.");
-
-        var success = await identityService.ChangePasswordAsync(model.CurrentEmail, model.CurrentPassword, model.NewPassword);
-        if (!success)
+        var user = await identityService.ChangePasswordAsync(model.CurrentPassword, model.NewPassword);
+        if (user is null)
         {
             return new UpdateUserPasswordResult([new UseCaseInvalidOperationError("Failed to update user password.")]);
         }
 
-        await auditLog.LogAsync(currentUser, AuditedEvent.PasswordChanged, "Password has been changed.", DateTime.Now);
+        await auditLog.LogAsync(user.Id, AuditedEvent.PasswordChanged, "Password has been changed.", DateTime.Now);
         await dataStore.SaveAsync();
 
         return new UpdateUserPasswordResult([]);

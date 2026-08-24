@@ -18,25 +18,25 @@ public sealed class ForgotPassword(IIdentityService identityService, IUserEmailS
             return new ForgotPasswordResult([new UseCaseInvalidOperationError("Email is required.")]);
         }
 
-        var userId = await identityService.FindByEmailAsync(model.Email);
+        var user = await identityService.FindByEmailAsync(model.Email);
 
-        if (!userId.HasValue)
+        if (user is null)
         {
             return new ForgotPasswordResult([new UseCaseInvalidOperationError("User not found.")]);
         }
 
-        var token = await identityService.GeneratePasswordResetTokenAsync(model.Email);
+        var token = await identityService.GeneratePasswordResetTokenAsync(user.Email);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
         var resetLink = QueryHelpers.AddQueryString($"{model.Origin}{Pages.ResetPassword}", new Dictionary<string, string?>
         {
-            [Parameters.Email] = model.Email,
+            [Parameters.Email] = user.Email,
             [Parameters.Token] = encodedToken
         });
 
-        await emailService.SendPasswordResetAsync(model.Email, model.Email, resetLink);
+        await emailService.SendPasswordResetAsync(user.Email, user.Email, resetLink);
 
-        await auditLog.LogAsync(userId.Value, AuditedEvent.PasswordResetRequested, "Password reset requested.", DateTime.Now);
+        await auditLog.LogAsync(user.Id, AuditedEvent.PasswordResetRequested, "Password reset requested.", DateTime.Now);
         await dataStore.SaveAsync();
 
         return new ForgotPasswordResult([]);

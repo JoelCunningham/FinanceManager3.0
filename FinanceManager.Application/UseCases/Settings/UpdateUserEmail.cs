@@ -37,7 +37,7 @@ public sealed class UpdateUserEmail(IIdentityService identityService, IUserEmail
 
         await emailService.SendEmailUpdateConfirmationAsync(model.NewName, model.NewEmail, confirmationLink);
 
-        await auditLog.LogAsync(currentUser, AuditedEvent.EmailChangeRequested, $"Email {model.NewEmail} has been requested for change.", DateTime.Now);
+        await auditLog.LogAsync(currentUser.Id, AuditedEvent.EmailChangeRequested, $"Email {model.NewEmail} has been requested for change.", DateTime.Now);
         await dataStore.SaveAsync();
 
         return new UpdateUserEmailResult([]);

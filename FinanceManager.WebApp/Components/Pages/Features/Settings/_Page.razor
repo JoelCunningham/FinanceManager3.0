@@ -38,7 +38,7 @@
 </SettingsPanel>
 
 <SettingsPanel Title="Delete account">
-    <EditForm FormName="Settings.DeleteAccount" Model="DeleteModel">
+    <EditForm FormName="Settings.DeleteAccount" Model="new()">
         <div class="settings-footer">
             <p>Deleting your account is permanent and cannot be undone.</p>
             <HxSubmit Color="ThemeColor.Primary" OnValidClick="HandleUserDelete">Delete account</HxSubmit>
