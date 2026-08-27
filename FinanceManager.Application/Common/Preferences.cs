@@ -1,5 +1,6 @@
 ﻿namespace FinanceManager.Application.Common;
 
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Enums;
 using System.Globalization;
@@ -9,6 +10,7 @@ public class Preferences(IPreferenceRepository preferenceRepository, IDataStore 
     public Task<bool> AutoAssignCategories => GetPreferenceValue(PreferenceNames.AutoAssignCategories, true);
     public Task<bool> HideEmptyBudgetCategories => GetPreferenceValue(PreferenceNames.HideEmptyBudgetCategories, false);
     public Task<bool> HideEmptyActivityCategories => GetPreferenceValue(PreferenceNames.HideEmptyActivityCategories, false);
+    public Task<ColourTheme> PerferedColourMode => GetPreferenceValue(PreferenceNames.PerferedColourMode, ColourTheme.System);
 
     public async Task Set<T>(PreferenceNames name, T value)
     {

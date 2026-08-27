@@ -1,10 +1,10 @@
 .icon-preview {
     margin-right: var(--space-medium);
     border-radius: var(--radius-medium);
-    border: 1px solid var(--colour-lightgrey);
     width: 3.5rem;
     display: flex;
     border: 1px solid var(--colour-border);
+    background-color: var(--colour-card);
 }
 
 ::deep i {
@@ -14,6 +14,7 @@
 
 ::deep .dropdown {
     width: 100%;
+    background-color: var(--colour-card);
 }
 
 ::deep .dropdown-menu.show {
@@ -22,14 +23,28 @@
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
 }
 
-::deep .hx-button {
+::deep .dropdown-menu .hx-button {
+    background-color: var(--colour-card);
+    padding: 0 !important;
+    height: auto !important;
+}
+
+::deep .dropdown-menu .hx-button:hover {
+    background-color: var(--colour-card-hover);
+}
+
+::deep .dropdown .hx-button {
+    display: inline-flex !important;
     border: 1px solid var(--colour-border);
+    text-decoration: none !important;
+    height: 2.3rem;
+    padding: var(--space-small);
 }
 
 
 ::deep .icon-button {
     text-decoration: none;
-    color: var(--colour-black);
+    color: var(--colour-text);
     justify-content: start !important;
     border: 1px solid var(--colour-border) !important;
     font-weight: normal !important;
@@ -38,7 +53,7 @@
     ::deep .icon-button:hover,
     ::deep .icon-button:focus,
     ::deep .icon-button:active {
-        color: var(--colour-black) !important;
+        color: var(--colour-text) !important;
     }
 
     ::deep .icon-button::after {

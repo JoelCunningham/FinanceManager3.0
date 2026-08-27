@@ -1,7 +1,8 @@
 ﻿.card {
     width: 100%;
-    color: var(--colour-white);
-    background-color: var(--colour-secondary);
+    color: var(--colour-textwhite);
+    background-color: var(--colour-secondary) !important;
+    border: none !important;
     display: flex;
     flex-direction: row;
     margin-top: var(--space-small);
@@ -24,9 +25,9 @@
 
 ::deep button {
     display: flex;
-    color: var(--colour-white);
+    color: var(--colour-text);
 }
 
     ::deep button:hover {
-        color: var(--colour-border);
+        color: var(--colour-textmuted);
     }

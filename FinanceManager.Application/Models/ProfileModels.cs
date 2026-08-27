@@ -1,5 +1,6 @@
 ﻿namespace FinanceManager.Application.Models;
 
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Validation;
 using System.ComponentModel.DataAnnotations;
 
@@ -30,4 +31,10 @@ public class PasswordModel
     [Required(ErrorMessage = "Please confirm your password")]
     [Compare(nameof(NewPassword), ErrorMessage = "Your passwords do not match")]
     public string ConfirmPassword { get; set; } = "";
+}
+
+public class OptionsModel
+{
+    [Required(ErrorMessage = "Colour mode is required")]
+    public ColourTheme PreferredColourMode { get; set; } = ColourTheme.System;
 }

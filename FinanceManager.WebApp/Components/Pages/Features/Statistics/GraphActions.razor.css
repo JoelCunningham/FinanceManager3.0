@@ -21,7 +21,7 @@
 ::deep .reset {
     margin-right: auto;
     border: none !important;
-    color: var(--colour-grey);
+    color: var(--colour-textmuted);
     padding: 0;
     margin-left: calc(var(--space-tiny) * -1);
 }

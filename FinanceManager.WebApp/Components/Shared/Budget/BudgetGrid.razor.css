@@ -1,6 +1,6 @@
 .budget-grid-wrapper {
     overflow-y: hidden;
-    background-color: var(--colour-white);
+    background-color: var(--colour-card);
     border: 1px solid var(--colour-border);
     border-radius: var(--radius-medium);
     box-shadow: var(--shadow-medium);

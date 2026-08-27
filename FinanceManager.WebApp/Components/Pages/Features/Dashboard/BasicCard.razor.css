@@ -1,11 +1,8 @@
 ﻿.card {
-    padding: var(--space-medium);
-    box-shadow: var(--shadow-medium);
-
     .card-title {
         text-transform: uppercase;
         font-size: var(--fontsize-subheading);
-        color: var(--colour-grey);
+        color: var(--colour-textmuted);
     }
 
     .card-value {
@@ -15,14 +12,14 @@
 
     .card-description {
         margin: 0;
-        color: var(--colour-grey);
+        color: var(--colour-textmuted);
     }
 
     &.action {
         cursor: pointer;
 
         &:hover {
-            background-color: var(--bs-gray-100);
+            background-color: var(--colour-card-hover) !important;
             transition-duration: 0.1s;
         }
     }

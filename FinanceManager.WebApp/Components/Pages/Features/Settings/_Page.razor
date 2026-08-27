@@ -2,6 +2,26 @@
 
 <PageHeading Heading="Settings" Subheading="Manage your account details and preferences" />
 
+<SettingsPanel Title="Options">
+    <EditForm FormName="Settings.Options" Model="OptionsModel">
+        <DataAnnotationsValidator />
+
+        <HxRadioButtonList Label="Colour mode"
+                           TItem="ColourTheme"
+                           TValue="ColourTheme"
+                           @bind-Value="OptionsModel.PreferredColourMode"
+                           Data="[ColourTheme.Light, ColourTheme.Dark, ColourTheme.System]"
+                           Inline="true"
+                           ItemTextSelector="@(colourMode => ThemeUtilities.GetColourModeDescription(colourMode))"
+                           ItemValueSelector="@(colourMode => colourMode)"
+                           RenderMode="RadioButtonListRenderMode.ButtonGroup"
+                           Color="ThemeColor.Light"
+                           Outline="true"
+                           CssClass="mt-2"
+                           @bind-Value:after="HandleOptionsUpdate" />
+    </EditForm>
+</SettingsPanel>
+
 <SettingsPanel Title="Profile">
     <EditForm FormName="Settings.Profile" Model="ProfileModel">
         <DataAnnotationsValidator />

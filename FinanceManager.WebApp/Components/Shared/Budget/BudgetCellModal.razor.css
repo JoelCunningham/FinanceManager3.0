@@ -13,7 +13,7 @@ div ::deep .alert {
     .field-name {
         text-transform: uppercase;
         font-weight: var(--fontweight-semibold);
-        color: var(--colour-grey);
+        color: var(--colour-textmuted);
     }
 
     .field-value {
@@ -34,7 +34,7 @@ div ::deep .alert {
         .field-name {
             text-transform: uppercase;
             font-weight: var(--fontweight-semibold);
-            color: var(--colour-grey);
+            color: var(--colour-textmuted);
             font-size: var(--fontsize-label);
             display: block;
             width: 100%;
@@ -51,6 +51,7 @@ div ::deep .alert {
     border-radius: var(--radius-medium);
     margin-top: var(--space-small);
     padding: var(--space-small) var(--space-medium);
+    background-color: var(--colour-card);
 
     p {
         display: flex;
@@ -62,12 +63,12 @@ div ::deep .alert {
 
         .subtext {
             font-size: var(--fontsize-label);
-            color: var(--colour-grey);
+            color: var(--colour-textmuted);
         }
     }
 
     &.editable:hover {
-        background-color: var(--colour-offwhite);
+        background-color: var(--colour-card-hover);
         cursor: pointer;
     }
 }

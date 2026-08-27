@@ -1,5 +1,6 @@
 ﻿@implements IAsyncDisposable
 @inject IJSRuntime JS
+@inject UserState UserState
 
 @code {
     [Parameter] public object? Options { get; set; }
@@ -8,13 +9,21 @@
     [Parameter] public EventCallback<string?> OnItemClick { get; set; }
     [JSInvokable] public Task NotifyChartClicked(string? key) => OnItemClick.InvokeAsync(key);
 
+    private string? TextColour => ThemeUtilities.GetTextColour(UserState.Theme);
+    private object? ColouredOptions => ReplaceColourPlaceholder(Options);
+
     private ElementReference _wrapper;
     private IJSObjectReference? _module;
     private DotNetObjectReference<Chart>? _dotNetRef;
 
+    protected override void OnInitialized()
+    {
+        UserState.OnThemeChange += StateHasChanged;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!OnItemClick.HasDelegate || Options is null) return;
+        if (!OnItemClick.HasDelegate || ColouredOptions is null) return;
 
         _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
         _dotNetRef ??= DotNetObjectReference.Create(this);
@@ -28,6 +37,15 @@
         _dotNetRef = null;
         _module = null;
     }
+
+    private object? ReplaceColourPlaceholder(object? options)
+    {
+        if (options is null || TextColour is null) return options;
+
+        var json = JsonSerializer.Serialize(options);
+        json = json.Replace("\"" + ThemeUtilities.ThemePlaceholder + "\"", JsonSerializer.Serialize(TextColour));
+        return JsonSerializer.Deserialize<object>(json);
+    }
 }
 
 <div class="chart-wrapper">
@@ -39,7 +57,7 @@
     {
         <h4 class="chart-title">@Title</h4>
         <div class="chart" @ref="_wrapper">
-            <HxEChart Options="Options" AutoResize="true" />
+            <HxEChart Options="ColouredOptions" AutoResize="true" />
         </div>
     }
 </div>

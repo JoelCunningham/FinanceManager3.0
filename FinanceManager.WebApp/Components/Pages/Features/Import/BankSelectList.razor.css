@@ -14,17 +14,17 @@
 }
 
 .bank-list ::deep .btn {
-    color: var(--colour-primary);
-    border: 1px solid var(--colour-lightgrey);
+    color: var(--colour-text);
+    border: 1px solid var(--colour-border);
 }
 
     .bank-list ::deep .btn:hover {
-        color: var(--colour-primary);
-        border: 1px solid var(--colour-lightgrey);
+        color: var(--colour-text);
+        border: 1px solid var(--colour-border);
     }
 
     .bank-list ::deep .btn:has(.active) {
-        border: 2px solid var(--colour-primary);
-        background-color: var(--colour-highlight);
-        color: var(--colour-primary);
+        background-color: var(--colour-primary);
+        border: 1px solid var(--colour-border);
+        color: var(--colour-textwhite);
     }

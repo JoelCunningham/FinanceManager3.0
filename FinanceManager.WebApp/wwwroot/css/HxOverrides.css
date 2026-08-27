@@ -1,9 +1,9 @@
 .hx-list-layout .card {
-    border: none;
-    background-color: transparent;
+    border: none !important;
+    background-color: transparent !important;
     box-shadow: none;
     border: none;
-    padding: 0;
+    padding: 0 !important;
 
     .card-body {
         padding: 0 0 0.4rem 0;
@@ -42,7 +42,7 @@
 .hx-grid-container {
     border: 1px solid var(--colour-border);
     border-radius: var(--radius-medium);
-    background-color: white;
+    background-color: var(--colour-card);
 
     table {
         margin-bottom: 0;

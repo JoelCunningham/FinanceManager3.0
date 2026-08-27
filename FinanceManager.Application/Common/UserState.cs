@@ -1,16 +1,24 @@
 ﻿namespace FinanceManager.Application.Common;
 
+using FinanceManager.Application.Enums;
+
 public class UserState
 {
     public string? Name { get; set; }
+    public ColourTheme? Theme { get; set; }
 
-    public event Action? OnChange;
+    public event Action? OnNameChange;
+    public event Action? OnThemeChange;
 
     public void UpdateUserName(string? name)
     {
         Name = name;
-        NotifyStateChanged();
+        OnNameChange?.Invoke();
     }
 
-    private void NotifyStateChanged() => OnChange?.Invoke();
+    public void UpdateTheme(ColourTheme? theme)
+    {
+        Theme = theme;
+        OnThemeChange?.Invoke();
+    }
 }

@@ -1,12 +1,12 @@
 ﻿.settings-section {
     border-radius: var(--radius-medium);
-    background-color: var(--colour-white);
+    background-color: var(--colour-card);
     padding: var(--space-medium);
     margin-bottom: var(--space-medium);
 
     h2 {
         font-size: var(--fontsize-heading3);
-        color: var(--colour-primary);
+        color: var(--colour-heading);
     }
 }
 

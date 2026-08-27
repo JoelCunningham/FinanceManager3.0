@@ -5,4 +5,5 @@ public enum PreferenceNames
     AutoAssignCategories,
     HideEmptyBudgetCategories,
     HideEmptyActivityCategories,
+    PerferedColourMode
 }

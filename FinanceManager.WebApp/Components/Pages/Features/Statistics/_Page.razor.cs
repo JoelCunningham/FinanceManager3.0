@@ -192,10 +192,10 @@ public partial class _Page : MainPageBase
         Chart1.Options = new
         {
             tooltip = new { trigger = "axis" },
-            legend = new { type = "scroll" },
+            legend = new { type = "scroll", textStyle = new { color = ThemeUtilities.ThemePlaceholder } },
             grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
-            xAxis = new { type = "category", data = xAxisLabels },
-            yAxis = new { type = "value" },
+            xAxis = new { type = "category", data = xAxisLabels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
+            yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
             series
         };
     }
@@ -269,7 +269,7 @@ public partial class _Page : MainPageBase
         Chart2.Options = new
         {
             tooltip = new { trigger = "axis", axisPointer = new { type = "shadow" } },
-            legend = new { type = "scroll" },
+            legend = new { type = "scroll", textStyle = new { color = ThemeUtilities.ThemePlaceholder } },
             grid = new { left = "3%", right = "4%", bottom = "10%", containLabel = true },
             xAxis = new
             {
@@ -278,10 +278,11 @@ public partial class _Page : MainPageBase
                 axisLabel = new
                 {
                     interval = 0,
-                    rotate = rows.Count > 6 ? 35 : 0
+                    rotate = rows.Count > 6 ? 35 : 0,
+                    color = ThemeUtilities.ThemePlaceholder,
                 }
             },
-            yAxis = new { type = "value" },
+            yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
             series = new object[]
             {
                 new

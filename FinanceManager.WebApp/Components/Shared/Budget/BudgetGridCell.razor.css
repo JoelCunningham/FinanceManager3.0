@@ -1,28 +1,29 @@
 .budget-grid-cell {
     text-align: center;
-    border: 1px solid var(--colour-offwhite);
+    border: 1px solid var(--colour-border);
+    background-color: var(--colour-card);
     padding: 0.25rem 0.5rem;
 
     p {
         margin: 0;
     }
 
-    &.positive {
+    &.positive  p{
         color: var(--colour-success);
     }
 
-    &.negative {
+    &.negative p {
         color: var(--colour-danger);
     }
 
-    &.future {
-        color: var(--colour-secondary);
+    &.future p {
+        color: var(--colour-neutral);
     }
 }
 
 .budget-grid-header .budget-grid-cell {
     font-weight: var(--fontweight-black);
-    color: var(--colour-grey);
+    color: var(--colour-textmuted);
     text-transform: uppercase;
 
     &:first-child {
@@ -35,17 +36,18 @@
 }
 
     .budget-grid-header .budget-grid-cell ::deep p {
-        font-weight: var(--fontweight-semibold);
+        font-weight: var(--fontweight-black);
+        color: var(--colour-textmuted);
     }
 
 .budget-grid-footer .budget-grid-cell {
-    background-color: var(--colour-offwhite);
+    background-color: var(--colour-card-hover);
     font-weight: var(--fontweight-semibold);
 
-    &:first-child {
+    &:first-child p {
         text-align: left;
         font-weight: var(--fontweight-black);
-        color: var(--colour-grey);
+        color: var(--colour-textmuted);
         text-transform: uppercase;
     }
 
@@ -55,10 +57,10 @@
 }
 
 .budget-grid-group .budget-grid-cell {
-    background-color: var(--colour-offwhite);
+    background-color: var(--colour-card-hover);
     font-weight: var(--fontweight-black);
     text-align: left;
-    color: var(--colour-grey);
+    color: var(--colour-textmuted);
     text-transform: uppercase;
 
     &:last-child {
@@ -102,8 +104,8 @@
         border-radius: 0 var(--radius-small) var(--radius-small) 0;
     }
 
-    .budget-grid-category .budget-grid-cell:not(:first-child, :last-child) ::deep span:hover {
-        color: var(--colour-white);
+    .budget-grid-category .budget-grid-cell:not(:first-child, :last-child) ::deep span:hover p {
+        color: var(--colour-card);
     }
 
     .budget-grid-category .budget-grid-cell.positive:not(:last-child) ::deep span {
@@ -123,9 +125,9 @@
     }
 
     .budget-grid-category .budget-grid-cell.future:not(:last-child) ::deep span {
-        background-color: var(--colour-highlight);
+        background-color: var(--colour-neutral-light);
 
         &:hover {
-            background-color: var(--colour-secondary);
+            background-color: var(--colour-neutral);
         }
     }

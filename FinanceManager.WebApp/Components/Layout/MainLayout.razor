@@ -1,4 +1,9 @@
-﻿@inherits LayoutComponentBase
+﻿@using FinanceManager.Application.Common
+
+@inherits LayoutComponentBase
+@inject IJSRuntime JS
+@inject Preferences Preferences
+@inject UserState UserState
 
 <HxMessenger Position="ToastContainerPosition.TopCenter" />
 <HxMessageBoxHost />
@@ -9,3 +14,11 @@
         @Body
     </main>
 </div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await ThemeUtilities.UpdateTheme(await Preferences.PerferedColourMode, JS, UserState);
+    }
+}

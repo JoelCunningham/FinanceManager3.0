@@ -93,10 +93,10 @@
                     return '$' + value.toFixed(2);
                 }")
             },
-            legend = new { show = false },
+            legend = new { show = false, textStyle = new { color = ThemeUtilities.ThemePlaceholder } },
             grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
-            xAxis = new { type = "category", data = labels },
-            yAxis = new { type = "value" },
+            xAxis = new { type = "category", data = labels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
+            yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
             series = series.ToArray()
         };
     }

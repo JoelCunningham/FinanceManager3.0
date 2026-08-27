@@ -206,6 +206,12 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
                 .Where(t => t.Category != null && t.Category.GroupId == categoryGroupId.Value);
         }
 
+        if (!await query.AnyAsync())
+        {
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            return (today, today);
+        }
+
         var minDate = await query.MinAsync(t => t.Date);
         var maxDate = await query.MaxAsync(t => t.Date);
 

@@ -14,7 +14,7 @@
         margin-bottom: var(--space-small);
 
         span a {
-            color: var(--colour-grey);
+            color: var(--colour-textmuted);
             font-weight: var(--fontweight-semibold);
             display: inline-block;
             width: 100%;

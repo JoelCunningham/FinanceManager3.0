@@ -232,7 +232,7 @@
 
         @if (!string.IsNullOrWhiteSpace(searchText) && Enabled)
         {
-            <button class="clear-btn" @onmousedown:preventDefault @onclick="Clear">
+            <button class="@("clear-btn " + (Label is null ? "" : "labelled"))" @onmousedown:preventDefault @onclick="Clear">
                 <HxIcon Icon="BootstrapIcon.X" />
             </button>
         }

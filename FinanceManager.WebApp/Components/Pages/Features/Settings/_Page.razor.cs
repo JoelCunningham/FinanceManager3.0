@@ -2,11 +2,15 @@
 
 using FinanceManager.Application.Common;
 using FinanceManager.Application.Constants.Navigation;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.Models;
+using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Shared.Wrappers;
+using FinanceManager.WebApp.Utilities;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 [Route(Pages.Settings)]
 public partial class _Page : MainPageBase
@@ -15,6 +19,7 @@ public partial class _Page : MainPageBase
 
     private ProfileModel ProfileModel { get; set; } = new();
     private PasswordModel PasswordModel { get; set; } = new();
+    private OptionsModel OptionsModel { get; set; } = new();
 
     private MfaModal MfaModal { get; set; } = new();
     private Confirmation Confirmation { get; set; } = new();
@@ -42,10 +47,19 @@ public partial class _Page : MainPageBase
     private Task HandlePasswordUpdate() => RequireAuthentication(UpdatePasswordAsync);
     private Task HandleUserDelete() => RequireAuthentication(DeleteUserAsync);
 
+    private async Task HandleOptionsUpdate()
+    {
+        await Preferences.Set(PreferenceNames.PerferedColourMode, OptionsModel.PreferredColourMode);
+        await ThemeUtilities.UpdateTheme(OptionsModel.PreferredColourMode, JS, UserState);
+
+        Validation.SetSuccess("Your colour mode has been updated successfully.");
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         ProfileModel = (await UseCases.GetProfileAsync()).Profile;
+        OptionsModel.PreferredColourMode = await Preferences.PerferedColourMode;
     }
 
     private async Task RequireAuthentication(Func<Task> action)

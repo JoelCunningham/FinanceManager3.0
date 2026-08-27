@@ -20,7 +20,7 @@
         }
 
         &.none {
-            color: var(--colour-black) !important;
+            color: var(--colour-empty) !important;
         }
     }
 

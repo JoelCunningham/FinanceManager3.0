@@ -32,7 +32,7 @@
     .transaction-group ::deep div[role=button] {
         padding: var(--hx-context-menu-button-padding);
         border-radius: var(--hx-context-menu-button-border-radius);
-        color: var(--colour-white);
+        color: var(--colour-text);
     }
 
         .transaction-group ::deep .action-buttons button:hover,
@@ -54,7 +54,7 @@
             .transaction-group ::deep .action-buttons button[type=submit] i {
                 padding-right: 1px;
                 padding-bottom: 2px;
-                color: var(--colour-white);
+                color: var(--colour-text);
             }
 
         .transaction-group ::deep div[role=button],
