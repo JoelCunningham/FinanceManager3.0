@@ -1,53 +1,34 @@
 ﻿@code {
-    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public required string Value { get; set; } = default!;
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
 
     [Parameter] public string? Label { get; set; }
 
     [Parameter] public bool Enabled { get; set; } = true;
-    [Parameter] public bool HasError { get; set; } = false;
+    [Parameter] public bool HasError { get; set; }
 
-    private string InputCssClass => HasError ? "is-invalid" : string.Empty;
-
-    private string ColorValue => IsValidHexColor(Value) ? Value : "#000000";
-
-    private static bool IsValidHexColor(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value)) return false;
-        if (!value.StartsWith("#", StringComparison.Ordinal)) return false;
-        if (value.Length != 7) return false;
-
-        return int.TryParse(value[1..], System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out _);
-    }
-
-    private async Task OnColorInput(ChangeEventArgs e)
-    {
-        Value = e.Value?.ToString() ?? string.Empty;
-        await ValueChanged.InvokeAsync(Value);
-    }
-
-    private async Task OnTextInput(ChangeEventArgs e)
-    {
-        Value = e.Value?.ToString() ?? string.Empty;
-        await ValueChanged.InvokeAsync(Value);
-    }
+    private IEnumerable<(string Value, string DisplayName)> ColourOptions =>
+    [
+        ("#C96A58", "Terracotta"),
+        ("#C6537C", "Raspberry"),
+        ("#9A5B91", "Plum"),
+        ("#765FB3", "Violet"),
+        ("#5364B5", "Indigo"),
+        ("#4A849F", "Cobalt"),
+        ("#4B927E", "Pine"),
+        ("#679B4E", "Moss"),
+        ("#8D994B", "Olive"),
+        ("#B5744B", "Sienna"),
+        ("#A8585D", "Crimson"),
+        ("#B09A4B", "Gold"),    
+    ];
 }
 
-<div class="hx-form-group">
-    @if (!string.IsNullOrWhiteSpace(Label))
-    {
-        <label class="form-label">@Label</label>
-    }
-    <div class="colour-input">
-        <input type="color"
-               class="form-control form-control-color colour-picker @InputCssClass"
-               value="@ColorValue"
-               @oninput="OnColorInput"
-               disabled="@(!Enabled)" />
-        <input type="text"
-               class="form-control colour-value @InputCssClass"
-               value="@(Value == "" ? "#000000" : Value)"
-               @oninput="OnTextInput"
-               disabled="@(!Enabled)" />
-    </div>
-</div>
+<PickerInput @bind-Value="Value" Label="@Label" Options="ColourOptions">
+    <SelectedPreview Context="colour">
+        <span class="colour-button" style="background-color: @colour;" />
+    </SelectedPreview>
+    <OptionTemplate Context="colour">
+        <span class="colour-button" style="background-color: @colour;" title="@ColourOptions.FirstOrDefault(c => c.Value == colour).DisplayName" />
+    </OptionTemplate>
+</PickerInput>

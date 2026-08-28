@@ -441,7 +441,6 @@ main {
 /*Cards*/
 .card {
     padding: var(--space-medium) !important;
-    box-shadow: var(--shadow-medium) !important;
     background-color: var(--colour-card) !important;
     border: 1px solid var(--colour-card-border) !important;
 }
@@ -467,7 +466,7 @@ button.btn {
     }
 
     &.btn-secondary {
-        color: var(--colour-text);
+        color: var(--colour-textwhite);
         background-color: var(--colour-accent) !important;
         border: 1px solid var(--colour-accent) !important;
 
@@ -478,7 +477,7 @@ button.btn {
     }
 
     &.btn-danger {
-        color: var(--colour-text);
+        color: var(--colour-textwhite);
         background-color: var(--colour-danger) !important;
         border: 1px solid var(--colour-danger) !important;
 

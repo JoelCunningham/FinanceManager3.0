@@ -25,7 +25,7 @@
 
 ::deep button {
     display: flex;
-    color: var(--colour-text);
+    color: var(--colour-textwhite);
 }
 
     ::deep button:hover {

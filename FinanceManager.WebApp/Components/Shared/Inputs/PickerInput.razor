@@ -1,0 +1,47 @@
+﻿@code {
+    [Parameter] public required string Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool HasError { get; set; }
+
+    [Parameter] public required IEnumerable<(string Value, string DisplayName)> Options { get; set; }
+
+    [Parameter] public required RenderFragment<string> SelectedPreview { get; set; }
+    [Parameter] public required RenderFragment<string> OptionTemplate { get; set; }
+
+    private async Task OnSelectChange(string value)
+    {
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+    }
+}
+
+<div class="hx-form-group">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="form-label">@Label</label>
+    }
+
+    <div class="icon-input d-flex align-items-center">
+        <div class="icon-preview" title="Preview">
+            @SelectedPreview(Value)
+        </div>
+
+        <HxDropdownButtonGroup AutoClose="DropdownAutoClose.True">
+            <HxDropdownToggleButton CssClass="icon-button form-control">
+                @Options.FirstOrDefault(o => o.Value == Value).DisplayName
+            </HxDropdownToggleButton>
+
+            <HxDropdownContent>
+                @foreach (var option in Options)
+                {
+                    <HxButton OnClick="() => OnSelectChange(option.Value)">
+                        @OptionTemplate(option.Value)
+                    </HxButton>
+                }
+            </HxDropdownContent>
+        </HxDropdownButtonGroup>
+    </div>
+</div>
