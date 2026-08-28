@@ -2,7 +2,6 @@
 
 using FinanceManager.Application.Common;
 using FinanceManager.Application.Constants.Navigation;
-using FinanceManager.Application.Enums;
 using FinanceManager.Application.Models;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
@@ -10,7 +9,6 @@ using FinanceManager.WebApp.Components.Shared.Wrappers;
 using FinanceManager.WebApp.Utilities;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 [Route(Pages.Settings)]
 public partial class _Page : MainPageBase
@@ -50,7 +48,7 @@ public partial class _Page : MainPageBase
     private async Task HandleOptionsUpdate()
     {
         await Preferences.Set(PreferenceNames.PerferedColourMode, OptionsModel.PreferredColourMode);
-        await ThemeUtilities.UpdateTheme(OptionsModel.PreferredColourMode, JS, UserState);
+        await ThemeUtilities.UpdateTheme(OptionsModel.PreferredColourMode, JS);
 
         Validation.SetSuccess("Your colour mode has been updated successfully.");
     }

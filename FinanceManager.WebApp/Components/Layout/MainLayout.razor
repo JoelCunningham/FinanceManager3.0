@@ -19,6 +19,6 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        await ThemeUtilities.UpdateTheme(await Preferences.PerferedColourMode, JS, UserState);
+        await ThemeUtilities.UpdateTheme(await Preferences.PerferedColourMode, JS);
     }
 }

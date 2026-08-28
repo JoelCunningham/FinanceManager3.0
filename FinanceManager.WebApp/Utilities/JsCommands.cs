@@ -7,8 +7,6 @@ public static class JsCommands
     public const string LocationReload = "location.reload";
     public const string AttachClickHandler = "attachClickHandler";
     public const string DownloadFile = "downloadFile";
-
     public const string SetTheme = "theme.set";
-    public const string GetSystemTheme = "theme.getSystemTheme";
-    public const string GetVariableValue = "theme.getVariableValue";
+    public const string GetEffectiveTheme = "theme.getEffectiveTheme";
 }

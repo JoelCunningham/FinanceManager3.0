@@ -1,21 +1,11 @@
 ﻿@code {
-    [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private UserState UserState { get; set; } = default!;
-
     [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
 
-    private bool IsByGroupView { get; set; } = true;
-
     private decimal TotalSpending => CategoryUsages.Sum(c => c.Amount);
+    private object ChartOptions => GetChartOptions(IsByGroupView);
 
+    private bool IsByGroupView { get; set; } = true;
     private const int MaxResults = 6;
-
-    private string? TextColour => ThemeUtilities.GetTextColour(UserState.Theme);
-
-    protected override void OnInitialized()
-    {
-        UserState.OnThemeChange += StateHasChanged;
-    }
 
     private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryUsages => CategoryUsages
         .OrderByDescending(c => c.Amount)
@@ -81,7 +71,7 @@
                 orient = "horizontal",
                 bottom = "30",
                 left = "center",
-                textStyle = new { color = TextColour },
+                textStyle = new { color = ThemeUtilities.ThemePlaceholder },
             },
             title = new
             {
@@ -90,7 +80,7 @@
                 top = "50%",
                 textAlign = "center",
                 textVerticalAlign = "middle",
-                textStyle = new { fontSize = 20, fontWeight = "bold", color = TextColour },
+                textStyle = new { fontSize = 20, fontWeight = "bold", color = ThemeUtilities.ThemePlaceholder },
             },
             series = new[]
             {
@@ -128,7 +118,7 @@
     else
     {
         <div class="chart">
-            <HxEChart Options="@GetChartOptions(IsByGroupView)" AutoResize="true" @key="UserState.Theme" />
+            <Chart Options="@ChartOptions" />
         </div>
     }
 </div>

@@ -1,6 +1,5 @@
 ﻿@implements IAsyncDisposable
 @inject IJSRuntime JS
-@inject UserState UserState
 
 @code {
     [Parameter] public object? Options { get; set; }
@@ -9,26 +8,28 @@
     [Parameter] public EventCallback<string?> OnItemClick { get; set; }
     [JSInvokable] public Task NotifyChartClicked(string? key) => OnItemClick.InvokeAsync(key);
 
-    private string? TextColour => ThemeUtilities.GetTextColour(UserState.Theme);
     private object? ColouredOptions => ReplaceColourPlaceholder(Options);
 
     private ElementReference _wrapper;
     private IJSObjectReference? _module;
     private DotNetObjectReference<Chart>? _dotNetRef;
-
-    protected override void OnInitialized()
-    {
-        UserState.OnThemeChange += StateHasChanged;
-    }
+    private string? _textColour;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!OnItemClick.HasDelegate || ColouredOptions is null) return;
+        if (OnItemClick.HasDelegate && ColouredOptions is not null)
+        {
 
-        _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
-        _dotNetRef ??= DotNetObjectReference.Create(this);
+            _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
+            _dotNetRef ??= DotNetObjectReference.Create(this);
 
-        await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
+            await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
+        }
+        if (firstRender)
+        {
+            _textColour = await ThemeUtilities.GetTextColour(JS);
+            StateHasChanged();
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -40,10 +41,10 @@
 
     private object? ReplaceColourPlaceholder(object? options)
     {
-        if (options is null || TextColour is null) return options;
+        if (options is null || _textColour is null) return options;
 
         var json = JsonSerializer.Serialize(options);
-        json = json.Replace("\"" + ThemeUtilities.ThemePlaceholder + "\"", JsonSerializer.Serialize(TextColour));
+        json = json.Replace("\"" + ThemeUtilities.ThemePlaceholder + "\"", JsonSerializer.Serialize(_textColour));
         return JsonSerializer.Deserialize<object>(json);
     }
 }

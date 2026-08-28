@@ -1,6 +1,5 @@
 namespace FinanceManager.WebApp.Utilities;
 
-using FinanceManager.Application.Common;
 using FinanceManager.Application.Enums;
 using Microsoft.JSInterop;
 
@@ -9,21 +8,25 @@ public class ThemeUtilities
     public const string ThemePlaceholder = "ThemePlaceholder";
     private const string DarkString = "dark";
     private const string LightString = "light";
+    private const string SystemString = "system";
 
-    public static async Task UpdateTheme(ColourTheme preferred, IJSRuntime js, UserState userState)
+    public static async Task UpdateTheme(ColourTheme theme, IJSRuntime js)
     {
-        var systemString = await js.InvokeAsync<string>(JsCommands.GetSystemTheme);
-        var system = systemString == DarkString ? ColourTheme.Dark : ColourTheme.Light;
+        var themeString = theme switch
+        {
+            ColourTheme.Light => LightString,
+            ColourTheme.Dark => DarkString,
+            ColourTheme.System => SystemString,
+            _ => throw new ArgumentOutOfRangeException(nameof(theme), theme, null)
+        };
 
-        var mode = preferred == ColourTheme.System ? system : preferred;
-
-        await js.InvokeVoidAsync(JsCommands.SetTheme, mode == ColourTheme.Dark ? DarkString : LightString);
-        userState.UpdateTheme(mode);
+        await js.InvokeVoidAsync(JsCommands.SetTheme, themeString);
     }
 
-    public static string GetTextColour(ColourTheme? colourMode)
+    public static async Task<string> GetTextColour(IJSRuntime js)
     {
-        return colourMode == ColourTheme.Dark ? "#d8d8d8" : "#000000";
+        var effectiveTheme = await js.InvokeAsync<string>(JsCommands.GetEffectiveTheme);
+        return effectiveTheme == DarkString ? "#d8d8d8" : "#000000";
     }
 
     public static string GetColourModeDescription(ColourTheme colourMode)
