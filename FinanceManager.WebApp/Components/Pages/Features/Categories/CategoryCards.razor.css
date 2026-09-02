@@ -6,8 +6,8 @@
 .category-cards-grid {
     display: grid;
     width: 100%;
-    margin-bottom: 1rem;
-    gap: 1rem;
+    margin-bottom: var(--space-medium);
+    gap: var(--space-medium);
     grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 

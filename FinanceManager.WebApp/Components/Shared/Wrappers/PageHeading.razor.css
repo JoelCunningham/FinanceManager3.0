@@ -1,23 +1,77 @@
-﻿.page-subheading {
-    display: flex;
-    flex-wrap: wrap;
+﻿.heading-wrapper {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "heading actions"
+        "subheading actions";
+    align-items: center;
+    grid-row-gap: var(--space-small);
+    margin-bottom: var(--space-large);
+
+    .page-heading {
+        margin: 0;
+        grid-area: heading;
+        font-size: var(--fontsize-heading);
+        font-weight: var(--fontweight-black);
+        color: var(--colour-heading);
+    }
+
+    .page-subheading {
+        grid-area: subheading;
+        display: flex;
+        flex-wrap: wrap;
+        font-size: var(--fontsize-subheading);
+        color: var(--colour-textmuted);
+        gap: var(--space-medium);
+
+        p {
+            margin: 0;
+            margin-right: auto;
+        }
+
+        .parts.dot ::deep span {
+            text-wrap-mode: nowrap;
+        }
+
+        .parts.dot ::deep > *:not(:last-child)::after {
+            content: "·";
+            margin: 0 0.2rem 0 0.5rem;
+        }
+
+        .parts.linebreak ::deep > * {
+            display: block;
+        }
+
+            .parts.linebreak ::deep > *:not(:first-child) {
+                margin-top: var(--space-small);
+            }
+    }
 
     .actions {
+        grid-area: actions;
         display: flex;
+        flex-wrap: wrap;
         gap: var(--space-small);
         align-items: center;
+        margin-left: auto;
     }
+}
 
-    .parts.dot ::deep > *:not(:last-child)::after {
-        content: "·";
-        margin: 0 0.2rem 0 0.5rem;
+@media (max-width: 1400px) and (min-width: 768px) {
+    .heading-wrapper {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "heading"
+            "subheading"
+            "actions";
     }
+}
 
-    .parts.linebreak ::deep > * {
-        display: block;
+@media (max-width: 768px) {
+    .heading-wrapper {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "heading actions"
+            "subheading subheading";
     }
-
-        .parts.linebreak ::deep > *:not(:first-child) {
-            margin-top: var(--space-small);
-        }
 }

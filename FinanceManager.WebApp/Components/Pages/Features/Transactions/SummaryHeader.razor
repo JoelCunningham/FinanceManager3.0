@@ -25,16 +25,18 @@
     <h4>Summary @Year</h4>
 
     <div class="actions">
-        <BudgetActions EntryTypeFilter="EntryTypeFilter"
-                       EntryTypeFilterChanged="EntryTypeFilterChanged"
-                       HasPopulatedCategories="HasPopulatedCategories"
-                       EntryTypeFilters="EntryTypeFilters"
-                       HideEmptyCategories="HideEmptyCategories"
-                       HideEmptyCategoriesChanged="HideEmptyCategoriesChanged"
-                       CurrentRange="CurrentRange"
-                       Ranges="Ranges"
-                       OnRangeSelected="OnRangeSelected"
-                       OnEditYear="OnEditYear"
-                       OnCreateYear="OnCreateYear" />
+        <ResposiveDropdown DropdownText="Options">
+            <BudgetActions EntryTypeFilter="EntryTypeFilter"
+                           EntryTypeFilterChanged="EntryTypeFilterChanged"
+                           HasPopulatedCategories="HasPopulatedCategories"
+                           EntryTypeFilters="EntryTypeFilters"
+                           HideEmptyCategories="HideEmptyCategories"
+                           HideEmptyCategoriesChanged="HideEmptyCategoriesChanged"
+                           CurrentRange="CurrentRange"
+                           Ranges="Ranges"
+                           OnRangeSelected="OnRangeSelected"
+                           OnEditYear="OnEditYear"
+                           OnCreateYear="OnCreateYear" />
+        </ResposiveDropdown>
     </div>
 </div>

@@ -2,7 +2,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-medium);
-    margin: var(--space-medium) 0;
+    margin: var(--space-medium) 0 0 0;
 }
 
 .cards ::deep > * {

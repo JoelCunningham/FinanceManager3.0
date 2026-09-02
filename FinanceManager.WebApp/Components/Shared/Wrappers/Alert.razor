@@ -39,10 +39,12 @@
 }
 
 <HxAlert Color="GetThemeColor()">
-    <HxIcon Icon="@GetIcon()" />
-    <p>@ChildContent</p>
-    @if (ActionUrl is not null && ActionText is not null)
-    {
-        <a href="@ActionUrl">@ActionText<HxIcon Icon="BootstrapIcon.ArrowRight" CssClass="ps-2" /></a>
-    }
+    <div class="alert-wrapper">
+        <HxIcon Icon="@GetIcon()" CssClass="alert-icon" />
+        <p class="alert-message">@ChildContent</p>
+        @if (ActionUrl is not null && ActionText is not null)
+        {
+            <a class="alert-action" href="@ActionUrl">@ActionText<HxIcon Icon="BootstrapIcon.ArrowRight" CssClass="ps-2" /></a>
+        }
+    </div>
 </HxAlert>

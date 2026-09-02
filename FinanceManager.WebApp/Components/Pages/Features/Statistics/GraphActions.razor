@@ -3,9 +3,6 @@
     [Parameter] public ChartModel Chart { get; set; } = default!;
 
     [Parameter] public RenderFragment? MainSelect { get; set; }
-
-    [Parameter] public RenderFragment? Dropdowns { get; set; }
-
     [Parameter] public IReadOnlyList<TransactionsGraphMode> Modes { get; set; } = [];
 
     [Parameter] public EventCallback OnReset { get; set; }
@@ -18,36 +15,28 @@
 }
 
 <div class="graph-actions">
-    @MainSelect
+    <ResposiveDropdown DropdownText="Options">
+        @MainSelect
 
-    <HxSelect Value="Chart.Mode"
-              ValueChanged="OnModeChangedAsync"
-              ValueExpression="() => Chart.Mode"
-              Data="Modes"
-              TItem="TransactionsGraphMode"
-              TValue="TransactionsGraphMode"
-              Nullable="false"
-              AutoSort="false"
-              Enabled="!Chart.IsCategoryLevel"
-              TextSelector="m => m.ToString()"
-              ValueSelector="m => m" />
+        <HxSelect Value="Chart.Mode"
+                  ValueChanged="OnModeChangedAsync"
+                  ValueExpression="() => Chart.Mode"
+                  Data="Modes"
+                  TItem="TransactionsGraphMode"
+                  TValue="TransactionsGraphMode"
+                  Nullable="false"
+                  AutoSort="false"
+                  Enabled="!Chart.IsCategoryLevel"
+                  TextSelector="m => m.ToString()"
+                  ValueSelector="m => m" />
 
-    <HxButton Text="Reset" OnClick="OnReset" CssClass="reset" />
+        <HxButton Text="Reset" OnClick="OnReset" CssClass="reset" />
 
-    @if (Chart.IsCategoryLevel)
-    {
-        <div>
-            <HxButton Text="Back to areas" Icon="BootstrapIcon.ArrowLeft" OnClick="Chart.ClearDrilldownAsync" />
-        </div>
-    }
-
-    @if (Dropdowns is not null)
-    {
-        <HxDropdownButtonGroup>
-            <HxDropdownToggleButton Color="ThemeColor.Primary">Options</HxDropdownToggleButton>
-            <HxDropdownContent CssClass="px-4 py-3">
-                @Dropdowns
-            </HxDropdownContent>
-        </HxDropdownButtonGroup>
-    }
+        @if (Chart.IsCategoryLevel)
+        {
+            <div>
+                <HxButton Text="Back to areas" Icon="BootstrapIcon.ArrowLeft" OnClick="Chart.ClearDrilldownAsync" />
+            </div>
+        }
+    </ResposiveDropdown>
 </div>

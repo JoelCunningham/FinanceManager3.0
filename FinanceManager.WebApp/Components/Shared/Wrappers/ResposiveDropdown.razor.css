@@ -1,0 +1,18 @@
+﻿.responsive-dropdown {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+}
+
+.content {
+    gap: var(--space-small);
+    align-items: center;
+}
+
+::deep .dropdown-menu.show {
+    width: calc(100% - 2rem + 1px);
+}
+
+::deep .form-check {
+    margin: var(--space-small) var(--space-medium);
+}

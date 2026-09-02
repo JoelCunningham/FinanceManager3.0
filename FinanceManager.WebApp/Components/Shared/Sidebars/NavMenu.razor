@@ -12,14 +12,9 @@
     }
 }
 
-﻿<HxSidebar CssClass="nav-sidebar">
+<HxSidebar CssClass="nav-sidebar">
     <HeaderTemplate>
         <SidebarBrand />
-        <AuthorizeView Context="auth">
-            <Authorized>
-                <UserCard UserName="@UserState.Name" />
-            </Authorized>
-        </AuthorizeView>
     </HeaderTemplate>
     <ItemsTemplate>
         <HxSidebarItem Text="Dashboard" Href="@Pages.Dashboard" Icon="BootstrapIcon.Speedometer2" Match="NavLinkMatch.All" />
@@ -29,8 +24,10 @@
         <HxSidebarItem Text="Review" Href="@Pages.Review" Icon="BootstrapIcon.ClipboardCheck" />
         <HxSidebarItem Text="Categories" Href="@Pages.Categories" Icon="BootstrapIcon.Tags" />
         <HxSidebarItem Text="Import" Href="@Pages.Import" Icon="BootstrapIcon.FileEarmarkArrowUp" />
+            <HxSidebarItem Text="Settings" Href="@Pages.Settings" Icon="BootstrapIcon.Gear" />
+
     </ItemsTemplate>
     <FooterTemplate>
-        <HxSidebarFooter Text="Settings" Href="@Pages.Settings" Icon="BootstrapIcon.Gear" TextCssClass="@(context.SidebarCollapsed ? "d-md-none" : null)" />
+        <HxSidebarFooter Text="Logout" Href="@Pages.Logout" Icon="BootstrapIcon.BoxArrowRight" />
     </FooterTemplate>
 </HxSidebar>

@@ -5,3 +5,28 @@
     padding: 0;
     margin-left: calc(var(--space-tiny) * -1);
 }
+
+.list-layout ::deep .card .hx-button.btn-light {
+    background-color: var(--colour-secondary) !important;
+    color: var(--colour-textwhite) !important;
+    width: 50%;
+
+    i::after {
+        font-weight: var(--fontweight-bold) !important;
+        margin-right: var(--space-small);
+    }
+}
+
+
+.list-layout ::deep .responsive-dropdown {
+    display: inline-flex;
+    width: 100%;
+}
+
+    .list-layout ::deep .responsive-dropdown .dropdown-group {
+        width: 100%;
+    }
+
+        .list-layout ::deep .responsive-dropdown .dropdown-group button {
+            width: 100%;
+        }

@@ -23,8 +23,10 @@
         </SearchTemplate>
 
         <CommandsTemplate>
-            <HxButton CssClass="clear-button" Text="Clear filters" Color="ThemeColor.None" OnClick="Data.HandleFilterCleared" />
-            @AdditionalCommands
+            <ResposiveDropdown DropdownText="Options">
+                <HxButton CssClass="clear-button" Text="Clear filters" Color="ThemeColor.None" OnClick="Data.HandleFilterCleared" />
+                @AdditionalCommands
+            </ResposiveDropdown>
         </CommandsTemplate>
 
         <FilterTemplate Context="query">

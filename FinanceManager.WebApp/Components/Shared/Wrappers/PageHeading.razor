@@ -15,18 +15,25 @@
     }
 }
 
-<h1 class="@("page-heading " + (Centred ? "text-center" : ""))">@Heading</h1>
-<div class="page-subheading">
-    @if (Subheading is not null)
-    {
-        <p>@Subheading</p>
-    }
-    @if (SubheadingParts is not null)
-    {
-        <p class="@("parts " + Seperator.ToString().ToLowerInvariant())">@SubheadingParts</p>
-    }
+<div class="heading-wrapper">
+    <h1 class="@("page-heading " + (Centred ? "text-center" : ""))">@Heading</h1>
+    <div class="page-subheading">
+        @if (Subheading is not null)
+        {
+            <p>@Subheading</p>
+        }
+        @if (SubheadingParts is not null)
+        {
+            <p class="@("parts " + Seperator.ToString().ToLowerInvariant())">@SubheadingParts</p>
+        }
+    </div>
     <div class="actions">
-        @Actions
+        @if (Actions is not null)
+        {
+            <ResposiveDropdown Icon="BootstrapIcon.ThreeDotsVertical">
+                @Actions
+            </ResposiveDropdown>
+        }
     </div>
 </div>
 

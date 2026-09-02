@@ -126,3 +126,22 @@
 input[type="checkbox"] {
     cursor: pointer;
 }
+
+body {
+    padding-right: 0 !important;
+}
+
+@media (max-width: 768px) {
+    .hx-list-layout .card .card-body .hx-list-layout-header {
+        grid-template-areas: "title" "search" "buttons";
+        grid-template-columns: auto;
+
+        .hx-list-layout-header-buttons {
+            flex-wrap: wrap;
+
+            button {
+                margin: 0;
+            }
+        }
+    }
+}

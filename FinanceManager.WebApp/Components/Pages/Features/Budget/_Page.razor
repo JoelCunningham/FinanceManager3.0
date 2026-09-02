@@ -48,9 +48,9 @@
                  OnDelete="DeleteBudget"
                  OnCancel="CancelBudget" />
 
-<BudgetCellModal @ref="BudgetCellModal" 
-    Cell="CurrentCell" 
-    Column="CurrentColumn"
-    OnBudgetEdit="EditEntry"
-    OnEntryCreate="args => CreateEntry(args.Item1, args.Item2)"
-    OnClose="CloseCellModal"/>
+<BudgetCellModal @ref="BudgetCellModal"
+                 Cell="CurrentCell"
+                 Column="CurrentColumn"
+                 OnBudgetEdit="EditEntry"
+                 OnEntryCreate="args => CreateEntry(args.Item1, args.Item2)"
+                 OnClose="CloseCellModal" />

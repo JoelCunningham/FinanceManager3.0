@@ -1,7 +1,35 @@
-﻿p {
-    margin: 0;
+﻿.alert-wrapper {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "icon message action";
+    align-items: center;
+    width: 100%;
+
+    .alert-icon {
+        grid-area: icon;
+        margin-right: var(--space-small);
+    }
+
+    .alert-message {
+        grid-area: message;
+        margin: 0;
+    }
+
+    .alert-action {
+        grid-area: action;
+        justify-self: end;
+    }
 }
 
-a {
-    margin-left: auto;
+@media (max-width: 768px) {
+    .alert-wrapper {
+        grid-template-columns: auto;
+        grid-template-areas:
+            "message"
+            "action";
+
+        .alert-icon {
+            display: none;
+        }
+    }
 }

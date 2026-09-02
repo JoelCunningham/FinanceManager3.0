@@ -5,13 +5,15 @@
     [Parameter] public BootstrapIcon Icon { get; set; } = default!;
 }
 
-﻿<HxSidebar CssClass="auth-sidebar" Collapsed="false">
+<HxSidebar CssClass="auth-sidebar" Collapsed="false">
     <HeaderTemplate>
         <SidebarBrand />
+    </HeaderTemplate>
+    <ItemsTemplate>
         <h2>@Title1</h2>
         <h2>@Title2</h2>
         <p>@Subtitle</p>
-    </HeaderTemplate>
+    </ItemsTemplate>
     <FooterTemplate>
         <HxIcon Icon="Icon" />
     </FooterTemplate>

@@ -31,6 +31,7 @@
     --colour-text: #000000;
     --colour-textmuted: #65728a;
     --colour-textwhite: #ffffff;
+    --colour-textblack: #000000;
     --colour-heading: #13294b;
     --colour-sidebar: #a5adba;
     /**/
@@ -108,6 +109,23 @@
     --shadow-info: 0 0 0 0.25rem rgba(102, 211, 224, 0.25);
 }
 
+@media (max-width: 768px) {
+    :root {
+        --space-extralarge: 1rem;
+        --space-large: 1rem;
+        --space-medium: 0.75rem;
+        --space-small: 0.25rem;
+    }
+
+    main {
+        min-height: calc(100vh - 72px);
+    }
+
+    .hx-sidebar .hx-sidebar-footer button.dropdown-toggle {
+        padding: var(--hx-sidebar-item-padding) !important;
+    }
+}
+
 /* Main */
 main {
     padding: var(--space-extralarge) !important;
@@ -163,27 +181,6 @@ main {
         }
     }
 
-    .page-heading {
-        font-size: var(--fontsize-heading);
-        font-weight: var(--fontweight-black);
-        color: var(--colour-heading);
-        margin-bottom: var(--space-medium);
-    }
-
-    .page-subheading {
-        display: flex;
-        font-size: var(--fontsize-subheading);
-        color: var(--colour-textmuted);
-        margin-top: calc(var(--space-medium) * -1);
-        margin-bottom: var(--space-medium);
-        min-height: 2rem;
-
-        p {
-            margin: 0;
-            margin-right: auto;
-        }
-    }
-
     .bold-primary {
         font-weight: var(--fontweight-semibold);
         color: var(--colour-neutral);
@@ -219,17 +216,14 @@ main {
     position: sticky;
     top: 0;
     background-color: var(--colour-primary) !important;
+    z-index: 2;
 
     &.auth-sidebar {
-        flex-basis: 420px !important;
-        color: var(--colour-textwhite) !important;
-        padding: var(--space-medium);
-
-        .hx-sidebar-header {
-            gap: 0 !important;
-            align-items: flex-start !important;
+        .hx-sidebar-body {
+            margin-top: var(--space-medium);
 
             h2 {
+                color: var(--colour-textwhite) !important;
                 font-weight: var(--fontweight-black);
                 margin: 0;
             }
@@ -238,10 +232,6 @@ main {
                 color: var(--colour-textmuted);
                 font-size: var(--fontsize-accent);
                 margin-top: var(--space-medium);
-            }
-
-            .hx-sidebar-brand {
-                margin-bottom: var(--space-extralarge);
             }
         }
 
@@ -257,7 +247,6 @@ main {
     }
 
     .hx-sidebar-header {
-        flex-direction: column;
         gap: var(--space-medium) !important;
 
         .hx-sidebar-brand {
@@ -277,9 +266,30 @@ main {
     }
 
     .hx-sidebar-footer,
-    .hx-sidebar-footer > div {
+    .hx-sidebar-footer > div,
+    .hx-sidebar-footer .dropdown-menu.show {
         width: 100%;
     }
+
+        .hx-sidebar-footer .dropdown-toggle {
+            background-color: transparent !important;
+            border: none !important;
+            color: var(--colour-sidebar);
+            gap: var(--hx-sidebar-item-content-gap) !important;
+            width: 100% !important;
+            justify-content: flex-start !important;
+            padding: var(--space-small) !important;
+
+            &:hover {
+                color: var(--colour-textwhite) !important;
+                background-color: var(--colour-accent) !important;
+                border: none !important;
+            }
+
+            &:after {
+                display: none;
+            }
+        }
 
     a.nav-link {
         font-weight: var(--fontweight-semibold);
@@ -684,16 +694,6 @@ input[inputmode=search] {
     }
 }
 
-.hx-list-layout .card .hx-button.btn-light {
-    background-color: var(--colour-card) !important;
-    border: 1px solid var(--colour-border) !important;
-    color: var(--colour-text) !important;
-
-    i::after {
-        margin-right: var(--space-small);
-    }
-}
-
 .hx-grid-container.grid-invisible {
     .hx-grid.table {
         background-color: transparent;
@@ -798,4 +798,9 @@ form {
         background-color: var(--colour-border);
         border-color: var(--colour-border);
     }
+}
+
+.dropdown-item.active, .dropdown-item:focus {
+    color: var(--colour-textblack) !important;
+    background-color: var(--colour-sidebar) !important;
 }
