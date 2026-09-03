@@ -1,27 +1,40 @@
 namespace FinanceManager.Application.UseCases.Categories;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 
-public sealed record GetCategoryGraphResult(
-    IReadOnlyDictionary<CategorySummary, IReadOnlyList<decimal>> ActualSeries,
-    IReadOnlyDictionary<CategorySummary, IReadOnlyList<decimal>> BudgetSeries
-) : UseCaseResult;
+public sealed record GetCategoryGraphResult(object[] Series) : UseCaseResult;
 
 public sealed class GetCategoryGraph(ChartHelper chartHelper)
 {
-    public async Task<GetCategoryGraphResult> ExecuteAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods)
+    public async Task<GetCategoryGraphResult> ExecuteAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, CategoryChartMode mode, bool isIncome)
     {
-        var transactions = new Dictionary<CategorySummary, IReadOnlyList<decimal>>();
-        var budgetSeries = new Dictionary<CategorySummary, IReadOnlyList<decimal>>();
+        var serieses = new List<object>();
 
         foreach (var category in categories)
         {
-            transactions.Add(category, await chartHelper.GetTransactionsPerPeriod(category, periods));
-            budgetSeries.Add(category, await chartHelper.GetBudgetsPerPeriod(category, periods));
+            var budgetSeries = await chartHelper.GetBudgetsPerPeriod(category, periods);
+            var transactionSeries = await chartHelper.GetTransactionsPerPeriod(category, periods);
+
+            if (mode != CategoryChartMode.Budget && mode != CategoryChartMode.Variance)
+            {
+                var series = ChartSeries.LineSeries(category.Name, category.Colour, transactionSeries.Select(b => isIncome ? b : -b));
+                serieses.AddRange(series.ToEChartsSeries());
+            }
+            if (mode != CategoryChartMode.Actual && mode != CategoryChartMode.Variance)
+            {
+                var series = ChartSeries.LineDashedSeries(category.Name, category.Colour, budgetSeries);
+                serieses.AddRange(series.ToEChartsSeries());
+            }
+            if (mode == CategoryChartMode.Variance)
+            {
+                var series = ChartSeries.LineSeries(category.Name, category.Colour, transactionSeries.Zip(budgetSeries, (t, b) => isIncome ? t - b : b - t));
+                serieses.AddRange(series.ToEChartsSeries());
+            }
         }
 
-        return new GetCategoryGraphResult(transactions, budgetSeries);
+        return new GetCategoryGraphResult([.. serieses]);
     }
 }

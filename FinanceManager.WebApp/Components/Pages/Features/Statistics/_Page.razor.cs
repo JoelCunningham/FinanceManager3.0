@@ -17,9 +17,6 @@ public partial class _Page : MainPageBase
 
     private UserStatus UserStatus { get; set; }
 
-    private Func<IEnumerable<ScopedPeriod>, Guid?, TransactionChartMode, Task<GetChart1DataResult>> GetChart1Data => UseCases.GetChart1DataAsync;
-    private Func<IEnumerable<ScopedPeriod>, Guid?, TransactionChartMode, Task<GetChart2DataResult>> GetChart2Data => UseCases.GetChart2DataAsync;
-
     protected override async Task OnInitializedAsync()
     {
         UserStatus = (await UseCases.GetUserStatusAsync()).Status;

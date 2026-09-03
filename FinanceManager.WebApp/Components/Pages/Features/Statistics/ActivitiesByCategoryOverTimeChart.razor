@@ -1,9 +1,7 @@
-﻿@using FinanceManager.Application.UseCases.Statistics
-
+﻿@using FinanceManager.Application.UseCases
+@inject UseCases UseCases
 @code
 {
-    [Parameter] public Func<IEnumerable<ScopedPeriod>, Guid?, TransactionChartMode, Task<GetChart1DataResult>> GetData { get; set; } = default!;
-
     [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
     [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
     [Parameter] public IEnumerable<CategoryGroupSummary> CategoryGroups { get; set; } = [];
@@ -39,7 +37,7 @@
         var isCategoryDrilldown = Chart.SelectedGroupId is not null;
         var (groupIdByName, drilldownGroupName, _) = ChartHelper.BuildGroupDrilldownMeta(Chart.SelectedGroupId, CategoryGroups);
 
-        var chartData = await GetData(Chart.Range, Chart.SelectedGroupId, Chart.Mode);
+        var chartData = await UseCases.GetChart1DataAsync(Chart.Range, Chart.SelectedGroupId, Chart.Mode);
         var transactions = ChartHelper.ApplyGroupFilter(chartData.Transactions, Chart.SelectedGroupId, t => t.Category?.GroupId);
 
         if (transactions.Count == 0 && chartData.BudgetSeries == null && chartData.IncomeBudgetSeries == null && chartData.ExpenseBudgetSeries == null) return;

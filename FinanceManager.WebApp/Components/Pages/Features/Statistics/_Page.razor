@@ -15,13 +15,13 @@ else
     <TabPanel @bind-ActiveTabId="ActiveTabId" Page="@Pages.Statistics">
         <HxTab Title="Spend by category" Id="@Tabs.Chart1.ToString()">
             <Content>
-                <ActivitiesByCategoryChart Periods="Periods.OrderByDescending(p => p.StartDate)" GetData="GetChart2Data" CategoryGroups="CategoryGroups" />
+                <ActivitiesByCategoryChart Periods="Periods.OrderByDescending(p => p.StartDate)" CategoryGroups="CategoryGroups" />
             </Content>
         </HxTab>
 
         <HxTab Title="Spend over time" Id="@Tabs.Chart2.ToString()">
             <Content>
-                <ActivitiesByCategoryOverTimeChart Periods="Periods.OrderByDescending(p => p.StartDate)" GetData="GetChart1Data" CategoryGroups="CategoryGroups" Categories="Categories" />
+                <ActivitiesByCategoryOverTimeChart Periods="Periods.OrderByDescending(p => p.StartDate)" CategoryGroups="CategoryGroups" Categories="Categories" />
             </Content>
         </HxTab>
     </TabPanel>
