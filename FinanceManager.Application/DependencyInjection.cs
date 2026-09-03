@@ -26,7 +26,7 @@ public static class DependencyInjection
         // Categories use cases
         services.AddScoped<DeleteCategory>();
         services.AddScoped<DeleteCategoryGroup>();
-        services.AddScoped<GetCategoryGraph>();
+        services.AddScoped<GetCategoryChart>();
         services.AddScoped<GetCategoryGroups>();
         services.AddScoped<GetCategories>();
         services.AddScoped<GetCategoryGroupDetails>();

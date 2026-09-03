@@ -5,11 +5,11 @@ using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 
-public sealed record GetCategoryGraphResult(object[] Series) : UseCaseResult;
+public sealed record GetCategoryChartResult(object[] Series) : UseCaseResult;
 
-public sealed class GetCategoryGraph(ChartHelper chartHelper)
+public sealed class GetCategoryChart(ChartHelper chartHelper)
 {
-    public async Task<GetCategoryGraphResult> ExecuteAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, CategoryChartMode mode, bool isIncome)
+    public async Task<GetCategoryChartResult> ExecuteAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, CategoryChartMode mode, bool isIncome)
     {
         var serieses = new List<object>();
 
@@ -35,6 +35,6 @@ public sealed class GetCategoryGraph(ChartHelper chartHelper)
             }
         }
 
-        return new GetCategoryGraphResult([.. serieses]);
+        return new GetCategoryChartResult([.. serieses]);
     }
 }

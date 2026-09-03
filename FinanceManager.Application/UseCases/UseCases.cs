@@ -28,7 +28,7 @@ public class UseCases(
     GetAvailablePeriods getAvailablePeriods,
     GetBudgetYears getBudgetYears,
     GetCategories getCategories,
-    GetCategoryGraph getCategoryGraph,
+    GetCategoryChart getCategoryChart,
     GetCategoryGroupDetails getCategoryGroupDetails,
     GetCategoryGroups getCategoryGroups,
     GetChart1Data getChart1Data,
@@ -79,7 +79,7 @@ public class UseCases(
     public Task<GetAvailablePeriodsResult> GetAvailablePeriodsAsync(Guid? categoryGroupId = null, bool allowFuture = false) => getAvailablePeriods.ExecuteAsync(categoryGroupId, allowFuture);
     public Task<GetBudgetYearsResult> GetBudgetYearsAsync() => getBudgetYears.ExecuteAsync();
     public Task<GetCategoriesResult> GetCategoriesAsync() => getCategories.ExecuteAsync();
-    public Task<GetCategoryGraphResult> GetCategoryGraphAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, CategoryChartMode mode, bool isIncome) => getCategoryGraph.ExecuteAsync(categories, periods, mode, isIncome);
+    public Task<GetCategoryChartResult> GetCategoryChartAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, CategoryChartMode mode, bool isIncome) => getCategoryChart.ExecuteAsync(categories, periods, mode, isIncome);
     public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(string groupName, ScopedPeriod period) => getCategoryGroupDetails.ExecuteAsync(groupName, period);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroups.ExecuteAsync();
     public Task<GetChart1DataResult> GetChart1DataAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionChartMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);

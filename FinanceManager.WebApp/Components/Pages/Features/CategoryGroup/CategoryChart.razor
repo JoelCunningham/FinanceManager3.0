@@ -1,6 +1,5 @@
 ﻿@using FinanceManager.Application.UseCases
 @inject UseCases UseCases
-@inject NavigationManager NavigationManager
 
 @code
 {
@@ -11,9 +10,14 @@
     [Parameter] public BudgetScope Scope { get; set; }
 
     private ChartModel Chart { get; set; } = default!;
+    private CategoryChartMode Mode = CategoryChartMode.ActualAndBudget;
 
-    private CategoryChartMode CurrentGraphMode = CategoryChartMode.ActualAndBudget;
-    private IEnumerable<CategoryChartMode> SupportedGraphModes = [CategoryChartMode.Actual, CategoryChartMode.Budget, CategoryChartMode.ActualAndBudget, CategoryChartMode.Variance];
+    private static readonly IEnumerable<CategoryChartMode> SupportedModes = [
+        CategoryChartMode.Actual, 
+        CategoryChartMode.Budget, 
+        CategoryChartMode.ActualAndBudget, 
+        CategoryChartMode.Variance
+    ];
 
     private IEnumerable<CategorySummary> SelectedCategories = [];
 
@@ -26,9 +30,7 @@
         if (Categories.Any())
         {
             Periods = (await UseCases.GetAvailablePeriodsAsync(Group.Id, true)).Periods;
-            var correctedLength = Math.Min(Length, Periods.Count());
-
-            StartPeriod = Periods.ElementAt(correctedLength - 1);
+            StartPeriod = Periods.ElementAt(Math.Min(Length, Periods.Count()) - 1);
             EndPeriod = Periods.First();
 
             SelectedCategories = Categories;
@@ -48,7 +50,7 @@
 
     private async Task ReloadChart()
     {
-        var result = await UseCases.GetCategoryGraphAsync(SelectedCategories, Chart.Range, CurrentGraphMode, Group.IsIncome);
+        var result = await UseCases.GetCategoryChartAsync(SelectedCategories, Chart.Range, Mode, Group.IsIncome);
         var labels = Chart.Range.Select(p => p.StartDate.ToString("yyyy-MM")).ToArray();
         var title = $"{Group.Name} categories actual vs budget for {Chart.Range.First().StartDate:MMM yyyy} - {Chart.Range.Last().EndDate:MMM yyyy}";
 
@@ -72,7 +74,7 @@
 
     private async Task OnModeChangedAsync(CategoryChartMode newMode)
     {
-        CurrentGraphMode = newMode;
+        Mode = newMode;
         await ReloadChart();
     }
 
@@ -128,12 +130,12 @@ else
 {
     <div class="chart-wrapper">
         <div class="actions">
-            <HxSelect Value="CurrentGraphMode"
+            <HxSelect Value="Mode"
                       ValueChanged="OnModeChangedAsync"
-                      ValueExpression="() => CurrentGraphMode"
+                      ValueExpression="() => Mode"
                       TItem="CategoryChartMode"
                       TValue="CategoryChartMode"
-                      Data="SupportedGraphModes"
+                      Data="SupportedModes"
                       Nullable="false"
                       AutoSort="false"
                       TextSelector="f => GetModeDescription(f)"
