@@ -1,7 +1,8 @@
 ﻿.graph-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: var(--space-small);
+    margin-bottom: var(--space-small);
 
     .dropdown {
         display: flex;
@@ -23,5 +24,4 @@
     border: none !important;
     color: var(--colour-textmuted);
     padding: 0;
-    margin-left: calc(var(--space-tiny) * -1);
 }

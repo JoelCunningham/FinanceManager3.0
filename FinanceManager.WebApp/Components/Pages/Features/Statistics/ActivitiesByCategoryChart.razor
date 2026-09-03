@@ -1,0 +1,177 @@
+﻿@using FinanceManager.Application.UseCases.Statistics
+
+@code
+{
+    [Parameter] public Func<IEnumerable<ScopedPeriod>, Guid?, TransactionChartMode, Task<GetChart2DataResult>> GetData { get; set; } = default!;
+
+    [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
+    [Parameter] public IEnumerable<CategoryGroupSummary> CategoryGroups { get; set; } = [];
+
+    private ChartModel Chart { get; set; } = default!;
+
+    private int CurrentPeriod => Periods.ToList().IndexOf(Chart.Range.FirstOrDefault()!);
+
+    private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
+
+    private static readonly TransactionChartMode[] SupportedModes =
+    [
+        TransactionChartMode.Expense,
+        TransactionChartMode.Income
+    ];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Chart = new([Periods.First()], ReloadChart);
+        await Chart.RefreshAsync();
+    }
+
+    private async Task ReloadChart()
+    {
+        Chart.Options = null;
+
+        var drilldownGroupId = Chart.SelectedGroupId;
+        var (groupIdByName, drilldownGroupName, _) = ChartHelper.BuildGroupDrilldownMeta(drilldownGroupId, CategoryGroups);
+
+        var chartData = await GetData(Chart.Range, drilldownGroupId, Chart.Mode);
+        var transactions = ChartHelper.ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
+        var actualTotals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var t in transactions)
+        {
+            if (!ChartHelper.IsTransactionInMode(t, Chart.Mode, excludeNet: true)) continue;
+
+            var name = ChartHelper.GetCategoryOrGroupLabel(t, drilldownGroupId is not null);
+            var amount = ChartHelper.GetChartSortAmount(t, Chart.Mode);
+
+            actualTotals[name] = actualTotals.TryGetValue(name, out var current)
+                ? current + amount
+                : amount;
+        }
+
+        var rows = actualTotals.Keys
+            .Union(chartData.BudgetTotals.Keys, StringComparer.OrdinalIgnoreCase)
+            .Select(name => new
+            {
+                Name = name,
+                Actual = actualTotals.GetValueOrDefault(name),
+                Budget = Math.Round(chartData.BudgetTotals.GetValueOrDefault(name), 2)
+            })
+            .Where(x => x.Actual != 0m || x.Budget != 0m)
+            .OrderByDescending(x => x.Actual)
+            .ThenByDescending(x => x.Budget)
+            .ToList();
+
+        if (rows.Count == 0) return;
+
+        var labels = rows.Select(r => r.Name).ToArray();
+
+        var drilldownKeys = rows
+            .Select(r =>
+            {
+                if (drilldownGroupId is not null) return null;
+                return groupIdByName.TryGetValue(r.Name, out var id) ? id.ToString() : null;
+            })
+            .ToArray();
+
+        var isIncome = Chart.Mode == TransactionChartMode.Income;
+
+        var baseValues = rows.Select(r => (double)Math.Min(r.Actual, r.Budget)).ToArray();
+        var remainingValues = rows.Select(r => (double)Math.Max(r.Budget - r.Actual, 0m)).ToArray();
+        var overValues = rows.Select(r => (double)Math.Max(r.Actual - r.Budget, 0m)).ToArray();
+
+        object[] BuildSeriesData(double[] values) => [.. values.Select((v, i) => new { value = v, key = drilldownKeys[i] })];
+
+        var modeText = Chart.Mode == TransactionChartMode.Income ? "incomes" : "expenses";
+        var levelText = drilldownGroupName is null ? "by area" : "for " + drilldownGroupName + " categories";
+
+        var baseLabel = isIncome ? "Earned within budget" : "Spent within budget";
+        var remainingLabel = isIncome ? "Remaining budget" : "Remaining budget";
+        var overLabel = isIncome ? "Above budget" : "Over budget";
+
+        var baseColor = "#126b76";
+        var remainingColor = isIncome ? "#a81e2e" : "#15723f";
+        var overColor = isIncome ? "#15723f" : "#a81e2e";
+
+        Chart.Title = $"{LanguageUtilities.Capitalise(modeText)} vs budget {levelText}";
+        Chart.Options = new
+        {
+            tooltip = new { trigger = "axis", axisPointer = new { type = "shadow" } },
+            legend = new { type = "scroll", textStyle = new { color = ThemeUtilities.ThemePlaceholder } },
+            grid = new { left = "3%", right = "4%", bottom = "10%", containLabel = true },
+            xAxis = new
+            {
+                type = "category",
+                data = labels,
+                axisLabel = new
+                {
+                    interval = 0,
+                    rotate = rows.Count > 6 ? 35 : 0,
+                    color = ThemeUtilities.ThemePlaceholder,
+                }
+            },
+            yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
+            series = new object[]
+            {
+                new
+                {
+                    name = baseLabel,
+                    type = "bar",
+                    stack = "total",
+                    emphasis = new { focus = "series" },
+                    itemStyle = new { color = baseColor },
+                    data = BuildSeriesData(baseValues)
+                },
+                new
+                {
+                    name = remainingLabel,
+                    type = "bar",
+                    stack = "total",
+                    emphasis = new { focus = "series" },
+                    itemStyle = new { color = remainingColor },
+                    data = BuildSeriesData(remainingValues)
+                },
+                new
+                {
+                    name = overLabel,
+                    type = "bar",
+                    stack = "total",
+                    emphasis = new { focus = "series" },
+                    itemStyle = new { color = overColor },
+                    data = BuildSeriesData(overValues)
+                }
+            }
+        };
+    }
+
+    private async Task OnPeriodChangedAsync(int index)
+    {
+        var period = Periods.ElementAt(index);
+        Chart.SetRange(ChartModel.GetPeriodsInRange(Periods, period, period));
+        await Chart.RefreshAsync();
+    }
+
+    private async Task OnModeChangedAsync(TransactionChartMode mode)
+    {
+        Chart.Mode = mode;
+        await Chart.RefreshAsync();
+    }
+
+    private async Task OnResetAsync()
+    {
+        Chart.ResetRange();
+        await Chart.RefreshAsync();
+    }
+}
+
+<div class="chart-wrapper">
+    <div class="actions">
+        <ChartActions Mode="Chart.Mode" IsCategoryLevel="Chart.IsCategoryLevel" Modes="SupportedModes" OnReset="OnResetAsync" OnModeChanged="OnModeChangedAsync" OnBackToAreas="Chart.ClearDrilldownAsync">
+            <MainSelect>
+                <PeriodNav Periods="Periods.Select((p, i) => (i, p.PeriodDescription))"
+                           CurrentPeriod="CurrentPeriod"
+                           CurrentPeriodChanged="OnPeriodChangedAsync" />
+            </MainSelect>
+        </ChartActions>
+    </div>
+    <Chart Options="Chart.Options" Title="@Chart.Title" OnItemClick="Chart.OnDrilldownClickAsync" />
+</div>

@@ -1,6 +1,6 @@
 ﻿namespace FinanceManager.Application.Enums;
 
-public enum TransactionsGraphMode
+public enum TransactionChartMode
 {
     Expense,
     Income,

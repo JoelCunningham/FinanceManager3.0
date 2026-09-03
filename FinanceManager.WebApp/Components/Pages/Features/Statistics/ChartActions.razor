@@ -1,0 +1,39 @@
+﻿@code
+{
+    [Parameter] public bool IsCategoryLevel { get; set; }
+    [Parameter] public TransactionChartMode Mode { get; set; }
+
+    [Parameter] public RenderFragment? MainSelect { get; set; }
+    [Parameter] public IReadOnlyList<TransactionChartMode> Modes { get; set; } = [];
+
+    [Parameter] public EventCallback OnReset { get; set; }
+    [Parameter] public EventCallback<TransactionChartMode> OnModeChanged { get; set; }
+    [Parameter] public EventCallback OnBackToAreas { get; set; }
+}
+
+<div class="graph-actions">
+    <ResposiveDropdown DropdownText="Options">
+        @MainSelect
+
+        <HxSelect Value="Mode"
+                  ValueChanged="OnModeChanged"
+                  ValueExpression="() => Mode"
+                  Data="Modes"
+                  TItem="TransactionChartMode"
+                  TValue="TransactionChartMode"
+                  Nullable="false"
+                  AutoSort="false"
+                  Enabled="!IsCategoryLevel"
+                  TextSelector="m => m.ToString()"
+                  ValueSelector="m => m" />
+
+        <HxButton Text="Reset" OnClick="OnReset" CssClass="reset" />
+
+        @if (IsCategoryLevel)
+        {
+            <div>
+                <HxButton Text="Back to areas" Icon="BootstrapIcon.ArrowLeft" OnClick="OnBackToAreas" />
+            </div>
+        }
+    </ResposiveDropdown>
+</div>

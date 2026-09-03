@@ -10,7 +10,7 @@ public sealed class ChartModel(IEnumerable<ScopedPeriod> range, Func<Task> refre
     public IEnumerable<ScopedPeriod> InitialRange { get; set; } = range;
     public string? Title { get; set; }
 
-    public TransactionsGraphMode Mode { get; set; } = TransactionsGraphMode.Expense;
+    public TransactionChartMode Mode { get; set; } = TransactionChartMode.Expense;
     public Func<Task> RefreshAsync { get; set; } = refreshAsync;
 
     public Guid? SelectedGroupId { get; set; }

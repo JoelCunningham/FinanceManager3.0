@@ -19,7 +19,7 @@ public sealed record GetChart1DataResult(
 
 public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCategoryList, ITransactionRepository transactionRepository)
 {
-    public async Task<GetChart1DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionsGraphMode mode)
+    public async Task<GetChart1DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionChartMode mode)
     {
         var query = new FilterQuery
         {
@@ -44,7 +44,7 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
         IEnumerable<decimal> budgetIncomeSeriesData = [];
         IEnumerable<decimal> budgetExpenseSeriesData = [];
 
-        if (mode == TransactionsGraphMode.Net)
+        if (mode == TransactionChartMode.Net)
         {
             if (drilldownGroupId is null || incomeCategories.Count != 0)
             {
@@ -63,10 +63,10 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
         }
         else
         {
-            var relevantCategories = mode == TransactionsGraphMode.Income ? incomeCategories : expenseCategories;
+            var relevantCategories = mode == TransactionChartMode.Income ? incomeCategories : expenseCategories;
             foreach (var category in relevantCategories)
             {
-                budgetSeriesData = budgetSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, mode == TransactionsGraphMode.Expense));
+                budgetSeriesData = budgetSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, mode == TransactionChartMode.Expense));
             }
         }
 

@@ -16,7 +16,7 @@ public sealed record GetChart2DataResult(
 
 public sealed class GetChart2Data(ChartHelper transactionHelper, GetBudgetScopes getBudgetScopes, GetCategories getCategoryList, ITransactionRepository transactionRepository)
 {
-    public async Task<GetChart2DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionsGraphMode mode)
+    public async Task<GetChart2DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, TransactionChartMode mode)
     {
         var query = new FilterQuery
         {
@@ -28,7 +28,7 @@ public sealed class GetChart2Data(ChartHelper transactionHelper, GetBudgetScopes
         var transactions = (await transactionRepository.GetTransactionsAsync(query)).Select(TransactionSummary.FromTransaction).ToList();
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
 
-        var relevantCategories = mode == TransactionsGraphMode.Income
+        var relevantCategories = mode == TransactionChartMode.Income
             ? [.. categories.Where(c => c.IsIncome)]
             : categories.Where(c => !c.IsIncome).ToList();
 

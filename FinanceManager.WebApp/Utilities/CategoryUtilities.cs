@@ -1,5 +1,6 @@
 namespace FinanceManager.WebApp.Utilities;
 
+using FinanceManager.Application.Constants;
 using FinanceManager.Application.DTOs;
 using Havit.Blazor.Components.Web.Bootstrap;
 using System.Drawing;
@@ -9,7 +10,7 @@ public class CategoryUtilities
 {
     public static string GetCategoryName(TransactionSummary transaction)
     {
-        return transaction.Category?.Name ?? "Uncategorised";
+        return transaction.Category?.Name ?? CategoryConstants.UncategorisedName;
     }
 
     public static string GetCategoryFullName(TransactionSummary transaction)
@@ -20,7 +21,7 @@ public class CategoryUtilities
     public static string GetCategoryFullName(CategorySummary? category)
     {
         return category is null
-            ? "Uncategorised"
+            ? CategoryConstants.UncategorisedName
             : $"{category.GroupName} - {category.Name}";
     }
 
