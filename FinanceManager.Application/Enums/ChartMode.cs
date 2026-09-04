@@ -1,7 +1,11 @@
 ﻿namespace FinanceManager.Application.Enums;
 
-public enum CategoryChartMode
+public enum ChartMode
 {
+    Expense,
+    Income,
+    IncomeAndExpense,
+    Net,
     Actual,
     Budget,
     ActualAndBudget,

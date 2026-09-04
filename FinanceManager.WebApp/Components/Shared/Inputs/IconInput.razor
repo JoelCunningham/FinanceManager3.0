@@ -53,7 +53,7 @@
     ];
 }
 
-<PickerInput @bind-Value="Value" Label="@Label" Options="IconOptions">
+<PickerInput @bind-Value="Value" @bind-Value:after="() => ValueChanged.InvokeAsync(Value)" Label="@Label" Options="IconOptions">
     <SelectedPreview Context="icon">
         <HxIcon Icon="@CategoryUtilities.GetCategroyGroupIcon(icon)" />
     </SelectedPreview>

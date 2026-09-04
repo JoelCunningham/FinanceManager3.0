@@ -1,14 +1,17 @@
 ﻿@code
 {
-    [Parameter] public bool IsCategoryLevel { get; set; }
-    [Parameter] public TransactionChartMode Mode { get; set; }
-
     [Parameter] public RenderFragment? MainSelect { get; set; }
-    [Parameter] public IReadOnlyList<TransactionChartMode> Modes { get; set; } = [];
+
+    [Parameter] public ChartMode Mode { get; set; }
+    [Parameter] public EventCallback<ChartMode> ModeChanged { get; set; }
+
+    [Parameter] public IEnumerable<ChartMode> AvailableModes { get; set; } = [];
+    [Parameter] public required Func<ChartMode, string> GetModeDescription { get; set; }
 
     [Parameter] public EventCallback OnReset { get; set; }
-    [Parameter] public EventCallback<TransactionChartMode> OnModeChanged { get; set; }
     [Parameter] public EventCallback OnBackToAreas { get; set; }
+
+    [Parameter] public bool IsDrilldown { get; set; }
 }
 
 <div class="chart-actions">
@@ -16,20 +19,20 @@
         @MainSelect
 
         <HxSelect Value="Mode"
-                  ValueChanged="OnModeChanged"
+                  ValueChanged="ModeChanged"
                   ValueExpression="() => Mode"
-                  Data="Modes"
-                  TItem="TransactionChartMode"
-                  TValue="TransactionChartMode"
+                  Data="AvailableModes"
+                  TItem="ChartMode"
+                  TValue="ChartMode"
                   Nullable="false"
                   AutoSort="false"
-                  Enabled="!IsCategoryLevel"
-                  TextSelector="m => m.ToString()"
+                  Enabled="!IsDrilldown"
+                  TextSelector="m => GetModeDescription.Invoke(m)"
                   ValueSelector="m => m" />
 
         <HxButton Text="Reset" OnClick="OnReset" CssClass="reset" />
 
-        @if (IsCategoryLevel)
+        @if (IsDrilldown)
         {
             <div>
                 <HxButton Text="Back to areas" Icon="BootstrapIcon.ArrowLeft" OnClick="OnBackToAreas" />

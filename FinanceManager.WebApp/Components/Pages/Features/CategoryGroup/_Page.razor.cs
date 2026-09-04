@@ -32,7 +32,6 @@ public partial class _Page : MainPageBase
 
     private IEnumerable<ScopedPeriod> AvailablePeriods { get; set; } = [];
     private int CurrentPeriodIndex { get; set; } = 0;
-    private BudgetScope TodayScope => AvailablePeriods.FirstOrDefault(p => p.Includes(DateOnly.FromDateTime(DateTime.Today)))?.Scope ?? BudgetScope.Monthly;
 
     protected override async Task OnInitializedAsync()
     {

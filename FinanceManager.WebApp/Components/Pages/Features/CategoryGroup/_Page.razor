@@ -12,8 +12,7 @@
 </PageHeading>
 
 <CategoryGroupPanel Group="Group"
-                    TodayScope="TodayScope"
-                    Ranges="AvailablePeriods.Select((p, i) => (i, p.PeriodDescription))"
+                    Periods="AvailablePeriods"
                     CurrentRange="CurrentPeriodIndex"
                     OnRangeSelected="SetCurrentPeriod"
                     OnCategoryClicked="OpenTransactionsModal"

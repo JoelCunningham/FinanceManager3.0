@@ -1,0 +1,45 @@
+﻿@using FinanceManager.Application.UseCases
+@inject UseCases UseCases
+
+@code
+{
+    [Parameter] public string Title { get; set; } = default!;
+    [Parameter] public ChartSeries Data { get; set; } = default!;
+
+    private ChartModel Chart { get; set; } = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Chart = new([], [], 1, ReloadChart);
+        await Chart.RefreshAsync();
+    }
+
+    private async Task ReloadChart()
+    {
+        Chart.Options = new
+        {
+            tooltip = new { show = false, trigger = "item", formatter = "{b}: {d}%" },
+            legend = new
+            {
+                orient = "horizontal",
+                bottom = "30",
+                left = "center",
+                textStyle = new { color = ThemeUtilities.ThemePlaceholder },
+            },
+            title = new
+            {
+                text = Title,
+                left = "49.5%",
+                top = "50%",
+                textAlign = "center",
+                textVerticalAlign = "middle",
+                textStyle = new { fontSize = 20, fontWeight = "bold", color = ThemeUtilities.ThemePlaceholder },
+            },
+            series = Data.ToEChartsSeries()
+        };
+    }
+}
+
+<div class="chart-wrapper">
+    <Chart Options="Chart.Options" Title="@Chart.Title" OnItemClick="Chart.OnDrilldownClickAsync" />
+</div>

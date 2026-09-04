@@ -104,14 +104,12 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
         return groupId is Guid id ? [.. items.Where(x => groupIdSelector(x) == id)] : [.. items];
     }
 
-    public static bool IsTransactionInMode(TransactionSummary t, TransactionChartMode mode, bool excludeNet)
+    public static bool IsTransactionInMode(TransactionSummary t, ChartMode mode)
     {
-        if (excludeNet && mode == TransactionChartMode.Net) return false;
-
         return mode switch
         {
-            TransactionChartMode.Income => t.Amount > 0m,
-            TransactionChartMode.Expense => t.Amount < 0m,
+            ChartMode.Income => t.Amount > 0m,
+            ChartMode.Expense => t.Amount < 0m,
             _ => true
         };
     }
@@ -128,13 +126,13 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
         return string.IsNullOrWhiteSpace(groupName) ? CategoryConstants.UncategorisedName : groupName;
     }
 
-    public static decimal GetChartSortAmount(TransactionSummary t, TransactionChartMode mode)
+    public static decimal GetChartSortAmount(TransactionSummary t, ChartMode mode)
     {
         return Math.Abs(GetChartStackAmount(t, mode));
     }
 
-    public static decimal GetChartStackAmount(TransactionSummary t, TransactionChartMode mode)
+    public static decimal GetChartStackAmount(TransactionSummary t, ChartMode mode)
     {
-        return mode == TransactionChartMode.Expense ? Math.Abs(t.Amount) : t.Amount;
+        return mode == ChartMode.Expense ? Math.Abs(t.Amount) : t.Amount;
     }
 }

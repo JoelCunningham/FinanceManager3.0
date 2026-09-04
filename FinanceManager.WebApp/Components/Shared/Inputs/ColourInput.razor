@@ -24,7 +24,7 @@
     ];
 }
 
-<PickerInput @bind-Value="Value" Label="@Label" Options="ColourOptions">
+<PickerInput @bind-Value="Value" @bind-Value:after="() => ValueChanged.InvokeAsync(Value)" Label="@Label" Options="ColourOptions">
     <SelectedPreview Context="colour">
         <span class="colour-button" style="background-color: @colour;" />
     </SelectedPreview>

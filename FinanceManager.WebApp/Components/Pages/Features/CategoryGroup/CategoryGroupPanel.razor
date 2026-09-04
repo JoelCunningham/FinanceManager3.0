@@ -1,10 +1,9 @@
 @code {
     [Parameter] public CategoryGroupDetails Group { get; set; } = default!;
-    [Parameter] public BudgetScope TodayScope { get; set; }
+    [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
 
     [Parameter] public int CurrentRange { get; set; }
     [Parameter] public EventCallback<int> OnRangeSelected { get; set; }
-    [Parameter] public IEnumerable<(int Index, string Name)> Ranges { get; set; } = [];
 
     [Parameter] public EventCallback<CategoryPeriodDetails> OnCategoryClicked { get; set; }
     [Parameter] public EventCallback<CategoryPeriodDetails> OnCategoryEdit { get; set; }
@@ -43,7 +42,7 @@
                         Amount="@Group.Categories.Sum(c => c.SignedPeriodTotal)"
                         Budget="Group.Categories.Sum(c => c.PeriodBudget)" />
 
-        <PeriodNav CurrentPeriod="CurrentRange" CurrentPeriodChanged="OnRangeSelected" Periods="Ranges" />
+        <PeriodNav CurrentPeriod="CurrentRange" CurrentPeriodChanged="OnRangeSelected" Periods="Periods.Select((p, i) => (i, p.PeriodDescription))" />
     </div>
 
     <HxGrid @ref="Grid"
@@ -101,5 +100,5 @@
         </Columns>
     </HxGrid>
 
-    <CategoryChart @ref="Chart" Group="Group" Categories="Group.Categories" Length="12" Scope="TodayScope" />
+    <CategoryChart @ref="Chart" CategoryGroup="Group" Periods="Periods" />
 </div>

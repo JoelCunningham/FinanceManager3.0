@@ -1,5 +1,6 @@
 ﻿@using FinanceManager.Application.UseCases
 @inject UseCases UseCases
+
 @code
 {
     [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
@@ -8,25 +9,9 @@
 
     private ChartModel Chart { get; set; } = default!;
 
-    private int CurrentPeriod => Periods.ToList().IndexOf(Chart.Range.First());
-    private int StartPeriod => Periods.ToList().IndexOf(Chart.Range.First());
-    private int EndPeriod => Periods.ToList().IndexOf(Chart.Range.Last());
-
-    private static readonly TransactionChartMode[] SupportedModes =
-    [
-        TransactionChartMode.Expense,
-        TransactionChartMode.Income,
-        TransactionChartMode.Net
-    ];
-
     protected override async Task OnParametersSetAsync()
     {
-        var thisYearPeriods = Periods
-            .Where(p => p.StartDate.Year == DateOnly.FromDateTime(DateTime.Today).Year)
-            .OrderBy(p => p.StartDate)
-            .ToList();
-
-        Chart = new(thisYearPeriods, ReloadChart);
+        Chart = new(Periods, [ChartMode.Expense, ChartMode.Income, ChartMode.IncomeAndExpense], null, ReloadChart);
         await Chart.RefreshAsync();
     }
 
@@ -34,11 +19,11 @@
     {
         Chart.Options = null;
 
-        var isCategoryDrilldown = Chart.SelectedGroupId is not null;
-        var (groupIdByName, drilldownGroupName, _) = ChartHelper.BuildGroupDrilldownMeta(Chart.SelectedGroupId, CategoryGroups);
+        var isCategoryDrilldown = Chart.DrilldownId is not null;
+        var (groupIdByName, drilldownGroupName, _) = ChartHelper.BuildGroupDrilldownMeta(Chart.DrilldownId, CategoryGroups);
 
-        var chartData = await UseCases.GetChart1DataAsync(Chart.Range, Chart.SelectedGroupId, Chart.Mode);
-        var transactions = ChartHelper.ApplyGroupFilter(chartData.Transactions, Chart.SelectedGroupId, t => t.Category?.GroupId);
+        var chartData = await UseCases.GetChart1DataAsync(Chart.Range, Chart.DrilldownId, Chart.Mode);
+        var transactions = ChartHelper.ApplyGroupFilter(chartData.Transactions, Chart.DrilldownId, t => t.Category?.GroupId);
 
         if (transactions.Count == 0 && chartData.BudgetSeries == null && chartData.IncomeBudgetSeries == null && chartData.ExpenseBudgetSeries == null) return;
 
@@ -51,7 +36,7 @@
             {
                 continue;
             }
-            if (!ChartHelper.IsTransactionInMode(transaction, Chart.Mode, false)) continue;
+            if (!ChartHelper.IsTransactionInMode(transaction, Chart.Mode)) continue;
 
             var category = ChartHelper.GetCategoryOrGroupLabel(transaction, isCategoryDrilldown);
             var sortAmount = ChartHelper.GetChartSortAmount(transaction, Chart.Mode);
@@ -73,7 +58,7 @@
         var months = Chart.Range.ToList();
         foreach (var t in transactions)
         {
-            if (!ChartHelper.IsTransactionInMode(t, Chart.Mode, excludeNet: false)) continue;
+            if (!ChartHelper.IsTransactionInMode(t, Chart.Mode)) continue;
 
             var month = months.FirstOrDefault(m => m.Includes(DateOnly.FromDateTime(t.Date)));
             var monthIndex = months.IndexOf(month!);
@@ -117,7 +102,7 @@
         var incomeBudgetName = groupBudgetPrefix is null ? "Budget (Income)" : $"{groupBudgetPrefix} Budget";
         var expenseBudgetName = groupBudgetPrefix is null ? "Budget (Expense)" : $"{groupBudgetPrefix} Budget";
 
-        if (Chart.Mode == TransactionChartMode.Net)
+        if (Chart.Mode == ChartMode.IncomeAndExpense)
         {
             if (chartData.IncomeBudgetSeries is not null && chartData.IncomeBudgetSeries.Count() == Chart.Range.Count())
             {
@@ -141,9 +126,9 @@
 
         Chart.Title = (Chart.Mode, isCategoryDrilldown) switch
         {
-            (TransactionChartMode.Expense, false) => $"Expenses by area over time",
-            (TransactionChartMode.Income, false) => $"Income by area over time",
-            (TransactionChartMode.Net, false) => $"Net by area over time",
+            (ChartMode.Expense, false) => $"Expenses by area over time",
+            (ChartMode.Income, false) => $"Income by area over time",
+            (ChartMode.IncomeAndExpense, false) => $"Income and Expenses by area over time",
             (_, true) => $"{drilldownGroupName ?? "Group"} by category",
             _ => "Transactions"
         };
@@ -157,35 +142,17 @@
             series
         };
     }
-
-    private async Task OnPeriodChangedAsync(int startIndex, int endIndex)
-    {
-        Chart.SetRange(ChartModel.GetPeriodsInRange(Periods, Periods.ElementAt(startIndex), Periods.ElementAt(endIndex)));
-        await Chart.RefreshAsync();
-    }
-
-    private async Task OnModeChangedAsync(TransactionChartMode mode)
-    {
-        Chart.Mode = mode;
-        await Chart.RefreshAsync();
-    }
-
-    private async Task OnResetAsync()
-    {
-        Chart.ResetRange();
-        await Chart.RefreshAsync();
-    }
 }
 
 <div class="chart-wrapper">
     <div class="actions">
-        <ChartActions Mode="Chart.Mode" IsCategoryLevel="Chart.IsCategoryLevel" Modes="SupportedModes" OnReset="OnResetAsync" OnModeChanged="OnModeChangedAsync" OnBackToAreas="Chart.ClearDrilldownAsync">
+        <ChartActions Mode="Chart.Mode" ModeChanged="Chart.SetModeAsync" AvailableModes="Chart.AvailableModes" IsDrilldown="Chart.DrilldownId is not null" OnReset="Chart.ResetChartAsync" OnBackToAreas="Chart.ClearDrilldownAsync" GetModeDescription="Chart.GetModeDescription">
             <MainSelect>
-                <RangeSelect StartPeriod="StartPeriod"
-                             StartPeriodChanged="p => OnPeriodChangedAsync(p, EndPeriod)"
-                             EndPeriod="EndPeriod"
-                             EndPeriodChanged="p => OnPeriodChangedAsync(StartPeriod, p)"
-                             Periods="Periods" />
+                <RangeSelect StartPeriod="Chart.RangeStart"
+                             StartPeriodChanged="Chart.SetRangeStartAsync"
+                             EndPeriod="Chart.RangeEnd"
+                             EndPeriodChanged="Chart.SetRangeEndAsync"
+                             Periods="Chart.Periods" />
             </MainSelect>
         </ChartActions>
     </div>

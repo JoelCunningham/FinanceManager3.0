@@ -99,7 +99,7 @@ public static class ScopeHelper
         };
     }
 
-    private static int GetIsoYear(DateOnly date)
+    public static int GetIsoYear(DateOnly date)
     {
         var year = date.Year;
         if (DateHelper.GetIsoWeek1(date.Year) > date)

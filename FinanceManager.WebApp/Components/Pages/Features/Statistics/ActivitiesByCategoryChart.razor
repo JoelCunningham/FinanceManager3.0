@@ -8,19 +8,9 @@
 
     private ChartModel Chart { get; set; } = default!;
 
-    private int CurrentPeriod => Periods.ToList().IndexOf(Chart.Range.FirstOrDefault()!);
-
-    private static readonly DateOnly Today = DateOnly.FromDateTime(DateTime.Today);
-
-    private static readonly TransactionChartMode[] SupportedModes =
-    [
-        TransactionChartMode.Expense,
-        TransactionChartMode.Income
-    ];
-
     protected override async Task OnParametersSetAsync()
     {
-        Chart = new([Periods.First()], ReloadChart);
+        Chart = new(Periods, [ChartMode.Expense, ChartMode.Income], 1, ReloadChart);
         await Chart.RefreshAsync();
     }
 
@@ -28,7 +18,7 @@
     {
         Chart.Options = null;
 
-        var drilldownGroupId = Chart.SelectedGroupId;
+        var drilldownGroupId = Chart.DrilldownId;
         var (groupIdByName, drilldownGroupName, _) = ChartHelper.BuildGroupDrilldownMeta(drilldownGroupId, CategoryGroups);
 
         var chartData = await UseCases.GetChart2DataAsync(Chart.Range, drilldownGroupId, Chart.Mode);
@@ -37,7 +27,7 @@
 
         foreach (var t in transactions)
         {
-            if (!ChartHelper.IsTransactionInMode(t, Chart.Mode, excludeNet: true)) continue;
+            if (Chart.Mode != ChartMode.IncomeAndExpense && !ChartHelper.IsTransactionInMode(t, Chart.Mode)) continue;
 
             var name = ChartHelper.GetCategoryOrGroupLabel(t, drilldownGroupId is not null);
             var amount = ChartHelper.GetChartSortAmount(t, Chart.Mode);
@@ -72,7 +62,7 @@
             })
             .ToArray();
 
-        var isIncome = Chart.Mode == TransactionChartMode.Income;
+        var isIncome = Chart.Mode == ChartMode.Income;
 
         var baseValues = rows.Select(r => (double)Math.Min(r.Actual, r.Budget)).ToArray();
         var remainingValues = rows.Select(r => (double)Math.Max(r.Budget - r.Actual, 0m)).ToArray();
@@ -80,7 +70,7 @@
 
         object[] BuildSeriesData(double[] values) => [.. values.Select((v, i) => new { value = v, key = drilldownKeys[i] })];
 
-        var modeText = Chart.Mode == TransactionChartMode.Income ? "incomes" : "expenses";
+        var modeText = Chart.Mode == ChartMode.Income ? "incomes" : "expenses";
         var levelText = drilldownGroupName is null ? "by area" : "for " + drilldownGroupName + " categories";
 
         var baseLabel = isIncome ? "Earned within budget" : "Spent within budget";
@@ -141,34 +131,15 @@
             }
         };
     }
-
-    private async Task OnPeriodChangedAsync(int index)
-    {
-        var period = Periods.ElementAt(index);
-        Chart.SetRange(ChartModel.GetPeriodsInRange(Periods, period, period));
-        await Chart.RefreshAsync();
-    }
-
-    private async Task OnModeChangedAsync(TransactionChartMode mode)
-    {
-        Chart.Mode = mode;
-        await Chart.RefreshAsync();
-    }
-
-    private async Task OnResetAsync()
-    {
-        Chart.ResetRange();
-        await Chart.RefreshAsync();
-    }
 }
 
 <div class="chart-wrapper">
     <div class="actions">
-        <ChartActions Mode="Chart.Mode" IsCategoryLevel="Chart.IsCategoryLevel" Modes="SupportedModes" OnReset="OnResetAsync" OnModeChanged="OnModeChangedAsync" OnBackToAreas="Chart.ClearDrilldownAsync">
+        <ChartActions Mode="Chart.Mode" ModeChanged="Chart.SetModeAsync" AvailableModes="Chart.AvailableModes" IsDrilldown="Chart.DrilldownId is not null" OnReset="Chart.ResetChartAsync" OnBackToAreas="Chart.ClearDrilldownAsync" GetModeDescription="Chart.GetModeDescription">
             <MainSelect>
                 <PeriodNav Periods="Periods.Select((p, i) => (i, p.PeriodDescription))"
-                           CurrentPeriod="CurrentPeriod"
-                           CurrentPeriodChanged="OnPeriodChangedAsync" />
+                           CurrentPeriod="Periods.ToList().IndexOf(Chart.Range.First())"
+                           CurrentPeriodChanged="Chart.SetRangeEndAsync" />
             </MainSelect>
         </ChartActions>
     </div>

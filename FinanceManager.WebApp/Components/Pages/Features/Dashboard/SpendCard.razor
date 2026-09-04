@@ -1,19 +1,22 @@
 ﻿@code {
     [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
 
-    private decimal TotalSpending => CategoryUsages.Sum(c => c.Amount);
-    private object ChartOptions => GetChartOptions(IsByGroupView);
-
     private bool IsByGroupView { get; set; } = true;
     private const int MaxResults = 6;
 
-    private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryUsages => CategoryUsages
-        .OrderByDescending(c => c.Amount)
-        .Take(MaxResults)
-        .Concat(GetOtherCategoryUsage())
-        .ToList();
+    private decimal TotalSpending => CategoryUsages.Sum(c => c.Amount);
+    private decimal GetAmountProportion(decimal amount) => TotalSpending == 0 ? 0 : amount / TotalSpending;
 
-    private IReadOnlyList<BudgetCategoryUsage> DisplayCategoryGroupUsages => CategoryUsages
+    private ChartSeries Data { get; set; } = default!;
+
+    private IReadOnlyList<(decimal value, string name)> DisplayCategoryUsages => CategoryUsages
+          .OrderByDescending(c => c.Amount)
+          .Take(MaxResults)
+          .Concat(GetOtherCategoryUsage())
+          .Select(c => (GetAmountProportion(c.Amount), c.Summary.Name == CategoryConstants.OtherName ? CategoryConstants.OtherName : c.Summary.Name))
+          .ToList();
+
+    private IReadOnlyList<(decimal value, string name)> DisplayCategoryGroupUsages => CategoryUsages
         .GroupBy(c => c.Summary.GroupName)
         .Select(g => new BudgetCategoryUsage
         {
@@ -29,15 +32,25 @@
         .OrderByDescending(c => c.Amount)
         .Take(MaxResults)
         .Concat(GetOtherCategoryUsage())
+        .Select(c => (GetAmountProportion(c.Amount), c.Summary.Name == CategoryConstants.OtherName ? CategoryConstants.OtherName : c.Summary.GroupName))
         .ToList();
 
+    protected override void OnParametersSet()
+    {
+        SetData();
+    }
 
     private void ToggleView()
     {
         IsByGroupView = !IsByGroupView;
+        SetData();
     }
 
-    private decimal GetAmountProportion(decimal amount) => TotalSpending == 0 ? 0 : amount / TotalSpending;
+    private void SetData()
+    {
+        var data = IsByGroupView ? DisplayCategoryGroupUsages : DisplayCategoryUsages;
+        Data = ChartSeries.PieSeries("Spending", data.ToDictionary(d => d.name, d => d.value), (35, 50), (50, 50));
+    }
 
     private IEnumerable<BudgetCategoryUsage> GetOtherCategoryUsage()
     {
@@ -52,8 +65,8 @@
         {
             Summary = new CategorySummary
             {
-                Name = "Other",
-                GroupName = "Other",
+                Name = CategoryConstants.OtherName,
+                GroupName = CategoryConstants.OtherName,
                 Colour = ""
             },
             Amount = otherAmount,
@@ -61,45 +74,6 @@
         }];
     }
 
-    private object GetChartOptions(bool isByGroupView)
-    {
-        var options = new
-        {
-            tooltip = new { show = false, trigger = "item", formatter = "{b}: {d}%" },
-            legend = new
-            {
-                orient = "horizontal",
-                bottom = "30",
-                left = "center",
-                textStyle = new { color = ThemeUtilities.ThemePlaceholder },
-            },
-            title = new
-            {
-                text = TotalSpending.ToString("C"),
-                left = "49.5%",
-                top = "50%",
-                textAlign = "center",
-                textVerticalAlign = "middle",
-                textStyle = new { fontSize = 20, fontWeight = "bold", color = ThemeUtilities.ThemePlaceholder },
-            },
-            series = new[]
-            {
-                new
-                {
-                    name = "Spending",
-                    type = "pie",
-                    radius = new List<string>() { "35%", "50%" },
-                    center = new List<string>() { "50%", "50%" },
-                    data = isByGroupView
-                        ? DisplayCategoryGroupUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.Summary.Name == "Other" ? "Other" : c.Summary.GroupName })
-                        : DisplayCategoryUsages.Select(c => new { value = GetAmountProportion(c.Amount), name = c.Summary.Name == "Other" ? "Other" : c.DisplayName }),
-                    label = new { show = false },
-                    silent = true,
-                }
-            },
-        };
-        return options;
-    }
 }
 
 <div class="card">
@@ -118,7 +92,7 @@
     else
     {
         <div class="chart">
-            <Chart Options="@ChartOptions" />
+            <SpendChart Title="@TotalSpending.ToString("C")" Data="Data" />
         </div>
     }
 </div>

@@ -3,56 +3,25 @@
 
 @code
 {
-    [Parameter] public CategoryGroupSummary Group { get; set; } = default!;
-    [Parameter] public IEnumerable<CategorySummary> Categories { get; set; } = [];
-
-    [Parameter] public int Length { get; set; }
-    [Parameter] public BudgetScope Scope { get; set; }
+    [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
+    [Parameter] public CategoryGroupDetails CategoryGroup { get; set; } = default!;
 
     private ChartModel Chart { get; set; } = default!;
-    private CategoryChartMode Mode = CategoryChartMode.ActualAndBudget;
-
-    private static readonly IEnumerable<CategoryChartMode> SupportedModes = [
-        CategoryChartMode.Actual, 
-        CategoryChartMode.Budget, 
-        CategoryChartMode.ActualAndBudget, 
-        CategoryChartMode.Variance
-    ];
-
     private IEnumerable<CategorySummary> SelectedCategories = [];
-
-    private ScopedPeriod StartPeriod = default!;
-    private ScopedPeriod EndPeriod = default!;
-    private IEnumerable<ScopedPeriod> Periods = [];
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Categories.Any())
-        {
-            Periods = (await UseCases.GetAvailablePeriodsAsync(Group.Id, true)).Periods;
-            StartPeriod = Periods.ElementAt(Math.Min(Length, Periods.Count()) - 1);
-            EndPeriod = Periods.First();
+        SelectedCategories = CategoryGroup.Categories;
 
-            SelectedCategories = Categories;
-
-            if (Chart is null) Chart = new ChartModel(ChartModel.GetPeriodsInRange(Periods, StartPeriod, EndPeriod), ReloadChart);
-            await ReloadChart();
-        }
-    }
-
-    public void SetRange(ScopedPeriod start, ScopedPeriod end)
-    {
-        StartPeriod = start;
-        EndPeriod = end;
-        Chart.Range = ChartModel.GetPeriodsInRange(Periods, StartPeriod, EndPeriod);
-        _ = ReloadChart();
+        if (Chart is null) Chart = new ChartModel(Periods, [ChartMode.ActualAndBudget, ChartMode.Actual, ChartMode.Budget, ChartMode.Variance], null, ReloadChart);
+        await Chart.RefreshAsync();
     }
 
     private async Task ReloadChart()
     {
-        var result = await UseCases.GetCategoryChartAsync(SelectedCategories, Chart.Range, Mode, Group.IsIncome);
+        var result = await UseCases.GetCategoryChartAsync(SelectedCategories, Chart.Range, Chart.Mode, CategoryGroup.IsIncome);
         var labels = Chart.Range.Select(p => p.StartDate.ToString("yyyy-MM")).ToArray();
-        var title = $"{Group.Name} categories actual vs budget for {Chart.Range.First().StartDate:MMM yyyy} - {Chart.Range.Last().EndDate:MMM yyyy}";
+        var title = $"{CategoryGroup.Name} categories actual vs budget for {Chart.Range.First().StartDate:MMM yyyy} - {Chart.Range.Last().EndDate:MMM yyyy}";
 
         Chart.Title = title;
         Chart.Options = new
@@ -60,7 +29,7 @@
             tooltip = new
             {
                 trigger = "axis",
-                valueFormatter = new HxEChart.JSFunc(@"function (value) {
+                formatter = new HxEChart.JSFunc(@"function (value) {
                     return '$' + Number(value).toFixed(2);
                 }"),
             },
@@ -69,24 +38,6 @@
             xAxis = new { type = "category", data = labels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
             yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
             series = result.Series
-        };
-    }
-
-    private async Task OnModeChangedAsync(CategoryChartMode newMode)
-    {
-        Mode = newMode;
-        await ReloadChart();
-    }
-
-    private string GetModeDescription(CategoryChartMode mode)
-    {
-        return mode switch
-        {
-            CategoryChartMode.Actual => "Actual",
-            CategoryChartMode.Budget => "Budget",
-            CategoryChartMode.ActualAndBudget => "Actual and Budget",
-            CategoryChartMode.Variance => "Variance",
-            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
     }
 
@@ -100,25 +51,11 @@
         {
             SelectedCategories = SelectedCategories.Append(category);
         }
-        await ReloadChart();
-    }
-
-    private async Task OnStartPeriodSelected(int index)
-    {
-        StartPeriod = Periods.ElementAt(index);
-        Chart.SetRange(ChartModel.GetPeriodsInRange(Periods, StartPeriod, EndPeriod));
-        await ReloadChart();
-    }
-
-    private async Task OnEndPeriodSelected(int index)
-    {
-        EndPeriod = Periods.ElementAt(index);
-        Chart.SetRange(ChartModel.GetPeriodsInRange(Periods, StartPeriod, EndPeriod));
-        await ReloadChart();
+        await Chart.RefreshAsync();
     }
 }
 
-@if (!Categories.Any())
+@if (!CategoryGroup.Categories.Any())
 {
     <div class="message">
         <Alert Level="Alert.AlertLevel.Info">
@@ -130,26 +67,26 @@ else
 {
     <div class="chart-wrapper">
         <div class="actions">
-            <HxSelect Value="Mode"
-                      ValueChanged="OnModeChangedAsync"
-                      ValueExpression="() => Mode"
-                      TItem="CategoryChartMode"
-                      TValue="CategoryChartMode"
-                      Data="SupportedModes"
+            <HxSelect Value="Chart.Mode"
+                      ValueChanged="m => Chart.SetModeAsync(m)"
+                      ValueExpression="() => Chart.Mode"
+                      TItem="ChartMode"
+                      TValue="ChartMode"
+                      Data="Chart.AvailableModes"
                       Nullable="false"
                       AutoSort="false"
-                      TextSelector="f => GetModeDescription(f)"
+                      TextSelector="f => Chart.GetModeDescription(f)"
                       ValueSelector="f => f"
                       CssClass="me-auto" />
 
-            <RangeSelect StartPeriod="Periods.ToList().IndexOf(StartPeriod)"
-                         StartPeriodChanged="OnStartPeriodSelected"
-                         EndPeriod="Periods.ToList().IndexOf(EndPeriod)"
-                         EndPeriodChanged="OnEndPeriodSelected"
-                         Periods="Periods" />
+            <RangeSelect StartPeriod="Chart.RangeStart"
+                         StartPeriodChanged="Chart.SetRangeStartAsync"
+                         EndPeriod="Chart.RangeEnd"
+                         EndPeriodChanged="Chart.SetRangeEndAsync"
+                         Periods="Chart.Periods" />
         </div>
         <div class="legend">
-            @foreach (var category in Categories)
+            @foreach (var category in CategoryGroup.Categories)
             {
                 <HxButton CssClass="legend-item" OnClick="@(() => ToggleCategory(category))">
                     <span class="legend-line" style="border-color: @category.Colour;" />
