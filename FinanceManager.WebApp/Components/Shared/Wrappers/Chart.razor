@@ -12,10 +12,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
-        _dotNetRef ??= DotNetObjectReference.Create(this);
-        await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
-
+        if (firstRender)
+        {
+            _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
+            _dotNetRef ??= DotNetObjectReference.Create(this);
+            await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
+        }
         ChartModel.Options.SetTextColor(await ThemeUtilities.GetTextColour(JS));
         StateHasChanged();
     }

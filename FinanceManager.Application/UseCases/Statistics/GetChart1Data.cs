@@ -22,7 +22,7 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
             .Where(c => drilldownGroupId is null || c.GroupId == drilldownGroupId)
             .ToList();
 
-        var transactionSerieses = await chartHelper.GetTransactionsPerCategoryAndPeriod(relevantCategories, range, mode == ChartMode.Expense, mode != ChartMode.IncomeAndExpense, drilldownGroupId is null);
+        var transactionSerieses = await chartHelper.GetTransactions(relevantCategories, range, mode == ChartMode.Expense, mode != ChartMode.IncomeAndExpense, drilldownGroupId is null);
         foreach (var transactionSeries in transactionSerieses)
         {
             var name = drilldownGroupId is null
@@ -42,17 +42,17 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
 
         if (mode == ChartMode.IncomeAndExpense)
         {
-            var incomeBudgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories.Where(c => c.IsIncome), range, false);
-            options.AddSeries(ChartSeries.LineSeries("Budget (Income)", "#15723f", incomeBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))));
+            var incomeBudgetSerieses = await chartHelper.GetBudgets(relevantCategories.Where(c => c.IsIncome), range, false);
+            options.AddSeries(ChartSeries.LineSeries("Budget (Income)", "#15723f", ChartHelper.FlattenSerieses(incomeBudgetSerieses)));
 
-            var expenseBudgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories.Where(c => !c.IsIncome), range, true);
-            options.AddSeries(ChartSeries.LineSeries("Budget (Expense)", "#a81e2e", expenseBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))));
+            var expenseBudgetSerieses = await chartHelper.GetBudgets(relevantCategories.Where(c => !c.IsIncome), range, true);
+            options.AddSeries(ChartSeries.LineSeries("Budget (Expense)", "#a81e2e", ChartHelper.FlattenSerieses(expenseBudgetSerieses)));
         }
         else
         {
             var budgetName = groupBudgetPrefix is null ? "Budget" : $"{groupBudgetPrefix} Budget";
-            var budgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories, range);
-            options.AddSeries(ChartSeries.LineSeries(budgetName, mode == ChartMode.Income ? "#15723f" : "#a81e2e", budgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))));
+            var budgetSerieses = await chartHelper.GetBudgets(relevantCategories, range);
+            options.AddSeries(ChartSeries.LineSeries(budgetName, mode == ChartMode.Income ? "#15723f" : "#a81e2e", ChartHelper.FlattenSerieses(budgetSerieses)));
         }
 
         options.SetLabels(range.Select(m => m.PeriodDescription));

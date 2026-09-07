@@ -49,6 +49,7 @@ public static class DependencyInjection
         // Statistics use cases
         services.AddScoped<GetChart1Data>();
         services.AddScoped<GetChart2Data>();
+        services.AddScoped<GetChart3Data>();
 
         // Dashboard use cases
         services.AddScoped<GetDashboardData>();

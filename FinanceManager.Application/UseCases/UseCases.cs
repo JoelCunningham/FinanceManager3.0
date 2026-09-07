@@ -33,6 +33,7 @@ public class UseCases(
     GetCategoryGroups getCategoryGroups,
     GetChart1Data getChart1Data,
     GetChart2Data getChart2Data,
+    GetChart3Data getChart3Data,
     GetDashboardData getDashboardData,
     GetPagedBudget getBudgetPage,
     GetPagedReview getPagedReview,
@@ -84,6 +85,7 @@ public class UseCases(
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroups.ExecuteAsync();
     public Task<GetChart1DataResult> GetChart1DataAsync(IEnumerable<ScopedPeriod> range, IEnumerable<CategoryGroupSummary> groups, Guid? drilldownGroupId, ChartMode mode) => getChart1Data.ExecuteAsync(range, groups, drilldownGroupId, mode);
     public Task<GetChart2DataResult> GetChart2DataAsync(IEnumerable<ScopedPeriod> range, IEnumerable<CategoryGroupSummary> groups, Guid? drilldownGroupId, ChartMode mode) => getChart2Data.ExecuteAsync(range, groups, drilldownGroupId, mode);
+    public Task<GetChart3DataResult> GetChart3DataAsync(IEnumerable<ScopedPeriod> range, ChartMode mode) => getChart3Data.ExecuteAsync(range, mode);
     public Task<GetDashboardDataResult> GetDashboardDataAsync(ScopedPeriod? period = null) => getDashboardData.ExecuteAsync(period);
     public Task<GetPagedBudgetResult> GetPagedBudgetAsync(int year, BudgetGridMode mode = BudgetGridMode.Net) => getBudgetPage.ExecuteAsync(year, mode);
     public Task<GetPagedReviewResult> GetPagedReviewAsync(FilterQuery query) => getPagedReview.ExecuteAsync(query);

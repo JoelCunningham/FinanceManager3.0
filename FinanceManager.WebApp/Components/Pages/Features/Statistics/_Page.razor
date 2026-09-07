@@ -19,9 +19,15 @@ else
             </Content>
         </HxTab>
 
-        <HxTab Title="Spend over time" Id="@Tabs.Chart2.ToString()">
+        <HxTab Title="Categories over time" Id="@Tabs.Chart2.ToString()">
             <Content>
                 <ActivitiesByCategoryOverTimeChart Periods="Periods.OrderByDescending(p => p.StartDate)" CategoryGroups="CategoryGroups" Categories="Categories" />
+            </Content>
+        </HxTab>
+
+        <HxTab Title="Activites over time" Id="@Tabs.Chart3.ToString()">
+            <Content>
+                <ActivitiesOverTimeChart Periods="Periods.OrderByDescending(p => p.StartDate)" />
             </Content>
         </HxTab>
     </TabPanel>

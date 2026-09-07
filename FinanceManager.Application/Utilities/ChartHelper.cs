@@ -7,7 +7,7 @@ using FinanceManager.Domain.Utilities;
 
 public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEntryRepository budgetEntryRepository)
 {
-    public async Task<Dictionary<Guid, IEnumerable<decimal>>> GetTransactionsPerCategoryAndPeriod(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, bool isExpense = false, bool strict = false, bool byGroup = false)
+    public async Task<Dictionary<Guid, IEnumerable<decimal>>> GetTransactions(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, bool isExpense = false, bool strict = false, bool byGroup = false)
     {
         var query = new FilterQuery
         {
@@ -31,7 +31,7 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
         ));
     }
 
-    public async Task<Dictionary<Guid, IEnumerable<decimal>>> GetBudgetsPerCategoryAndPeriod(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, bool isExpense = false, bool byGroup = false)
+    public async Task<Dictionary<Guid, IEnumerable<decimal>>> GetBudgets(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, bool isExpense = false, bool byGroup = false, bool isNet = false)
     {
         var categoryLookup = categories.ToDictionary(c => c.Id);
 
@@ -42,7 +42,26 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
 
         return budgetGroups.ToDictionary(group => group.Key, group => periods.Select(p => group.Value
             .SelectMany(b => BudgetYearHelper.GetOverlappingDays(b, p.StartDate, p.EndDate))
-            .Sum(d => isExpense ? -d.DailyAmount : d.DailyAmount))
+            .Sum(d => 
+                isExpense ? -d.DailyAmount : 
+                isNet ? 
+                    d.isExpense ? 
+                    -d.DailyAmount : d.DailyAmount :
+                d.DailyAmount))
         );
+    }
+
+    public static IEnumerable<decimal> FlattenSerieses(Dictionary<Guid, IEnumerable<decimal>> serieses)
+    {
+        return serieses.Values
+            .SelectMany((values, _) => values.Select((value, index) => (value, index)))
+            .GroupBy(x => x.index).OrderBy(g => g.Key)
+            .Select(g => g.Sum(x => x.value));
+    }
+
+    public static IEnumerable<decimal> CumulativeSeries(IEnumerable<decimal> series)
+    {
+        decimal cumulative = 0;
+        return series.Select(value => cumulative += value);
     }
 }

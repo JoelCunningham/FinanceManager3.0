@@ -43,7 +43,7 @@ public static class BudgetYearHelper
             var day = overlapStart;
             while (day <= overlapEnd)
             {
-                yield return new BudgetEntryDayAmount(day, period.DailyAmount);
+                yield return new BudgetEntryDayAmount(day, period.DailyAmount, !entry.Category.Group.IsIncome);
                 day = day.AddDays(1);
             }
         }
@@ -56,4 +56,4 @@ public static class BudgetYearHelper
 }
 
 public readonly record struct BudgetEntryPeriod(DateOnly StartDate, DateOnly EndDate, decimal DailyAmount);
-public readonly record struct BudgetEntryDayAmount(DateOnly Date, decimal DailyAmount);
+public readonly record struct BudgetEntryDayAmount(DateOnly Date, decimal DailyAmount, bool isExpense);

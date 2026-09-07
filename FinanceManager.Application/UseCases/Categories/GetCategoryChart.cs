@@ -13,8 +13,8 @@ public sealed class GetCategoryChart(ChartHelper chartHelper)
     {
         ChartOptions options = new(hideLegend: true);
 
-        var transactionSerieses = await chartHelper.GetTransactionsPerCategoryAndPeriod(categories, periods);
-        var budgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(categories, periods);
+        var transactionSerieses = await chartHelper.GetTransactions(categories, periods);
+        var budgetSerieses = await chartHelper.GetBudgets(categories, periods);
 
         foreach (var transactionSeries in transactionSerieses)
         {

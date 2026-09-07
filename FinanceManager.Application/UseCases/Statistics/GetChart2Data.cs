@@ -23,8 +23,8 @@ public sealed class GetChart2Data(ChartHelper chartHelper, GetCategories getCate
             .Where(c => drilldownGroupId is null || c.GroupId == drilldownGroupId)
             .ToList();
 
-        var budgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories, [period], false, drilldownGroupId is null);
-        var transactionSerieses = await chartHelper.GetTransactionsPerCategoryAndPeriod(relevantCategories, [period], true, false, drilldownGroupId is null);
+        var budgetSerieses = await chartHelper.GetBudgets(relevantCategories, [period], false, drilldownGroupId is null);
+        var transactionSerieses = await chartHelper.GetTransactions(relevantCategories, [period], true, false, drilldownGroupId is null);
 
         var budgetSeries = budgetSerieses.ToDictionary(x => x.Key, x => x.Value.First());
         var transactionSeries = transactionSerieses.ToDictionary(x => x.Key, x => x.Value.First());

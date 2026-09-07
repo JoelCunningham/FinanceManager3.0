@@ -25,3 +25,9 @@
     color: var(--colour-textmuted);
     padding: 0;
 }
+
+::deep .dropdown-menu .reset {
+    width: 100%;
+    padding: var(--space-small);
+    
+}

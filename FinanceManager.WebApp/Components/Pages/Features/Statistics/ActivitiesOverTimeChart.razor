@@ -1,0 +1,43 @@
+﻿@using FinanceManager.Application.UseCases
+@inject UseCases UseCases
+
+@code
+{
+    [Parameter] public IEnumerable<ScopedPeriod> Periods { get; set; } = [];
+
+    private ChartModel ChartA { get; set; } = default!;
+    private ChartModel ChartB { get; set; } = default!;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        ChartA = new(Periods, [ChartMode.Net, ChartMode.Expense, ChartMode.Income, ChartMode.Variance], null, ReloadCharts);
+        ChartB = new(Periods, [ChartMode.Net, ChartMode.Expense, ChartMode.Income, ChartMode.Variance], null, ReloadCharts);
+        await ChartA.RefreshAsync();
+        await ChartB.RefreshAsync();
+    }
+
+    private async Task ReloadCharts()
+    {
+        var result = await UseCases.GetChart3DataAsync(ChartA.Range, ChartA.Mode);
+        ChartA.Title = result.TitleA;
+        ChartA.Options = result.OptionsA;
+        ChartB.Title = result.TitleB;
+        ChartB.Options = result.OptionsB;   
+    }
+}
+
+<div class="chart-wrapper">
+    <div class="actions">
+        <ChartActions Mode="ChartA.Mode" ModeChanged="ChartA.SetModeAsync" AvailableModes="ChartA.AvailableModes" IsDrilldown="ChartA.DrilldownId is not null" OnReset="ChartA.ResetChartAsync" OnBackToAreas="ChartA.ClearDrilldownAsync" GetModeDescription="ChartA.GetModeDescription">
+            <MainSelect>
+                <RangeSelect StartPeriod="ChartA.RangeStart"
+                             StartPeriodChanged="ChartA.SetRangeStartAsync"
+                             EndPeriod="ChartA.RangeEnd"
+                             EndPeriodChanged="ChartA.SetRangeEndAsync"
+                             Periods="ChartA.Periods" />
+            </MainSelect>
+        </ChartActions>
+    </div>
+    <Chart ChartModel="ChartA" />
+    <Chart ChartModel="ChartB" />
+</div>

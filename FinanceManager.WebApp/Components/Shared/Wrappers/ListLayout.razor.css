@@ -9,7 +9,6 @@
 .list-layout ::deep .card .hx-button.btn-light {
     background-color: var(--colour-secondary) !important;
     color: var(--colour-textwhite) !important;
-    width: 50%;
 
     i::after {
         font-weight: var(--fontweight-bold) !important;
@@ -30,3 +29,9 @@
         .list-layout ::deep .responsive-dropdown .dropdown-group button {
             width: 100%;
         }
+
+@media (max-width: 768px) {
+    .list-layout ::deep .card .hx-button.btn-light {
+        width: 50%;
+    }
+}
