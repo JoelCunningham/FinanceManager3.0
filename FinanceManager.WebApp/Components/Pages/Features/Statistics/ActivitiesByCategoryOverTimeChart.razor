@@ -18,17 +18,8 @@
     private async Task ReloadChart()
     {
         var result = await UseCases.GetChart1DataAsync(Chart.Range, CategoryGroups, Chart.DrilldownId, Chart.Mode);
-
         Chart.Title = result.Title;
-        Chart.Options = new
-        {
-            tooltip = new { trigger = "axis" },
-            legend = new { type = "scroll", textStyle = new { color = ThemeUtilities.ThemePlaceholder } },
-            grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
-            xAxis = new { type = "category", data = result.Labels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
-            yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
-            series = result.Serieses
-        };
+        Chart.Options = result.Options;
     }
 }
 
@@ -44,5 +35,5 @@
             </MainSelect>
         </ChartActions>
     </div>
-    <Chart Options="Chart.Options" Title="@Chart.Title" OnItemClick="Chart.OnDrilldownClickAsync" />
+    <Chart ChartModel="Chart" />
 </div>

@@ -2,34 +2,22 @@
 @inject IJSRuntime JS
 
 @code {
-    [Parameter] public object? Options { get; set; }
-    [Parameter] public string? Title { get; set; }
+    [Parameter] public ChartModel ChartModel { get; set; } = default!;
 
-    [Parameter] public EventCallback<string?> OnItemClick { get; set; }
-    [JSInvokable] public Task NotifyChartClicked(string? key) => OnItemClick.InvokeAsync(key);
-
-    private object? ColouredOptions => ReplaceColourPlaceholder(Options);
+    [JSInvokable] public Task NotifyChartClicked(string? key) => ChartModel.OnDrilldownClickAsync(key);
 
     private ElementReference _wrapper;
     private IJSObjectReference? _module;
     private DotNetObjectReference<Chart>? _dotNetRef;
-    private string? _textColour;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (OnItemClick.HasDelegate && ColouredOptions is not null)
-        {
+        _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
+        _dotNetRef ??= DotNetObjectReference.Create(this);
+        await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
 
-            _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
-            _dotNetRef ??= DotNetObjectReference.Create(this);
-
-            await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
-        }
-        if (firstRender)
-        {
-            _textColour = await ThemeUtilities.GetTextColour(JS);
-            StateHasChanged();
-        }
+        ChartModel.Options.SetTextColor(await ThemeUtilities.GetTextColour(JS));
+        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()
@@ -38,27 +26,18 @@
         _dotNetRef = null;
         _module = null;
     }
-
-    private object? ReplaceColourPlaceholder(object? options)
-    {
-        if (options is null || _textColour is null) return options;
-
-        var json = JsonSerializer.Serialize(options);
-        json = json.Replace("\"" + ThemeUtilities.ThemePlaceholder + "\"", JsonSerializer.Serialize(_textColour));
-        return JsonSerializer.Deserialize<object>(json);
-    }
 }
 
 <div class="chart-wrapper">
-    @if (Options is null)
+    @if (ChartModel.Options is null)
     {
         <Alert Level="Alert.AlertLevel.Info">There are no transactions or budgets in the selected range.</Alert>
     }
     else
     {
-        <h4 class="chart-title">@Title</h4>
+        <h4 class="chart-title">@ChartModel.Title</h4>
         <div class="chart" @ref="_wrapper">
-            <HxEChart Options="ColouredOptions" AutoResize="true" />
+            <HxEChart Options="ChartModel.Options.ToEChartsOptions()" AutoResize="true" />
         </div>
     }
 </div>

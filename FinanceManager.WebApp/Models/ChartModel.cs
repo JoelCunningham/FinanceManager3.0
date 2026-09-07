@@ -7,7 +7,7 @@ using FinanceManager.Domain.Utilities;
 public sealed class ChartModel(IEnumerable<ScopedPeriod> periods, IEnumerable<ChartMode> modes, int? enforcedLength, Func<Task> refreshAsync)
 {
     public string? Title { get; set; }
-    public object? Options { get; set; }
+    public ChartOptions Options { get; set; } = default!;
 
     public int? EnforcedRangeLength { get; set; } = enforcedLength;
     public IEnumerable<ScopedPeriod> Periods { get; set; } = periods;

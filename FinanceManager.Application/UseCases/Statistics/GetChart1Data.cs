@@ -8,13 +8,13 @@ using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.Utilities;
 using System.Linq;
 
-public sealed record GetChart1DataResult(object[] Serieses, string[] Labels, string Title) : UseCaseResult;
+public sealed record GetChart1DataResult(ChartOptions Options, string Title) : UseCaseResult;
 
 public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCategoryList)
 {
     public async Task<GetChart1DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, IEnumerable<CategoryGroupSummary> groups, Guid? drilldownGroupId, ChartMode mode)
     {
-        var serieses = new List<object>();
+        ChartOptions options = new(axisPointerType: AxisPointerType.Shadow);
 
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
         var relevantCategories = categories
@@ -35,8 +35,7 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
 
             var key = categories.FirstOrDefault(c => c.GroupId == transactionSeries.Key)?.GroupId;
 
-            var series = ChartSeries.BarSeries(name, colour, transactionSeries.Value.Select((v, i) => (v, key + "_" + i.ToString())).ToDictionary(x => x.Item2, x => x.v));
-            serieses.AddRange(series.ToEChartsSeries());
+            options.AddSeries(ChartSeries.BarSeries(name, colour, transactionSeries.Value.Select((v, i) => (v, key + "_" + i.ToString())).ToDictionary(x => x.Item2, x => x.v)));
         }
 
         var groupBudgetPrefix = drilldownGroupId is not null ? groups.FirstOrDefault(g => g.Id == drilldownGroupId)?.Name ?? CategoryConstants.UncategorisedName : null;
@@ -44,22 +43,19 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
         if (mode == ChartMode.IncomeAndExpense)
         {
             var incomeBudgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories.Where(c => c.IsIncome), range, false);
-            var incomeBudgetSeries = ChartSeries.LineSeries("Budget (Income)", "#15723f", [.. incomeBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))]);
-            serieses.AddRange(incomeBudgetSeries.ToEChartsSeries());
+            options.AddSeries(ChartSeries.LineSeries("Budget (Income)", "#15723f", incomeBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))));
 
             var expenseBudgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories.Where(c => !c.IsIncome), range, true);
-            var expenseBudgetSeries = ChartSeries.LineSeries("Budget (Expense)", "#a81e2e", [.. expenseBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))]);
-            serieses.AddRange(expenseBudgetSeries.ToEChartsSeries());
+            options.AddSeries(ChartSeries.LineSeries("Budget (Expense)", "#a81e2e", expenseBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))));
         }
         else
         {
             var budgetName = groupBudgetPrefix is null ? "Budget" : $"{groupBudgetPrefix} Budget";
             var budgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories, range);
-            var budgetSeries = ChartSeries.LineSeries(budgetName, mode == ChartMode.Income ? "#15723f" : "#a81e2e", [.. budgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))]);
-            serieses.AddRange(budgetSeries.ToEChartsSeries());
+            options.AddSeries(ChartSeries.LineSeries(budgetName, mode == ChartMode.Income ? "#15723f" : "#a81e2e", budgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))));
         }
 
-        var labels = range.Select(m => m.PeriodDescription).ToArray();
+        options.SetLabels(range.Select(m => m.PeriodDescription));
 
         var title = (mode, drilldownGroupId is not null) switch
         {
@@ -70,6 +66,6 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
             _ => "Transactions"
         };
 
-        return new GetChart1DataResult([.. serieses], labels, title);
+        return new GetChart1DataResult(options, title);
     }
 }

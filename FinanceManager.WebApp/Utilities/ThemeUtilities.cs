@@ -5,7 +5,6 @@ using Microsoft.JSInterop;
 
 public class ThemeUtilities
 {
-    public const string ThemePlaceholder = "ThemePlaceholder";
     private const string DarkString = "dark";
     private const string LightString = "light";
     private const string SystemString = "system";

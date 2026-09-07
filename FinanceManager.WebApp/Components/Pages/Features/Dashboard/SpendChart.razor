@@ -16,30 +16,12 @@
 
     private async Task ReloadChart()
     {
-        Chart.Options = new
-        {
-            tooltip = new { show = false, trigger = "item", formatter = "{b}: {d}%" },
-            legend = new
-            {
-                orient = "horizontal",
-                bottom = "30",
-                left = "center",
-                textStyle = new { color = ThemeUtilities.ThemePlaceholder },
-            },
-            title = new
-            {
-                text = Title,
-                left = "49.5%",
-                top = "50%",
-                textAlign = "center",
-                textVerticalAlign = "middle",
-                textStyle = new { fontSize = 20, fontWeight = "bold", color = ThemeUtilities.ThemePlaceholder },
-            },
-            series = Data.ToEChartsSeries()
-        };
+        Chart.Options = new(hideXAxis: true, legendBottom: "30");
+        Chart.Options.SetTitle(Title);
+        Chart.Options.AddSeries(Data);
     }
 }
 
 <div class="chart-wrapper">
-    <Chart Options="Chart.Options" Title="@Chart.Title" OnItemClick="Chart.OnDrilldownClickAsync" />
+    <Chart ChartModel="Chart" />
 </div>

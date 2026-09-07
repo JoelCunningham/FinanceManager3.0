@@ -20,23 +20,7 @@
     private async Task ReloadChart()
     {
         var result = await UseCases.GetCategoryChartAsync(SelectedCategories, Chart.Range, Chart.Mode, CategoryGroup);
-
-        Chart.Title = result.Title;
-        Chart.Options = new
-        {
-            tooltip = new
-            {
-                trigger = "axis",
-                formatter = new HxEChart.JSFunc(@"function (value) {
-                    return '$' + Number(value).toFixed(2);
-                }"),
-            },
-            legend = new { show = false },
-            grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
-            xAxis = new { type = "category", data = result.Labels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
-            yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
-            series = result.Serieses
-        };
+        Chart.Options = result.Options;
     }
 
     private async Task ToggleCategory(CategorySummary category)
@@ -93,6 +77,6 @@ else
             }
         </div>
 
-        <Chart Options="Chart.Options" OnItemClick="Chart.OnDrilldownClickAsync" />
+        <Chart ChartModel="Chart" />
     </div>
 }

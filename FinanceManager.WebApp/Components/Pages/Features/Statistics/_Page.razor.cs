@@ -3,7 +3,6 @@
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Application.UseCases.Statistics;
 using FinanceManager.WebApp.Components.Base;
 using Microsoft.AspNetCore.Components;
 

@@ -6,16 +6,16 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.Utilities;
 
-public sealed record GetChart2DataResult(object[] Serieses, string[] Labels, string Title) : UseCaseResult;
+public sealed record GetChart2DataResult(ChartOptions Options, string Title) : UseCaseResult;
 
 public sealed class GetChart2Data(ChartHelper chartHelper, GetCategories getCategoryList)
 {
     public async Task<GetChart2DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, IEnumerable<CategoryGroupSummary> groups, Guid? drilldownGroupId, ChartMode mode)
     {
-        var serieses = new List<object>();
+        ChartOptions options = new(rotateLabels: true, axisPointerType: AxisPointerType.Shadow);
 
         var period = range.FirstOrDefault();
-        if (period is null) return new GetChart2DataResult([], [], "");
+        if (period is null) return new GetChart2DataResult(options, "");
 
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
         var relevantCategories = categories
@@ -57,19 +57,14 @@ public sealed class GetChart2Data(ChartHelper chartHelper, GetCategories getCate
         var remainingColor = mode == ChartMode.Income ? "#a81e2e" : "#15723f";
         var overColor = mode == ChartMode.Income ? "#15723f" : "#a81e2e";
 
-        var baseValuesSeries = ChartSeries.BarSeries(baseLabel, baseColor, baseData);
-        serieses.AddRange(baseValuesSeries.ToEChartsSeries());
+        options.AddSeries(ChartSeries.BarSeries(baseLabel, baseColor, baseData));
+        options.AddSeries(ChartSeries.BarSeries(remainingLabel, remainingColor, remainingData));
+        options.AddSeries(ChartSeries.BarSeries(overLabel, overColor, overData));
 
-        var remainingValuesSeries = ChartSeries.BarSeries(remainingLabel, remainingColor, remainingData);
-        serieses.AddRange(remainingValuesSeries.ToEChartsSeries());
-
-        var overValuesSeries = ChartSeries.BarSeries(overLabel, overColor, overData);
-        serieses.AddRange(overValuesSeries.ToEChartsSeries());
-
-        IEnumerable<string> labels = [.. categoryIds.Select(id => drilldownGroupId is null
+        options.SetLabels(categoryIds.Select(id => drilldownGroupId is null
             ? groups.FirstOrDefault(g => g.Id == id)?.Name ?? "Unknown"
             : relevantCategories.FirstOrDefault(c => c.Id == id)?.Name ?? "Unknown"
-        )];
+        ));
 
         var drilledGroup = drilldownGroupId != null ? groups.FirstOrDefault(g => g.Id == drilldownGroupId) : null;
         var modeText = mode == ChartMode.Income ? "incomes" : "expenses";
@@ -77,6 +72,6 @@ public sealed class GetChart2Data(ChartHelper chartHelper, GetCategories getCate
 
         var title = $"{char.ToUpper(modeText[0]) + modeText[1..]} vs budget {levelText}";
 
-        return new GetChart2DataResult([.. serieses], [.. labels], title);
+        return new GetChart2DataResult(options, title);
     }
 }
