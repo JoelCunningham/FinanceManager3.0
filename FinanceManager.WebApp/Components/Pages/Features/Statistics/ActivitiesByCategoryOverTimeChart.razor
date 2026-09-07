@@ -17,129 +17,17 @@
 
     private async Task ReloadChart()
     {
-        Chart.Options = null;
+        var result = await UseCases.GetChart1DataAsync(Chart.Range, CategoryGroups, Chart.DrilldownId, Chart.Mode);
 
-        var isCategoryDrilldown = Chart.DrilldownId is not null;
-        var (groupIdByName, drilldownGroupName, _) = ChartHelper.BuildGroupDrilldownMeta(Chart.DrilldownId, CategoryGroups);
-
-        var chartData = await UseCases.GetChart1DataAsync(Chart.Range, Chart.DrilldownId, Chart.Mode);
-        var transactions = ChartHelper.ApplyGroupFilter(chartData.Transactions, Chart.DrilldownId, t => t.Category?.GroupId);
-
-        if (transactions.Count == 0 && chartData.BudgetSeries == null && chartData.IncomeBudgetSeries == null && chartData.ExpenseBudgetSeries == null) return;
-
-        var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var transaction in transactions)
-        {
-            if (transaction.Amount == 0m) continue;
-            if (!Chart.Range.Any(p => p.Includes(DateOnly.FromDateTime(transaction.Date))))
-            {
-                continue;
-            }
-            if (!ChartHelper.IsTransactionInMode(transaction, Chart.Mode)) continue;
-
-            var category = ChartHelper.GetCategoryOrGroupLabel(transaction, isCategoryDrilldown);
-            var sortAmount = ChartHelper.GetChartSortAmount(transaction, Chart.Mode);
-
-            totals[category] = totals.TryGetValue(category, out var current) ? current + sortAmount : sortAmount;
-        }
-
-        var categoryNames = totals
-            .OrderByDescending(kvp => kvp.Value)
-            .Select(kvp => kvp.Key)
-            .ToList();
-
-        var amountsByCategory = new Dictionary<string, decimal[]>(StringComparer.OrdinalIgnoreCase);
-        foreach (var name in categoryNames)
-        {
-            amountsByCategory[name] = new decimal[Chart.Range.Count()];
-        }
-
-        var months = Chart.Range.ToList();
-        foreach (var t in transactions)
-        {
-            if (!ChartHelper.IsTransactionInMode(t, Chart.Mode)) continue;
-
-            var month = months.FirstOrDefault(m => m.Includes(DateOnly.FromDateTime(t.Date)));
-            var monthIndex = months.IndexOf(month!);
-
-            var amount = ChartHelper.GetChartStackAmount(t, Chart.Mode);
-            var category = ChartHelper.GetCategoryOrGroupLabel(t, isCategoryDrilldown);
-
-            if (amountsByCategory.TryGetValue(category, out var arr))
-            {
-                arr[monthIndex] += amount;
-            }
-        }
-
-        if (totals.Count == 0 && (chartData.BudgetSeries == null || chartData.BudgetSeries.All(v => v == 0m)) && (chartData.IncomeBudgetSeries == null || chartData.IncomeBudgetSeries.All(v => v == 0m)) && (chartData.ExpenseBudgetSeries == null || chartData.ExpenseBudgetSeries.All(v => v == 0m)))
-        {
-            return;
-        }
-
-        var series = new List<object>();
-
-        foreach (var name in categoryNames)
-        {
-            var key = isCategoryDrilldown
-                ? null
-                : (groupIdByName.TryGetValue(name, out var id) ? id.ToString() : null);
-
-            var colour = isCategoryDrilldown
-                ? Categories.FirstOrDefault(c => c.Name == name)?.Colour ?? "#000000"
-                : CategoryGroups.FirstOrDefault(g => g.Name == name)?.Colour ?? "#000000";
-
-            if (!CategoryGroups.Any(g => g.Name == name) && !Categories.Any(c => c.Name == name))
-            {
-                colour = "#000000";
-            }
-
-            series.Add(ChartHelper.CreateBarSeries(name, colour, amountsByCategory[name], key));
-        }
-
-        var groupBudgetPrefix = isCategoryDrilldown ? (drilldownGroupName ?? "Group") : null;
-        var budgetName = groupBudgetPrefix is null ? "Budget" : $"{groupBudgetPrefix} Budget";
-        var incomeBudgetName = groupBudgetPrefix is null ? "Budget (Income)" : $"{groupBudgetPrefix} Budget";
-        var expenseBudgetName = groupBudgetPrefix is null ? "Budget (Expense)" : $"{groupBudgetPrefix} Budget";
-
-        if (Chart.Mode == ChartMode.IncomeAndExpense)
-        {
-            if (chartData.IncomeBudgetSeries is not null && chartData.IncomeBudgetSeries.Count() == Chart.Range.Count())
-            {
-                series.Add(ChartHelper.CreateLineSeries(incomeBudgetName, chartData.IncomeBudgetSeries, 7));
-            }
-
-            if (chartData.ExpenseBudgetSeries is not null && chartData.ExpenseBudgetSeries.Count() == Chart.Range.Count())
-            {
-                series.Add(ChartHelper.CreateLineSeries(expenseBudgetName, chartData.ExpenseBudgetSeries, 7));
-            }
-        }
-        else
-        {
-            if (chartData.BudgetSeries is not null && chartData.BudgetSeries.Count() == Chart.Range.Count())
-            {
-                series.Add(ChartHelper.CreateLineSeries(budgetName, chartData.BudgetSeries, 8));
-            }
-        }
-
-        var xAxisLabels = Chart.Range.Select(m => m.StartDate.ToString("yyyy-MM")).ToArray();
-
-        Chart.Title = (Chart.Mode, isCategoryDrilldown) switch
-        {
-            (ChartMode.Expense, false) => $"Expenses by area over time",
-            (ChartMode.Income, false) => $"Income by area over time",
-            (ChartMode.IncomeAndExpense, false) => $"Income and Expenses by area over time",
-            (_, true) => $"{drilldownGroupName ?? "Group"} by category",
-            _ => "Transactions"
-        };
+        Chart.Title = result.Title;
         Chart.Options = new
         {
             tooltip = new { trigger = "axis" },
             legend = new { type = "scroll", textStyle = new { color = ThemeUtilities.ThemePlaceholder } },
             grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
-            xAxis = new { type = "category", data = xAxisLabels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
+            xAxis = new { type = "category", data = result.Labels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
             yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
-            series
+            series = result.Serieses
         };
     }
 }

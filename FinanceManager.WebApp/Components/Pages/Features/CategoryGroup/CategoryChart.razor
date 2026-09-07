@@ -19,11 +19,9 @@
 
     private async Task ReloadChart()
     {
-        var result = await UseCases.GetCategoryChartAsync(SelectedCategories, Chart.Range, Chart.Mode, CategoryGroup.IsIncome);
-        var labels = Chart.Range.Select(p => p.StartDate.ToString("yyyy-MM")).ToArray();
-        var title = $"{CategoryGroup.Name} categories actual vs budget for {Chart.Range.First().StartDate:MMM yyyy} - {Chart.Range.Last().EndDate:MMM yyyy}";
+        var result = await UseCases.GetCategoryChartAsync(SelectedCategories, Chart.Range, Chart.Mode, CategoryGroup);
 
-        Chart.Title = title;
+        Chart.Title = result.Title;
         Chart.Options = new
         {
             tooltip = new
@@ -35,9 +33,9 @@
             },
             legend = new { show = false },
             grid = new { left = "3%", right = "4%", bottom = "3%", containLabel = true },
-            xAxis = new { type = "category", data = labels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
+            xAxis = new { type = "category", data = result.Labels, axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
             yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
-            series = result.Series
+            series = result.Serieses
         };
     }
 

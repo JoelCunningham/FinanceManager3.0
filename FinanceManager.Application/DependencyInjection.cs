@@ -47,7 +47,6 @@ public static class DependencyInjection
         services.AddScoped<ExportTransactions>();
 
         // Statistics use cases
-        services.AddScoped<GetBudgetScopes>();
         services.AddScoped<GetChart1Data>();
         services.AddScoped<GetChart2Data>();
 

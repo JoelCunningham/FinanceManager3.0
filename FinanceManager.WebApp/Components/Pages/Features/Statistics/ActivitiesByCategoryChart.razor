@@ -16,72 +16,9 @@
 
     private async Task ReloadChart()
     {
-        Chart.Options = null;
+        var result = await UseCases.GetChart2DataAsync(Chart.Range, CategoryGroups, Chart.DrilldownId, Chart.Mode);
 
-        var drilldownGroupId = Chart.DrilldownId;
-        var (groupIdByName, drilldownGroupName, _) = ChartHelper.BuildGroupDrilldownMeta(drilldownGroupId, CategoryGroups);
-
-        var chartData = await UseCases.GetChart2DataAsync(Chart.Range, drilldownGroupId, Chart.Mode);
-        var transactions = ChartHelper.ApplyGroupFilter(chartData.Transactions, drilldownGroupId, t => t.Category?.GroupId);
-        var actualTotals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var t in transactions)
-        {
-            if (Chart.Mode != ChartMode.IncomeAndExpense && !ChartHelper.IsTransactionInMode(t, Chart.Mode)) continue;
-
-            var name = ChartHelper.GetCategoryOrGroupLabel(t, drilldownGroupId is not null);
-            var amount = ChartHelper.GetChartSortAmount(t, Chart.Mode);
-
-            actualTotals[name] = actualTotals.TryGetValue(name, out var current)
-                ? current + amount
-                : amount;
-        }
-
-        var rows = actualTotals.Keys
-            .Union(chartData.BudgetTotals.Keys, StringComparer.OrdinalIgnoreCase)
-            .Select(name => new
-            {
-                Name = name,
-                Actual = actualTotals.GetValueOrDefault(name),
-                Budget = Math.Round(chartData.BudgetTotals.GetValueOrDefault(name), 2)
-            })
-            .Where(x => x.Actual != 0m || x.Budget != 0m)
-            .OrderByDescending(x => x.Actual)
-            .ThenByDescending(x => x.Budget)
-            .ToList();
-
-        if (rows.Count == 0) return;
-
-        var labels = rows.Select(r => r.Name).ToArray();
-
-        var drilldownKeys = rows
-            .Select(r =>
-            {
-                if (drilldownGroupId is not null) return null;
-                return groupIdByName.TryGetValue(r.Name, out var id) ? id.ToString() : null;
-            })
-            .ToArray();
-
-        var isIncome = Chart.Mode == ChartMode.Income;
-
-        var baseValues = rows.Select(r => (double)Math.Min(r.Actual, r.Budget)).ToArray();
-        var remainingValues = rows.Select(r => (double)Math.Max(r.Budget - r.Actual, 0m)).ToArray();
-        var overValues = rows.Select(r => (double)Math.Max(r.Actual - r.Budget, 0m)).ToArray();
-
-        object[] BuildSeriesData(double[] values) => [.. values.Select((v, i) => new { value = v, key = drilldownKeys[i] })];
-
-        var modeText = Chart.Mode == ChartMode.Income ? "incomes" : "expenses";
-        var levelText = drilldownGroupName is null ? "by area" : "for " + drilldownGroupName + " categories";
-
-        var baseLabel = isIncome ? "Earned within budget" : "Spent within budget";
-        var remainingLabel = isIncome ? "Remaining budget" : "Remaining budget";
-        var overLabel = isIncome ? "Above budget" : "Over budget";
-
-        var baseColor = "#126b76";
-        var remainingColor = isIncome ? "#a81e2e" : "#15723f";
-        var overColor = isIncome ? "#15723f" : "#a81e2e";
-
-        Chart.Title = $"{LanguageUtilities.Capitalise(modeText)} vs budget {levelText}";
+        Chart.Title = result.Title;
         Chart.Options = new
         {
             tooltip = new { trigger = "axis", axisPointer = new { type = "shadow" } },
@@ -90,45 +27,16 @@
             xAxis = new
             {
                 type = "category",
-                data = labels,
+                data = result.Labels,
                 axisLabel = new
                 {
                     interval = 0,
-                    rotate = rows.Count > 6 ? 35 : 0,
+                    rotate = 35,
                     color = ThemeUtilities.ThemePlaceholder,
                 }
             },
             yAxis = new { type = "value", axisLabel = new { color = ThemeUtilities.ThemePlaceholder } },
-            series = new object[]
-            {
-                new
-                {
-                    name = baseLabel,
-                    type = "bar",
-                    stack = "total",
-                    emphasis = new { focus = "series" },
-                    itemStyle = new { color = baseColor },
-                    data = BuildSeriesData(baseValues)
-                },
-                new
-                {
-                    name = remainingLabel,
-                    type = "bar",
-                    stack = "total",
-                    emphasis = new { focus = "series" },
-                    itemStyle = new { color = remainingColor },
-                    data = BuildSeriesData(remainingValues)
-                },
-                new
-                {
-                    name = overLabel,
-                    type = "bar",
-                    stack = "total",
-                    emphasis = new { focus = "series" },
-                    itemStyle = new { color = overColor },
-                    data = BuildSeriesData(overValues)
-                }
-            }
+            series = result.Serieses 
         };
     }
 }

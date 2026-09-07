@@ -34,8 +34,9 @@ public sealed class ChartModel(IEnumerable<ScopedPeriod> periods, IEnumerable<Ch
     public async Task OnDrilldownClickAsync(string? key)
     {
         var hadDrilldown = DrilldownId is not null;
+        var keyId = key?.Split("_").FirstOrDefault();
 
-        if (Guid.TryParse(key, out var groupId))
+        if (Guid.TryParse(keyId, out var groupId))
         {
             DrilldownId = groupId;
             await RefreshAsync();

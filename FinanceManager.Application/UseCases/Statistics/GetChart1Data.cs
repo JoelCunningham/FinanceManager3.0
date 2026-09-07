@@ -1,75 +1,75 @@
 namespace FinanceManager.Application.UseCases.Statistics;
 
+using FinanceManager.Application.Constants;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.Utilities;
 using System.Linq;
 
-public sealed record GetChart1DataResult(
-    List<TransactionSummary> Transactions,
-    List<CategorySummary> IncomeCategories,
-    List<CategorySummary> ExpenseCategories,
-    IEnumerable<decimal> BudgetSeries,
-    IEnumerable<decimal> IncomeBudgetSeries,
-    IEnumerable<decimal> ExpenseBudgetSeries
-) : UseCaseResult;
+public sealed record GetChart1DataResult(object[] Serieses, string[] Labels, string Title) : UseCaseResult;
 
-public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCategoryList, ITransactionRepository transactionRepository)
+public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCategoryList)
 {
-    public async Task<GetChart1DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, ChartMode mode)
+    public async Task<GetChart1DataResult> ExecuteAsync(IEnumerable<ScopedPeriod> range, IEnumerable<CategoryGroupSummary> groups, Guid? drilldownGroupId, ChartMode mode)
     {
-        var query = new FilterQuery
-        {
-            FilterDateFrom = range.First().StartDate.ToDateTime(TimeOnly.MinValue),
-            FilterDateTo = range.Last().EndDate.ToDateTime(TimeOnly.MaxValue),
-            FilterStatus = ReviewStatus.Reviewed
-        };
+        var serieses = new List<object>();
 
-        var transactions = (await transactionRepository.GetTransactionsAsync(query)).Select(TransactionSummary.FromTransaction).ToList();
         var categories = (await getCategoryList.ExecuteAsync()).Categories;
+        var relevantCategories = categories
+            .Where(c => mode == ChartMode.IncomeAndExpense || c.IsIncome == (mode == ChartMode.Income))
+            .Where(c => drilldownGroupId is null || c.GroupId == drilldownGroupId)
+            .ToList();
 
-        var incomeCategories = categories.Where(c => c.IsIncome).ToList();
-        var expenseCategories = categories.Where(c => !c.IsIncome).ToList();
-
-        if (drilldownGroupId is Guid id)
+        var transactionSerieses = await chartHelper.GetTransactionsPerCategoryAndPeriod(relevantCategories, range, mode == ChartMode.Expense, mode != ChartMode.IncomeAndExpense, drilldownGroupId is null);
+        foreach (var transactionSeries in transactionSerieses)
         {
-            incomeCategories = [.. incomeCategories.Where(c => c.GroupId == id)];
-            expenseCategories = [.. expenseCategories.Where(c => c.GroupId == id)];
+            var name = drilldownGroupId is null
+                ? categories.FirstOrDefault(c => c.GroupId == transactionSeries.Key)?.GroupName ?? CategoryConstants.UncategorisedName
+                : categories.FirstOrDefault(c => c.Id == transactionSeries.Key)?.Name ?? CategoryConstants.UncategorisedName;
+
+            var colour = drilldownGroupId is null
+                ? categories.FirstOrDefault(c => c.GroupId == transactionSeries.Key)?.GroupColour ?? CategoryConstants.UncategorisedColour
+                : categories.FirstOrDefault(c => c.Id == transactionSeries.Key)?.Colour ?? CategoryConstants.UncategorisedColour;
+
+            var key = categories.FirstOrDefault(c => c.GroupId == transactionSeries.Key)?.GroupId;
+
+            var series = ChartSeries.BarSeries(name, colour, transactionSeries.Value.Select((v, i) => (v, key + "_" + i.ToString())).ToDictionary(x => x.Item2, x => x.v));
+            serieses.AddRange(series.ToEChartsSeries());
         }
 
-        IEnumerable<decimal> budgetSeriesData = [];
-        IEnumerable<decimal> budgetIncomeSeriesData = [];
-        IEnumerable<decimal> budgetExpenseSeriesData = [];
+        var groupBudgetPrefix = drilldownGroupId is not null ? groups.FirstOrDefault(g => g.Id == drilldownGroupId)?.Name ?? CategoryConstants.UncategorisedName : null;
 
         if (mode == ChartMode.IncomeAndExpense)
         {
-            if (drilldownGroupId is null || incomeCategories.Count != 0)
-            {
-                foreach (var category in incomeCategories)
-                {
-                    budgetIncomeSeriesData = budgetIncomeSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, false));
-                }
-            }
-            if (drilldownGroupId is null || expenseCategories.Count != 0)
-            {
-                foreach (var category in expenseCategories)
-                {
-                    budgetExpenseSeriesData = budgetExpenseSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, true));
-                }
-            }
+            var incomeBudgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories.Where(c => c.IsIncome), range, false);
+            var incomeBudgetSeries = ChartSeries.LineSeries("Budget (Income)", "#15723f", [.. incomeBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))]);
+            serieses.AddRange(incomeBudgetSeries.ToEChartsSeries());
+
+            var expenseBudgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories.Where(c => !c.IsIncome), range, true);
+            var expenseBudgetSeries = ChartSeries.LineSeries("Budget (Expense)", "#a81e2e", [.. expenseBudgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))]);
+            serieses.AddRange(expenseBudgetSeries.ToEChartsSeries());
         }
         else
         {
-            var relevantCategories = mode == ChartMode.Income ? incomeCategories : expenseCategories;
-            foreach (var category in relevantCategories)
-            {
-                budgetSeriesData = budgetSeriesData.Concat(await chartHelper.GetBudgetsPerPeriod(category, range, mode == ChartMode.Expense));
-            }
+            var budgetName = groupBudgetPrefix is null ? "Budget" : $"{groupBudgetPrefix} Budget";
+            var budgetSerieses = await chartHelper.GetBudgetsPerCategoryAndPeriod(relevantCategories, range);
+            var budgetSeries = ChartSeries.LineSeries(budgetName, mode == ChartMode.Income ? "#15723f" : "#a81e2e", [.. budgetSerieses.Values.SelectMany((values, _) => values.Select((value, index) => (value, index))).GroupBy(x => x.index).OrderBy(g => g.Key).Select(g => g.Sum(x => x.value))]);
+            serieses.AddRange(budgetSeries.ToEChartsSeries());
         }
 
-        return new GetChart1DataResult(transactions, incomeCategories, expenseCategories, budgetSeriesData, budgetIncomeSeriesData, budgetExpenseSeriesData);
+        var labels = range.Select(m => m.PeriodDescription).ToArray();
+
+        var title = (mode, drilldownGroupId is not null) switch
+        {
+            (ChartMode.Expense, false) => $"Expenses by area over time",
+            (ChartMode.Income, false) => $"Income by area over time",
+            (ChartMode.IncomeAndExpense, false) => $"Income and Expenses by area over time",
+            (_, true) => $"{groups.FirstOrDefault(g => g.Id == drilldownGroupId)?.Name ?? "Group"} by category",
+            _ => "Transactions"
+        };
+
+        return new GetChart1DataResult([.. serieses], labels, title);
     }
 }

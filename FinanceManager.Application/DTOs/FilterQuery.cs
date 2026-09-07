@@ -7,6 +7,7 @@ public record FilterQuery : PagedQuery
     public string? SearchTerm { get; set; }
     public TransferSource FilterSource { get; set; } = TransferSource.All;
     public CategorySummary? FilterCategory { get; set; }
+    public List<CategorySummary>? FilterCategories { get; set; }
     public string? FilterAccountFrom { get; set; }
     public string? FilterAccountTo { get; set; }
     public DateTime? FilterDateFrom { get; set; }
@@ -19,6 +20,7 @@ public record FilterQuery : PagedQuery
             !string.IsNullOrWhiteSpace(SearchTerm) ||
             FilterSource != TransferSource.All ||
             FilterCategory is not null ||
+            FilterCategories is not null && FilterCategories.Count > 0 ||
             !string.IsNullOrWhiteSpace(FilterAccountFrom) ||
             !string.IsNullOrWhiteSpace(FilterAccountTo) ||
             FilterDateFrom is not null ||

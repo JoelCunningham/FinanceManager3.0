@@ -79,11 +79,11 @@ public class UseCases(
     public Task<GetAvailablePeriodsResult> GetAvailablePeriodsAsync(Guid? categoryGroupId = null, bool allowFuture = false) => getAvailablePeriods.ExecuteAsync(categoryGroupId, allowFuture);
     public Task<GetBudgetYearsResult> GetBudgetYearsAsync() => getBudgetYears.ExecuteAsync();
     public Task<GetCategoriesResult> GetCategoriesAsync() => getCategories.ExecuteAsync();
-    public Task<GetCategoryChartResult> GetCategoryChartAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, ChartMode mode, bool isIncome) => getCategoryChart.ExecuteAsync(categories, periods, mode, isIncome);
+    public Task<GetCategoryChartResult> GetCategoryChartAsync(IEnumerable<CategorySummary> categories, IEnumerable<ScopedPeriod> periods, ChartMode mode, CategoryGroupDetails group) => getCategoryChart.ExecuteAsync(categories, periods, mode, group);
     public Task<GetCategoryGroupDetailsResult> GetCategoryGroupDetailsAsync(string groupName, ScopedPeriod period) => getCategoryGroupDetails.ExecuteAsync(groupName, period);
     public Task<GetCategoryGroupsResult> GetCategoryGroupsAsync() => getCategoryGroups.ExecuteAsync();
-    public Task<GetChart1DataResult> GetChart1DataAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, ChartMode mode) => getChart1Data.ExecuteAsync(range, drilldownGroupId, mode);
-    public Task<GetChart2DataResult> GetChart2DataAsync(IEnumerable<ScopedPeriod> range, Guid? drilldownGroupId, ChartMode mode) => getChart2Data.ExecuteAsync(range, drilldownGroupId, mode);
+    public Task<GetChart1DataResult> GetChart1DataAsync(IEnumerable<ScopedPeriod> range, IEnumerable<CategoryGroupSummary> groups, Guid? drilldownGroupId, ChartMode mode) => getChart1Data.ExecuteAsync(range, groups, drilldownGroupId, mode);
+    public Task<GetChart2DataResult> GetChart2DataAsync(IEnumerable<ScopedPeriod> range, IEnumerable<CategoryGroupSummary> groups, Guid? drilldownGroupId, ChartMode mode) => getChart2Data.ExecuteAsync(range, groups, drilldownGroupId, mode);
     public Task<GetDashboardDataResult> GetDashboardDataAsync(ScopedPeriod? period = null) => getDashboardData.ExecuteAsync(period);
     public Task<GetPagedBudgetResult> GetPagedBudgetAsync(int year, BudgetGridMode mode = BudgetGridMode.Net) => getBudgetPage.ExecuteAsync(year, mode);
     public Task<GetPagedReviewResult> GetPagedReviewAsync(FilterQuery query) => getPagedReview.ExecuteAsync(query);

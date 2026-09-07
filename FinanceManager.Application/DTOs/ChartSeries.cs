@@ -5,25 +5,32 @@ using FinanceManager.Application.Enums;
 public class ChartSeries
 {
     public required string Name { get; set; }
-    public required string Colour { get; set; }
+    public string? Colour { get; set; }
     public ChartSeriesType Type { get; set; }
     public ChartLineType LineStyle { get; set; }
 
     public bool Smooth { get; set; }
     public bool Silent { get; set; }
-    public bool HideLabel { get; set; }
+    public bool ShowLabel { get; set; }
 
     public (int, int) Radius { get; set; }
     public (int, int) Center { get; set; }
 
-    public decimal[] Data { get; set; } = [];
-    public Dictionary<string, decimal> DataWithNames { get; set; } = [];
+    public Dictionary<string, decimal> Data { get; set; } = [];
+
+    public string? Stack { get; set; }
+    public string? EmpasisFocus { get; set; }
 
     public object ToEChartsSeries(bool reverse = false)
     {
-        object selectedData = Data;
-        if (reverse) selectedData = Data.Select(d => -d);
-        if (Type == ChartSeriesType.Pie) selectedData = DataWithNames.Select(c => new { value = c.Value, name = c.Key });
+        var orgianisedData = Data.Select(d => reverse ? new KeyValuePair<string, decimal>(d.Key, -d.Value) : d).ToList();
+        object selectedData = Type switch
+        {
+            ChartSeriesType.Line => orgianisedData.Select(d => new { value = d.Value }),
+            ChartSeriesType.Pie => orgianisedData.Select(d => new { value = d.Value, name = d.Key }),
+            ChartSeriesType.Bar => orgianisedData.Select(d => new { value = d.Value, key = d.Key }),
+            _ => throw new NotImplementedException($"ChartSeriesType {Type} not implemented")
+        };
 
         return new
         {
@@ -34,20 +41,25 @@ public class ChartSeries
             smooth = Smooth,
             silent = Silent,
             data = selectedData,
-            label = new { show = !HideLabel },
+            label = new { show = ShowLabel },
             radius = new List<string>() { $"{Radius.Item1}%", $"{Radius.Item2}%" },
-            center = new List<string>() { $"{Center.Item1}%", $"{Center.Item2}%" }
+            center = new List<string>() { $"{Center.Item1}%", $"{Center.Item2}%" },
+            stack = Stack,
+            emphasis = new { focus = EmpasisFocus },
         };
     }
 
-    public static ChartSeries LineSeries(string name, string colour, IEnumerable<decimal> data, string? nameSuffix = null)
+    public static ChartSeries LineSeries(string name, string colour, IEnumerable<decimal> data, bool dashed = false, string? nameSuffix = null)
     {
-        return CreateSeries(name, colour, ChartSeriesType.Line, ChartLineType.Solid, true, data, nameSuffix);
-    }
-
-    public static ChartSeries LineDashedSeries(string name, string colour, IEnumerable<decimal> data, string? nameSuffix = null)
-    {
-        return CreateSeries(name, colour, ChartSeriesType.Line, ChartLineType.Dashed, true, data, nameSuffix);
+        return new ChartSeries
+        {
+            Name = nameSuffix is not null ? $"{name} {nameSuffix}" : name,
+            Type = ChartSeriesType.Line,
+            Colour = colour,
+            LineStyle = dashed ? ChartLineType.Dashed : ChartLineType.Solid,
+            Smooth = true,
+            Data = data.Select((value, index) => new KeyValuePair<string, decimal>(index.ToString(), value)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+        };
     }
 
     public static ChartSeries PieSeries(string name, Dictionary<string, decimal> data, (int, int) radius, (int, int) center)
@@ -55,28 +67,24 @@ public class ChartSeries
         return new ChartSeries
         {
             Name = name,
-            Colour = "",
             Type = ChartSeriesType.Pie,
             Silent = true,
-            HideLabel = true,
-            DataWithNames = data,
+            Data = data,
             Radius = radius,
             Center = center
         };
     }    
 
-    private static ChartSeries CreateSeries(string name, string colour, ChartSeriesType type, ChartLineType lineStyle, bool smooth, IEnumerable<decimal> data, string? nameSuffix = null)
+    public static ChartSeries BarSeries(string name, string colour, Dictionary<string, decimal> data)
     {
         return new ChartSeries
         {
-            Name = nameSuffix is not null ? $"{name} {nameSuffix}" : name,
+            Name = name,
             Colour = colour,
-            Type = type,
-            HideLabel = true,
-            LineStyle = lineStyle,
-            Smooth = smooth,
-            Data = [.. data],
+            Type = ChartSeriesType.Bar,
+            Stack = "total",
+            EmpasisFocus = "series",
+            Data = data
         };
     }
-
 }

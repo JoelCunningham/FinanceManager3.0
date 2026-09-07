@@ -90,22 +90,9 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
             .Include(t => t.Reimbursements)
             .AsQueryable();
 
-        if (query.FilterCategory != null)
-        {
-            queryable = queryable.Where(t => t.CategoryId == query.FilterCategory.Id);
-        }
-
-        if (query.FilterDateFrom != null)
-        {
-            queryable = queryable.Where(t => t.Date >= query.FilterDateFrom.Value);
-        }
-
-        if (query.FilterDateTo != null)
-        {
-            queryable = queryable.Where(t => t.Date <= query.FilterDateTo.Value);
-        }
-
+        queryable = ApplyFilters(queryable, query);
         queryable = queryable.Where(t => t.ReimbursesId == null);
+
         return await queryable.ToListAsync();
     }   
 
@@ -260,6 +247,12 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
             {
                 query = query.Where(t => t.CategoryId == null);
             }
+        }
+
+        if (request.FilterCategories != null && request.FilterCategories.Count > 0)
+        {
+            var categoryIds = request.FilterCategories.Select(c => c.Id).ToList();
+            query = query.Where(t => t.CategoryId != null && categoryIds.Contains(t.CategoryId.Value));
         }
 
         if (request.FilterStatus == ReviewStatus.Reviewed)
