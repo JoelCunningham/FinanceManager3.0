@@ -31,16 +31,16 @@ public sealed class GetChart3Data(ChartHelper chartHelper, GetCategories getCate
 
         if (mode != ChartMode.Variance)
         {
-            options1.AddSeries(ChartSeries.LineSeries("Activities", mode == ChartMode.Expense ? "#a81e2e" : "#15723f", transactionSeries));
-            options2.AddSeries(ChartSeries.LineSeries("Cumulative activities", mode == ChartMode.Expense ? "#a81e2e" : "#15723f", transactionsCumulative));
+            options1.AddSeries(ChartSeries.LineSeries("Activities", mode == ChartMode.Expense ? ColourConstants.ExpenseColour : ColourConstants.IncomeColour, transactionSeries));
+            options2.AddSeries(ChartSeries.LineSeries("Cumulative activities", mode == ChartMode.Expense ? ColourConstants.ExpenseColour : ColourConstants.IncomeColour, transactionsCumulative));
 
-            options1.AddSeries(ChartSeries.LineSeries("Budget", mode == ChartMode.Expense ? "#15723f" : "#a81e2e", budgetSeries, true));
-            options2.AddSeries(ChartSeries.LineSeries("Cumulative budget", mode == ChartMode.Expense ? "#15723f" : "#a81e2e", budgetCumulative, true));
+            options1.AddSeries(ChartSeries.LineSeries("Budget", mode == ChartMode.Expense ? ColourConstants.IncomeColour : ColourConstants.ExpenseColour, budgetSeries, true));
+            options2.AddSeries(ChartSeries.LineSeries("Cumulative budget", mode == ChartMode.Expense ? ColourConstants.IncomeColour : ColourConstants.ExpenseColour, budgetCumulative, true));
         }
         else
         {
-            options1.AddSeries(ChartSeries.LineSeries("Variance", "#a81e2e", transactionSeries.Zip(budgetSeries, (t, b) => t - b)));
-            options2.AddSeries(ChartSeries.LineSeries("Cumulative variance", "#a81e2e", transactionsCumulative.Zip(budgetCumulative, (t, b) => t - b)));
+            options1.AddSeries(ChartSeries.LineSeries("Variance", ColourConstants.NeutralColour, transactionSeries.Zip(budgetSeries, (t, b) => t - b)));
+            options2.AddSeries(ChartSeries.LineSeries("Cumulative variance", ColourConstants.NeutralColour, transactionsCumulative.Zip(budgetCumulative, (t, b) => t - b)));
         }
 
         options1.SetLabels(range.Select(m => m.PeriodDescription));

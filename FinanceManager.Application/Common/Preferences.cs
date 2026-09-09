@@ -5,7 +5,7 @@ using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Enums;
 using System.Globalization;
 
-public class Preferences(IPreferenceRepository preferenceRepository, IDataStore dataStore)
+public class Preferences(IPreferenceRepository preferenceRepository)
 {
     public Task<bool> AutoAssignCategories => GetPreferenceValue(PreferenceNames.AutoAssignCategories, true);
     public Task<bool> HideEmptyBudgetCategories => GetPreferenceValue(PreferenceNames.HideEmptyBudgetCategories, false);
@@ -16,7 +16,6 @@ public class Preferences(IPreferenceRepository preferenceRepository, IDataStore 
     {
         var stringValue = value?.ToString() ?? string.Empty;
         await preferenceRepository.SetAsync(name, stringValue);
-        await dataStore.SaveAsync();
     }
 
     private async Task<T> GetPreferenceValue<T>(PreferenceNames name, T defaultValue)

@@ -1,5 +1,5 @@
-﻿@using FinanceManager.Application.UseCases
-@inject UseCases UseCases
+﻿@using FinanceManager.Application.UseCases.Statistics
+@inject GetChart3Data GetChart3Data
 
 @code
 {
@@ -18,7 +18,7 @@
 
     private async Task ReloadCharts()
     {
-        var result = await UseCases.GetChart3DataAsync(ChartA.Range, ChartA.Mode);
+        var result = await GetChart3Data.ExecuteAsync(ChartA.Range, ChartA.Mode);
         ChartA.Title = result.TitleA;
         ChartA.Options = result.OptionsA;
         ChartB.Title = result.TitleB;

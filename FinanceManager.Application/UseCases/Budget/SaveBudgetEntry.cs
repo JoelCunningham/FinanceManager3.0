@@ -2,9 +2,10 @@ namespace FinanceManager.Application.UseCases.Budget;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 
 public sealed record SaveBudgetEntryResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IBudgetYearRepository budgetYearRepository, IDataStore dataStore)
+public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository, IBudgetYearRepository budgetYearRepository)
 {
     public async Task<SaveBudgetEntryResult> ExecuteAsync(BudgetCellEntry model, int year, bool isExisting)
     {
@@ -23,7 +24,6 @@ public sealed class SaveBudgetEntry(IBudgetEntryRepository budgetEntryRepository
             await budgetEntryRepository.CreateAsync(entry);
         }
 
-        await dataStore.SaveAsync();
         return new SaveBudgetEntryResult([]);
     }
 }

@@ -2,11 +2,12 @@ namespace FinanceManager.Application.UseCases.Transactions;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using Microsoft.Extensions.Logging;
 
 public sealed record SaveTransactionEditResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveTransactionEdit(ITransactionRepository transactionRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore, ILogger<SaveTransactionEdit> logger)
+public sealed class SaveTransactionEdit(ITransactionRepository transactionRepository, IMachineLearningRepository machineLearningRepository, ILogger<SaveTransactionEdit> logger)
 {
     public async Task<SaveTransactionEditResult> ExecuteAsync(TransactionSummary transaction)
     {
@@ -30,8 +31,6 @@ public sealed class SaveTransactionEdit(ITransactionRepository transactionReposi
             entity.CategoryId = transaction.Category.Id;
             
             await transactionRepository.UpdateAsync(entity);     
-
-            await dataStore.SaveAsync();
             return new SaveTransactionEditResult([]);
         }
         catch

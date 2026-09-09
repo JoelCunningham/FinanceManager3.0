@@ -56,4 +56,4 @@ public static class BudgetYearHelper
 }
 
 public readonly record struct BudgetEntryPeriod(DateOnly StartDate, DateOnly EndDate, decimal DailyAmount);
-public readonly record struct BudgetEntryDayAmount(DateOnly Date, decimal DailyAmount, bool isExpense);
+public readonly record struct BudgetEntryDayAmount(DateOnly Date, decimal DailyAmount, bool IsExpense);

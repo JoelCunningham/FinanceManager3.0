@@ -7,10 +7,12 @@ using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : ITransactionRepository
+public sealed class TransactionRepository(IFinanceManagerDbContextFactory dbContextFactory) : ITransactionRepository
 {
     public async Task<IEnumerable<Transaction>> GetAllAsync()
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        // either create context and savechanges here, or pass context from use case
         return await dbContext.Transactions
             .Include(t => t.Record)
             .ThenInclude(r => r.BankAccount)
@@ -22,6 +24,8 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
     }
     public async Task<Transaction> GetByIdAsync(Guid id)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var transaction = await dbContext.Transactions
             .Include(t => t.Record)
             .ThenInclude(r => r.BankAccount)
@@ -36,24 +40,22 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
 
     public async Task<IEnumerable<Transaction>> GetByRecordIdAsync(Guid recordId, Guid? excludeId = null)
     {
-        var query = dbContext.Transactions
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+        return await dbContext.Transactions
             .Include(t => t.Record)
             .ThenInclude(r => r.BankAccount)
             .Include(t => t.Category)
             .ThenInclude(c => c!.Group)
             .Include(t => t.Reimburses)
-            .Where(t => t.RecordId == recordId);
-
-        if (excludeId.HasValue)
-        {
-            query = query.Where(t => t.Id != excludeId.Value);
-        }
-
-        return await query.ToListAsync();
+            .Where(t => t.RecordId == recordId && (excludeId == null || t.Id != excludeId.Value))
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<Transaction>> GetByCategoryIdAsync(Guid categoryId)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         return await dbContext.Transactions
             .Include(t => t.Record)
             .ThenInclude(r => r.BankAccount)
@@ -66,10 +68,9 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
     public async Task<IEnumerable<Transaction>> GetReimbursementsAsync(IEnumerable<Guid> reimbursedTransactionIds)
     {
         var ids = reimbursedTransactionIds.Distinct().ToList();
-        if (ids.Count == 0)
-        {
-            return [];
-        }
+        if (ids.Count == 0) return [];
+
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         return await dbContext.Transactions
             .Include(t => t.Record)
@@ -82,6 +83,8 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
 
     public async Task<IEnumerable<Transaction>> GetTransactionsAsync(FilterQuery query)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var queryable = dbContext.Transactions
             .Include(t => t.Record)
             .ThenInclude(r => r.BankAccount)
@@ -94,10 +97,12 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         queryable = queryable.Where(t => t.ReimbursesId == null);
 
         return await queryable.ToListAsync();
-    }   
+    }
 
     public async Task<PagedResult<Transaction>> GetPagedTransactionsAsync(FilterQuery query)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var queryable = dbContext.Transactions
             .Include(t => t.Record)
             .ThenInclude(r => r.BankAccount)
@@ -110,13 +115,17 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         return await GetPagedAsync(query, queryable);
     }
 
-    public Task CreateAsync(IEnumerable<Transaction> transactions)
+    public async Task CreateAsync(IEnumerable<Transaction> transactions)
     {
-        return dbContext.BulkInsertOwnedAsync(transactions);
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        await dbContext.BulkInsertOwnedAsync(transactions);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task CreateOrUpdateAsync(Transaction transaction)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var existing = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == transaction.Id);
 
         if (existing is null)
@@ -144,39 +153,52 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
                 Reimburses = null,
             };
 
-            dbContext.Transactions.Add(newTransaction);
+            await dbContext.Transactions.AddAsync(newTransaction);
             return;
         }
 
         await ApplyUpdatesAsync(existing, transaction);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Transaction transaction)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var existing = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == transaction.Id)
             ?? throw new KeyNotFoundException($"Transaction with ID {transaction.Id} not found.");
 
         await ApplyUpdatesAsync(existing, transaction);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var transaction = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id)
             ?? throw new KeyNotFoundException($"Transaction with ID {id} not found.");
+
         dbContext.Transactions.Remove(transaction);
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteOrSkipAsync(Guid id)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var transaction = await dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         if (transaction != null)
         {
             dbContext.Transactions.Remove(transaction);
         }
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task<bool> HasTransactionsForCategoryGroupAsync(Guid categoryGroupId)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         return await dbContext.Transactions
             .Include(t => t.Category)
             .AnyAsync(t => t.Category != null && t.Category.GroupId == categoryGroupId);
@@ -184,6 +206,8 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
 
     public async Task<(DateOnly Min, DateOnly Max)> GetRangeAsync(Guid? categoryGroupId = null)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var query = dbContext.Transactions.AsQueryable();
 
         if (categoryGroupId.HasValue)
@@ -203,6 +227,15 @@ public sealed class TransactionRepository(FinanceManagerDbContext dbContext) : I
         var maxDate = await query.MaxAsync(t => t.Date);
 
         return (DateOnly.FromDateTime(minDate), DateOnly.FromDateTime(maxDate));
+    }
+
+    public async Task<int> GetUnreviewedCountAsync()
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+        return await dbContext.Transactions
+            .Where(t => t.CategoryId == null && t.Reimburses == null)
+            .CountAsync();
     }
 
     private static async Task<PagedResult<Transaction>> GetPagedAsync(FilterQuery query, IQueryable<Transaction> transactions)

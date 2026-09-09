@@ -2,6 +2,7 @@ namespace FinanceManager.Application.UseCases.Review;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 
 public sealed record GetReviewGroupResult(ReviewGroup Group) : UseCaseResult();
 

@@ -3,6 +3,7 @@ namespace FinanceManager.Application.UseCases.Review;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 
 public sealed record GetPagedReviewResult(PagedResult<ReviewGroup> Page) : UseCaseResult();
 

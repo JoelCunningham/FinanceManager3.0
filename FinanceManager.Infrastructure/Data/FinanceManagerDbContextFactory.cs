@@ -1,26 +1,17 @@
 namespace FinanceManager.Infrastructure.Data;
 
-using FinanceManager.Infrastructure.Identity;
-using Microsoft.AspNetCore.Http;
+using FinanceManager.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 
-public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<FinanceManagerDbContext>
+public sealed class FinanceManagerDbContextFactory(IDbContextFactory<FinanceManagerDbContext> factory, ICurrentUserService currentUserService) : IFinanceManagerDbContextFactory
 {
-    public FinanceManagerDbContext CreateDbContext(string[] args)
+    public async Task<FinanceManagerDbContext> CreateDbContextAsync(CancellationToken cancellationToken = default)
     {
-        var connectionString = Environment.GetEnvironmentVariable(Constants.ConnectionStringName);
+        var userId = currentUserService.UserId ?? throw new UnauthorizedAccessException();
 
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException("Missing connection string. Set " + Constants.ConnectionStringName + ".");
-        }
+        var db = await factory.CreateDbContextAsync(cancellationToken);
+        db.SetCurrentUserId(userId);
 
-        var optionsBuilder = new DbContextOptionsBuilder<FinanceManagerDbContext>();
-        optionsBuilder.UseSqlite(connectionString, sqlite => sqlite.MigrationsAssembly(Constants.MigrationsAssembly));
-
-        var currentUserService = new CurrentUserService(new HttpContextAccessor());
-
-        return new FinanceManagerDbContext(optionsBuilder.Options, currentUserService);
+        return db;
     }
 }

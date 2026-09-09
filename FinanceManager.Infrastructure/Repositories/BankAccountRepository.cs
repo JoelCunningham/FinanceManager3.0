@@ -5,22 +5,25 @@ using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-public sealed class BankAccountRepository(FinanceManagerDbContext dbContext) : IBankAccountRepository
+public sealed class BankAccountRepository(IFinanceManagerDbContextFactory dbContextFactory) : IBankAccountRepository
 {
     public async Task<IEnumerable<BankAccount>> GetAllAsync()
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         return await dbContext.BankAccounts.AsNoTracking().ToListAsync();
     }
 
-    public Task CreateAsync(BankAccount bankAccount)
+    public async Task CreateAsync(BankAccount bankAccount)
     {
-        dbContext.BankAccounts.Add(bankAccount);
-        return Task.CompletedTask;
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        await dbContext.BankAccounts.AddAsync(bankAccount);
+        await dbContext.SaveChangesAsync();
     }
-
 
     public async Task<IEnumerable<BankAccount>> GetOrCreateAsync(string bank, IEnumerable<string?> accountNumbers)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var requested = accountNumbers.Distinct().ToList();
         if (requested.Count == 0) return [];
 

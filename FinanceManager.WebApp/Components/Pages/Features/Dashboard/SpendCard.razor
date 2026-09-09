@@ -1,22 +1,22 @@
 ﻿@code {
-    [Parameter] public IReadOnlyList<BudgetCategoryUsage> CategoryUsages { get; set; } = [];
+    [Parameter] public IReadOnlyList<BudgetCategoryUsage>? CategoryUsages { get; set; } = [];
 
     private bool IsByGroupView { get; set; } = true;
     private const int MaxResults = 6;
 
-    private decimal TotalSpending => CategoryUsages.Sum(c => c.Amount);
+    private decimal TotalSpending => CategoryUsages?.Sum(c => c.Amount) ?? 0m;
     private decimal GetAmountProportion(decimal amount) => TotalSpending == 0 ? 0 : amount / TotalSpending;
 
     private ChartSeries Data { get; set; } = default!;
 
-    private IReadOnlyList<(decimal value, string name)> DisplayCategoryUsages => CategoryUsages
+    private IReadOnlyList<(decimal value, string name)>? DisplayCategoryUsages => CategoryUsages?
           .OrderByDescending(c => c.Amount)
           .Take(MaxResults)
           .Concat(GetOtherCategoryUsage())
           .Select(c => (GetAmountProportion(c.Amount), c.Summary.Name == CategoryConstants.OtherName ? CategoryConstants.OtherName : c.Summary.Name))
           .ToList();
 
-    private IReadOnlyList<(decimal value, string name)> DisplayCategoryGroupUsages => CategoryUsages
+    private IReadOnlyList<(decimal value, string name)>? DisplayCategoryGroupUsages => CategoryUsages?
         .GroupBy(c => c.Summary.GroupName)
         .Select(g => new BudgetCategoryUsage
         {
@@ -49,12 +49,12 @@
     private void SetData()
     {
         var data = IsByGroupView ? DisplayCategoryGroupUsages : DisplayCategoryUsages;
-        Data = ChartSeries.PieSeries("Spending", data.ToDictionary(d => d.name, d => d.value), (35, 50), (50, 50));
+        Data = ChartSeries.PieSeries("Spending", data?.ToDictionary(d => d.name, d => d.value) ?? [], (35, 50), (50, 50));
     }
 
     private IEnumerable<BudgetCategoryUsage> GetOtherCategoryUsage()
     {
-        var otherAmount = CategoryUsages
+        var otherAmount = CategoryUsages?
             .OrderByDescending(c => c.Amount)
             .Skip(MaxResults)
             .Sum(c => c.Amount);
@@ -69,8 +69,8 @@
                 GroupName = CategoryConstants.OtherName,
                 Colour = ""
             },
-            Amount = otherAmount,
-            Proportion = GetAmountProportion(otherAmount),
+            Amount = otherAmount ?? 0m,
+            Proportion = GetAmountProportion(otherAmount ?? 0m),
         }];
     }
 
@@ -83,16 +83,23 @@
             <HxButton Color="ThemeColor.Light" OnClick="ToggleView">@(!IsByGroupView ? "By category" : "By area")</HxButton>
         </div>
     </div>
-    @if (!CategoryUsages.Any())
-    {
-        <div class="empty-text">
-            <p class="text-muted">No spending activities have been recorded for this period.</p>
-        </div>
-    }
-    else
-    {
-        <div class="chart">
-            <SpendChart Title="@TotalSpending.ToString("C")" Data="Data" />
-        </div>
-    }
+    <HxProgressIndicator InProgress="@(CategoryUsages is null)" Delay="50">
+        @if (CategoryUsages is null)
+        {
+            <div class="empty-text" />
+        }
+        else if (!CategoryUsages.Any())
+        {
+            <div class="empty-text">
+                <p class="text-muted">No spending activities have been recorded for this period.</p>
+            </div>
+        }
+        else
+        {
+            <div class="chart">
+                <SpendChart Title="@TotalSpending.ToString("C")" Data="Data" />
+            </div>
+        }
+
+    </HxProgressIndicator>
 </div>

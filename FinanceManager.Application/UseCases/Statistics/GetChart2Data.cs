@@ -1,5 +1,6 @@
 namespace FinanceManager.Application.UseCases.Statistics;
 
+using FinanceManager.Application.Constants;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.UseCases;
@@ -53,9 +54,9 @@ public sealed class GetChart2Data(ChartHelper chartHelper, GetCategories getCate
         var remainingLabel = mode == ChartMode.Income ? "Remaining budget" : "Remaining budget";
         var overLabel = mode == ChartMode.Income ? "Above budget" : "Over budget";
 
-        var baseColor = "#126b76";
-        var remainingColor = mode == ChartMode.Income ? "#a81e2e" : "#15723f";
-        var overColor = mode == ChartMode.Income ? "#15723f" : "#a81e2e";
+        var baseColor = ColourConstants.NeutralColour;
+        var remainingColor = mode == ChartMode.Income ? ColourConstants.ExpenseColour : ColourConstants.IncomeColour;
+        var overColor = mode == ChartMode.Income ? ColourConstants.IncomeColour : ColourConstants.ExpenseColour;
 
         options.AddSeries(ChartSeries.BarSeries(baseLabel, baseColor, baseData));
         options.AddSeries(ChartSeries.BarSeries(remainingLabel, remainingColor, remainingData));

@@ -3,6 +3,7 @@
 using FinanceManager.Application.Common;
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.Models;
+using FinanceManager.Application.UseCases.Settings;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Shared.Wrappers;
@@ -14,6 +15,12 @@ using Microsoft.AspNetCore.Components;
 public partial class _Page : MainPageBase
 {
     [Inject] public UserState UserState { get; set; } = default!;
+    [Inject] protected GetProfile GetProfileUseCase { get; set; } = default!;
+    [Inject] protected UpdateUserEmail UpdateUserEmailUseCase { get; set; } = default!;
+    [Inject] protected UpdateUserName UpdateUserNameUseCase { get; set; } = default!;
+    [Inject] protected UpdateUserPassword UpdateUserPasswordUseCase { get; set; } = default!;
+    [Inject] protected DeleteUser DeleteUserUseCase { get; set; } = default!;
+    [Inject] protected SendMfaCode SendMfaCodeUseCase { get; set; } = default!;
 
     private ProfileModel ProfileModel { get; set; } = new();
     private PasswordModel PasswordModel { get; set; } = new();
@@ -56,7 +63,7 @@ public partial class _Page : MainPageBase
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        ProfileModel = (await UseCases.GetProfileAsync()).Profile;
+        ProfileModel = (await GetProfileUseCase.ExecuteAsync()).Profile;
         OptionsModel.PreferredColourMode = await Preferences.PerferedColourMode;
     }
 
@@ -76,7 +83,7 @@ public partial class _Page : MainPageBase
 
     private async Task GenerateNewMfaCode()
     {
-        MfaCode = (await UseCases.SendMfaCodeAsync(ProfileModel.CurrentName, ProfileModel.CurrentEmail)).MfaCode;
+        MfaCode = (await SendMfaCodeUseCase.ExecuteAsync(ProfileModel.CurrentName, ProfileModel.CurrentEmail)).MfaCode;
     }
 
     private async Task HandleMfaSubmit(string code)
@@ -103,7 +110,7 @@ public partial class _Page : MainPageBase
     private async Task UpdateEmailAsync()
     {
         ProfileModel.Origin = Navigation.BaseUri.TrimEnd('/');
-        var result = await UseCases.UpdateUserEmailAsync(ProfileModel);
+        var result = await UpdateUserEmailUseCase.ExecuteAsync(ProfileModel);
 
         await MfaModal.HideAsync();
 
@@ -121,7 +128,7 @@ public partial class _Page : MainPageBase
 
     private async Task UpdateNameAsync()
     {
-        var result = await UseCases.UpdateUserNameAsync(ProfileModel);
+        var result = await UpdateUserNameUseCase.ExecuteAsync(ProfileModel);
 
         await MfaModal.HideAsync();
 
@@ -140,7 +147,7 @@ public partial class _Page : MainPageBase
 
     private async Task UpdatePasswordAsync()
     {
-        var result = await UseCases.UpdateUserPasswordAsync(PasswordModel);
+        var result = await UpdateUserPasswordUseCase.ExecuteAsync(PasswordModel);
 
         PasswordModel.CurrentPassword = string.Empty;
         PasswordModel.NewPassword = string.Empty;
@@ -164,7 +171,7 @@ public partial class _Page : MainPageBase
 
         if (confirmed)
         {
-            var result = await UseCases.DeleteUserAsync();
+            var result = await DeleteUserUseCase.ExecuteAsync();
 
             if (!result.IsSuccess)
             {

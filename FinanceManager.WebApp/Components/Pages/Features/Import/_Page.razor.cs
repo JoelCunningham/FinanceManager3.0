@@ -3,6 +3,7 @@
 using FinanceManager.Application.Constants;
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.UseCases.Import;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Utilities;
 using Microsoft.AspNetCore.Components;
@@ -11,6 +12,10 @@ using Microsoft.AspNetCore.Components.Forms;
 [Route(Pages.Import)]
 public partial class _Page : MainPageBase
 {
+    [Inject] protected GetParsers GetParsersUseCase { get; set; } = default!;
+    [Inject] protected ParseFile ParseFileUseCase { get; set; } = default!;
+    [Inject] protected SaveImport SaveImportUseCase { get; set; } = default!;
+
     public IReadOnlyList<BankParser> AvailableParsers { get; set; } = [];
     public BankParser? SelectedParser { get; set; }
     public IReadOnlyList<ParsedTransaction>? ImportedTransactions { get; set; }
@@ -27,7 +32,7 @@ public partial class _Page : MainPageBase
     {
         await base.OnInitializedAsync();
 
-        AvailableParsers = (await UseCases.GetParsersAsync()).Parsers;
+        AvailableParsers = (await GetParsersUseCase.ExecuteAsync()).Parsers;
         SelectedParser = AvailableParsers.Count > 0 ? AvailableParsers[0] : null;
     }
 
@@ -52,7 +57,7 @@ public partial class _Page : MainPageBase
         var bankName = SelectedParser.BankName;
         var fileExtension = Path.GetExtension(file.Name);
 
-        var parseResult = await UseCases.ParseFileAsync(stream, bankName, fileExtension);
+        var parseResult = await ParseFileUseCase.ExecuteAsync(stream, bankName, fileExtension);
 
         if (parseResult.IsSuccess && parseResult.Transactions is not null)
         {
@@ -73,7 +78,7 @@ public partial class _Page : MainPageBase
     {
         if (ImportedTransactions is null) return;
 
-        var saveResult = await UseCases.SaveImportAsync(ImportedTransactions);
+        var saveResult = await SaveImportUseCase.ExecuteAsync(ImportedTransactions);
 
         if (saveResult.IsSuccess)
         {

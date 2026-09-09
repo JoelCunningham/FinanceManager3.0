@@ -4,14 +4,13 @@ using FinanceManager.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
 public sealed record DeleteBudgetResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class DeleteBudget(IBudgetYearRepository budgetYearRepository, IDataStore dataStore, ILogger<DeleteBudget> logger)
+public sealed class DeleteBudget(IBudgetYearRepository budgetYearRepository, ILogger<DeleteBudget> logger)
 {
     public async Task<DeleteBudgetResult> ExecuteAsync(Guid id)
     {
         try
         {
             await budgetYearRepository.DeleteAsync(id);
-            await dataStore.SaveAsync();
             return new DeleteBudgetResult([]);
         }
         catch

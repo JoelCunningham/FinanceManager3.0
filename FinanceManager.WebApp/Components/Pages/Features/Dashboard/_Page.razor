@@ -15,55 +15,27 @@
         <HxButton Color="ThemeColor.Primary" @onclick="() => Navigation.NavigateTo(Pages.Import)">Import now</HxButton>
     </NotificationScreen>
 }
-else if (DashboardData is not null)
+else
 {
-    @if (DashboardData.TopOverBudgetCategory is not null)
+    @if (DashboardData?.TopOverBudgetCategory is not null)
     {
         <Alert Level="Alert.AlertLevel.Warning" ActionText="Review budget" ActionUrl="@Pages.Budget">@GetWarningText()</Alert>
     }
 
     <DashboardCards Count="4">
-        <BasicCard Title="Over budget"
-                   Value="@($"{DashboardData.OverBudgetCategories} {LanguageUtilities.Pluralise("categories", DashboardData.OverBudgetCategories)}")"
-                   Description="@($"{LanguageUtilities.Pluralise("needs", DashboardData.OverBudgetCategories, true)} attention")"
-                   Colour="@(DashboardData.OverBudgetCategories > 0 ? ColourUtilities.DangerColour : ColourUtilities.NeutralColour)"
-                   OnClick="@(() => Navigation.NavigateTo(Pages.Statistics + '/' + Tabs.Chart1))" />
-
-        <BasicCard Title="Spent this month"
-                   Value="@(DashboardData.SpentThisMonth.ToString("C", CultureInfo.CurrentCulture))"
-                   Description="@($"of {DashboardData.BudgetedThisMonth.ToString("C", CultureInfo.CurrentCulture)} budgeted")"
-                   Colour="@ColourUtilities.NeutralColour"
-                   OnClick="@(() => Navigation.NavigateTo(Pages.Activities))" />
-
-        <BasicCard Title="Remaining"
-                   Value="@((DashboardData.BudgetedThisMonth - DashboardData.SpentThisMonth).ToString("C", CultureInfo.CurrentCulture))"
-                   Description="@($"{(DashboardData.BudgetedThisMonth == 0m ? 0m : DashboardData.SpentThisMonth / DashboardData.BudgetedThisMonth):P0} through budget")"
-                   Colour="@(DashboardData.BudgetedThisMonth - DashboardData.SpentThisMonth <= 0m ? ColourUtilities.DangerColour : ColourUtilities.SuccessColour)"
-                   OnClick="@(() => Navigation.NavigateTo(Pages.Budget))" />
-
-        <BasicCard Title="Unassigned"
-                   Value="@($"{DashboardData.UnassignedTransactions} {LanguageUtilities.Pluralise("activities", DashboardData.UnassignedTransactions)}")"
-                   Description="@($"{LanguageUtilities.Pluralise("needs", DashboardData.UnassignedTransactions, true)} categorising")"
-                   Colour="@(DashboardData.UnassignedTransactions > 0 ? ColourUtilities.WarningColour : ColourUtilities.NeutralColour)"
-                   OnClick="@(() => Navigation.NavigateTo(Pages.Review))" />
+        <BasicCard Title="Over budget" Value="@OverBudgetText" Description="@OverBudgetDescription" Colour="@OverBudgetColour" OnClick="@(() => Navigation.NavigateTo(Pages.Statistics + '/' + Tabs.Chart1))" />
+        <BasicCard Title="Spent this month" Value="@SpentThisMonthText" Description="@SpentThisMonthDescription" Colour="@SpentThisMonthColour" OnClick="@(() => Navigation.NavigateTo(Pages.Activities))" />
+        <BasicCard Title="Remaining" Value="@RemainingText" Description="@RemainingDescription" Colour="@RemainingColour" OnClick="@(() => Navigation.NavigateTo(Pages.Budget))" />
+        <BasicCard Title="Unassigned" Value="@UnassignedText" Description="@UnassignedDescription" Colour="@UnassignedColour" OnClick="@(() => Navigation.NavigateTo(Pages.Review))" />
     </DashboardCards>
 
     <DashboardCards Count="2">
-        <BudgetCard CategoryUsages="BudgetCategoryUsages.OrderByDescending(x => x.Proportion).ToList()" />
-        <SpendCard CategoryUsages="BudgetCategoryUsages.OrderByDescending(x => x.Amount).ToList()" />
+        <BudgetCard CategoryUsages="BudgetCategoryUsages?.OrderByDescending(x => x.Proportion).ToList()" />
+        <SpendCard CategoryUsages="BudgetCategoryUsages?.OrderByDescending(x => x.Amount).ToList()" />
     </DashboardCards>
 
     <DashboardCards Count="2">
-        <BasicCard Title="Income share"
-                   Value="@(DashboardData.IncomeShare.ToString("P0", CultureInfo.CurrentCulture))"
-                   Description="of transacted value"
-                   Colour="@(ColourUtilities.NeutralColour)"
-                   OnClick="@(() => Navigation.NavigateTo(Pages.Activities))" />
-
-        <BasicCard Title="Last transaction"
-                   Value="@(DashboardData.DaysSinceLastImport == 0 ? "today" : $"{DashboardData.DaysSinceLastImport} {LanguageUtilities.Pluralise("days", DashboardData.DaysSinceLastImport)} ago")"
-                   Description="@($"on {DateTime.Today.AddDays(-DashboardData.DaysSinceLastImport):yyyy-MM-dd}")"
-                   Colour="@(ColourUtilities.NeutralColour)"
-                   OnClick="@(() => Navigation.NavigateTo(Pages.Import))" />
+        <BasicCard Title="Income share" Value="@IncomeShareText" Description="@IncomeShareDescription" Colour="@IncomeShareColour" OnClick="@(() => Navigation.NavigateTo(Pages.Activities))" />
+        <BasicCard Title="Last transaction" Value="@LastTransactionText" Description="@LastTransactionDescription" Colour="@LastTransactionColour" OnClick="@(() => Navigation.NavigateTo(Pages.Import))" />
     </DashboardCards>
 }

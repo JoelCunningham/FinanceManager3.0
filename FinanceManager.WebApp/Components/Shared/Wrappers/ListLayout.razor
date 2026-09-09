@@ -9,6 +9,17 @@
 
     [Parameter] public string SearchPlaceholder { get; set; } = "Search";
 
+    private bool IsFirstLoad { get; set; } = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsFirstLoad && Data.GetDataFunc is not null)
+        {
+            IsFirstLoad = false;
+            await Data.UpdateAsync();
+        }
+    }
+
     private async Task OnSearchChanged(string value)
     {
         Data.Query.SearchTerm = value ?? string.Empty;

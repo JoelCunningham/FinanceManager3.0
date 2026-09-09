@@ -12,14 +12,17 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (ChartModel.Options is not null)
         {
-            _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
-            _dotNetRef ??= DotNetObjectReference.Create(this);
-            await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
+            if (firstRender)
+            {
+                _module ??= await JS.InvokeAsync<IJSObjectReference>(JsCommands.Import, "./js/EChartsExtentions.js");
+                _dotNetRef ??= DotNetObjectReference.Create(this);
+                await _module.InvokeVoidAsync(JsCommands.AttachClickHandler, _wrapper, _dotNetRef);
+            }
+            ChartModel.Options.SetTextColor(await ThemeUtilities.GetTextColour(JS));
+            StateHasChanged();
         }
-        ChartModel.Options.SetTextColor(await ThemeUtilities.GetTextColour(JS));
-        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()

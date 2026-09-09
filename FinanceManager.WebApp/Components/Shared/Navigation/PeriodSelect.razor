@@ -10,14 +10,17 @@
     }
 }
 
-<HxSelect Value="CurrentPeriod"
-          ValueChanged="OnSelectedPeriod"
-          ValueExpression="() => CurrentPeriod"
-          Data="Periods"
-          TItem="(int Index, string Name)"
-          TValue="int"
-          Nullable="false"
-          AutoSort="false"
-          TextSelector="f => f.Name"
-          ValueSelector="f => f.Index"
-          InputCssClass="text-center" />
+@if (Periods.Where(p => p.Index == CurrentPeriod).Any())
+{
+    <HxSelect Value="CurrentPeriod"
+              ValueChanged="OnSelectedPeriod"
+              ValueExpression="() => CurrentPeriod"
+              Data="Periods"
+              TItem="(int Index, string Name)"
+              TValue="int"
+              Nullable="false"
+              AutoSort="false"
+              TextSelector="f => f.Name"
+              ValueSelector="f => f.Index"
+              InputCssClass="text-center" />
+}

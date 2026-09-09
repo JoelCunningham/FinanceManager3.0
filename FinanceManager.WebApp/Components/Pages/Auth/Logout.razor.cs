@@ -9,7 +9,7 @@ public partial class Logout : AuthPageBase
 {
     protected override async Task OnInitializedAsync()
     {
-        var result = await Application.UseCases.UseCases.LogoutUserAsync();
+        var result = await Application.UseCases.Auth.LogoutUser.ExecuteAsync();
         Navigation.NavigateTo(result.LogoutLink!, true);
     }
 }

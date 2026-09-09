@@ -3,6 +3,7 @@ namespace FinanceManager.Application.UseCases.Budget;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Utilities;
 

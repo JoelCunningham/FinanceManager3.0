@@ -2,7 +2,6 @@ namespace FinanceManager.WebApp.Components.Pages.Features.CategoryGroup;
 
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
-using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Shared.Modals;
@@ -14,6 +13,14 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Categories + Tabs.GroupName)]
 public partial class _Page : MainPageBase
 {
+    [Inject] protected Application.UseCases.Transactions.GetAvailablePeriods GetAvailablePeriodsUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Transactions.GetPagedTransactions GetPagedTransactionsUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Categories.GetCategoryGroupDetails GetCategoryGroupDetailsUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Categories.SaveCategoryEdit SaveCategoryEditUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Categories.DeleteCategory DeleteCategoryUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Categories.SaveCategoryGroupEdit SaveCategoryGroupEditUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Categories.DeleteCategoryGroup DeleteCategoryGroupUseCase { get; set; } = default!;
+
     [Parameter] public string GroupName { get; set; } = default!;
 
     private CategoryGroupDetails Group { get; set; } = default!;
@@ -37,8 +44,8 @@ public partial class _Page : MainPageBase
     {
         await base.OnInitializedAsync();
 
-        AvailablePeriods = (await UseCases.GetAvailablePeriodsAsync()).Periods;
-        TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
+        AvailablePeriods = (await GetAvailablePeriodsUseCase.ExecuteAsync()).Periods;
+        TransactionData.GetDataFunc = async (query) => (await GetPagedTransactionsUseCase.ExecuteAsync(query)).Page;
     }
 
     protected override async Task OnParametersSetAsync()
@@ -51,7 +58,7 @@ public partial class _Page : MainPageBase
         try
         {
             var currentPeriod = AvailablePeriods.ElementAtOrDefault(CurrentPeriodIndex) ?? new ScopedPeriod(BudgetScope.Monthly, DateOnly.FromDateTime(DateTime.Today), 0);
-            Group = (await UseCases.GetCategoryGroupDetailsAsync(GroupName, currentPeriod)).GroupDetails;
+            Group = (await GetCategoryGroupDetailsUseCase.ExecuteAsync(GroupName, currentPeriod)).GroupDetails;
         }
         catch
         {
@@ -103,7 +110,7 @@ public partial class _Page : MainPageBase
         Validation.Clear();
         if (EditCategory is null) return;
 
-        var result = await UseCases.SaveCategoryEditAsync(EditCategory);
+        var result = await SaveCategoryEditUseCase.ExecuteAsync(EditCategory);
         if (!result.IsSuccess)
         {
             Validation.SetErrors(result.Errors);
@@ -133,7 +140,7 @@ public partial class _Page : MainPageBase
 
         if (await Confirmation.Show(confrimationMessage))
         {
-            var result = await UseCases.DeleteCategoryAsync(EditCategory.Id);
+            var result = await DeleteCategoryUseCase.ExecuteAsync(EditCategory.Id);
 
             if (!result.IsSuccess)
             {
@@ -157,7 +164,7 @@ public partial class _Page : MainPageBase
         Validation.Clear();
         if (EditGroup is null) return;
 
-        var result = await UseCases.SaveCategoryGroupEditAsync(EditGroup);
+        var result = await SaveCategoryGroupEditUseCase.ExecuteAsync(EditGroup);
         if (!result.IsSuccess)
         {
             Validation.SetErrors(result.Errors);
@@ -188,7 +195,7 @@ public partial class _Page : MainPageBase
         if (await Confirmation.Show(confrimationMessage))
         {
 
-            var result = await UseCases.DeleteCategoryGroupAsync(EditGroup.Id);
+            var result = await DeleteCategoryGroupUseCase.ExecuteAsync(EditGroup.Id);
             if (!result.IsSuccess)
             {
                 Validation.SetErrors(result.Errors);

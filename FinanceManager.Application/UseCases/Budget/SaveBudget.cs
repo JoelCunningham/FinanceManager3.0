@@ -5,7 +5,7 @@ using FinanceManager.Domain.Enums;
 
 public sealed record SaveBudgetResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveBudget(IBudgetYearRepository budgetYearRepository, IBudgetEntryRepository budgetEntryRepository, IDataStore dataStore)
+public sealed class SaveBudget(IBudgetYearRepository budgetYearRepository, IBudgetEntryRepository budgetEntryRepository)
 {
     public async Task<SaveBudgetResult> ExecuteAsync(int year, BudgetScope scope, bool isEditing)
     {
@@ -29,8 +29,6 @@ public sealed class SaveBudget(IBudgetYearRepository budgetYearRepository, IBudg
             await budgetEntryRepository.StretchEntriesToScope(year, existingBudgetYear.Scope, scope);
             existingBudgetYear.Scope = scope;
         }
-
-        await dataStore.SaveAsync();
 
         return new SaveBudgetResult([]);
     }

@@ -3,6 +3,7 @@ namespace FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Application.UseCases.Categories;
 using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Enums;
@@ -99,7 +100,7 @@ public sealed class GetDashboardData(
             .OrderByDescending(usage => usage.Proportion)
             .FirstOrDefault();
 
-        var unassignedTransactions = await GetUnassignedTransactionCountAsync();
+        var unassignedTransactions = await transactionRepository.GetUnreviewedCountAsync();
         var daysSinceLastImport = await GetDaysSinceLastImportAsync();
 
         return new GetDashboardDataResult(
@@ -127,18 +128,6 @@ public sealed class GetDashboardData(
         };
 
         return [.. (await transactionRepository.GetTransactionsAsync(query)).Select(TransactionSummary.FromTransaction)];
-    }
-
-    private async Task<int> GetUnassignedTransactionCountAsync()
-    {
-        var query = new FilterQuery
-        {
-            PageSize = 1,
-            FilterStatus = ReviewStatus.Unreviewed,
-        };
-
-        var paged = await transactionRepository.GetPagedTransactionsAsync(query);
-        return paged.TotalItems;
     }
 
     private async Task<int> GetDaysSinceLastImportAsync()

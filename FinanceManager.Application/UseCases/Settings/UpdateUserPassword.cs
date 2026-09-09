@@ -6,7 +6,7 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 
 public sealed record UpdateUserPasswordResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class UpdateUserPassword(IIdentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class UpdateUserPassword(IIdentityService identityService, IAuditLogRepository auditLog)
 {
     public async Task<UpdateUserPasswordResult> ExecuteAsync(PasswordModel model)
     {
@@ -17,8 +17,6 @@ public sealed class UpdateUserPassword(IIdentityService identityService, IAuditL
         }
 
         await auditLog.LogAsync(user.Id, AuditedEvent.PasswordChanged, "Password has been changed.", DateTime.Now);
-        await dataStore.SaveAsync();
-
         return new UpdateUserPasswordResult([]);
     }
 }

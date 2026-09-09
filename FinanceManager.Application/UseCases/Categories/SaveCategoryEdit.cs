@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 public sealed record SaveCategoryEditResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveCategoryEdit(ICategoryRepository categoryRepository, IDataStore dataStore, ILogger<SaveCategoryEdit> logger)
+public sealed class SaveCategoryEdit(ICategoryRepository categoryRepository, ILogger<SaveCategoryEdit> logger)
 {
     public async Task<SaveCategoryEditResult> ExecuteAsync(CategorySummary category)
     {
@@ -51,7 +51,6 @@ public sealed class SaveCategoryEdit(ICategoryRepository categoryRepository, IDa
                 await categoryRepository.UpdateAsync(entity);
             }
 
-            await dataStore.SaveAsync();
             return new SaveCategoryEditResult([]);
         }
         catch

@@ -1,43 +1,52 @@
 @inherits MainPageBase
 
-<PageHeading Heading="@Group.Name">
-    <SubheadingParts>
-        <span>@(Group.IsIncome ? "Income" : "Expense")</span>
-        <span>@Group.Categories.Count() categories</span>
-        <span><ColourDot Colour="@Group.Colour" /></span>
-    </SubheadingParts>
-    <Actions>
-        <CategoryActions OnEdit="OpenGroupModal" OnClose="() => Navigation.NavigateTo(Pages.Categories)" OnCategoryCreate="OpenCategoryCreateModal" />
-    </Actions>
-</PageHeading>
+@if (Group is null)
+{
+    <NotificationScreen Text="The category area you are trying to view does not exist.">
+        <HxButton Color="ThemeColor.Primary" @onclick="() => Navigation.NavigateTo(Pages.Categories)">Back to category areas</HxButton>
+    </NotificationScreen>
+}
+else
+{
+    <PageHeading Heading="@Group.Name">
+        <SubheadingParts>
+            <span>@(Group.IsIncome ? "Income" : "Expense")</span>
+            <span>@Group.Categories.Count() categories</span>
+            <span><ColourDot Colour="@Group.Colour" /></span>
+        </SubheadingParts>
+        <Actions>
+            <CategoryActions OnEdit="OpenGroupModal" OnClose="() => Navigation.NavigateTo(Pages.Categories)" OnCategoryCreate="OpenCategoryCreateModal" />
+        </Actions>
+    </PageHeading>
 
-<CategoryGroupPanel Group="Group"
-                    Periods="AvailablePeriods"
-                    CurrentRange="CurrentPeriodIndex"
-                    OnRangeSelected="SetCurrentPeriod"
-                    OnCategoryClicked="OpenTransactionsModal"
-                    OnCategoryEdit="OpenCategoryEditModal" />
+    <CategoryGroupPanel Group="Group"
+    Periods="AvailablePeriods"
+    CurrentRange="CurrentPeriodIndex"
+    OnRangeSelected="SetCurrentPeriod"
+    OnCategoryClicked="OpenTransactionsModal"
+    OnCategoryEdit="OpenCategoryEditModal" />
 
-<CategoryGroupModal @ref="GroupModal"
-                    IsEditing="true"
-                    Group="EditGroup"
-                    HasIsIncomeError="@Validation.GetValidationItemIds(ValidationField.IsIncome).Contains(EditGroup?.Id ?? Guid.Empty)"
-                    HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditGroup?.Id ?? Guid.Empty)"
-                    HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditGroup?.Id ?? Guid.Empty)"
-                    HasIconError="@Validation.GetValidationItemIds(ValidationField.Icon).Contains(EditGroup?.Id ?? Guid.Empty)"
-                    OnSave="OnGroupSave"
-                    OnCancel="CloseGroupModal"
-                    OnDelete="OnGroupDelete" />
+    <CategoryGroupModal @ref="GroupModal"
+    IsEditing="true"
+    Group="EditGroup"
+    HasIsIncomeError="@Validation.GetValidationItemIds(ValidationField.IsIncome).Contains(EditGroup?.Id ?? Guid.Empty)"
+    HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditGroup?.Id ?? Guid.Empty)"
+    HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditGroup?.Id ?? Guid.Empty)"
+    HasIconError="@Validation.GetValidationItemIds(ValidationField.Icon).Contains(EditGroup?.Id ?? Guid.Empty)"
+    OnSave="OnGroupSave"
+    OnCancel="CloseGroupModal"
+    OnDelete="OnGroupDelete" />
 
-<CategoryModal @ref="CategoryModal"
-               IsEditing="IsEditing"
-               Category="EditCategory"
-               HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditCategory?.Id ?? Guid.Empty)"
-               HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditCategory?.Id ?? Guid.Empty)"
-               OnSave="OnCategorySave"
-               OnCancel="CloseCategoryModal"
-               OnDelete="OnCategoryDelete" />
+    <CategoryModal @ref="CategoryModal"
+    IsEditing="IsEditing"
+    Category="EditCategory"
+    HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditCategory?.Id ?? Guid.Empty)"
+    HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditCategory?.Id ?? Guid.Empty)"
+    OnSave="OnCategorySave"
+    OnCancel="CloseCategoryModal"
+    OnDelete="OnCategoryDelete" />
 
-<TransactionsModal @ref="TransactionsModal" Category="CurrentCategory" TransactionData="TransactionData" OnCategoryEdit="OpenCategoryEditModal" />
+    <TransactionsModal @ref="TransactionsModal" Category="CurrentCategory" TransactionData="TransactionData" OnCategoryEdit="OpenCategoryEditModal" />
 
-<Confirmation @ref="Confirmation" />
+    <Confirmation @ref="Confirmation" />
+}

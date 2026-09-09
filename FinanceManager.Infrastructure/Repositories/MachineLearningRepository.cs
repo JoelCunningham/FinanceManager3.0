@@ -5,14 +5,16 @@ using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-public sealed class MachineLearningRepository(FinanceManagerDbContext dbContext) : IMachineLearningRepository
+public sealed class MachineLearningRepository(IFinanceManagerDbContextFactory dbContextFactory) : IMachineLearningRepository
 {
-    public Task CreateAsync(Guid categoryId, string description)
+    public async Task CreateAsync(Guid categoryId, string description)
     {
-        var normalisedDescription = NormaliseDescription(description);
-        if (normalisedDescription == null) return Task.CompletedTask;
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
-        dbContext.MachineLearning.Add(new MachineLearning
+        var normalisedDescription = NormaliseDescription(description);
+        if (normalisedDescription == null) return;
+
+        await dbContext.MachineLearning.AddAsync(new MachineLearning
         {
             Id = Guid.NewGuid(),
             CategoryId = categoryId,
@@ -20,11 +22,13 @@ public sealed class MachineLearningRepository(FinanceManagerDbContext dbContext)
             NormalisedDescription = normalisedDescription,
             LastUsed = DateTime.UtcNow
         });
-        return Task.CompletedTask;
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<MachineLearning>> GetAllAsync()
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         return await dbContext.MachineLearning
             .Include(m => m.Category)
             .AsNoTracking()
@@ -33,6 +37,8 @@ public sealed class MachineLearningRepository(FinanceManagerDbContext dbContext)
 
     public async Task<MachineLearning?> GetExactOrDefaultAsync(string description)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         return await dbContext.MachineLearning
             .Include(m => m.Category)
             .FirstOrDefaultAsync(m => m.NormalisedDescription == description);

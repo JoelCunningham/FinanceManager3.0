@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Categories)]
 public partial class _Page : MainPageBase
 {
+    [Inject] protected Application.UseCases.Categories.GetCategories GetCategoriesUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Categories.SaveCategoryGroupEdit SaveCategoryGroupEditUseCase { get; set; } = default!;
+
     public IReadOnlyList<CategorySummary> AllCategories { get; set; } = [];
     public IReadOnlyList<CategoryGroupSummary> CategoryGroups { get; set; } = [];
 
@@ -34,7 +37,7 @@ public partial class _Page : MainPageBase
 
     private async Task RefreshCategories()
     {
-        var allCategories = await UseCases.GetCategoriesAsync();
+        var allCategories = await GetCategoriesUseCase.ExecuteAsync();
         CategoryGroups = allCategories.Groups;
         AllCategories = allCategories.Categories;
     }
@@ -54,7 +57,7 @@ public partial class _Page : MainPageBase
         Validation.Clear();
         if (CreateGroup is null) return;
 
-        var result = await UseCases.SaveCategoryGroupEditAsync(CreateGroup);
+        var result = await SaveCategoryGroupEditUseCase.ExecuteAsync(CreateGroup);
         if (!result.IsSuccess)
         {
             Validation.SetErrors(result.Errors);

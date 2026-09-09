@@ -6,7 +6,7 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 
 public sealed record DeleteUserResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class DeleteUser(IIdentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class DeleteUser(IIdentityService identityService, IAuditLogRepository auditLog)
 {
     public async Task<DeleteUserResult> ExecuteAsync()
     {
@@ -17,8 +17,6 @@ public sealed class DeleteUser(IIdentityService identityService, IAuditLogReposi
         }
 
         await auditLog.LogAsync(user.Id, AuditedEvent.AccountDeleted, "User has been deleted.", DateTime.Now);
-        await dataStore.SaveAsync();
-
         return new DeleteUserResult([]);
     }
 }

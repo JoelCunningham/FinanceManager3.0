@@ -5,10 +5,12 @@ using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IBankRecordRepository
+public sealed class BankRecordRepository(IFinanceManagerDbContextFactory dbContextFactory) : IBankRecordRepository
 {
     public async Task<IEnumerable<BankRecord>> GetAllAsync()
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         return await dbContext.BankRecords
             .Include(br => br.BankAccount)
             .ToListAsync();
@@ -16,36 +18,36 @@ public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IB
 
     public async Task<BankRecord> GetByIdAsync(Guid id)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var bankRecord = await dbContext.BankRecords
             .Include(br => br.BankAccount)
             .Include(br => br.Transactions)
-            .FirstOrDefaultAsync(br => br.Id == id);
+            .FirstOrDefaultAsync(br => br.Id == id)
+            ?? throw new KeyNotFoundException($"BankRecord with Id {id} not found.");
 
-        if (bankRecord is not null)
-        {
-            return bankRecord;
-        }
-
-        throw new KeyNotFoundException($"BankRecord with Id {id} not found.");
+        return bankRecord;
     }
 
     public async Task<IEnumerable<BankRecord>> GetByIdsAsync(IEnumerable<Guid> ids)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var idSet = ids as HashSet<Guid> ?? [.. ids];
         var bankRecords = await dbContext.BankRecords
             .Where(br => idSet.Contains(br.Id))
             .ToListAsync();
 
-        if (bankRecords.Count == idSet.Count)
-        {
-            return bankRecords;
-        }
+        if (bankRecords.Count != idSet.Count) 
+            throw new KeyNotFoundException("One or more BankRecords not found for the provided Ids.");
 
-        throw new KeyNotFoundException("One or more BankRecords not found for the provided Ids.");
+        return bankRecords;
     }
 
     public async Task<IEnumerable<BankRecord>> FilterDuplicatesAsync(IEnumerable<BankRecord> bankRecords)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var records = bankRecords as List<BankRecord> ?? [.. bankRecords];
         if (records.Count == 0) return [];
 
@@ -66,12 +68,14 @@ public sealed class BankRecordRepository(FinanceManagerDbContext dbContext) : IB
 
     public async Task<DateTime?> GetLatestDateAsync()
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         return await dbContext.BankRecords.MaxAsync(br => (DateTime?)br.Date);
     }
 
-    public Task CreateAsync(IEnumerable<BankRecord> bankRecords)
+    public async Task CreateAsync(IEnumerable<BankRecord> bankRecords)
     {
-        return dbContext.BulkInsertOwnedAsync(bankRecords);
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        await dbContext.BulkInsertOwnedAsync(bankRecords);
     }
 
     private readonly record struct BankRecordKey(decimal Amount, DateTime Date, string Bank, string? AccountNumber, string Description, string? Type, string? Reference);

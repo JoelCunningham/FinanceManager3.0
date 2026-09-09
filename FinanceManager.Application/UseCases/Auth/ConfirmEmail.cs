@@ -8,7 +8,7 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 
 public sealed record ConfirmEmailResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ConfirmEmail(IIdentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class ConfirmEmail(IIdentityService identityService, IAuditLogRepository auditLog)
 {
     public async Task<ConfirmEmailResult> ExecuteAsync(ConfirmEmailModel model)
     {
@@ -41,7 +41,6 @@ public sealed class ConfirmEmail(IIdentityService identityService, IAuditLogRepo
         }
 
         await auditLog.LogAsync(user.Id, AuditedEvent.EmailConfirmed, $"Email {model.Email} has been confirmed.", DateTime.Now);
-        await dataStore.SaveAsync();
 
         return new ConfirmEmailResult([]);
     }

@@ -2,6 +2,7 @@ namespace FinanceManager.Application.UseCases.Import;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Entities;
 
 public sealed record ParseFileResult(List<ParsedTransaction> Transactions, IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);

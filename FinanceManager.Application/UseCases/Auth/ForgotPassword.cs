@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 public sealed record ForgotPasswordResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ForgotPassword(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class ForgotPassword(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog)
 {
     public async Task<ForgotPasswordResult> ExecuteAsync(ForgotPasswordModel model)
     {
@@ -35,9 +35,7 @@ public sealed class ForgotPassword(IIdentityService identityService, IUserEmailS
         });
 
         await emailService.SendPasswordResetAsync(user.Email, user.Email, resetLink);
-
         await auditLog.LogAsync(user.Id, AuditedEvent.PasswordResetRequested, "Password reset requested.", DateTime.Now);
-        await dataStore.SaveAsync();
 
         return new ForgotPasswordResult([]);
     }

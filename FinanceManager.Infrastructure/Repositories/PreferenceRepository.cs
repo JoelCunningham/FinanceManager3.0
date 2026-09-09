@@ -5,10 +5,12 @@ using FinanceManager.Domain.Enums;
 using FinanceManager.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-public class PreferenceRepository(FinanceManagerDbContext dbContext) : IPreferenceRepository
+public class PreferenceRepository(IFinanceManagerDbContextFactory dbContextFactory) : IPreferenceRepository
 {
     public async Task<string> GetByNameAsync(PreferenceNames name)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var preference = await dbContext.Preferences
             .Where(p => p.Name == name)
             .Select(p => p.Value)
@@ -19,6 +21,8 @@ public class PreferenceRepository(FinanceManagerDbContext dbContext) : IPreferen
 
     public async Task SetAsync(PreferenceNames name, string value)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var existing = await dbContext.Preferences.FirstOrDefaultAsync(p => p.Name == name);
         if (existing == null)
         {
@@ -34,5 +38,7 @@ public class PreferenceRepository(FinanceManagerDbContext dbContext) : IPreferen
             existing.Value = value;
             dbContext.Preferences.Update(existing);
         }
+
+        await dbContext.SaveChangesAsync();
     }
 }

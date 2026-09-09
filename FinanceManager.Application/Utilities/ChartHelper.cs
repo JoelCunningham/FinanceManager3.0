@@ -45,7 +45,7 @@ public class ChartHelper(ITransactionRepository transactionRepository, IBudgetEn
             .Sum(d => 
                 isExpense ? -d.DailyAmount : 
                 isNet ? 
-                    d.isExpense ? 
+                    d.IsExpense ? 
                     -d.DailyAmount : d.DailyAmount :
                 d.DailyAmount))
         );

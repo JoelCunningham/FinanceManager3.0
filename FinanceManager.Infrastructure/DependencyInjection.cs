@@ -14,8 +14,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
         // Data
-        services.AddDbContext<FinanceManagerDbContext>(options => options.UseSqlite(connectionString, sqlite => sqlite.MigrationsAssembly(Constants.MigrationsAssembly)));
-        services.AddScoped<IDataStore>(sp => sp.GetRequiredService<FinanceManagerDbContext>());
+        services.AddDbContextFactory<FinanceManagerDbContext>(options => options.UseSqlServer(connectionString, sqlServer => sqlServer.MigrationsAssembly(Constants.MigrationsAssembly)));
+        services.AddScoped<IFinanceManagerDbContextFactory, FinanceManagerDbContextFactory>();
 
         // Repositories
         services.AddScoped<ITransferRepository, TransferRepository>();

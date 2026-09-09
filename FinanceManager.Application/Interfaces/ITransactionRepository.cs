@@ -19,4 +19,5 @@ public interface ITransactionRepository
     Task DeleteOrSkipAsync(Guid id);
     Task<bool> HasTransactionsForCategoryGroupAsync(Guid categoryGroupId);
     Task<(DateOnly Min, DateOnly Max)> GetRangeAsync(Guid? categoryGroupId = null);
+    Task<int> GetUnreviewedCountAsync();
 }

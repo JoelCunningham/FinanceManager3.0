@@ -13,6 +13,7 @@
     }
 
     .empty-text {
+        height: 20rem;
         align-content: center;
 
         p {

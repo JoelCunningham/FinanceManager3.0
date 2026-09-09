@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Register)]
 public partial class Register : AuthPageBase
 {
+    [Inject] protected Application.UseCases.Auth.RegisterUser RegisterUserUseCase { get; set; } = default!;
+
     private RegisterUserModel Model { get; set; } = new();
     
     private string? Message { get; set; }
@@ -31,7 +33,7 @@ public partial class Register : AuthPageBase
     private async Task HandleRegister()
     {
         Model.Origin = Navigation.BaseUri.TrimEnd('/');
-        var result = await UseCases.RegisterUserAsync(Model);
+        var result = await RegisterUserUseCase.ExecuteAsync(Model);
 
         Success = result.IsSuccess;
         Message = result.Errors.FirstOrDefault()?.Message;

@@ -1,6 +1,7 @@
 namespace FinanceManager.Application.UseCases.Review;
 
 using FinanceManager.Application.DTOs;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 
 public sealed record ValidateReviewGroupResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);

@@ -57,7 +57,7 @@ public class CategoryUtilities
         var b = int.Parse(value.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
 
         var luminance = ((0.299 * r) + (0.587 * g) + (0.114 * b)) / 255;
-        return luminance > 0.6 ? "#000000" : "#FFFFFF";
+        return luminance > 0.6 ? ColourConstants.Black : ColourConstants.White;
     }
 
     private static string GetHoverColour(string hex)

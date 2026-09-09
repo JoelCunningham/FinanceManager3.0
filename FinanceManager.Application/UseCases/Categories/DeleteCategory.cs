@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 public sealed record DeleteCategoryResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class DeleteCategory(ICategoryRepository categoryRepository, ITransactionRepository transactionRepository, IDataStore dataStore, ILogger<DeleteCategory> logger)
+public sealed class DeleteCategory(ICategoryRepository categoryRepository, ITransactionRepository transactionRepository, ILogger<DeleteCategory> logger)
 {
     public async Task<DeleteCategoryResult> ExecuteAsync(Guid categoryId)
     {
@@ -19,8 +19,6 @@ public sealed class DeleteCategory(ICategoryRepository categoryRepository, ITran
             }
 
             await categoryRepository.DeleteAsync(categoryId);
-            await dataStore.SaveAsync();
-
             return new DeleteCategoryResult([]);
         }
         catch

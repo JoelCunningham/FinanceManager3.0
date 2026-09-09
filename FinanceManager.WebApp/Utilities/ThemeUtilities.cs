@@ -1,5 +1,6 @@
 namespace FinanceManager.WebApp.Utilities;
 
+using FinanceManager.Application.Constants;
 using FinanceManager.Application.Enums;
 using Microsoft.JSInterop;
 
@@ -19,13 +20,24 @@ public class ThemeUtilities
             _ => throw new ArgumentOutOfRangeException(nameof(theme), theme, null)
         };
 
-        await js.InvokeVoidAsync(JsCommands.SetTheme, themeString);
+        try
+        {
+            await js.InvokeVoidAsync(JsCommands.SetTheme, themeString);
+        }
+        catch { }
     }
 
     public static async Task<string> GetTextColour(IJSRuntime js)
     {
-        var effectiveTheme = await js.InvokeAsync<string>(JsCommands.GetEffectiveTheme);
-        return effectiveTheme == DarkString ? "#d8d8d8" : "#000000";
+        try
+        {
+            var effectiveTheme = await js.InvokeAsync<string>(JsCommands.GetEffectiveTheme);
+            return effectiveTheme == DarkString ? ColourConstants.Light : ColourConstants.Black;
+        }
+        catch
+        {
+            return ColourConstants.Black;
+        }
     }
 
     public static string GetColourModeDescription(ColourTheme colourMode)

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 public sealed record DeleteCategoryGroupResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class DeleteCategoryGroup(ICategoryGroupRepository categoryGroupRepository, ICategoryRepository categoryRepository, ITransactionRepository transactionRepository, IDataStore dataStore, ILogger<DeleteCategoryGroup> logger)
+public sealed class DeleteCategoryGroup(ICategoryGroupRepository categoryGroupRepository, ICategoryRepository categoryRepository, ITransactionRepository transactionRepository, ILogger<DeleteCategoryGroup> logger)
 {
     public async Task<DeleteCategoryGroupResult> ExecuteAsync(Guid groupId)
     {
@@ -25,8 +25,6 @@ public sealed class DeleteCategoryGroup(ICategoryGroupRepository categoryGroupRe
             }
 
             await categoryGroupRepository.DeleteAsync(groupId);
-            await dataStore.SaveAsync();
-
             return new DeleteCategoryGroupResult([]);
         }
         catch

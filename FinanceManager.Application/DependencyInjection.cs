@@ -94,10 +94,7 @@ public static class DependencyInjection
         // Common
         services.AddScoped<UserState>();
         services.AddScoped<Preferences>();
-
         services.AddScoped<ChartHelper>();
-
-        services.AddScoped<UseCases.UseCases>();
 
         return services;
     }

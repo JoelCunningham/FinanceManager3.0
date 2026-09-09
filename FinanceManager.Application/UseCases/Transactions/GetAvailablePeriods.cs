@@ -2,6 +2,7 @@ namespace FinanceManager.Application.UseCases.Transactions;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 using FinanceManager.Domain.Utilities;
 

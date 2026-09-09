@@ -804,3 +804,20 @@ form {
     color: var(--colour-textblack) !important;
     background-color: var(--colour-sidebar) !important;
 }
+
+.placeholder-glow {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+
+    .placeholder {
+
+        &.placeholder-sm {
+            height: 1rem;
+        }
+
+        &.placeholder-lg {
+            height: var(--fontsize-heading);
+        }
+    }
+}

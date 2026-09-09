@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 public sealed record RegisterUserResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class RegisterUser(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class RegisterUser(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog)
 {
     public async Task<RegisterUserResult> ExecuteAsync(RegisterUserModel model)
     {
@@ -44,9 +44,7 @@ public sealed class RegisterUser(IIdentityService identityService, IUserEmailSer
         });
 
         await emailService.SendRegistrationConfirmationAsync(model.Name, model.Email, confirmationLink);
-
         await auditLog.LogAsync(user.Id, AuditedEvent.AccountCreated, $"New account created for {model.Name}", DateTime.Now);
-        await dataStore.SaveAsync();
 
         return new RegisterUserResult([]);
     }

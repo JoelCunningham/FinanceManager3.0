@@ -7,10 +7,12 @@ using FinanceManager.Domain.Entities;
 using FinanceManager.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
-public sealed class TransferRepository(FinanceManagerDbContext dbContext) : ITransferRepository
+public sealed class TransferRepository(IFinanceManagerDbContextFactory dbContextFactory) : ITransferRepository
 {
     public async Task<IEnumerable<Transfer>> GetAllAsync()
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         return await dbContext.Transfers
             .Include(t => t.FromRecord)
             .ThenInclude(r => r.BankAccount)
@@ -20,23 +22,23 @@ public sealed class TransferRepository(FinanceManagerDbContext dbContext) : ITra
     }
     public async Task<Transfer> GetByIdAsync(Guid id)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var transfer = await dbContext.Transfers
             .Include(t => t.FromRecord)
             .ThenInclude(r => r.BankAccount)
             .Include(t => t.ToRecord)
             .ThenInclude(r => r.BankAccount)
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == id)
+            ?? throw new KeyNotFoundException($"Transfer with id {id} not found.");
 
-        if (transfer is not null)
-        {
-            return transfer;
-        }
-
-        throw new KeyNotFoundException($"Transfer with id {id} not found.");
+        return transfer;
     }
 
     public async Task<PagedResult<Transfer>> GetPagedAsync(FilterQuery query)
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
         var queryable = dbContext.Transfers
             .Include(t => t.FromRecord)
             .ThenInclude(r => r.BankAccount)
@@ -60,28 +62,28 @@ public sealed class TransferRepository(FinanceManagerDbContext dbContext) : ITra
         };
     }
 
-    public Task CreateAsync(Transfer transfer)
+    public async Task CreateAsync(Transfer transfer)
     {
-        dbContext.Transfers.Add(transfer);
-        return Task.CompletedTask;
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        await dbContext.Transfers.AddAsync(transfer);
+        await dbContext.SaveChangesAsync();
     }
 
-    public Task CreateAsync(IEnumerable<Transfer> transfers)
+    public async Task CreateAsync(IEnumerable<Transfer> transfers)
     {
-        return dbContext.BulkInsertOwnedAsync(transfers);
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+        await dbContext.BulkInsertOwnedAsync(transfers);
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var transfer = await dbContext.Transfers.FirstOrDefaultAsync(t => t.Id == id);
-        if (transfer is not null)
-        {
-            dbContext.Transfers.Remove(transfer);
-        }
-        else
-        {
-            throw new KeyNotFoundException($"Transfer with id {id} not found.");
-        }
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
+
+        var transfer = await dbContext.Transfers.FirstOrDefaultAsync(t => t.Id == id)
+             ?? throw new KeyNotFoundException($"Transfer with id {id} not found.");
+
+        dbContext.Transfers.Remove(transfer);
+        await dbContext.SaveChangesAsync();
     }
 
     private static IQueryable<Transfer> ApplyFilters(IQueryable<Transfer> query, FilterQuery request)

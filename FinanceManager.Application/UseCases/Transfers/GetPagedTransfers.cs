@@ -2,6 +2,7 @@ namespace FinanceManager.Application.UseCases.Transfers;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Entities;
 
 public sealed record GetPagedTransfersResult(PagedResult<TransferSummary> Page) : UseCaseResult;

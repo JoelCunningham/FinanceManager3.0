@@ -38,7 +38,7 @@ public sealed class BudgetCellEntry()
             Amount = Amount,
             Notes = Name,
             BudgetYearId = budgetYear.Id,
-            BudgetYear = budgetYear,
+            BudgetYear = null!,
             ScopePosition = ScopePosition,
             Length = Length
         };

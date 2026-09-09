@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.ForgotPassword)]
 public partial class ForgotPassword : AuthPageBase
 {
+    [Inject] protected Application.UseCases.Auth.ForgotPassword ForgotPasswordUseCase { get; set; } = default!;
+
     private ForgotPasswordModel Model { get; set; } = new();
 
     private string? Message { get; set; }
@@ -31,7 +33,7 @@ public partial class ForgotPassword : AuthPageBase
     private async Task HandleForgotPassword()
     {
         Model.Origin = Navigation.BaseUri.TrimEnd('/');
-        var result = await UseCases.ForgotPasswordAsync(Model);
+        var result = await ForgotPasswordUseCase.ExecuteAsync(Model);
 
         if (!result.IsSuccess)
         {

@@ -3,7 +3,11 @@ namespace FinanceManager.WebApp.Components.Pages.Features.Transactions;
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
-using FinanceManager.Application.UseCases;
+using FinanceManager.Application.UseCases.Budget;
+using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.UseCases.Review;
+using FinanceManager.Application.UseCases.Transactions;
+using FinanceManager.Application.UseCases.Transfers;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Components.Shared.Budget;
@@ -16,6 +20,21 @@ using Microsoft.JSInterop;
 [Route(Pages.Activities + Tabs.ActiveTabId)]
 public partial class _Page : MainPageBase
 {
+    [Inject] protected GetUniqueAccounts GetUniqueAccountsUseCase { get; set; } = default!;
+    [Inject] protected GetCategories GetCategoriesUseCase { get; set; } = default!;
+    [Inject] protected GetBudgetYears GetBudgetYearsUseCase { get; set; } = default!;
+    [Inject] protected GetPagedTransactions GetPagedTransactionsUseCase { get; set; } = default!;
+    [Inject] protected GetPagedTransfers GetPagedTransfersUseCase { get; set; } = default!;
+    [Inject] protected GetTransactionDetails GetTransactionDetailsUseCase { get; set; } = default!;
+    [Inject] protected GetPagedReview GetPagedReviewUseCase { get; set; } = default!;
+    [Inject] protected GetReviewGroup GetReviewGroupUseCase { get; set; } = default!;
+    [Inject] protected ValidateTransactionEdit ValidateTransactionEditUseCase { get; set; } = default!;
+    [Inject] protected SaveTransactionEdit SaveTransactionEditUseCase { get; set; } = default!;
+    [Inject] protected SaveReview SaveReviewUseCase { get; set; } = default!;
+    [Inject] protected SeparateTransfer SeparateTransferUseCase { get; set; } = default!;
+    [Inject] protected GetPagedBudget GetPagedBudgetUseCase { get; set; } = default!;
+    [Inject] protected ExportTransactions ExportTransactionsUseCase { get; set; } = default!;
+
     public DataGridModel<FilterQuery, TransactionSummary> TransactionData { get; set; } = new(16);
     public DataGridModel<FilterQuery, TransferSummary> TransferData { get; set; } = new(16);
 
@@ -56,29 +75,31 @@ public partial class _Page : MainPageBase
 
     protected override async Task OnInitializedAsync()
     {
+        if (!RendererInfo.IsInteractive) return;
+
         await base.OnInitializedAsync();
 
-        UniqueAccounts = (await UseCases.GetUniqueAccountsAsync()).Accounts;
-        Categories = (await UseCases.GetCategoriesAsync()).Categories;
+        UniqueAccounts = (await GetUniqueAccountsUseCase.ExecuteAsync()).Accounts;
+        Categories = (await GetCategoriesUseCase.ExecuteAsync()).Categories;
 
-        AvailableYears = (await UseCases.GetBudgetYearsAsync()).AvailableYears.OrderByDescending(y => y);
+        AvailableYears = (await GetBudgetYearsUseCase.ExecuteAsync()).AvailableYears.OrderByDescending(y => y);
         await ReloadSummary(DateTime.Now.Year);
 
         TransactionData.Query.FilterStatus = ReviewStatus.Reviewed;
 
-        TransactionData.GetDataFunc = async (query) => (await UseCases.GetPagedTransactionsAsync(query)).Page;
+        TransactionData.GetDataFunc = async (query) => (await GetPagedTransactionsUseCase.ExecuteAsync(query)).Page;
         TransactionData.UpdateViewState = StateHasChanged;
 
-        TransferData.GetDataFunc = async (query) => (await UseCases.GetPagedTransfersAsync(query)).Page;
+        TransferData.GetDataFunc = async (query) => (await GetPagedTransfersUseCase.ExecuteAsync(query)).Page;
         TransferData.UpdateViewState = StateHasChanged;
 
-        UnreviewedCount = (await UseCases.GetPagedReviewAsync(new FilterQuery { FilterStatus = ReviewStatus.Unreviewed })).Page.TotalItems;
+        UnreviewedCount = (await GetPagedReviewUseCase.ExecuteAsync(new FilterQuery { FilterStatus = ReviewStatus.Unreviewed })).Page.TotalItems;
         HideEmptyCategories = HasPopulatedCategories && await Preferences.HideEmptyActivityCategories;
     }
 
     public async Task OpenTransactionDetailsModal(TransactionSummary transaction)
     {
-        SelectedDetails = (await UseCases.GetTransactionDetailsAsync(transaction.EntityId)).Transaction;
+        SelectedDetails = (await GetTransactionDetailsUseCase.ExecuteAsync(transaction.EntityId)).Transaction;
         await DetailsModal.ShowAsync();
     }
 
@@ -92,7 +113,7 @@ public partial class _Page : MainPageBase
     {
         Validation.Clear();
         EditTransaction = transaction.Clone();
-        EditTransactionGroup = (await UseCases.GetReviewGroupAsync(transaction.EntityId)).Group;
+        EditTransactionGroup = (await GetReviewGroupUseCase.ExecuteAsync(transaction.EntityId)).Group;
         await EditModal.ShowAsync();
     }
 
@@ -108,10 +129,10 @@ public partial class _Page : MainPageBase
         transaction.Category = category;
     }
 
-    public void SetDate(TransactionSummary transaction, DateTime value, DateTime recordDate)
+    public async Task SetDate(TransactionSummary transaction, DateTime value, DateTime recordDate)
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Date);
-        var result = UseCases.BackdateTransactionAsync(transaction, value, recordDate).Result;
+        var result = await BackdateTransaction.ExecuteAsync(transaction, value, recordDate);
 
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
@@ -119,7 +140,7 @@ public partial class _Page : MainPageBase
     public async Task SetAmount(ReviewTransaction transaction, decimal value, ReviewGroup group)
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Amount);
-        var result = await UseCases.UpdateTransactionAmountAsync(transaction, value, group);
+        var result = await UpdateTransactionAmount.ExecuteAsync(transaction, value, group);
 
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
@@ -128,14 +149,14 @@ public partial class _Page : MainPageBase
     {
         Validation.Clear();
 
-        var validationResult = await UseCases.ValidateTransactionEditAsync(EditTransaction);
+        var validationResult = await ValidateTransactionEditUseCase.ExecuteAsync(EditTransaction);
         if (!validationResult.IsSuccess)
         {
             Validation.SetErrors(validationResult.Errors);
             return;
         }
 
-        var saveResult = await UseCases.SaveTransactionEditAsync(EditTransaction);
+        var saveResult = await SaveTransactionEditUseCase.ExecuteAsync(EditTransaction);
         if (!saveResult.IsSuccess)
         {
             Validation.SetErrors(saveResult.Errors);
@@ -151,14 +172,14 @@ public partial class _Page : MainPageBase
     {
         Validation.Clear();
 
-        var validationResult = await UseCases.ValidateReviewGroupAsync(EditTransactionGroup);
+        var validationResult = await ValidateReviewGroup.ExecuteAsync(EditTransactionGroup);
         if (!validationResult.IsSuccess)
         {
             Validation.SetErrors(validationResult.Errors);
             return;
         }
 
-        var saveResult = await UseCases.SaveReviewAsync(EditTransactionGroup);
+        var saveResult = await SaveReviewUseCase.ExecuteAsync(EditTransactionGroup);
         if (!saveResult.IsSuccess)
         {
             Validation.SetErrors(saveResult.Errors);
@@ -172,7 +193,7 @@ public partial class _Page : MainPageBase
 
     private async Task SeparateTransfer(TransferSummary transfer)
     {
-        var result = await UseCases.SeparateTransferAsync(transfer.Id);
+        var result = await SeparateTransferUseCase.ExecuteAsync(transfer.Id);
         if (result.IsSuccess)
         {
             Validation.SetSuccess("Transfer separated successfully.");
@@ -212,7 +233,7 @@ public partial class _Page : MainPageBase
 
     private async Task ReloadSummary(int year)
     {
-        var pagedBudget = await UseCases.GetPagedBudgetAsync(year, EntryTypeFilter);
+        var pagedBudget = await GetPagedBudgetUseCase.ExecuteAsync(year, EntryTypeFilter);
         SummaryColumns = pagedBudget.Columns;
         ActiveBudgetYear = pagedBudget.BudgetYear;
     }
@@ -236,7 +257,7 @@ public partial class _Page : MainPageBase
 
     private async Task ExportTransactions()
     {
-        var result = await UseCases.ExportTransactionsAsync(CurrentExportType);
+        var result = await ExportTransactionsUseCase.ExecuteAsync(CurrentExportType);
 
         if (!result.IsSuccess)
         {

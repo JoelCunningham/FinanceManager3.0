@@ -11,6 +11,9 @@ using System.Text;
 [Route(Pages.ResetPassword)]
 public partial class ResetPassword : AuthPageBase
 {
+    [Inject] protected Application.UseCases.Auth.ResetPassword ResetPasswordUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Auth.ValidateResetToken ValidateResetTokenUseCase { get; set; } = default!;
+
     private ResetPasswordModel Model { get; set; } = new();
 
     private string? Message { get; set; }
@@ -36,7 +39,7 @@ public partial class ResetPassword : AuthPageBase
             Model.Email = Uri.UnescapeDataString(email);
         }
 
-        RequestValid = (await UseCases.ValidateResetTokenAsync(Model)).IsSuccess;
+        RequestValid = (await ValidateResetTokenUseCase.ExecuteAsync(Model)).IsSuccess;
     }
 
     private void SetSidebar()
@@ -50,7 +53,7 @@ public partial class ResetPassword : AuthPageBase
 
     private async Task HandleResetPassword()
     {
-        var result = await UseCases.ResetPasswordAsync(Model);
+        var result = await ResetPasswordUseCase.ExecuteAsync(Model);
 
         if (!result.IsSuccess)
         {

@@ -1,5 +1,5 @@
-﻿@using FinanceManager.Application.UseCases
-@inject UseCases UseCases
+﻿@using FinanceManager.Application.UseCases.Categories
+@inject GetCategoryChart GetCategoryChart
 
 @code
 {
@@ -19,7 +19,7 @@
 
     private async Task ReloadChart()
     {
-        var result = await UseCases.GetCategoryChartAsync(SelectedCategories, Chart.Range, Chart.Mode, CategoryGroup);
+        var result = await GetCategoryChart.ExecuteAsync(SelectedCategories, Chart.Range, Chart.Mode, CategoryGroup);
         Chart.Options = result.Options;
     }
 

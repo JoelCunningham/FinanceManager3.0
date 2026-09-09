@@ -6,7 +6,7 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 
 public sealed record UpdateUserNameResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class UpdateUserName(IIdentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class UpdateUserName(IIdentityService identityService, IAuditLogRepository auditLog)
 {
     public async Task<UpdateUserNameResult> ExecuteAsync(ProfileModel model)
     {
@@ -19,8 +19,6 @@ public sealed class UpdateUserName(IIdentityService identityService, IAuditLogRe
         }
 
         await auditLog.LogAsync(user.Id, AuditedEvent.NameChanged, $"Name has been changed from {model.CurrentName} to {model.NewName}.", DateTime.Now);
-        await dataStore.SaveAsync();
-
         return new UpdateUserNameResult([]);
     }
 }

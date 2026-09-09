@@ -36,7 +36,7 @@ public class DataGridModel<Q, T>(int pageSize = 15) where Q : PagedQuery, new() 
 
     private async Task<GridDataProviderResult<T>> GetGridDataAsync(GridDataProviderRequest<T> request)
     {
-        if (GetDataFunc is null) throw new InvalidOperationException("GetDataAsync not configured.");
+        if (GetDataFunc is null) return new GridDataProviderResult<T> { Data = [], TotalCount = 0 };
 
         Query.Page = (request.StartIndex / (request.Count ?? PageSize)) + 1;
         Query.PageSize = PageSize;

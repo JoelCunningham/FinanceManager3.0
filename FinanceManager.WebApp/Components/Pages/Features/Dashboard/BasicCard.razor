@@ -1,15 +1,25 @@
 ﻿@code {
     [Parameter] public string Title { get; set; } = default!;
-    [Parameter] public string Value { get; set; } = default!;
-    [Parameter] public string Description { get; set; } = default!;
+    [Parameter] public string? Value { get; set; } = default!;
+    [Parameter] public string? Description { get; set; } = default!;
 
     [Parameter] public EventCallback OnClick { get; set; }
 
-    [Parameter] public string Colour { get; set; } = default!;
+    [Parameter] public string? Colour { get; set; } = default!;
 }
 
 <div class="card @(OnClick.HasDelegate ? "action" : "")" @onclick="OnClick">
     <h5 class="card-title">@Title</h5>
-    <h2 class="card-value" style="color: @Colour">@Value</h2>
-    <p class="card-description">@Description</p>
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        <h2 class="card-value" style="color: @Colour;">@Value</h2>
+        <p class="card-description">@Description</p>
+    }
+    else
+    {
+        <HxPlaceholderContainer Animation="PlaceholderAnimation.Glow">
+            <HxPlaceholder Columns="12" Size="PlaceholderSize.Large" />
+            <HxPlaceholder Columns="5" Size="PlaceholderSize.Small" />
+        </HxPlaceholderContainer>
+    }
 </div>

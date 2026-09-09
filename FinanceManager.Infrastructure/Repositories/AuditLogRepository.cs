@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace FinanceManager.Infrastructure.Repositories;
 
-public class AuditLogRepository(FinanceManagerDbContext dbContext, IHttpContextAccessor httpContextAccessor) : IAuditLogRepository
+public class AuditLogRepository(IFinanceManagerDbContextFactory dbContextFactory, IHttpContextAccessor httpContextAccessor) : IAuditLogRepository
 {
-    public Task LogAsync(Guid userId, AuditedEvent action, string? description, DateTime date)
+    public async Task LogAsync(Guid userId, AuditedEvent action, string? description, DateTime date)
     {
         var httpContext = httpContextAccessor.HttpContext;
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync();
 
         var ipAddress = httpContext is null ? null : GetIpAddress(httpContext);
         var userAgent = httpContext?.Request.Headers.UserAgent.ToString();
@@ -26,8 +27,8 @@ public class AuditLogRepository(FinanceManagerDbContext dbContext, IHttpContextA
             Date = DateTime.UtcNow
         };
 
-        dbContext.AuditLogs.Add(log); 
-        return Task.CompletedTask;
+        await dbContext.AuditLogs.AddAsync(log);
+        await dbContext.SaveChangesAsync();
     }
 
     private static string? GetIpAddress(HttpContext context)

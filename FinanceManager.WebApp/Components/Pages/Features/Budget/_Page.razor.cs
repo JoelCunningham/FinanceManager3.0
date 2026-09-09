@@ -11,6 +11,13 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Budget)]
 public partial class _Page : MainPageBase
 {
+    [Inject] protected Application.UseCases.Budget.GetBudgetYears GetBudgetYearsUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Budget.GetPagedBudget GetPagedBudgetUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Budget.SaveBudget SaveBudgetUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Budget.SaveBudgetEntry SaveBudgetEntryUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Budget.DeleteBudget DeleteBudgetUseCase { get; set; } = default!;
+    [Inject] protected Application.UseCases.Budget.DeleteBudgetEntry DeleteBudgetEntryUseCase { get; set; } = default!;
+
     private IReadOnlyList<BudgetColumn> Columns { get; set; } = [];
     private IReadOnlyList<CategorySummary> Categories { get; set; } = [];
     private bool HideEmptyCategories { get; set; }
@@ -72,9 +79,9 @@ public partial class _Page : MainPageBase
 
     private async Task ReloadAsync(int year)
     {
-        AvailableYears = (await UseCases.GetBudgetYearsAsync()).AvailableYears.OrderByDescending(y => y);
+        AvailableYears = (await GetBudgetYearsUseCase.ExecuteAsync()).AvailableYears.OrderByDescending(y => y);
 
-        var page = await UseCases.GetPagedBudgetAsync(year, EntryTypeFilter);
+        var page = await GetPagedBudgetUseCase.ExecuteAsync(year, EntryTypeFilter);
 
         Columns = page.Columns;
         Categories = page.Categories;
@@ -152,7 +159,7 @@ public partial class _Page : MainPageBase
 
         try
         {
-            await UseCases.SaveBudgetEntryAsync(CurrentEntry, ActiveBudgetYear.Year, IsEditing);
+            await SaveBudgetEntryUseCase.ExecuteAsync(CurrentEntry, ActiveBudgetYear.Year, IsEditing);
             if (IsEditing)
             {
                 Validation.SetSuccess("Budget entry updated");
@@ -178,7 +185,7 @@ public partial class _Page : MainPageBase
 
         try
         {
-            await UseCases.DeleteBudgetEntryAsync(CurrentEntry.EntityId.Value);
+            await DeleteBudgetEntryUseCase.ExecuteAsync(CurrentEntry.EntityId.Value);
             CurrentCell?.BudgetEntries = CurrentCell.BudgetEntries.Where(e => e.EntityId != CurrentEntry.EntityId);
             Validation.SetSuccess("Budget entry deleted");
             await BudgetEntryModal.HideAsync();
@@ -205,7 +212,7 @@ public partial class _Page : MainPageBase
 
         try
         {
-            var saveResult = await UseCases.SaveBudgetAsync(CurrentYear.Year, CurrentYear.Scope, IsEditing);
+            var saveResult = await SaveBudgetUseCase.ExecuteAsync(CurrentYear.Year, CurrentYear.Scope, IsEditing);
             if (saveResult.Errors.Any())
             {
                 Validation.SetErrors(saveResult.Errors);
@@ -226,7 +233,7 @@ public partial class _Page : MainPageBase
         if (CurrentYear is null) return;
         try
         {
-            await UseCases.DeleteBudgetAsync(CurrentYear.EntityId);
+            await DeleteBudgetUseCase.ExecuteAsync(CurrentYear.EntityId);
             Validation.SetSuccess("Budget deleted successfully");
             await BudgetYearModal.HideAsync();
             await ReloadAsync(DateTime.Now.Year);

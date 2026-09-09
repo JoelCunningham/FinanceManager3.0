@@ -1,17 +1,15 @@
 namespace FinanceManager.Infrastructure.Data;
 
-using FinanceManager.Application.Interfaces;
 using FinanceManager.Domain.Entities;
 using FinanceManager.Domain.Entities.Base;
 using FinanceManager.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using System.Reflection;
 
-public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options, ICurrentUserService currentUserService)
-    : IdentityDbContext<ApplicationUser>(options), IDataStore
+public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbContext> options)
+    : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
@@ -25,29 +23,21 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
     public DbSet<BudgetEntry> BudgetEntries => Set<BudgetEntry>();
     public DbSet<Preference> Preferences => Set<Preference>();
 
-    public Guid? CurrentUserId => currentUserService.IsAuthenticated ? currentUserService.UserId : null;
-
-    public Task SaveAsync() { return SaveChangesAsync(); }
-    public ITransactionScope BeginTransaction() { return new TransactionScope(Database.BeginTransaction()); }
-
-    private sealed class TransactionScope(IDbContextTransaction transaction) : ITransactionScope
+    public Guid? CurrentUserId = null;
+    public void SetCurrentUserId(Guid? userId) 
     {
-        public Task CommitAsync() { return transaction.CommitAsync(); }
-        public Task RollbackAsync() { return transaction.RollbackAsync(); }
-        public ValueTask DisposeAsync() { return transaction.DisposeAsync(); }
+        CurrentUserId = userId;
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var currentUserId = currentUserService.UserId;
-
-        if (currentUserId.HasValue)
+        if (CurrentUserId.HasValue)
         {
             foreach (var entry in ChangeTracker.Entries<UserOwnedEntity>())
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.UserId = currentUserId.Value;
+                    entry.Entity.UserId = CurrentUserId.Value;
                 }
             }
         }
@@ -98,7 +88,7 @@ public sealed class FinanceManagerDbContext(DbContextOptions<FinanceManagerDbCon
             .HasOne(t => t.Reimburses)
             .WithMany(t => t.Reimbursements)
             .HasForeignKey(t => t.ReimbursesId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.Entity<CategoryGroup>()
             .HasMany(g => g.Categories)

@@ -89,13 +89,6 @@ builder.Logging.AddConsole();
 //----- Create application -----//
 var app = builder.Build();
 
-// Migrations
-await using (var scope = app.Services.CreateAsyncScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<FinanceManagerDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
-
 // Error handling
 if (!app.Environment.IsDevelopment())
 {

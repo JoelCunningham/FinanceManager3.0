@@ -4,6 +4,7 @@ using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
 using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
+using Microsoft.Extensions.Logging;
 
 public sealed record SaveImportResult(
     Guid ImportId,
@@ -13,12 +14,11 @@ public sealed record SaveImportResult(
     IEnumerable<UseCaseError> Errors
 ) : UseCaseResult(Errors);
 
-public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, IDataStore dataStore)
+public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBankAccountRepository bankAccountRepository, ITransactionRepository transactionRepository, ITransferRepository transferRepository, ILogger<SaveImport> logger)
 {
     public async Task<SaveImportResult> ExecuteAsync(IEnumerable<ParsedTransaction> parsedTransactions)
     {
         var importId = Guid.NewGuid();
-        await using var dsTransaction = dataStore.BeginTransaction();
 
         try
         {
@@ -32,16 +32,12 @@ public sealed class SaveImport(IBankRecordRepository bankRecordRepository, IBank
 
             await transferRepository.CreateAsync(transfers);
             await transactionRepository.CreateAsync(transactions);
-
-            await dataStore.SaveAsync();
-            await dsTransaction.CommitAsync();
         
             return new SaveImportResult(importId, transactions.Count, transfers.Count, records.Count, []);
         }
         catch
         {
-            await dsTransaction.RollbackAsync();
-            
+            logger.LogError("An unexpected error occurred while saving the import.");
             return new SaveImportResult(Guid.Empty, 0, 0, 0, [new UseCaseUnexpectedError()]);
         }
     }

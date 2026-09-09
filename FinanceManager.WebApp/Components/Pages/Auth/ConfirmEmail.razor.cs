@@ -12,6 +12,8 @@ using System.Text;
 [Route(Pages.ConfirmEmail)]
 public partial class ConfirmEmail : AuthPageBase
 {
+    [Inject] protected Application.UseCases.Auth.ConfirmEmail ConfirmEmailUseCase { get; set; } = default!;
+
     private ConfirmEmailModel Model { get; set; } = new();
 
     private string? Message { get; set; }
@@ -48,7 +50,7 @@ public partial class ConfirmEmail : AuthPageBase
             Model.Reason = Enum.Parse<ConfirmEmailReason>(reason);
         }
 
-        var result = await UseCases.ConfirmEmailAsync(Model);
+        var result = await ConfirmEmailUseCase.ExecuteAsync(Model);
 
         if (!result.IsSuccess)
         {

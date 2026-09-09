@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Login)]
 public partial class Login : AuthPageBase
 {
+    [Inject] protected Application.UseCases.Auth.LoginUser LoginUserUseCase { get; set; } = default!;
+
     private LoginModel Model { get; set; } = new();
     private string? Message { get; set; }
 
@@ -32,7 +34,7 @@ public partial class Login : AuthPageBase
 
     private async Task HandleLogin()
     {
-        var result = await UseCases.LoginUserAsync(Model);
+        var result = await LoginUserUseCase.ExecuteAsync(Model);
 
         if (!result.IsSuccess || string.IsNullOrEmpty(result.LoginLink))
         {

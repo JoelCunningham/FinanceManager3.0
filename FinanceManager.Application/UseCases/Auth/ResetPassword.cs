@@ -6,7 +6,7 @@ using FinanceManager.Application.UseCases;
 using FinanceManager.Domain.Enums;
 
 public sealed record ResetPasswordResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class ResetPassword(IIdentityService identityService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class ResetPassword(IIdentityService identityService, IAuditLogRepository auditLog)
 {
     public async Task<ResetPasswordResult> ExecuteAsync(ResetPasswordModel model)
     {
@@ -37,7 +37,6 @@ public sealed class ResetPassword(IIdentityService identityService, IAuditLogRep
         }
 
         await auditLog.LogAsync(user.Id, AuditedEvent.PasswordResetCompleted, "Password reset completed.", DateTime.Now);
-        await dataStore.SaveAsync();
 
         return new ResetPasswordResult([]);
     }

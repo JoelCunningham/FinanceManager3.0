@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 public sealed record UpdateUserEmailResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
-public sealed class UpdateUserEmail(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog, IDataStore dataStore)
+public sealed class UpdateUserEmail(IIdentityService identityService, IUserEmailService emailService, IAuditLogRepository auditLog)
 {
     public async Task<UpdateUserEmailResult> ExecuteAsync(ProfileModel model)
     {
@@ -36,9 +36,7 @@ public sealed class UpdateUserEmail(IIdentityService identityService, IUserEmail
         });
 
         await emailService.SendEmailUpdateConfirmationAsync(model.NewName, model.NewEmail, confirmationLink);
-
         await auditLog.LogAsync(currentUser.Id, AuditedEvent.EmailChangeRequested, $"Email {model.NewEmail} has been requested for change.", DateTime.Now);
-        await dataStore.SaveAsync();
 
         return new UpdateUserEmailResult([]);
     }

@@ -2,13 +2,14 @@ namespace FinanceManager.Application.UseCases.Review;
 
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 using FinanceManager.Application.Utilities;
 using FinanceManager.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 public sealed record SaveReviewResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SaveReview(ITransactionRepository transactionRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, IDataStore dataStore, ILogger<SaveReview> logger)
+public sealed class SaveReview(ITransactionRepository transactionRepository, ITransferRepository transferRepository, IMachineLearningRepository machineLearningRepository, ILogger<SaveReview> logger)
 {
     public async Task<SaveReviewResult> ExecuteAsync(ReviewGroup group)
     {
@@ -144,8 +145,6 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
             {
                 await transactionRepository.UpdateAsync(externalEntity);
             }
-
-            await dataStore.SaveAsync();
         }
         catch
         {
@@ -189,8 +188,6 @@ public sealed class SaveReview(ITransactionRepository transactionRepository, ITr
             var transfer = EntityConverter.BankRecordPairToTransfer(transactionA.Record, transactionB.Record);
 
             await transferRepository.CreateAsync(transfer);
-
-            await dataStore.SaveAsync();
         }
         catch
         {

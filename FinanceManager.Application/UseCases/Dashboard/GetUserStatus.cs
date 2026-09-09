@@ -3,6 +3,7 @@ namespace FinanceManager.Application.UseCases.Dashboard;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
 using FinanceManager.Application.Interfaces;
+using FinanceManager.Application.UseCases;
 
 public sealed record GetUserStatusResult(UserStatus Status) : UseCaseResult;
 

@@ -30,8 +30,8 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
                 : categories.FirstOrDefault(c => c.Id == transactionSeries.Key)?.Name ?? CategoryConstants.UncategorisedName;
 
             var colour = drilldownGroupId is null
-                ? categories.FirstOrDefault(c => c.GroupId == transactionSeries.Key)?.GroupColour ?? CategoryConstants.UncategorisedColour
-                : categories.FirstOrDefault(c => c.Id == transactionSeries.Key)?.Colour ?? CategoryConstants.UncategorisedColour;
+                ? categories.FirstOrDefault(c => c.GroupId == transactionSeries.Key)?.GroupColour ?? ColourConstants.UncategorisedColour
+                : categories.FirstOrDefault(c => c.Id == transactionSeries.Key)?.Colour ?? ColourConstants.UncategorisedColour;
 
             var key = categories.FirstOrDefault(c => c.GroupId == transactionSeries.Key)?.GroupId;
 
@@ -43,16 +43,16 @@ public sealed class GetChart1Data(ChartHelper chartHelper, GetCategories getCate
         if (mode == ChartMode.IncomeAndExpense)
         {
             var incomeBudgetSerieses = await chartHelper.GetBudgets(relevantCategories.Where(c => c.IsIncome), range, false);
-            options.AddSeries(ChartSeries.LineSeries("Budget (Income)", "#15723f", ChartHelper.FlattenSerieses(incomeBudgetSerieses)));
+            options.AddSeries(ChartSeries.LineSeries("Budget (Income)",ColourConstants.IncomeColour, ChartHelper.FlattenSerieses(incomeBudgetSerieses)));
 
             var expenseBudgetSerieses = await chartHelper.GetBudgets(relevantCategories.Where(c => !c.IsIncome), range, true);
-            options.AddSeries(ChartSeries.LineSeries("Budget (Expense)", "#a81e2e", ChartHelper.FlattenSerieses(expenseBudgetSerieses)));
+            options.AddSeries(ChartSeries.LineSeries("Budget (Expense)", ColourConstants.ExpenseColour, ChartHelper.FlattenSerieses(expenseBudgetSerieses)));
         }
         else
         {
             var budgetName = groupBudgetPrefix is null ? "Budget" : $"{groupBudgetPrefix} Budget";
             var budgetSerieses = await chartHelper.GetBudgets(relevantCategories, range);
-            options.AddSeries(ChartSeries.LineSeries(budgetName, mode == ChartMode.Income ? "#15723f" : "#a81e2e", ChartHelper.FlattenSerieses(budgetSerieses)));
+            options.AddSeries(ChartSeries.LineSeries(budgetName, mode == ChartMode.Income ? ColourConstants.IncomeColour : ColourConstants.ExpenseColour, ChartHelper.FlattenSerieses(budgetSerieses)));
         }
 
         options.SetLabels(range.Select(m => m.PeriodDescription));

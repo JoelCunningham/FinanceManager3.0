@@ -1,8 +1,12 @@
 ﻿namespace FinanceManager.WebApp.Components.Pages.Features.Review;
 
+using FinanceManager.Application.Common;
 using FinanceManager.Application.Constants.Navigation;
 using FinanceManager.Application.DTOs;
 using FinanceManager.Application.Enums;
+using FinanceManager.Application.UseCases.Categories;
+using FinanceManager.Application.UseCases.Dashboard;
+using FinanceManager.Application.UseCases.Review;
 using FinanceManager.Domain.Enums;
 using FinanceManager.WebApp.Components.Base;
 using FinanceManager.WebApp.Models;
@@ -12,6 +16,14 @@ using Microsoft.AspNetCore.Components;
 [Route(Pages.Review)]
 public partial class _Page : MainPageBase
 {
+    [Inject] protected AutoAssignCategories AutoAssignCategoriesUseCase { get; set; } = default!;
+    [Inject] protected GetPagedReview GetPagedReviewUseCase { get; set; } = default!;
+    [Inject] protected SaveReview SaveReviewUseCase { get; set; } = default!;
+    [Inject] protected GetCategories GetCategoriesUseCase { get; set; } = default!;
+    [Inject] protected GetUserStatus GetUserStatusUseCase { get; set; } = default!;
+    [Inject] protected GetTransferCandidates GetTransferCandidatesUseCase { get; set; } = default!;
+    [Inject] protected GetReimbursementCandidates GetReimbursementCandidatesUseCase { get; set; } = default!;
+
     public DataGridModel<FilterQuery, ReviewGroup> Data { get; set; } = new(20);
     public DataGridModel<FilterQuery, TransactionSummary> TransferData { get; set; } = new(15);
     public DataGridModel<FilterQuery, TransactionSummary> ReimburseData { get; set; } = new(15);
@@ -35,7 +47,7 @@ public partial class _Page : MainPageBase
     {
         await base.OnInitializedAsync();
 
-        UserStatus = (await UseCases.GetUserStatusAsync()).Status;
+        UserStatus = (await GetUserStatusUseCase.ExecuteAsync()).Status;
 
         Data.GetDataFunc = GetData;
         Data.UpdateViewState = StateHasChanged;
@@ -45,7 +57,7 @@ public partial class _Page : MainPageBase
         ReimburseData.GetDataFunc = GetReimburseData;
 
         IsAutoAssignEnabled = await Preferences.AutoAssignCategories;
-        Categories = (await UseCases.GetCategoriesAsync()).Categories;
+        Categories = (await GetCategoriesUseCase.ExecuteAsync()).Categories;
     }
 
     public async Task OnIsAutoAssignEnabledChanged()
@@ -56,11 +68,11 @@ public partial class _Page : MainPageBase
 
     private async Task<PagedResult<ReviewGroup>> GetData(FilterQuery query)
     {
-        var result = (await UseCases.GetPagedReviewAsync(query)).Page;
+        var result = (await GetPagedReviewUseCase.ExecuteAsync(query)).Page;
 
         if (IsAutoAssignEnabled)
         {
-            var autoAssignResult = await UseCases.AutoCategoriseAsync(result.Items, Categories);
+            var autoAssignResult = await AutoAssignCategoriesUseCase.ExecuteAsync(result.Items, Categories);
             if (autoAssignResult.AssignedCount > 0)
             {
                 Validation.SetSuccess($"Auto assigned {autoAssignResult.AssignedCount} {LanguageUtilities.Pluralise("activities", autoAssignResult.AssignedCount)}.");
@@ -78,26 +90,26 @@ public partial class _Page : MainPageBase
     private async Task<PagedResult<TransactionSummary>> GetTransferData(FilterQuery query)
     {
         var amount = CurrentGroup?.Record.Amount ?? 0;
-        return (await UseCases.GetTransferCandidatesAsync(query, amount)).Page;
+        return (await GetTransferCandidatesUseCase.ExecuteAsync(query, amount)).Page;
     }
 
     private async Task<PagedResult<TransactionSummary>> GetReimburseData(FilterQuery query)
     {
-        return (await UseCases.GetReimbursementCandidatesAsync(query)).Page;
+        return (await GetReimbursementCandidatesUseCase.ExecuteAsync(query)).Page;
     }
 
     private async Task SaveGroup(ReviewGroup group, bool showMessage = true)
     {
         Validation.Clear();
 
-        var validationResult = await Application.UseCases.UseCases.ValidateReviewGroupAsync(group);
+        var validationResult = await ValidateReviewGroup.ExecuteAsync(group);
         if (!validationResult.IsSuccess)
         {
             Validation.SetErrors(validationResult.Errors);
             return;
         }
 
-        var saveResult = await UseCases.SaveReviewAsync(group);
+        var saveResult = await SaveReviewUseCase.ExecuteAsync(group);
         if (!saveResult.IsSuccess)
         {
             Validation.SetErrors(saveResult.Errors);
@@ -143,7 +155,7 @@ public partial class _Page : MainPageBase
     public void SetDate(ReviewGroup group, ReviewTransaction transaction, DateTime value)
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Date);
-        var result = Application.UseCases.UseCases.BackdateTransactionAsync(transaction, value, group.Record.Date).Result;
+        var result = BackdateTransaction.ExecuteAsync(transaction, value, group.Record.Date).Result;
 
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }
@@ -151,7 +163,7 @@ public partial class _Page : MainPageBase
     public async Task SetAmount(ReviewGroup group, ReviewTransaction transaction, decimal value)
     {
         Validation.ClearValidationItem(transaction.EntityId, ValidationField.Amount);
-        var result = await Application.UseCases.UseCases.UpdateTransactionAmountAsync(transaction, value, group);
+        var result = await UpdateTransactionAmount.ExecuteAsync(transaction, value, group);
 
         if (!result.IsSuccess) Validation.SetErrors(result.Errors);
     }

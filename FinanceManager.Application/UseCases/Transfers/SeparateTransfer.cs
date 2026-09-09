@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 public sealed record SeparateTransferResult(IEnumerable<UseCaseError> Errors) : UseCaseResult(Errors);
 
-public sealed class SeparateTransfer(ITransferRepository transferRepository, ITransactionRepository transactionRepository, IDataStore dataStore, ILogger<SeparateTransfer> logger)
+public sealed class SeparateTransfer(ITransferRepository transferRepository, ITransactionRepository transactionRepository, ILogger<SeparateTransfer> logger)
 {
     public async Task<SeparateTransferResult> ExecuteAsync(Guid transferId)
     {
@@ -20,8 +20,6 @@ public sealed class SeparateTransfer(ITransferRepository transferRepository, ITr
             var toTransaction = EntityConverter.BankRecordToTransaction(transfer.ToRecord);
 
             await transactionRepository.CreateAsync([fromTransaction, toTransaction]);
-
-            await dataStore.SaveAsync();
 
             return new SeparateTransferResult([]);
         }
