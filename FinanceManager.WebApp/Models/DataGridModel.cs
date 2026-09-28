@@ -19,7 +19,11 @@ public class DataGridModel<Q, T>(int pageSize = 15) where Q : PagedQuery, new() 
 
     public async Task UpdateAsync()
     {
-        await Grid.RefreshDataAsync();
+        try
+        {
+            await Grid.RefreshDataAsync();
+        }
+        catch { }
     }
 
     public async Task HandleFilterChanged(Q newQuery)

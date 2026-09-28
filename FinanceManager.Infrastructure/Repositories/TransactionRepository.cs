@@ -154,10 +154,12 @@ public sealed class TransactionRepository(IFinanceManagerDbContextFactory dbCont
             };
 
             await dbContext.Transactions.AddAsync(newTransaction);
-            return;
+        }
+        else
+        {
+            await ApplyUpdatesAsync(existing, transaction);
         }
 
-        await ApplyUpdatesAsync(existing, transaction);
         await dbContext.SaveChangesAsync();
     }
 
@@ -212,21 +214,21 @@ public sealed class TransactionRepository(IFinanceManagerDbContextFactory dbCont
 
         if (categoryGroupId.HasValue)
         {
-            query = query
-                .Include(t => t.Category)
-                .Where(t => t.Category != null && t.Category.GroupId == categoryGroupId.Value);
+            query = query.Where(t => t.Category != null && t.Category.GroupId == categoryGroupId.Value);
         }
 
-        if (!await query.AnyAsync())
+        var range = await query
+            .GroupBy(_ => 1)
+            .Select(g => new { Min = g.Min(t => t.Date), Max = g.Max(t => t.Date) })
+            .SingleOrDefaultAsync();
+
+        if (range is null)
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
             return (today, today);
         }
 
-        var minDate = await query.MinAsync(t => t.Date);
-        var maxDate = await query.MaxAsync(t => t.Date);
-
-        return (DateOnly.FromDateTime(minDate), DateOnly.FromDateTime(maxDate));
+        return (DateOnly.FromDateTime(range.Min), DateOnly.FromDateTime(range.Max));
     }
 
     public async Task<int> GetUnreviewedCountAsync()

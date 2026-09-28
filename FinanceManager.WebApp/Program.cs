@@ -10,7 +10,9 @@ using Havit.Blazor.Components.Web;
 using Havit.Blazor.Components.Web.Bootstrap;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 //----- Create builder -----//
 var builder = WebApplication.CreateBuilder(args);
@@ -95,6 +97,15 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler(Pages.Error, createScopeForErrors: true);
     app.UseHsts();
 }
+
+// Localization
+var defaultCulture = new CultureInfo("en-AU");
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(defaultCulture),
+    SupportedCultures = [defaultCulture],
+    SupportedUICultures = [defaultCulture]
+});
 
 // Redirection
 app.UseStatusCodePagesWithReExecute(Pages.NotFound, createScopeForStatusCodePages: true);

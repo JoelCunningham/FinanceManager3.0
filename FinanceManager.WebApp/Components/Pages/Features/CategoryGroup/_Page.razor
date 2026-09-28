@@ -20,31 +20,31 @@ else
     </PageHeading>
 
     <CategoryGroupPanel Group="Group"
-    Periods="AvailablePeriods"
-    CurrentRange="CurrentPeriodIndex"
-    OnRangeSelected="SetCurrentPeriod"
-    OnCategoryClicked="OpenTransactionsModal"
-    OnCategoryEdit="OpenCategoryEditModal" />
+                        Periods="AvailablePeriods"
+                        CurrentRange="CurrentPeriodIndex"
+                        OnRangeSelected="SetCurrentPeriod"
+                        OnCategoryClicked="OpenTransactionsModal"
+                        OnCategoryEdit="OpenCategoryEditModal" />
 
     <CategoryGroupModal @ref="GroupModal"
-    IsEditing="true"
-    Group="EditGroup"
-    HasIsIncomeError="@Validation.GetValidationItemIds(ValidationField.IsIncome).Contains(EditGroup?.Id ?? Guid.Empty)"
-    HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditGroup?.Id ?? Guid.Empty)"
-    HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditGroup?.Id ?? Guid.Empty)"
-    HasIconError="@Validation.GetValidationItemIds(ValidationField.Icon).Contains(EditGroup?.Id ?? Guid.Empty)"
-    OnSave="OnGroupSave"
-    OnCancel="CloseGroupModal"
-    OnDelete="OnGroupDelete" />
+                        IsEditing="true"
+                        Group="EditGroup"
+                        HasIsIncomeError="@Validation.GetValidationItemIds(ValidationField.IsIncome).Contains(EditGroup?.Id ?? Guid.Empty)"
+                        HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditGroup?.Id ?? Guid.Empty)"
+                        HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditGroup?.Id ?? Guid.Empty)"
+                        HasIconError="@Validation.GetValidationItemIds(ValidationField.Icon).Contains(EditGroup?.Id ?? Guid.Empty)"
+                        OnSave="OnGroupSave"
+                        OnCancel="CloseGroupModal"
+                        OnDelete="OnGroupDelete" />
 
     <CategoryModal @ref="CategoryModal"
-    IsEditing="IsEditing"
-    Category="EditCategory"
-    HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditCategory?.Id ?? Guid.Empty)"
-    HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditCategory?.Id ?? Guid.Empty)"
-    OnSave="OnCategorySave"
-    OnCancel="CloseCategoryModal"
-    OnDelete="OnCategoryDelete" />
+                   IsEditing="IsEditing"
+                   Category="EditCategory"
+                   HasNameError="@Validation.GetValidationItemIds(ValidationField.Name).Contains(EditCategory?.Id ?? Guid.Empty)"
+                   HasColourError="@Validation.GetValidationItemIds(ValidationField.Colour).Contains(EditCategory?.Id ?? Guid.Empty)"
+                   OnSave="OnCategorySave"
+                   OnCancel="CloseCategoryModal"
+                   OnDelete="OnCategoryDelete" />
 
     <TransactionsModal @ref="TransactionsModal" Category="CurrentCategory" TransactionData="TransactionData" OnCategoryEdit="OpenCategoryEditModal" />
 

@@ -8,8 +8,9 @@
     [Parameter] public EventCallback OnClick { get; set; }
 
     private decimal Amount => BudgetMode ? BudgetAmount : RealAmount;
+    private decimal TooltipAmount => BudgetMode ? RealAmount : BudgetAmount;
 
-    private string Tooltip => $"{(BudgetMode ? "Actual" : "Budget")}: {(BudgetMode ? RealAmount : BudgetAmount):C}";
+    private string Tooltip => $"{(BudgetMode ? "Actual" : "Budget")}: {(IsIncome ? TooltipAmount : -TooltipAmount):C}";
 
     private string StatusClass =>
         IsFuturePeriod ? "future" : IsIncome ?

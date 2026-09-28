@@ -24,10 +24,9 @@
         <HxSidebarItem Text="Review" Href="@Pages.Review" Icon="BootstrapIcon.ClipboardCheck" />
         <HxSidebarItem Text="Categories" Href="@Pages.Categories" Icon="BootstrapIcon.Tags" />
         <HxSidebarItem Text="Import" Href="@Pages.Import" Icon="BootstrapIcon.FileEarmarkArrowUp" />
-            <HxSidebarItem Text="Settings" Href="@Pages.Settings" Icon="BootstrapIcon.Gear" />
-
+        <HxSidebarItem Text="Settings" Href="@Pages.Settings" Icon="BootstrapIcon.Gear" />
     </ItemsTemplate>
     <FooterTemplate>
-        <HxSidebarFooter Text="Logout" Href="@Pages.Logout" Icon="BootstrapIcon.BoxArrowRight" />
+        <HxSidebarFooter Text="Logout" Href="@Pages.Logout" Icon="BootstrapIcon.BoxArrowRight" TextCssClass="@(context.SidebarCollapsed ? "d-md-none" : null)" />
     </FooterTemplate>
 </HxSidebar>

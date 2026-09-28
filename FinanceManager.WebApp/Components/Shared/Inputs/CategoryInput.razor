@@ -20,48 +20,10 @@
 
     private bool IsSearching => !string.IsNullOrWhiteSpace(searchText);
 
-    private IEnumerable<string> Groups => Data
-        .Select(c => c.GroupName)
-        .Distinct()
-        .OrderBy(g => g);
-
-    private IEnumerable<CategorySummary> CategoriesInSelectedGroup => Data
-        .Where(c => c.GroupName == selectedGroup)
-        .OrderBy(c => c.Name);
-
-    private IEnumerable<IGrouping<string, CategorySummary>> FilteredGroups => Data
-        .Where(c => c.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) || c.GroupName.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-        .GroupBy(c => c.GroupName)
-        .OrderBy(g => g.Key);
-
-    private IList<object> NavigableItems
-    {
-        get
-        {
-            var items = new List<object>();
-
-            if (IsSearching)
-            {
-                foreach (var group in FilteredGroups) foreach (var item in group.OrderBy(c => c.Name)) items.Add(item);
-            }
-            else if (selectedGroup is null)
-            {
-                foreach (var group in Groups) items.Add(group);
-            }
-            else
-            {
-                foreach (var item in CategoriesInSelectedGroup) items.Add(item);
-            }
-
-            return items;
-        }
-    }
-
-    private bool IsNavigated(object item)
-    {
-        var items = NavigableItems;
-        return navigatedIndex >= 0 && navigatedIndex < items.Count && items[navigatedIndex] == item;
-    }
+    private List<string> groups = new();
+    private List<CategorySummary> categoriesInSelectedGroup = new();
+    private List<IGrouping<string, CategorySummary>> filteredGroups = new();
+    private List<object> navigableItems = new();
 
     protected override void OnParametersSet()
     {
@@ -72,13 +34,81 @@
             selectedGroup = null;
             navigatedIndex = -1;
             isOpen = false;
+            RebuildCachedState();
             return;
         }
 
         if (Value != null && string.IsNullOrWhiteSpace(searchText))
         {
             searchText = Value.Name;
+            RebuildCachedState();
         }
+    }
+
+    private void RebuildCachedState()
+    {
+        groups = Data
+            .Select(c => c.GroupName)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToList();
+
+        if (selectedGroup is not null)
+        {
+            categoriesInSelectedGroup = Data
+                .Where(c => c.GroupName == selectedGroup)
+                .OrderBy(c => c.Name)
+                .ToList();
+        }
+        else
+        {
+            categoriesInSelectedGroup.Clear();
+        }
+
+        if (IsSearching)
+        {
+            filteredGroups = Data
+                .Where(c => c.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                            c.GroupName.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                .GroupBy(c => c.GroupName)
+                .OrderBy(g => g.Key)
+                .ToList();
+        }
+        else
+        {
+            filteredGroups.Clear();
+        }
+
+        navigableItems.Clear();
+        if (IsSearching)
+        {
+            foreach (var group in filteredGroups)
+            {
+                foreach (var item in group.OrderBy(c => c.Name))
+                {
+                    navigableItems.Add(item);
+                }
+            }
+        }
+        else if (selectedGroup is null)
+        {
+            foreach (var group in groups)
+            {
+                navigableItems.Add(group);
+            }
+        }
+        else
+        {
+            foreach (var item in categoriesInSelectedGroup)
+            {
+                navigableItems.Add(item);
+            }
+        }
+    }
+
+    private bool IsNavigated(object item)
+    {
+        return navigatedIndex >= 0 && navigatedIndex < navigableItems.Count && navigableItems[navigatedIndex] == item;
     }
 
     private async Task OnKeyDown(KeyboardEventArgs e)
@@ -93,27 +123,23 @@
             return;
         }
 
-        var items = NavigableItems;
+        var count = navigableItems.Count;
 
         switch (e.Key)
         {
             case "ArrowDown":
-                navigatedIndex = items.Count == 0
-                    ? -1
-                    : (navigatedIndex + 1) % items.Count;
+                navigatedIndex = count == 0 ? -1 : (navigatedIndex + 1) % count;
                 break;
 
             case "ArrowUp":
-                navigatedIndex = items.Count == 0
-                    ? -1
-                    : (navigatedIndex - 1 + items.Count) % items.Count;
+                navigatedIndex = count == 0 ? -1 : (navigatedIndex - 1 + count) % count;
                 break;
 
             case "ArrowRight":
             case "Enter":
-                if (navigatedIndex >= 0 && navigatedIndex < items.Count)
+                if (navigatedIndex >= 0 && navigatedIndex < count)
                 {
-                    var target = items[navigatedIndex];
+                    var target = navigableItems[navigatedIndex];
                     if (target is string groupName && selectedGroup is null && !IsSearching)
                     {
                         SelectGroup(groupName);
@@ -125,13 +151,13 @@
                 }
                 else if (e.Key == "Enter")
                 {
-                    var enter_first = items.OfType<CategorySummary>().FirstOrDefault();
+                    var enter_first = navigableItems.OfType<CategorySummary>().FirstOrDefault();
                     if (enter_first is not null) await Select(enter_first);
                 }
                 break;
 
             case "Tab":
-                var tab_first = items.OfType<CategorySummary>().FirstOrDefault();
+                var tab_first = navigableItems.OfType<CategorySummary>().FirstOrDefault();
                 if (tab_first is not null) await Select(tab_first);
                 break;
 
@@ -141,6 +167,7 @@
                 {
                     selectedGroup = null;
                     navigatedIndex = -1;
+                    RebuildCachedState();
                 }
                 break;
 
@@ -150,6 +177,7 @@
                 selectedGroup = null;
                 navigatedIndex = -1;
                 Value = null;
+                RebuildCachedState();
                 await ValueChanged.InvokeAsync(null);
                 break;
         }
@@ -165,12 +193,15 @@
         {
             selectedGroup = null;
         }
+
+        RebuildCachedState();
     }
 
     private void SelectGroup(string group)
     {
         selectedGroup = group;
         navigatedIndex = -1;
+        RebuildCachedState();
     }
 
     private async Task Select(CategorySummary? item)
@@ -181,6 +212,7 @@
         selectedGroup = null;
         navigatedIndex = -1;
 
+        RebuildCachedState();
         await ValueChanged.InvokeAsync(item);
     }
 
@@ -195,6 +227,7 @@
         }
 
         selectedGroup = null;
+        RebuildCachedState();
 
         return Task.CompletedTask;
     }
@@ -207,6 +240,7 @@
         Value = null;
 
         isOpen = true;
+        RebuildCachedState();
 
         await ValueChanged.InvokeAsync(null);
     }
@@ -243,9 +277,9 @@
         <div class="dropdown" @onmousedown:preventDefault>
             @if (IsSearching)
             {
-                @if (FilteredGroups.Any())
+                @if (filteredGroups.Count > 0)
                 {
-                    @foreach (var group in FilteredGroups)
+                    @foreach (var group in filteredGroups)
                     {
                         <div class="dropdown-header">@group.Key</div>
 
@@ -266,7 +300,7 @@
             {
                 @if (selectedGroup is null)
                 {
-                    @foreach (var group in Groups)
+                    @foreach (var group in groups)
                     {
                         <div class="dropdown-item @(IsNavigated(group) ? "navigated" : "")" @onmousedown="() => SelectGroup(group)">
                             @group
@@ -275,10 +309,10 @@
                 }
                 else
                 {
-                    <div class="dropdown-header back" @onmousedown="() => { selectedGroup = null; navigatedIndex = -1; }">
+                    <div class="dropdown-header back" @onmousedown="() => { selectedGroup = null; navigatedIndex = -1; RebuildCachedState(); }">
                         <HxIcon Icon="BootstrapIcon.ArrowLeft" /> Back
                     </div>
-                    @foreach (var item in CategoriesInSelectedGroup)
+                    @foreach (var item in categoriesInSelectedGroup)
                     {
                         <div class="dropdown-item @(IsNavigated(item) ? "navigated" : "")" @onmousedown="() => Select(item)">
                             @item.Name

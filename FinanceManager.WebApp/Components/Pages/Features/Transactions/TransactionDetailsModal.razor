@@ -28,18 +28,29 @@
             <HxTabPanel>
                 <HxTab Title="Activity details">
                     <Content>
-                        <HxFormState Enabled="false">
-                            <HxInputText Label="Category" Value="@CategoryUtilities.GetCategoryFullName(Details.TransactionSummary)" ValueExpression="@(() => Details.TransactionSummary.Description)" />
-                            <HxInputText Label="Category" Value="@CategoryUtilities.GetCategoryFullName(Details.TransactionSummary)" ValueExpression="@(() => Details.TransactionSummary.Description)" CssClass="invisible" />
-                            <HxInputDate Label="Date" Value="@Details.TransactionSummary.Date" ValueExpression="@(() => Details.TransactionSummary.Date)" CalendarIcon="BootstrapIcon.Calendar" />
-                            <HxInputNumber Label="Amount" Value="@Details.TransactionSummary.Amount" ValueExpression="@(() => Details.TransactionSummary.Amount)" InputGroupStartText="$" Decimals="2" />
-                            <HxInputTextArea Label="Description" Value="@Details.TransactionSummary.Description" ValueExpression="@(() => Details.TransactionSummary.Description)" CssClass="full-width" />
-                        </HxFormState>
+                        @if (Details is null)
+                        {
+                            <Alert Level="Alert.AlertLevel.Info">No details available.</Alert>
+                        }
+                        else
+                        {
+                            <HxFormState Enabled="false">
+                                <HxInputText Label="Category" Value="@CategoryUtilities.GetCategoryFullName(Details.TransactionSummary)" ValueExpression="@(() => Details.TransactionSummary.Description)" />
+                                <HxInputText Label="Category" Value="@CategoryUtilities.GetCategoryFullName(Details.TransactionSummary)" ValueExpression="@(() => Details.TransactionSummary.Description)" CssClass="invisible" />
+                                <HxInputDate Label="Date" Value="@Details.TransactionSummary.Date" ValueExpression="@(() => Details.TransactionSummary.Date)" CalendarIcon="BootstrapIcon.Calendar" />
+                                <HxInputNumber Label="Amount" Value="@Details.TransactionSummary.Amount" ValueExpression="@(() => Details.TransactionSummary.Amount)" InputGroupStartText="$" Decimals="2" />
+                                <HxInputTextArea Label="Description" Value="@Details.TransactionSummary.Description" ValueExpression="@(() => Details.TransactionSummary.Description)" CssClass="full-width" />
+                            </HxFormState>
+                        }
                     </Content>
                 </HxTab>
                 <HxTab Title="Reimbursements" ContentCssClass="reimbursements-tab">
                     <Content>
-                        @if (Details.Reimbursements.Count() == 0)
+                        @if (Details is null)
+                        {
+                            <Alert Level="Alert.AlertLevel.Info">No details available.</Alert>
+                        }
+                        else if (Details.Reimbursements.Count() == 0)
                         {
                             <Alert Level="Alert.AlertLevel.Info">This activity has no associated reimbursements. Edit the activity to add reimbursements.</Alert>
                         }
@@ -66,27 +77,34 @@
                 </HxTab>
                 <HxTab Title="Bank record">
                     <Content>
-                        <HxFormState Enabled="false">
-                            <HxInputText Label="Bank" Value="@Details.RecordSummary.Bank" ValueExpression="@(() => Details.RecordSummary.Bank)" />
-                            <HxInputText Label="Account" Value="@Details.RecordSummary.AccountNumber" ValueExpression="@(() => Details.RecordSummary.AccountNumber)" />
+                        @if (Details is null)
+                        {
+                            <Alert Level="Alert.AlertLevel.Info">No details available.</Alert>
+                        }
+                        else
+                        {
+                            <HxFormState Enabled="false">
+                                <HxInputText Label="Bank" Value="@Details.RecordSummary.Bank" ValueExpression="@(() => Details.RecordSummary.Bank)" />
+                                <HxInputText Label="Account" Value="@Details.RecordSummary.AccountNumber" ValueExpression="@(() => Details.RecordSummary.AccountNumber)" />
 
-                            <HxInputDate Label="Date" Value="@Details.RecordSummary.Date" ValueExpression="@(() => Details.RecordSummary.Date)" CalendarIcon="BootstrapIcon.Calendar" />
-                            <HxInputNumber Label="Amount" Value="@Details.RecordSummary.Amount" ValueExpression="@(() => Details.RecordSummary.Amount)" InputGroupStartText="$" Decimals="2" />
+                                <HxInputDate Label="Date" Value="@Details.RecordSummary.Date" ValueExpression="@(() => Details.RecordSummary.Date)" CalendarIcon="BootstrapIcon.Calendar" />
+                                <HxInputNumber Label="Amount" Value="@Details.RecordSummary.Amount" ValueExpression="@(() => Details.RecordSummary.Amount)" InputGroupStartText="$" Decimals="2" />
 
-                            <HxInputText Label="Type" Value="@Details.RecordSummary.Type" ValueExpression="@(() => Details.RecordSummary.Type)" />
-                            <HxInputText Label="Reference" Value="@Details.RecordSummary.Reference" ValueExpression="@(() => Details.RecordSummary.Reference)" />
-                            <HxInputTextArea Label="Narrative" Value="@Details.RecordSummary.Description" ValueExpression="@(() => Details.RecordSummary.Description)" CssClass="full-width" />
+                                <HxInputText Label="Type" Value="@Details.RecordSummary.Type" ValueExpression="@(() => Details.RecordSummary.Type)" />
+                                <HxInputText Label="Reference" Value="@Details.RecordSummary.Reference" ValueExpression="@(() => Details.RecordSummary.Reference)" />
+                                <HxInputTextArea Label="Narrative" Value="@Details.RecordSummary.Description" ValueExpression="@(() => Details.RecordSummary.Description)" CssClass="full-width" />
 
-                            @if (Details.Siblings.Count() > 0)
-                            {
-                                <div class="siblings-details">
-                                    <p>
-                                        This record is also the base for @Details.Siblings.Count() other @LanguageUtilities.Pluralise("activities", Details.Siblings.Count()).
-                                        You can manage this by editing the activity.
-                                    </p>
-                                </div>
-                            }
-                        </HxFormState>
+                                @if (Details.Siblings.Count() > 0)
+                                {
+                                    <div class="siblings-details">
+                                        <p>
+                                            This record is also the base for @Details.Siblings.Count() other @LanguageUtilities.Pluralise("activities", Details.Siblings.Count()).
+                                            You can manage this by editing the activity.
+                                        </p>
+                                    </div>
+                                }
+                            </HxFormState>
+                        }
                     </Content>
                 </HxTab>
             </HxTabPanel>
